@@ -676,7 +676,7 @@ class DataXceiver extends Receiver implements Runnable {
           new Sender(mirrorOut).writeBlock(originalBlock, blockToken,
               clientname, targets, srcDataNode, stage, pipelineSize,
               minBytesRcvd, maxBytesRcvd, latestGenerationStamp, requestedChecksum,
-              cachingStrategy,-1/*sender*/); // TODO: set the offset for sender
+              cachingStrategy,offset/*HDFSRS_RWAPI:add offset*/); 
 
           mirrorOut.flush();
 
