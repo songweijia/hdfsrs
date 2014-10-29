@@ -67,7 +67,7 @@ public class TestSimulatedFSDataset {
       // data written
       ReplicaInPipelineInterface bInfo = fsdataset.createRbw(b);
       ReplicaOutputStreams out = bInfo.createStreams(true,
-          DataChecksum.newDataChecksum(DataChecksum.Type.CRC32, 512));
+          DataChecksum.newDataChecksum(DataChecksum.Type.CRC32, 512),-1/*HDFSRS_RWAPI:unused here*/);
       try {
         OutputStream dataOut  = out.getDataOut();
         assertEquals(0, fsdataset.getLength(b));

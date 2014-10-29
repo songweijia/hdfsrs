@@ -555,7 +555,7 @@ public class TestBlockRecovery {
     ReplicaOutputStreams streams = null;
     try {
       streams = replicaInfo.createStreams(true,
-          DataChecksum.newDataChecksum(DataChecksum.Type.CRC32, 512));
+          DataChecksum.newDataChecksum(DataChecksum.Type.CRC32, 512),-1/*HDFSRS_RWAPI: use default, not really used here.*/);
       streams.getChecksumOut().write('a');
       dn.data.initReplicaRecovery(new RecoveringBlock(block, null, RECOVERY_ID+1));
       try {

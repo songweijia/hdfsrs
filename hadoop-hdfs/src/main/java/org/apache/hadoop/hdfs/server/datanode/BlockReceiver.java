@@ -128,7 +128,7 @@ class BlockReceiver implements Closeable {
       final long newGs, final long minBytesRcvd, final long maxBytesRcvd, 
       final String clientname, final DatanodeInfo srcDataNode,
       final DataNode datanode, DataChecksum requestedChecksum,
-      CachingStrategy cachingStrategy) throws IOException {
+      CachingStrategy cachingStrategy, long offset/*HDFSRS_RWAPI*/) throws IOException {
     try{
       this.block = block;
       this.in = in;
@@ -211,7 +211,7 @@ class BlockReceiver implements Closeable {
       
       final boolean isCreate = isDatanode || isTransfer 
           || stage == BlockConstructionStage.PIPELINE_SETUP_CREATE;
-      streams = replicaInfo.createStreams(isCreate, requestedChecksum);
+      streams = replicaInfo.createStreams(isCreate, requestedChecksum,offset/*HDFSRS_RWAPI*/);
       assert streams != null : "null streams!";
 
       // read checksum meta information
@@ -616,7 +616,11 @@ class BlockReceiver implements Closeable {
           datanode.metrics.incrBytesWritten(len);
 
           manageWriterOsCache(offsetInBlock);
+        }//HDFSRS_RWAPI
+        else{
+          //TODO for overwrite
         }
+        //}
       } catch (IOException iex) {
         datanode.checkDiskError(iex);
         throw iex;

@@ -21,10 +21,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeSpi;
+import org.apache.hadoop.hdfs.server.datanode.fsdataset.ReplicaFileChannels;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.ReplicaOutputStreams;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.DataChecksum;
@@ -174,7 +176,8 @@ public class ReplicaInPipeline extends ReplicaInfo
   
   @Override // ReplicaInPipelineInterface
   public ReplicaOutputStreams createStreams(boolean isCreate, 
-      DataChecksum requestedChecksum) throws IOException {
+      DataChecksum requestedChecksum, long offset/*TODO: offset into the block*/)
+          throws IOException {
     File blockFile = getBlockFile();
     File metaFile = getMetaFile();
     if (DataNode.LOG.isDebugEnabled()) {
@@ -189,6 +192,13 @@ public class ReplicaInPipeline extends ReplicaInfo
     // the checksum that should actually be used -- this
     // may differ from requestedChecksum for appends.
     DataChecksum checksum;
+
+    //HDFSRS_RWAPI{ //test offset
+    if(offset > bytesOnDisk){
+      throw new IOException("[HDFSRS_RWAPI]Cannot overwrite ahead end of block file. offset="+
+        offset+",bytesOnDisk="+bytesOnDisk);
+    }
+    //}
     
     RandomAccessFile metaRAF = new RandomAccessFile(metaFile, "rw");
     
@@ -236,8 +246,17 @@ public class ReplicaInPipeline extends ReplicaInfo
           new RandomAccessFile( blockFile, "rw" ).getFD() );
       crcOut = new FileOutputStream(metaRAF.getFD() );
       if (!isCreate) {
-        blockOut.getChannel().position(blockDiskSize);
-        crcOut.getChannel().position(crcDiskSize);
+        //HDFSRS_RWAPI{
+        if(offset == -1){ // this is the default location
+          blockOut.getChannel().position(blockDiskSize);
+          crcOut.getChannel().position(crcDiskSize);
+        }else{ // if we specify offset
+          blockOut.getChannel().position(offset);
+          crcOut.getChannel().position(
+              ((offset+1)%requestedChecksum.getBytesPerChecksum()) * 
+              requestedChecksum.getChecksumSize());
+        }
+        //}
       }
       return new ReplicaOutputStreams(blockOut, crcOut, checksum);
     } catch (IOException e) {
