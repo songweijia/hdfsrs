@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
@@ -175,7 +174,7 @@ public class ReplicaInPipeline extends ReplicaInfo
   
   @Override // ReplicaInPipelineInterface
   public ReplicaOutputStreams createStreams(boolean isCreate, 
-      DataChecksum requestedChecksum, long offset/*TODO: offset into the block*/)
+      DataChecksum requestedChecksum, long offset/*HDFSRS_RWAPI:offset into the block*/)
           throws IOException {
     File blockFile = getBlockFile();
     File metaFile = getMetaFile();
@@ -251,8 +250,8 @@ public class ReplicaInPipeline extends ReplicaInfo
           crcOut.getChannel().position(crcDiskSize);
         }else{ // if we specify offset
           blockOut.getChannel().position(offset);
-          crcOut.getChannel().position(
-              ((offset+1)%requestedChecksum.getBytesPerChecksum()) * 
+          crcOut.getChannel().position(BlockMetadataHeader.getHeaderSize() + 
+              (offset/requestedChecksum.getBytesPerChecksum()) * 
               requestedChecksum.getChecksumSize());
         }
         //}

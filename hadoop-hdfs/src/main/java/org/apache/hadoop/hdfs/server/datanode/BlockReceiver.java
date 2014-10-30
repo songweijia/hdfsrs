@@ -550,7 +550,11 @@ class BlockReceiver implements Closeable {
       
       try {
         long onDiskLen = replicaInfo.getBytesOnDisk();
-        if (onDiskLen<offsetInBlock) {
+        //HDFSRS_RWAPI{
+        //if (onDiskLen<offsetInBlock) {
+        if (onDiskLen==firstByteInBlock) {
+          LOG.debug("[HDFSRS_RWAPI]BlockReceiver.receivePacket():appending packet received.");
+        //}
           //finally write to the disk :
           
           if (onDiskLen % bytesPerChecksum != 0) { 
@@ -617,8 +621,67 @@ class BlockReceiver implements Closeable {
 
           manageWriterOsCache(offsetInBlock);
         }//HDFSRS_RWAPI
-        else{
+        else{// for overwriting
+          LOG.debug("[HDFSRS_RWAPI]BlockReceiver.receivePacket():overwriting packet received:packet(" +
+              firstByteInBlock+","+offsetInBlock+")/replica("+onDiskLen+")");
           //TODO for overwrite
+          //dx.1 if this is a partial chunk, then read in pre-existing checksum
+          if (firstByteInBlock % bytesPerChecksum != 0) {
+            LOG.info("Packet starts at " + firstByteInBlock +
+                     " for " + block +
+                     " which is not a multiple of bytesPerChecksum " +
+                     bytesPerChecksum);
+            long offsetInChecksum = BlockMetadataHeader.getHeaderSize() +
+                firstByteInBlock / bytesPerChecksum * checksumSize;
+            computePartialChunkCrc(firstByteInBlock, offsetInChecksum, bytesPerChecksum);
+          }
+          
+          //dx.2 write data to disk.
+          int startByteToDisk = dataBuf.arrayOffset() + dataBuf.position();
+          out.write(dataBuf.array(), startByteToDisk, len);//packet len
+          
+          //dx.3 
+          // If this is a partial chunk, then verify that this is the only
+          // chunk in the packet. Calculate new crc for this chunk.
+          if (partialCrc != null) {
+            if (len > bytesPerChecksum) {
+              throw new IOException("[HDFSRS_RWAPI]Got wrong length during writeBlock(" + 
+                                    block + ") from " + inAddr + " " +
+                                    "A packet can have only one partial chunk."+
+                                    " len = " + len + 
+                                    " bytesPerChecksum " + bytesPerChecksum);
+            }
+            partialCrc.update(dataBuf.array(), startByteToDisk, len);
+            byte[] buf = FSOutputSummer.convertToByteStream(partialCrc, checksumSize);
+            lastChunkChecksum = Arrays.copyOfRange(
+              buf, buf.length - checksumSize, buf.length
+            );
+            checksumOut.write(buf);
+            if(LOG.isDebugEnabled()) {
+              LOG.debug("[HDFSRS_RWAPI]Writing out partial crc for data len " + len);
+            }
+            partialCrc = null;
+          } else {
+            lastChunkChecksum = Arrays.copyOfRange(
+                checksumBuf.array(),
+                checksumBuf.arrayOffset() + checksumBuf.position() + checksumLen - checksumSize,
+                checksumBuf.arrayOffset() + checksumBuf.position() + checksumLen);
+            checksumOut.write(checksumBuf.array(),
+                checksumBuf.arrayOffset() + checksumBuf.position(),
+                checksumLen);
+          }
+          
+          /// dx.7 flush entire packet, sync if requested
+          flushOrSync(syncBlock);
+          
+          // dx.8 update replicaInfo as long as the last chunkChecksum changed.
+          if( (onDiskLen - offsetInBlock) < bytesPerChecksum )
+            replicaInfo.setLastChecksumAndDataLen(
+                Math.max(offsetInBlock,onDiskLen), lastChunkChecksum
+              );
+
+          datanode.metrics.incrBytesWritten(len);
+          manageWriterOsCache(offsetInBlock);          
         }
         //}
       } catch (IOException iex) {
