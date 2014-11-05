@@ -517,15 +517,43 @@ public class DFSOutputStream extends FSOutputSummer
     //we just set the block, blockNumber, blockWriteOffset
     //then let the streamer thread handle the BlockConstructionStage.PIPELINE_SETUP_SEEK
     //status by itself.
-    private void seek(long offset)
+    private void seek(long offset, int bytesPerChecksum)
     throws IOException {
       LocatedBlocks lbs = dfsClient.namenode.getBlockLocations(src, offset, 1);
-      if(lbs == null)
+      if(lbs == null || lbs.locatedBlockCount() == 0)
         throw new IOException("[HDFSRS_RWAPI]: Cannot move to offset:"+offset+". Current pos = "+pos);
-      block = lbs.get(0).getBlock();
+      LocatedBlock lb = lbs.get(0);
+      block = lb.getBlock();
       blockNumber = offset / blockSize;
       blockWriteOffset = offset % blockSize;
+      accessToken = lb.getBlockToken();
+      bytesSent = block.getNumBytes();
+      
+      // calculate the amount of free space in the pre-existing 
+      // last crc chunk
+      int usedInCksum = (int)(offset % bytesPerChecksum);
+      int freeInCksum = bytesPerChecksum - usedInCksum;
+
+      int freeInBlock = (int)(blockSize - blockWriteOffset);
+
+      if (usedInCksum > 0 && freeInCksum > 0) {
+        // if there is space in the last partial chunk, then 
+        // setup in such a way that the next packet will have only 
+        // one chunk that fills up the partial chunk.
+        //
+        computePacketChunkSize(0, freeInCksum);
+        resetChecksumChunk(freeInCksum);
+        appendChunk = true;
+      } else {
+        // if the remaining space in the block is smaller than 
+        // that expected size of of a packet, then create 
+        // smaller size packet.
+        //
+        computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize, freeInBlock), 
+            bytesPerChecksum);
+      }
       stage = BlockConstructionStage.PIPELINE_SETUP_SEEK;
+      setPipeline(lb);
     }
     //}
     /*
@@ -2324,7 +2352,7 @@ public class DFSOutputStream extends FSOutputSummer
 	  
 	  // STEP 4: reset data Stream...
 	  this.bytesCurBlock = pos%this.blockSize;
-	  this.streamer.seek(pos);
+	  this.streamer.seek(pos,checksum.getBytesPerChecksum());
   }
   
   private void updateFileSize(){
