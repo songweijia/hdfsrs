@@ -371,15 +371,22 @@ public class DFSOutputStream extends FSOutputSummer
     private boolean isHflushed = false;
     /** Append on an existing block? */
     private final boolean isAppend;
+    
+    //HDFSRS_RWAPI{
+    private int bytesPerChecksum = 0;
+    //}
 
     /**
      * Default construction for file create
      */
-    protected DataStreamer(long blockNumber/*HDFSRS_RWAPI: specifying the block Number*/) {
+    protected DataStreamer(
+        long blockNumber/*HDFSRS_RWAPI: specifying the block Number*/,
+        int bytesPerChecksum/*HDFSRS_RWAPI: this is required for seek*/) {
       isAppend = false;
       stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
       //HDFSRS_RWAPI{
       this.blockNumber = blockNumber;
+      this.bytesPerChecksum = bytesPerChecksum;
       //}
     }
     
@@ -397,6 +404,7 @@ public class DFSOutputStream extends FSOutputSummer
       block = lastBlock.getBlock();
       //HDFSRS_RWAPI{
       this.blockNumber = blockNumber;
+      this.bytesPerChecksum = bytesPerChecksum;
       //}
       bytesSent = block.getNumBytes();
       accessToken = lastBlock.getBlockToken();
@@ -485,29 +493,64 @@ public class DFSOutputStream extends FSOutputSummer
       closeStream();
       setPipeline(null, null);
       //HDFSRS_RWAPI{
+      LocatedBlock lb = null;
       if(newPos>0){// go to new position
         LocatedBlocks lbs = dfsClient.namenode.getBlockLocations(src, newPos, 1);
-        if(lbs == null)
+        if(lbs == null || lbs.locatedBlockCount() == 0)
           throw new IOException("[HDFSRS_RWAPI]Cannot find a block at newPos:"+newPos);
-        block = lbs.get(0).getBlock();
+        lb = lbs.get(0);
+        block = lb.getBlock();
         blockWriteOffset = newPos % blockSize;
         blockNumber = newPos / blockSize;
         stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
       }else{
         LocatedBlocks lbs = dfsClient.namenode.getBlockLocations(src,(blockNumber+1)*blockSize,1);
+        lb = lbs.get(0);
         if(lbs == null || lbs.locatedBlockCount() == 0){
           stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
           blockWriteOffset = -1;
         }else{
           stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
-          block = lbs.get(0).getBlock();
+          block = lb.getBlock();
           blockWriteOffset = 0;
         }
         blockNumber ++;
       //}
       }
+      
+      //HDFSRS_RWAPI{
+      if(stage == BlockConstructionStage.PIPELINE_SETUP_OVERWRITE){
+        // setting up other members
+        accessToken = lb.getBlockToken();
+        bytesSent = block.getNumBytes();
+        
+        // calculate the amount of free space in the pre-existing 
+        // last crc chunk
+        int usedInCksum = (int)(blockWriteOffset % bytesPerChecksum);
+        int freeInCksum = bytesPerChecksum - usedInCksum;
+
+        int freeInBlock = (int)(blockSize - blockWriteOffset);
+
+        if (usedInCksum > 0 && freeInCksum > 0) {
+          // if there is space in the last partial chunk, then 
+          // setup in such a way that the next packet will have only 
+          // one chunk that fills up the partial chunk.
+          //
+          computePacketChunkSize(0, freeInCksum);
+          resetChecksumChunk(freeInCksum);
+          appendChunk = true;
+        } else {
+          // if the remaining space in the block is smaller than 
+          // that expected size of of a packet, then create 
+          // smaller size packet.
+          //
+          computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize, freeInBlock), 
+              bytesPerChecksum);
+        }
+        setPipeline(lb);
+      }
+      //}
     }
-    //}
     //HDFSRS_RWAPI{
     /**
      * Seek to a new block specified by newblock
@@ -517,43 +560,11 @@ public class DFSOutputStream extends FSOutputSummer
     //we just set the block, blockNumber, blockWriteOffset
     //then let the streamer thread handle the BlockConstructionStage.PIPELINE_SETUP_SEEK
     //status by itself.
-    private void seek(long offset, int bytesPerChecksum)
+    private void seek(long offset)
     throws IOException {
-      LocatedBlocks lbs = dfsClient.namenode.getBlockLocations(src, offset, 1);
-      if(lbs == null || lbs.locatedBlockCount() == 0)
-        throw new IOException("[HDFSRS_RWAPI]: Cannot move to offset:"+offset+". Current pos = "+pos);
-      LocatedBlock lb = lbs.get(0);
-      block = lb.getBlock();
       blockNumber = offset / blockSize;
       blockWriteOffset = offset % blockSize;
-      accessToken = lb.getBlockToken();
-      bytesSent = block.getNumBytes();
-      
-      // calculate the amount of free space in the pre-existing 
-      // last crc chunk
-      int usedInCksum = (int)(offset % bytesPerChecksum);
-      int freeInCksum = bytesPerChecksum - usedInCksum;
-
-      int freeInBlock = (int)(blockSize - blockWriteOffset);
-
-      if (usedInCksum > 0 && freeInCksum > 0) {
-        // if there is space in the last partial chunk, then 
-        // setup in such a way that the next packet will have only 
-        // one chunk that fills up the partial chunk.
-        //
-        computePacketChunkSize(0, freeInCksum);
-        resetChecksumChunk(freeInCksum);
-        appendChunk = true;
-      } else {
-        // if the remaining space in the block is smaller than 
-        // that expected size of of a packet, then create 
-        // smaller size packet.
-        //
-        computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize, freeInBlock), 
-            bytesPerChecksum);
-      }
       stage = BlockConstructionStage.PIPELINE_SETUP_SEEK;
-      setPipeline(lb);
     }
     //}
     /*
@@ -1701,7 +1712,7 @@ public class DFSOutputStream extends FSOutputSummer
         checksum.getBytesPerChecksum());
     //HDFSRS_RWAPI{
     //streamer = new DataStreamer();
-    streamer = new DataStreamer(0);
+    streamer = new DataStreamer(0l,checksum.getBytesPerChecksum());
     //}
     if (favoredNodes != null && favoredNodes.length != 0) {
       streamer.setFavoredNodes(favoredNodes);
@@ -1766,7 +1777,7 @@ public class DFSOutputStream extends FSOutputSummer
           checksum.getBytesPerChecksum());
       //HDFSRS_RWAPI{
       //streamer = new DataStreamer();
-      streamer = new DataStreamer(initialFileSize/stat.getBlockSize());
+      streamer = new DataStreamer(initialFileSize/stat.getBlockSize(),checksum.getBytesPerChecksum());
       //}
     }
   }
@@ -2352,7 +2363,7 @@ public class DFSOutputStream extends FSOutputSummer
 	  
 	  // STEP 4: reset data Stream...
 	  this.bytesCurBlock = pos%this.blockSize;
-	  this.streamer.seek(pos,checksum.getBytesPerChecksum());
+	  this.streamer.seek(pos);
   }
   
   private void updateFileSize(){
