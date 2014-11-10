@@ -494,7 +494,7 @@ public class DFSOutputStream extends FSOutputSummer
       setPipeline(null, null);
       //HDFSRS_RWAPI{
       LocatedBlock lb = null;
-      if(newPos>0){// go to new position
+      if(newPos>=0){// go to new position
         LocatedBlocks lbs = dfsClient.namenode.getBlockLocations(src, newPos, 1);
         if(lbs == null || lbs.locatedBlockCount() == 0)
           throw new IOException("[HDFSRS_RWAPI]Cannot find a block at newPos:"+newPos);
