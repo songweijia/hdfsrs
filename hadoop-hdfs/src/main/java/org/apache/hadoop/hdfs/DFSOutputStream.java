@@ -372,21 +372,15 @@ public class DFSOutputStream extends FSOutputSummer
     /** Append on an existing block? */
     private final boolean isAppend;
     
-    //HDFSRS_RWAPI{
-    private int bytesPerChecksum = 0;
-    //}
-
     /**
      * Default construction for file create
      */
     protected DataStreamer(
-        long blockNumber/*HDFSRS_RWAPI: specifying the block Number*/,
-        int bytesPerChecksum/*HDFSRS_RWAPI: this is required for seek*/) {
+        long blockNumber/*HDFSRS_RWAPI: specifying the block Number*/) {
       isAppend = false;
       stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
       //HDFSRS_RWAPI{
       this.blockNumber = blockNumber;
-      this.bytesPerChecksum = bytesPerChecksum;
       //}
     }
     
@@ -404,7 +398,6 @@ public class DFSOutputStream extends FSOutputSummer
       block = lastBlock.getBlock();
       //HDFSRS_RWAPI{
       this.blockNumber = blockNumber;
-      this.bytesPerChecksum = bytesPerChecksum;
       //}
       bytesSent = block.getNumBytes();
       accessToken = lastBlock.getBlockToken();
@@ -523,30 +516,6 @@ public class DFSOutputStream extends FSOutputSummer
         // setting up other members
         accessToken = lb.getBlockToken();
         bytesSent = block.getNumBytes();
-        
-        // calculate the amount of free space in the pre-existing 
-        // last crc chunk
-        int usedInCksum = (int)(blockWriteOffset % bytesPerChecksum);
-        int freeInCksum = bytesPerChecksum - usedInCksum;
-
-        int freeInBlock = (int)(blockSize - blockWriteOffset);
-
-        if (usedInCksum > 0 && freeInCksum > 0) {
-          // if there is space in the last partial chunk, then 
-          // setup in such a way that the next packet will have only 
-          // one chunk that fills up the partial chunk.
-          //
-          computePacketChunkSize(0, freeInCksum);
-          resetChecksumChunk(freeInCksum);
-          appendChunk = true;
-        } else {
-          // if the remaining space in the block is smaller than 
-          // that expected size of of a packet, then create 
-          // smaller size packet.
-          //
-          computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize, freeInBlock), 
-              bytesPerChecksum);
-        }
         setPipeline(lb);
       }
       //}
@@ -1712,7 +1681,7 @@ public class DFSOutputStream extends FSOutputSummer
         checksum.getBytesPerChecksum());
     //HDFSRS_RWAPI{
     //streamer = new DataStreamer();
-    streamer = new DataStreamer(0l,checksum.getBytesPerChecksum());
+    streamer = new DataStreamer(0l);
     //}
     if (favoredNodes != null && favoredNodes.length != 0) {
       streamer.setFavoredNodes(favoredNodes);
@@ -1777,7 +1746,7 @@ public class DFSOutputStream extends FSOutputSummer
           checksum.getBytesPerChecksum());
       //HDFSRS_RWAPI{
       //streamer = new DataStreamer();
-      streamer = new DataStreamer(initialFileSize/stat.getBlockSize(),checksum.getBytesPerChecksum());
+      streamer = new DataStreamer(initialFileSize/stat.getBlockSize());
       //}
     }
   }
@@ -2361,8 +2330,33 @@ public class DFSOutputStream extends FSOutputSummer
 	  // STEP 3: flush
 	  this.hflush();
 	  
-	  // STEP 4: reset data Stream...
+    // STEP 4: reset the chunkSize and write buffer
 	  this.bytesCurBlock = pos%this.blockSize;
+
+	  // calculate the amount of free space in the pre-existing 
+    // last crc chunk
+    int usedInCksum = (int)(this.bytesCurBlock % checksum.getBytesPerChecksum());
+    int freeInCksum = checksum.getBytesPerChecksum() - usedInCksum;
+
+    int freeInBlock = (int)(blockSize - bytesCurBlock);
+
+    if (usedInCksum > 0 && freeInCksum > 0) {
+      // if there is space in the last partial chunk, then 
+      // setup in such a way that the next packet will have only 
+      // one chunk that fills up the partial chunk.
+      //
+      computePacketChunkSize(0, freeInCksum);
+      resetChecksumChunk(freeInCksum);
+      appendChunk = true;
+    } else {
+      // if the remaining space in the block is smaller than 
+      // that expected size of of a packet, then create 
+      // smaller size packet.
+      //
+      computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize, freeInBlock), 
+          checksum.getBytesPerChecksum());
+    }
+    //STEP 5: Reset streamer
 	  this.streamer.seek(pos);
   }
   
