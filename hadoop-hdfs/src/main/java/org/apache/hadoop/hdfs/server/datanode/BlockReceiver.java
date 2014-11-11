@@ -644,6 +644,8 @@ class BlockReceiver implements Closeable {
           //dx.3 
           // If this is a partial chunk, then verify that this is the only
           // chunk in the packet. Calculate new crc for this chunk.
+          // TODO: In case the end of the partial chunk is not at the end of a chunk,
+          // we have to read the rest data and recalculate the CRC.
           if (partialCrc != null) {
             if (len > bytesPerChecksum) {
               throw new IOException("[HDFSRS_RWAPI]Got wrong length during writeBlock(" + 
