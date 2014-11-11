@@ -176,6 +176,7 @@ class BlockReceiver implements Closeable {
           block.setGenerationStamp(newGs);
           break;
         case PIPELINE_SETUP_APPEND:
+        case PIPELINE_SETUP_OVERWRITE:
           replicaInfo = datanode.data.append(block, newGs, minBytesRcvd);
           if (datanode.blockScanner != null) { // remove from block scanner
             datanode.blockScanner.deleteBlock(block.getBlockPoolId(),
