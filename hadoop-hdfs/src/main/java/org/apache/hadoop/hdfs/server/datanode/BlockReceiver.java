@@ -957,6 +957,12 @@ class BlockReceiver implements Closeable {
 
     // paranoia! verify that the pre-computed crc matches what we
     // recalculated just now
+    /* HDFSRS_RWAPI: We do not compare it so far: for appending only
+     * scenario, that is all data we get. But for overwrite, we may
+     * need to write in the middle of a chunk. A 'perfect' way is to
+     * read till the end of the chunk and compare. But since we are
+     * targeting memory based file system. We just skip it for now.
+     * TODO
     if (partialCrc.getValue() != checksum2long(crcbuf)) {
       String msg = "Partial CRC " + partialCrc.getValue() +
                    " does not match value computed the " +
@@ -964,6 +970,7 @@ class BlockReceiver implements Closeable {
                    checksum2long(crcbuf);
       throw new IOException(msg);
     }
+    */
   }
   
   private static enum PacketResponderType {
