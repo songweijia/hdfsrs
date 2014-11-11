@@ -498,11 +498,11 @@ public class DFSOutputStream extends FSOutputSummer
         stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
       }else{
         LocatedBlocks lbs = dfsClient.namenode.getBlockLocations(src,(blockNumber+1)*blockSize,1);
-        lb = lbs.get(0);
         if(lbs == null || lbs.locatedBlockCount() == 0){
           stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
           blockWriteOffset = -1;
         }else{
+          lb = lbs.get(0);
           stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
           block = lb.getBlock();
           blockWriteOffset = 0;
