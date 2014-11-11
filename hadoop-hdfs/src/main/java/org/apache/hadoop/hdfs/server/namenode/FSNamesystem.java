@@ -3889,7 +3889,11 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       final Block commitBlock) throws IOException {
     assert hasWriteLock();
     Preconditions.checkArgument(fileINode.isUnderConstruction());
-    if (!blockManager.commitOrCompleteLastBlock(fileINode, commitBlock)) {
+
+    //HDFSRS_RWAPI{
+    // if (!blockManager.commitOrCompleteLastBlock(fileINode, commitBlock)) {
+    if (!blockManager.commitOrCompleteBlock(fileINode, commitBlock)) {
+    //}
       return;
     }
 

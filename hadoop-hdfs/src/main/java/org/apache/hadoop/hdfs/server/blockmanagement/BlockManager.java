@@ -587,6 +587,8 @@ public class BlockManager {
    * @throws IOException if the block does not have at least a minimal number
    * of replicas reported from data-nodes.
    */
+/* HDFSRS_RWAPI: use commitOrCompleteBlock instead of commitOrCompleteLastBlock
+ *   
   public boolean commitOrCompleteLastBlock(BlockCollection bc,
       Block commitBlock) throws IOException {
     if(commitBlock == null)
@@ -602,6 +604,41 @@ public class BlockManager {
       completeBlock(bc, bc.numBlocks()-1, false);
     return b;
   }
+ */
+  
+  // HDFSRS_RWAPI {
+  /**
+   * Commit the given block of the file and mark it as complete if
+   * it has meets the minimum replication requirement
+   * 
+   * @param bc block collection
+   * @param commitBlock - contains client reported block length and generation
+   * @return true if the last block is changed to committed state.
+   * @throws IOException if the block does not have at least a minimal number
+   * of replicas reported from data-nodes.
+   */
+  public boolean commitOrCompleteBlock(BlockCollection bc,
+      Block commitBlock) throws IOException{
+    //TODO:
+    if(commitBlock == null)
+      return false; // not committing, this is a block allocation retry
+    
+    BlockInfo blocks [] = bc.getBlocks();
+    int cur = 0;
+    for(;cur<=blocks.length;cur++)
+      if(blocks[cur].getBlockId() == commitBlock.getBlockId())break;
+    if(cur >= blocks.length)
+      return false;//throw new IOException("Cannot find the block in file Inode:"+commitBlock);
+    
+    if(blocks[cur].isComplete())
+      return false; // already completed (e.g. by syncBlock)
+    
+    final boolean b = commitBlock((BlockInfoUnderConstruction)blocks[cur], commitBlock);
+    if(countNodes(blocks[cur]).liveReplicas() >= minReplication)
+      completeBlock(bc, cur, false);
+    return b;
+  }
+  //}
 
   /**
    * Convert a specified block of the file to a complete block.
