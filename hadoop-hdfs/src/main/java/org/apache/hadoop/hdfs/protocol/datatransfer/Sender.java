@@ -141,7 +141,8 @@ public class Sender implements DataTransferProtocol {
       .setMaxBytesRcvd(maxBytesRcvd)
       .setLatestGenerationStamp(latestGenerationStamp)
       .setRequestedChecksum(checksumProto)
-      .setCachingStrategy(getCachingStrategy(cachingStrategy));
+      .setCachingStrategy(getCachingStrategy(cachingStrategy))
+      .setOffset(offset); // HDFSRS_WRAPI: sent offset
     
     if (source != null) {
       proto.setSource(PBHelper.convertDatanodeInfo(source));
