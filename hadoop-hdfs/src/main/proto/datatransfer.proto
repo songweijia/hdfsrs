@@ -95,6 +95,10 @@ message OpWriteBlockProto {
     TRANSFER_RBW = 7;
     // transfer Finalized for adding datanodes
     TRANSFER_FINALIZED = 8;
+    // HDFSRS_RWAPI: overwrite pipeline
+    PIPELINE_SETUP_OVERWRITE = 9;
+    // HDFSRS_RWAPI: seek: not used on wire.
+    PIPELINE_SETUP_SEEK = 10;
   }
   required BlockConstructionStage stage = 4;
   required uint32 pipelineSize = 5;
