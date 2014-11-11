@@ -946,7 +946,10 @@ public class DFSOutputStream extends FSOutputSummer
             }
               
             // update bytesAcked
-            block.setNumBytes(one.getLastByteOffsetBlock());
+            // HDFSRS_RWAPI: Only when overwritten data extends the block ends,
+            // do we change the size of a block.
+            // block.setNumBytes(one.getLastByteOffsetBlock());
+            block.setNumBytes(Math.max(block.getNumBytes(), one.getLastByteOffsetBlock()));
 
             synchronized (dataQueue) {
               lastAckedSeqno = seqno;
