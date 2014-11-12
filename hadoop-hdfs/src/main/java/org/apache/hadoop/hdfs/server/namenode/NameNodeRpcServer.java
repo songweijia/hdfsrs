@@ -489,15 +489,30 @@ class NameNodeRpcServer implements NamenodeProtocols {
     namesystem.cancelDelegationToken(token);
   }
   
+  
+  
   @Override // ClientProtocol
+  //HDFSRS_RWAPI{
   public LocatedBlocks getBlockLocations(String src, 
                                           long offset, 
                                           long length) 
       throws IOException {
     metrics.incrGetBlockLocations();
     return namesystem.getBlockLocations(getClientMachine(), 
-                                        src, offset, length);
+                                        src, offset, length, true);
   }
+
+  /*
+  public LocatedBlocks getBlockLocations(String src, 
+                                          long offset, 
+                                          long length) 
+      throws IOException {
+    metrics.incrGetBlockLocations();
+    return namesystem.getBlockLocations(getClientMachine(), 
+                                        src, offset, length, true);
+  }
+  */
+  //}
   
   @Override // ClientProtocol
   public FsServerDefaults getServerDefaults() throws IOException {
@@ -1378,6 +1393,15 @@ class NameNodeRpcServer implements NamenodeProtocols {
     SnapshotAccessControlException, IOException {
     // TODO Auto-generated method
     throw new IOException("Unimplemented yet");
+  }
+
+  @Override
+  public LocatedBlocks getBlockLocationsNoCreate(String src, long offset,
+      long length) throws AccessControlException, FileNotFoundException,
+      UnresolvedLinkException, IOException {
+    metrics.incrGetBlockLocations();
+    return namesystem.getBlockLocations(getClientMachine(), 
+                                        src, offset, length, false);
   }
 }
 

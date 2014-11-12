@@ -110,6 +110,8 @@ public interface ClientProtocol {
    * @param src file name
    * @param offset range start offset
    * @param length range length
+   * @param createNew if createNew==false, it will return NULL when offset/length 
+   *        exceeds current file range.
    *
    * @return file length and array of blocks with their locations
    *
@@ -118,13 +120,21 @@ public interface ClientProtocol {
    * @throws UnresolvedLinkException If <code>src</code> contains a symlink
    * @throws IOException If an I/O error occurred
    */
+//HDFSRS_RWAPI{
   @Idempotent
   public LocatedBlocks getBlockLocations(String src,
                                          long offset,
-                                         long length) 
+                                         long length)
       throws AccessControlException, FileNotFoundException,
       UnresolvedLinkException, IOException;
-
+  @Idempotent
+  public LocatedBlocks getBlockLocationsNoCreate(String src,
+                                         long offset,
+                                         long length)
+      throws AccessControlException, FileNotFoundException,
+      UnresolvedLinkException, IOException;
+//}
+  
   /**
    * Get server default values for a number of configuration params.
    * @return a set of server default configuration values

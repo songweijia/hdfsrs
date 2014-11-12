@@ -1620,10 +1620,11 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    * @see ClientProtocol#getBlockLocations(String, long, long)
    */
   LocatedBlocks getBlockLocations(String clientMachine, String src,
-      long offset, long length) throws AccessControlException,
+      long offset, long length, boolean createNew/*HDFSRS_RWAPI*/)
+          throws AccessControlException,
       FileNotFoundException, UnresolvedLinkException, IOException {
     LocatedBlocks blocks = getBlockLocations(src, offset, length, true, true,
-        true);
+        true,createNew/*HDFSRS_RWAPI*/);
     if (blocks != null) {
       blockManager.getDatanodeManager().sortLocatedBlocks(
           clientMachine, blocks.getLocatedBlocks());
@@ -1645,20 +1646,30 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    * @throws FileNotFoundException, UnresolvedLinkException, IOException
    */
   LocatedBlocks getBlockLocations(String src, long offset, long length,
-      boolean doAccessTime, boolean needBlockToken, boolean checkSafeMode)
+      boolean doAccessTime, boolean needBlockToken, boolean checkSafeMode,
+      boolean createNew/*HDFSRS_RWAPI*/)
       throws FileNotFoundException, UnresolvedLinkException, IOException {
     try {
       return getBlockLocationsInt(src, offset, length, doAccessTime,
-                                  needBlockToken, checkSafeMode);
+                                  needBlockToken, checkSafeMode, 
+                                  createNew/*HDFSRS_RWAPI*/);
     } catch (AccessControlException e) {
       logAuditEvent(false, "open", src);
       throw e;
     }
   }
+  //HDFSRS_RWAPI: Wrapper for original
+  LocatedBlocks getBlockLocations(String src, long offset, long length,
+      boolean doAccessTime, boolean needBlockToken, boolean checkSafeMode)
+      throws FileNotFoundException, UnresolvedLinkException, IOException {
+    return getBlockLocations(src,offset,length,doAccessTime,needBlockToken,
+        checkSafeMode,true);
+  }
+  //}
 
   private LocatedBlocks getBlockLocationsInt(String src, long offset,
       long length, boolean doAccessTime, boolean needBlockToken,
-      boolean checkSafeMode)
+      boolean checkSafeMode,boolean createNew/*HDFSRS_RWAPI*/)
       throws FileNotFoundException, UnresolvedLinkException, IOException {
     if (offset < 0) {
       throw new HadoopIllegalArgumentException(
@@ -1669,7 +1680,12 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
           "Negative length is not supported. File: " + src);
     }
     final LocatedBlocks ret = getBlockLocationsUpdateTimes(src,
-        offset, length, doAccessTime, needBlockToken);  
+        offset, length, doAccessTime, needBlockToken, createNew/*HDFSRS_RWAPI*/);
+    
+    //HDFSRS_RWAPI{
+    if(ret == null) return ret;
+    //}
+    
     logAuditEvent(true, "open", src);
     if (checkSafeMode && isInSafeMode()) {
       for (LocatedBlock b : ret.getLocatedBlocks()) {
@@ -1694,7 +1710,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    * access times if necessary. 
    */
   private LocatedBlocks getBlockLocationsUpdateTimes(String src, long offset,
-      long length, boolean doAccessTime, boolean needBlockToken)
+      long length, boolean doAccessTime, boolean needBlockToken, boolean createNew
+      /*HDFSRS_RWAPI:create newBlock*/)
       throws FileNotFoundException,
       UnresolvedLinkException, IOException {
     FSPermissionChecker pc = getPermissionChecker();
@@ -1748,6 +1765,13 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
           length = Math.min(length, fileSize - offset);
           isUc = false;
         }
+        
+        //HDFSRS_RWAPI{
+        if(createNew == false && 
+            (offset+length) > fileSize)
+            return null;
+        //}
+        
         LocatedBlocks blocks =
           blockManager.createLocatedBlocks(inode.getBlocks(), fileSize,
             isUc, offset, length, needBlockToken, iip.isSnapshot());

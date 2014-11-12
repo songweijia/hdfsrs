@@ -76789,7 +76789,23 @@ public final class ClientNamenodeProtocolProtos {
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto> done);
 
       /**
+       * <code>rpc getBlockLocationsNoCreate(.hadoop.hdfs.GetBlockLocationsRequestProto) returns (.hadoop.hdfs.GetBlockLocationsResponseProto);</code>
+       *
+       * <pre>
+       *HDFSRS_RWAPI{
+       * </pre>
+       */
+      public abstract void getBlockLocationsNoCreate(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto> done);
+
+      /**
        * <code>rpc getServerDefaults(.hadoop.hdfs.GetServerDefaultsRequestProto) returns (.hadoop.hdfs.GetServerDefaultsResponseProto);</code>
+       *
+       * <pre>
+       *}
+       * </pre>
        */
       public abstract void getServerDefaults(
           com.google.protobuf.RpcController controller,
@@ -77359,6 +77375,14 @@ public final class ClientNamenodeProtocolProtos {
             org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto request,
             com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto> done) {
           impl.getBlockLocations(controller, request, done);
+        }
+
+        @java.lang.Override
+        public  void getBlockLocationsNoCreate(
+            com.google.protobuf.RpcController controller,
+            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto request,
+            com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto> done) {
+          impl.getBlockLocationsNoCreate(controller, request, done);
         }
 
         @java.lang.Override
@@ -77938,142 +77962,144 @@ public final class ClientNamenodeProtocolProtos {
             case 0:
               return impl.getBlockLocations(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto)request);
             case 1:
-              return impl.getServerDefaults(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto)request);
+              return impl.getBlockLocationsNoCreate(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto)request);
             case 2:
-              return impl.create(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto)request);
+              return impl.getServerDefaults(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto)request);
             case 3:
-              return impl.append(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto)request);
+              return impl.create(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto)request);
             case 4:
-              return impl.overwrite(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto)request);
+              return impl.append(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto)request);
             case 5:
-              return impl.setReplication(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto)request);
+              return impl.overwrite(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto)request);
             case 6:
-              return impl.setPermission(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto)request);
+              return impl.setReplication(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto)request);
             case 7:
-              return impl.setOwner(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto)request);
+              return impl.setPermission(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto)request);
             case 8:
-              return impl.abandonBlock(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto)request);
+              return impl.setOwner(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto)request);
             case 9:
-              return impl.addBlock(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto)request);
+              return impl.abandonBlock(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto)request);
             case 10:
-              return impl.getAdditionalDatanode(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto)request);
+              return impl.addBlock(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto)request);
             case 11:
-              return impl.complete(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto)request);
+              return impl.getAdditionalDatanode(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto)request);
             case 12:
-              return impl.reportBadBlocks(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto)request);
+              return impl.complete(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto)request);
             case 13:
-              return impl.concat(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto)request);
+              return impl.reportBadBlocks(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto)request);
             case 14:
-              return impl.rename(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto)request);
+              return impl.concat(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto)request);
             case 15:
-              return impl.rename2(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto)request);
+              return impl.rename(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto)request);
             case 16:
-              return impl.delete(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto)request);
+              return impl.rename2(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto)request);
             case 17:
-              return impl.mkdirs(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto)request);
+              return impl.delete(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto)request);
             case 18:
-              return impl.getListing(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto)request);
+              return impl.mkdirs(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto)request);
             case 19:
-              return impl.renewLease(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto)request);
+              return impl.getListing(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto)request);
             case 20:
-              return impl.recoverLease(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto)request);
+              return impl.renewLease(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto)request);
             case 21:
-              return impl.getFsStats(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto)request);
+              return impl.recoverLease(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto)request);
             case 22:
-              return impl.getDatanodeReport(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto)request);
+              return impl.getFsStats(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto)request);
             case 23:
-              return impl.getPreferredBlockSize(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto)request);
+              return impl.getDatanodeReport(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto)request);
             case 24:
-              return impl.setSafeMode(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto)request);
+              return impl.getPreferredBlockSize(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto)request);
             case 25:
-              return impl.saveNamespace(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto)request);
+              return impl.setSafeMode(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto)request);
             case 26:
-              return impl.rollEdits(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto)request);
+              return impl.saveNamespace(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto)request);
             case 27:
-              return impl.restoreFailedStorage(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto)request);
+              return impl.rollEdits(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto)request);
             case 28:
-              return impl.refreshNodes(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto)request);
+              return impl.restoreFailedStorage(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto)request);
             case 29:
-              return impl.finalizeUpgrade(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto)request);
+              return impl.refreshNodes(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto)request);
             case 30:
-              return impl.rollingUpgrade(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto)request);
+              return impl.finalizeUpgrade(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto)request);
             case 31:
-              return impl.listCorruptFileBlocks(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto)request);
+              return impl.rollingUpgrade(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto)request);
             case 32:
-              return impl.metaSave(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto)request);
+              return impl.listCorruptFileBlocks(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto)request);
             case 33:
-              return impl.getFileInfo(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto)request);
+              return impl.metaSave(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto)request);
             case 34:
-              return impl.addCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto)request);
+              return impl.getFileInfo(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto)request);
             case 35:
-              return impl.modifyCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto)request);
+              return impl.addCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto)request);
             case 36:
-              return impl.removeCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto)request);
+              return impl.modifyCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto)request);
             case 37:
-              return impl.listCacheDirectives(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto)request);
+              return impl.removeCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto)request);
             case 38:
-              return impl.addCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto)request);
+              return impl.listCacheDirectives(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto)request);
             case 39:
-              return impl.modifyCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto)request);
+              return impl.addCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto)request);
             case 40:
-              return impl.removeCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto)request);
+              return impl.modifyCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto)request);
             case 41:
-              return impl.listCachePools(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto)request);
+              return impl.removeCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto)request);
             case 42:
-              return impl.getFileLinkInfo(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto)request);
+              return impl.listCachePools(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto)request);
             case 43:
-              return impl.getContentSummary(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto)request);
+              return impl.getFileLinkInfo(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto)request);
             case 44:
-              return impl.setQuota(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto)request);
+              return impl.getContentSummary(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto)request);
             case 45:
-              return impl.fsync(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto)request);
+              return impl.setQuota(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto)request);
             case 46:
-              return impl.setTimes(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto)request);
+              return impl.fsync(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto)request);
             case 47:
-              return impl.createSymlink(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto)request);
+              return impl.setTimes(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto)request);
             case 48:
-              return impl.getLinkTarget(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto)request);
+              return impl.createSymlink(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto)request);
             case 49:
-              return impl.updateBlockForPipeline(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto)request);
+              return impl.getLinkTarget(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto)request);
             case 50:
-              return impl.updatePipeline(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto)request);
+              return impl.updateBlockForPipeline(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto)request);
             case 51:
-              return impl.getDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto)request);
+              return impl.updatePipeline(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto)request);
             case 52:
-              return impl.renewDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto)request);
+              return impl.getDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto)request);
             case 53:
-              return impl.cancelDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto)request);
+              return impl.renewDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto)request);
             case 54:
-              return impl.setBalancerBandwidth(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto)request);
+              return impl.cancelDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto)request);
             case 55:
-              return impl.getDataEncryptionKey(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto)request);
+              return impl.setBalancerBandwidth(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto)request);
             case 56:
-              return impl.createSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto)request);
+              return impl.getDataEncryptionKey(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto)request);
             case 57:
-              return impl.renameSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto)request);
+              return impl.createSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto)request);
             case 58:
-              return impl.allowSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto)request);
+              return impl.renameSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto)request);
             case 59:
-              return impl.disallowSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto)request);
+              return impl.allowSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto)request);
             case 60:
-              return impl.getSnapshottableDirListing(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto)request);
+              return impl.disallowSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto)request);
             case 61:
-              return impl.deleteSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto)request);
+              return impl.getSnapshottableDirListing(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto)request);
             case 62:
-              return impl.getSnapshotDiffReport(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto)request);
+              return impl.deleteSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto)request);
             case 63:
-              return impl.isFileClosed(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto)request);
+              return impl.getSnapshotDiffReport(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto)request);
             case 64:
-              return impl.modifyAclEntries(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto)request);
+              return impl.isFileClosed(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto)request);
             case 65:
-              return impl.removeAclEntries(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto)request);
+              return impl.modifyAclEntries(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto)request);
             case 66:
-              return impl.removeDefaultAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto)request);
+              return impl.removeAclEntries(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto)request);
             case 67:
-              return impl.removeAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto)request);
+              return impl.removeDefaultAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto)request);
             case 68:
-              return impl.setAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto)request);
+              return impl.removeAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto)request);
             case 69:
+              return impl.setAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto)request);
+            case 70:
               return impl.getAclStatus(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusRequestProto)request);
             default:
               throw new java.lang.AssertionError("Can't get here.");
@@ -78092,142 +78118,144 @@ public final class ClientNamenodeProtocolProtos {
             case 0:
               return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto.getDefaultInstance();
             case 1:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto.getDefaultInstance();
             case 2:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto.getDefaultInstance();
             case 3:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto.getDefaultInstance();
             case 4:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto.getDefaultInstance();
             case 5:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.getDefaultInstance();
             case 6:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto.getDefaultInstance();
             case 7:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto.getDefaultInstance();
             case 8:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto.getDefaultInstance();
             case 9:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto.getDefaultInstance();
             case 10:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto.getDefaultInstance();
             case 11:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto.getDefaultInstance();
             case 12:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto.getDefaultInstance();
             case 13:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto.getDefaultInstance();
             case 14:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto.getDefaultInstance();
             case 15:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto.getDefaultInstance();
             case 16:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto.getDefaultInstance();
             case 17:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto.getDefaultInstance();
             case 18:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto.getDefaultInstance();
             case 19:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto.getDefaultInstance();
             case 20:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto.getDefaultInstance();
             case 21:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto.getDefaultInstance();
             case 22:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto.getDefaultInstance();
             case 23:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto.getDefaultInstance();
             case 24:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto.getDefaultInstance();
             case 25:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto.getDefaultInstance();
             case 26:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto.getDefaultInstance();
             case 27:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto.getDefaultInstance();
             case 28:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto.getDefaultInstance();
             case 29:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto.getDefaultInstance();
             case 30:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto.getDefaultInstance();
             case 31:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto.getDefaultInstance();
             case 32:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto.getDefaultInstance();
             case 33:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto.getDefaultInstance();
             case 34:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto.getDefaultInstance();
             case 35:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto.getDefaultInstance();
             case 36:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto.getDefaultInstance();
             case 37:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto.getDefaultInstance();
             case 38:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto.getDefaultInstance();
             case 39:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto.getDefaultInstance();
             case 40:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto.getDefaultInstance();
             case 41:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto.getDefaultInstance();
             case 42:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto.getDefaultInstance();
             case 43:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto.getDefaultInstance();
             case 44:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto.getDefaultInstance();
             case 45:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto.getDefaultInstance();
             case 46:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto.getDefaultInstance();
             case 47:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto.getDefaultInstance();
             case 48:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto.getDefaultInstance();
             case 49:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto.getDefaultInstance();
             case 50:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto.getDefaultInstance();
             case 51:
-              return org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto.getDefaultInstance();
             case 52:
-              return org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto.getDefaultInstance();
+              return org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto.getDefaultInstance();
             case 53:
-              return org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto.getDefaultInstance();
+              return org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto.getDefaultInstance();
             case 54:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto.getDefaultInstance();
+              return org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto.getDefaultInstance();
             case 55:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto.getDefaultInstance();
             case 56:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto.getDefaultInstance();
             case 57:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto.getDefaultInstance();
             case 58:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto.getDefaultInstance();
             case 59:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto.getDefaultInstance();
             case 60:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto.getDefaultInstance();
             case 61:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto.getDefaultInstance();
             case 62:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto.getDefaultInstance();
             case 63:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto.getDefaultInstance();
             case 64:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto.getDefaultInstance();
             case 65:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto.getDefaultInstance();
             case 66:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto.getDefaultInstance();
             case 67:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto.getDefaultInstance();
             case 68:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto.getDefaultInstance();
             case 69:
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto.getDefaultInstance();
+            case 70:
               return org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusRequestProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
@@ -78246,142 +78274,144 @@ public final class ClientNamenodeProtocolProtos {
             case 0:
               return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.getDefaultInstance();
             case 1:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.getDefaultInstance();
             case 2:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto.getDefaultInstance();
             case 3:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto.getDefaultInstance();
             case 4:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance();
             case 5:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance();
             case 6:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto.getDefaultInstance();
             case 7:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto.getDefaultInstance();
             case 8:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto.getDefaultInstance();
             case 9:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto.getDefaultInstance();
             case 10:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto.getDefaultInstance();
             case 11:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto.getDefaultInstance();
             case 12:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto.getDefaultInstance();
             case 13:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto.getDefaultInstance();
             case 14:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto.getDefaultInstance();
             case 15:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto.getDefaultInstance();
             case 16:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto.getDefaultInstance();
             case 17:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto.getDefaultInstance();
             case 18:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto.getDefaultInstance();
             case 19:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto.getDefaultInstance();
             case 20:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto.getDefaultInstance();
             case 21:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto.getDefaultInstance();
             case 22:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto.getDefaultInstance();
             case 23:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto.getDefaultInstance();
             case 24:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto.getDefaultInstance();
             case 25:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto.getDefaultInstance();
             case 26:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto.getDefaultInstance();
             case 27:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto.getDefaultInstance();
             case 28:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto.getDefaultInstance();
             case 29:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto.getDefaultInstance();
             case 30:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto.getDefaultInstance();
             case 31:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto.getDefaultInstance();
             case 32:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto.getDefaultInstance();
             case 33:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto.getDefaultInstance();
             case 34:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto.getDefaultInstance();
             case 35:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto.getDefaultInstance();
             case 36:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto.getDefaultInstance();
             case 37:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto.getDefaultInstance();
             case 38:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto.getDefaultInstance();
             case 39:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto.getDefaultInstance();
             case 40:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto.getDefaultInstance();
             case 41:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto.getDefaultInstance();
             case 42:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto.getDefaultInstance();
             case 43:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto.getDefaultInstance();
             case 44:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto.getDefaultInstance();
             case 45:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto.getDefaultInstance();
             case 46:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto.getDefaultInstance();
             case 47:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto.getDefaultInstance();
             case 48:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto.getDefaultInstance();
             case 49:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto.getDefaultInstance();
             case 50:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto.getDefaultInstance();
             case 51:
-              return org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto.getDefaultInstance();
             case 52:
-              return org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto.getDefaultInstance();
+              return org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto.getDefaultInstance();
             case 53:
-              return org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto.getDefaultInstance();
+              return org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto.getDefaultInstance();
             case 54:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto.getDefaultInstance();
+              return org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto.getDefaultInstance();
             case 55:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto.getDefaultInstance();
             case 56:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto.getDefaultInstance();
             case 57:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto.getDefaultInstance();
             case 58:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto.getDefaultInstance();
             case 59:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto.getDefaultInstance();
             case 60:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto.getDefaultInstance();
             case 61:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto.getDefaultInstance();
             case 62:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto.getDefaultInstance();
             case 63:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto.getDefaultInstance();
             case 64:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto.getDefaultInstance();
             case 65:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto.getDefaultInstance();
             case 66:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto.getDefaultInstance();
             case 67:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto.getDefaultInstance();
             case 68:
-              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto.getDefaultInstance();
             case 69:
+              return org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto.getDefaultInstance();
+            case 70:
               return org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusResponseProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
@@ -78400,7 +78430,23 @@ public final class ClientNamenodeProtocolProtos {
         com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto> done);
 
     /**
+     * <code>rpc getBlockLocationsNoCreate(.hadoop.hdfs.GetBlockLocationsRequestProto) returns (.hadoop.hdfs.GetBlockLocationsResponseProto);</code>
+     *
+     * <pre>
+     *HDFSRS_RWAPI{
+     * </pre>
+     */
+    public abstract void getBlockLocationsNoCreate(
+        com.google.protobuf.RpcController controller,
+        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto request,
+        com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto> done);
+
+    /**
      * <code>rpc getServerDefaults(.hadoop.hdfs.GetServerDefaultsRequestProto) returns (.hadoop.hdfs.GetServerDefaultsResponseProto);</code>
+     *
+     * <pre>
+     *}
+     * </pre>
      */
     public abstract void getServerDefaults(
         com.google.protobuf.RpcController controller,
@@ -78987,346 +79033,351 @@ public final class ClientNamenodeProtocolProtos {
               done));
           return;
         case 1:
+          this.getBlockLocationsNoCreate(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto)request,
+            com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto>specializeCallback(
+              done));
+          return;
+        case 2:
           this.getServerDefaults(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto>specializeCallback(
               done));
           return;
-        case 2:
+        case 3:
           this.create(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto>specializeCallback(
               done));
           return;
-        case 3:
+        case 4:
           this.append(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto>specializeCallback(
               done));
           return;
-        case 4:
+        case 5:
           this.overwrite(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto>specializeCallback(
               done));
           return;
-        case 5:
+        case 6:
           this.setReplication(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto>specializeCallback(
               done));
           return;
-        case 6:
+        case 7:
           this.setPermission(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto>specializeCallback(
               done));
           return;
-        case 7:
+        case 8:
           this.setOwner(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto>specializeCallback(
               done));
           return;
-        case 8:
+        case 9:
           this.abandonBlock(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto>specializeCallback(
               done));
           return;
-        case 9:
+        case 10:
           this.addBlock(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto>specializeCallback(
               done));
           return;
-        case 10:
+        case 11:
           this.getAdditionalDatanode(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto>specializeCallback(
               done));
           return;
-        case 11:
+        case 12:
           this.complete(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto>specializeCallback(
               done));
           return;
-        case 12:
+        case 13:
           this.reportBadBlocks(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto>specializeCallback(
               done));
           return;
-        case 13:
+        case 14:
           this.concat(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto>specializeCallback(
               done));
           return;
-        case 14:
+        case 15:
           this.rename(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto>specializeCallback(
               done));
           return;
-        case 15:
+        case 16:
           this.rename2(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto>specializeCallback(
               done));
           return;
-        case 16:
+        case 17:
           this.delete(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto>specializeCallback(
               done));
           return;
-        case 17:
+        case 18:
           this.mkdirs(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto>specializeCallback(
               done));
           return;
-        case 18:
+        case 19:
           this.getListing(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto>specializeCallback(
               done));
           return;
-        case 19:
+        case 20:
           this.renewLease(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto>specializeCallback(
               done));
           return;
-        case 20:
+        case 21:
           this.recoverLease(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto>specializeCallback(
               done));
           return;
-        case 21:
+        case 22:
           this.getFsStats(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto>specializeCallback(
               done));
           return;
-        case 22:
+        case 23:
           this.getDatanodeReport(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto>specializeCallback(
               done));
           return;
-        case 23:
+        case 24:
           this.getPreferredBlockSize(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto>specializeCallback(
               done));
           return;
-        case 24:
+        case 25:
           this.setSafeMode(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto>specializeCallback(
               done));
           return;
-        case 25:
+        case 26:
           this.saveNamespace(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto>specializeCallback(
               done));
           return;
-        case 26:
+        case 27:
           this.rollEdits(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto>specializeCallback(
               done));
           return;
-        case 27:
+        case 28:
           this.restoreFailedStorage(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto>specializeCallback(
               done));
           return;
-        case 28:
+        case 29:
           this.refreshNodes(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto>specializeCallback(
               done));
           return;
-        case 29:
+        case 30:
           this.finalizeUpgrade(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto>specializeCallback(
               done));
           return;
-        case 30:
+        case 31:
           this.rollingUpgrade(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto>specializeCallback(
               done));
           return;
-        case 31:
+        case 32:
           this.listCorruptFileBlocks(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto>specializeCallback(
               done));
           return;
-        case 32:
+        case 33:
           this.metaSave(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto>specializeCallback(
               done));
           return;
-        case 33:
+        case 34:
           this.getFileInfo(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto>specializeCallback(
               done));
           return;
-        case 34:
+        case 35:
           this.addCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto>specializeCallback(
               done));
           return;
-        case 35:
+        case 36:
           this.modifyCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto>specializeCallback(
               done));
           return;
-        case 36:
+        case 37:
           this.removeCacheDirective(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto>specializeCallback(
               done));
           return;
-        case 37:
+        case 38:
           this.listCacheDirectives(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto>specializeCallback(
               done));
           return;
-        case 38:
+        case 39:
           this.addCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto>specializeCallback(
               done));
           return;
-        case 39:
+        case 40:
           this.modifyCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto>specializeCallback(
               done));
           return;
-        case 40:
+        case 41:
           this.removeCachePool(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto>specializeCallback(
               done));
           return;
-        case 41:
+        case 42:
           this.listCachePools(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto>specializeCallback(
               done));
           return;
-        case 42:
+        case 43:
           this.getFileLinkInfo(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto>specializeCallback(
               done));
           return;
-        case 43:
+        case 44:
           this.getContentSummary(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto>specializeCallback(
               done));
           return;
-        case 44:
+        case 45:
           this.setQuota(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto>specializeCallback(
               done));
           return;
-        case 45:
+        case 46:
           this.fsync(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto>specializeCallback(
               done));
           return;
-        case 46:
+        case 47:
           this.setTimes(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto>specializeCallback(
               done));
           return;
-        case 47:
+        case 48:
           this.createSymlink(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto>specializeCallback(
               done));
           return;
-        case 48:
+        case 49:
           this.getLinkTarget(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto>specializeCallback(
               done));
           return;
-        case 49:
+        case 50:
           this.updateBlockForPipeline(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto>specializeCallback(
               done));
           return;
-        case 50:
+        case 51:
           this.updatePipeline(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto>specializeCallback(
               done));
           return;
-        case 51:
+        case 52:
           this.getDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto>specializeCallback(
               done));
           return;
-        case 52:
+        case 53:
           this.renewDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto>specializeCallback(
               done));
           return;
-        case 53:
+        case 54:
           this.cancelDelegationToken(controller, (org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto>specializeCallback(
               done));
           return;
-        case 54:
+        case 55:
           this.setBalancerBandwidth(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto>specializeCallback(
               done));
           return;
-        case 55:
+        case 56:
           this.getDataEncryptionKey(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto>specializeCallback(
               done));
           return;
-        case 56:
+        case 57:
           this.createSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto>specializeCallback(
               done));
           return;
-        case 57:
+        case 58:
           this.renameSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto>specializeCallback(
               done));
           return;
-        case 58:
+        case 59:
           this.allowSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto>specializeCallback(
               done));
           return;
-        case 59:
+        case 60:
           this.disallowSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto>specializeCallback(
               done));
           return;
-        case 60:
+        case 61:
           this.getSnapshottableDirListing(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto>specializeCallback(
               done));
           return;
-        case 61:
+        case 62:
           this.deleteSnapshot(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto>specializeCallback(
               done));
           return;
-        case 62:
+        case 63:
           this.getSnapshotDiffReport(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto>specializeCallback(
               done));
           return;
-        case 63:
+        case 64:
           this.isFileClosed(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto>specializeCallback(
               done));
           return;
-        case 64:
+        case 65:
           this.modifyAclEntries(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto>specializeCallback(
               done));
           return;
-        case 65:
+        case 66:
           this.removeAclEntries(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto>specializeCallback(
               done));
           return;
-        case 66:
+        case 67:
           this.removeDefaultAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto>specializeCallback(
               done));
           return;
-        case 67:
+        case 68:
           this.removeAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto>specializeCallback(
               done));
           return;
-        case 68:
+        case 69:
           this.setAcl(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto>specializeCallback(
               done));
           return;
-        case 69:
+        case 70:
           this.getAclStatus(controller, (org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusRequestProto)request,
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusResponseProto>specializeCallback(
               done));
@@ -79348,142 +79399,144 @@ public final class ClientNamenodeProtocolProtos {
         case 0:
           return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto.getDefaultInstance();
         case 1:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto.getDefaultInstance();
         case 2:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto.getDefaultInstance();
         case 3:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto.getDefaultInstance();
         case 4:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto.getDefaultInstance();
         case 5:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.getDefaultInstance();
         case 6:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto.getDefaultInstance();
         case 7:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto.getDefaultInstance();
         case 8:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto.getDefaultInstance();
         case 9:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto.getDefaultInstance();
         case 10:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto.getDefaultInstance();
         case 11:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto.getDefaultInstance();
         case 12:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto.getDefaultInstance();
         case 13:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto.getDefaultInstance();
         case 14:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto.getDefaultInstance();
         case 15:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto.getDefaultInstance();
         case 16:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto.getDefaultInstance();
         case 17:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto.getDefaultInstance();
         case 18:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto.getDefaultInstance();
         case 19:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto.getDefaultInstance();
         case 20:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto.getDefaultInstance();
         case 21:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto.getDefaultInstance();
         case 22:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto.getDefaultInstance();
         case 23:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto.getDefaultInstance();
         case 24:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto.getDefaultInstance();
         case 25:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto.getDefaultInstance();
         case 26:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto.getDefaultInstance();
         case 27:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto.getDefaultInstance();
         case 28:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto.getDefaultInstance();
         case 29:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto.getDefaultInstance();
         case 30:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto.getDefaultInstance();
         case 31:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto.getDefaultInstance();
         case 32:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto.getDefaultInstance();
         case 33:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto.getDefaultInstance();
         case 34:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto.getDefaultInstance();
         case 35:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto.getDefaultInstance();
         case 36:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto.getDefaultInstance();
         case 37:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto.getDefaultInstance();
         case 38:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto.getDefaultInstance();
         case 39:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto.getDefaultInstance();
         case 40:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto.getDefaultInstance();
         case 41:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto.getDefaultInstance();
         case 42:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto.getDefaultInstance();
         case 43:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto.getDefaultInstance();
         case 44:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto.getDefaultInstance();
         case 45:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto.getDefaultInstance();
         case 46:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto.getDefaultInstance();
         case 47:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto.getDefaultInstance();
         case 48:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto.getDefaultInstance();
         case 49:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto.getDefaultInstance();
         case 50:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto.getDefaultInstance();
         case 51:
-          return org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto.getDefaultInstance();
         case 52:
-          return org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto.getDefaultInstance();
+          return org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto.getDefaultInstance();
         case 53:
-          return org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto.getDefaultInstance();
+          return org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto.getDefaultInstance();
         case 54:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto.getDefaultInstance();
+          return org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto.getDefaultInstance();
         case 55:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto.getDefaultInstance();
         case 56:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto.getDefaultInstance();
         case 57:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto.getDefaultInstance();
         case 58:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto.getDefaultInstance();
         case 59:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto.getDefaultInstance();
         case 60:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto.getDefaultInstance();
         case 61:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto.getDefaultInstance();
         case 62:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto.getDefaultInstance();
         case 63:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto.getDefaultInstance();
         case 64:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto.getDefaultInstance();
         case 65:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto.getDefaultInstance();
         case 66:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto.getDefaultInstance();
         case 67:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto.getDefaultInstance();
         case 68:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto.getDefaultInstance();
         case 69:
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto.getDefaultInstance();
+        case 70:
           return org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusRequestProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
@@ -79502,142 +79555,144 @@ public final class ClientNamenodeProtocolProtos {
         case 0:
           return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.getDefaultInstance();
         case 1:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.getDefaultInstance();
         case 2:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto.getDefaultInstance();
         case 3:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto.getDefaultInstance();
         case 4:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance();
         case 5:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance();
         case 6:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto.getDefaultInstance();
         case 7:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto.getDefaultInstance();
         case 8:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto.getDefaultInstance();
         case 9:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto.getDefaultInstance();
         case 10:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto.getDefaultInstance();
         case 11:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto.getDefaultInstance();
         case 12:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto.getDefaultInstance();
         case 13:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto.getDefaultInstance();
         case 14:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto.getDefaultInstance();
         case 15:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto.getDefaultInstance();
         case 16:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto.getDefaultInstance();
         case 17:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto.getDefaultInstance();
         case 18:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto.getDefaultInstance();
         case 19:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto.getDefaultInstance();
         case 20:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto.getDefaultInstance();
         case 21:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto.getDefaultInstance();
         case 22:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto.getDefaultInstance();
         case 23:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto.getDefaultInstance();
         case 24:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto.getDefaultInstance();
         case 25:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto.getDefaultInstance();
         case 26:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto.getDefaultInstance();
         case 27:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto.getDefaultInstance();
         case 28:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto.getDefaultInstance();
         case 29:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto.getDefaultInstance();
         case 30:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto.getDefaultInstance();
         case 31:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto.getDefaultInstance();
         case 32:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto.getDefaultInstance();
         case 33:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto.getDefaultInstance();
         case 34:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto.getDefaultInstance();
         case 35:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto.getDefaultInstance();
         case 36:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto.getDefaultInstance();
         case 37:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto.getDefaultInstance();
         case 38:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto.getDefaultInstance();
         case 39:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto.getDefaultInstance();
         case 40:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto.getDefaultInstance();
         case 41:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto.getDefaultInstance();
         case 42:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto.getDefaultInstance();
         case 43:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto.getDefaultInstance();
         case 44:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto.getDefaultInstance();
         case 45:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto.getDefaultInstance();
         case 46:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto.getDefaultInstance();
         case 47:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto.getDefaultInstance();
         case 48:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto.getDefaultInstance();
         case 49:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto.getDefaultInstance();
         case 50:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto.getDefaultInstance();
         case 51:
-          return org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto.getDefaultInstance();
         case 52:
-          return org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto.getDefaultInstance();
+          return org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto.getDefaultInstance();
         case 53:
-          return org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto.getDefaultInstance();
+          return org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto.getDefaultInstance();
         case 54:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto.getDefaultInstance();
+          return org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto.getDefaultInstance();
         case 55:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto.getDefaultInstance();
         case 56:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto.getDefaultInstance();
         case 57:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto.getDefaultInstance();
         case 58:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto.getDefaultInstance();
         case 59:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto.getDefaultInstance();
         case 60:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto.getDefaultInstance();
         case 61:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto.getDefaultInstance();
         case 62:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto.getDefaultInstance();
         case 63:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto.getDefaultInstance();
         case 64:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto.getDefaultInstance();
         case 65:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto.getDefaultInstance();
         case 66:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto.getDefaultInstance();
         case 67:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto.getDefaultInstance();
         case 68:
-          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto.getDefaultInstance();
         case 69:
+          return org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto.getDefaultInstance();
+        case 70:
           return org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusResponseProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
@@ -79675,12 +79730,27 @@ public final class ClientNamenodeProtocolProtos {
             org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.getDefaultInstance()));
       }
 
+      public  void getBlockLocationsNoCreate(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto> done) {
+        channel.callMethod(
+          getDescriptor().getMethods().get(1),
+          controller,
+          request,
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.getDefaultInstance(),
+          com.google.protobuf.RpcUtil.generalizeCallback(
+            done,
+            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.class,
+            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.getDefaultInstance()));
+      }
+
       public  void getServerDefaults(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(1),
+          getDescriptor().getMethods().get(2),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto.getDefaultInstance(),
@@ -79695,7 +79765,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(2),
+          getDescriptor().getMethods().get(3),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto.getDefaultInstance(),
@@ -79710,7 +79780,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(3),
+          getDescriptor().getMethods().get(4),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance(),
@@ -79725,7 +79795,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(4),
+          getDescriptor().getMethods().get(5),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance(),
@@ -79740,7 +79810,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(5),
+          getDescriptor().getMethods().get(6),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto.getDefaultInstance(),
@@ -79755,7 +79825,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(6),
+          getDescriptor().getMethods().get(7),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto.getDefaultInstance(),
@@ -79770,7 +79840,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(7),
+          getDescriptor().getMethods().get(8),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto.getDefaultInstance(),
@@ -79785,7 +79855,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(8),
+          getDescriptor().getMethods().get(9),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto.getDefaultInstance(),
@@ -79800,7 +79870,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(9),
+          getDescriptor().getMethods().get(10),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto.getDefaultInstance(),
@@ -79815,7 +79885,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(10),
+          getDescriptor().getMethods().get(11),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto.getDefaultInstance(),
@@ -79830,7 +79900,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(11),
+          getDescriptor().getMethods().get(12),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto.getDefaultInstance(),
@@ -79845,7 +79915,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(12),
+          getDescriptor().getMethods().get(13),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto.getDefaultInstance(),
@@ -79860,7 +79930,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(13),
+          getDescriptor().getMethods().get(14),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto.getDefaultInstance(),
@@ -79875,7 +79945,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(14),
+          getDescriptor().getMethods().get(15),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto.getDefaultInstance(),
@@ -79890,7 +79960,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(15),
+          getDescriptor().getMethods().get(16),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto.getDefaultInstance(),
@@ -79905,7 +79975,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(16),
+          getDescriptor().getMethods().get(17),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto.getDefaultInstance(),
@@ -79920,7 +79990,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(17),
+          getDescriptor().getMethods().get(18),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto.getDefaultInstance(),
@@ -79935,7 +80005,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(18),
+          getDescriptor().getMethods().get(19),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto.getDefaultInstance(),
@@ -79950,7 +80020,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(19),
+          getDescriptor().getMethods().get(20),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto.getDefaultInstance(),
@@ -79965,7 +80035,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(20),
+          getDescriptor().getMethods().get(21),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto.getDefaultInstance(),
@@ -79980,7 +80050,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(21),
+          getDescriptor().getMethods().get(22),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto.getDefaultInstance(),
@@ -79995,7 +80065,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(22),
+          getDescriptor().getMethods().get(23),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto.getDefaultInstance(),
@@ -80010,7 +80080,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(23),
+          getDescriptor().getMethods().get(24),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto.getDefaultInstance(),
@@ -80025,7 +80095,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(24),
+          getDescriptor().getMethods().get(25),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto.getDefaultInstance(),
@@ -80040,7 +80110,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(25),
+          getDescriptor().getMethods().get(26),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto.getDefaultInstance(),
@@ -80055,7 +80125,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(26),
+          getDescriptor().getMethods().get(27),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto.getDefaultInstance(),
@@ -80070,7 +80140,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(27),
+          getDescriptor().getMethods().get(28),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto.getDefaultInstance(),
@@ -80085,7 +80155,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(28),
+          getDescriptor().getMethods().get(29),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto.getDefaultInstance(),
@@ -80100,7 +80170,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(29),
+          getDescriptor().getMethods().get(30),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto.getDefaultInstance(),
@@ -80115,7 +80185,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(30),
+          getDescriptor().getMethods().get(31),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto.getDefaultInstance(),
@@ -80130,7 +80200,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(31),
+          getDescriptor().getMethods().get(32),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto.getDefaultInstance(),
@@ -80145,7 +80215,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(32),
+          getDescriptor().getMethods().get(33),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto.getDefaultInstance(),
@@ -80160,7 +80230,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(33),
+          getDescriptor().getMethods().get(34),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto.getDefaultInstance(),
@@ -80175,7 +80245,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(34),
+          getDescriptor().getMethods().get(35),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto.getDefaultInstance(),
@@ -80190,7 +80260,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(35),
+          getDescriptor().getMethods().get(36),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto.getDefaultInstance(),
@@ -80205,7 +80275,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(36),
+          getDescriptor().getMethods().get(37),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto.getDefaultInstance(),
@@ -80220,7 +80290,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(37),
+          getDescriptor().getMethods().get(38),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto.getDefaultInstance(),
@@ -80235,7 +80305,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(38),
+          getDescriptor().getMethods().get(39),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto.getDefaultInstance(),
@@ -80250,7 +80320,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(39),
+          getDescriptor().getMethods().get(40),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto.getDefaultInstance(),
@@ -80265,7 +80335,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(40),
+          getDescriptor().getMethods().get(41),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto.getDefaultInstance(),
@@ -80280,7 +80350,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(41),
+          getDescriptor().getMethods().get(42),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto.getDefaultInstance(),
@@ -80295,7 +80365,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(42),
+          getDescriptor().getMethods().get(43),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto.getDefaultInstance(),
@@ -80310,7 +80380,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(43),
+          getDescriptor().getMethods().get(44),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto.getDefaultInstance(),
@@ -80325,7 +80395,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(44),
+          getDescriptor().getMethods().get(45),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto.getDefaultInstance(),
@@ -80340,7 +80410,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(45),
+          getDescriptor().getMethods().get(46),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto.getDefaultInstance(),
@@ -80355,7 +80425,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(46),
+          getDescriptor().getMethods().get(47),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto.getDefaultInstance(),
@@ -80370,7 +80440,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(47),
+          getDescriptor().getMethods().get(48),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto.getDefaultInstance(),
@@ -80385,7 +80455,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(48),
+          getDescriptor().getMethods().get(49),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto.getDefaultInstance(),
@@ -80400,7 +80470,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(49),
+          getDescriptor().getMethods().get(50),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto.getDefaultInstance(),
@@ -80415,7 +80485,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(50),
+          getDescriptor().getMethods().get(51),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto.getDefaultInstance(),
@@ -80430,7 +80500,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(51),
+          getDescriptor().getMethods().get(52),
           controller,
           request,
           org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto.getDefaultInstance(),
@@ -80445,7 +80515,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(52),
+          getDescriptor().getMethods().get(53),
           controller,
           request,
           org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto.getDefaultInstance(),
@@ -80460,7 +80530,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(53),
+          getDescriptor().getMethods().get(54),
           controller,
           request,
           org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto.getDefaultInstance(),
@@ -80475,7 +80545,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(54),
+          getDescriptor().getMethods().get(55),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto.getDefaultInstance(),
@@ -80490,7 +80560,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(55),
+          getDescriptor().getMethods().get(56),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto.getDefaultInstance(),
@@ -80505,7 +80575,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(56),
+          getDescriptor().getMethods().get(57),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto.getDefaultInstance(),
@@ -80520,7 +80590,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(57),
+          getDescriptor().getMethods().get(58),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto.getDefaultInstance(),
@@ -80535,7 +80605,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(58),
+          getDescriptor().getMethods().get(59),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto.getDefaultInstance(),
@@ -80550,7 +80620,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(59),
+          getDescriptor().getMethods().get(60),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto.getDefaultInstance(),
@@ -80565,7 +80635,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(60),
+          getDescriptor().getMethods().get(61),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto.getDefaultInstance(),
@@ -80580,7 +80650,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(61),
+          getDescriptor().getMethods().get(62),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto.getDefaultInstance(),
@@ -80595,7 +80665,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(62),
+          getDescriptor().getMethods().get(63),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto.getDefaultInstance(),
@@ -80610,7 +80680,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(63),
+          getDescriptor().getMethods().get(64),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto.getDefaultInstance(),
@@ -80625,7 +80695,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(64),
+          getDescriptor().getMethods().get(65),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto.getDefaultInstance(),
@@ -80640,7 +80710,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(65),
+          getDescriptor().getMethods().get(66),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto.getDefaultInstance(),
@@ -80655,7 +80725,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(66),
+          getDescriptor().getMethods().get(67),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto.getDefaultInstance(),
@@ -80670,7 +80740,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(67),
+          getDescriptor().getMethods().get(68),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto.getDefaultInstance(),
@@ -80685,7 +80755,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(68),
+          getDescriptor().getMethods().get(69),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto.getDefaultInstance(),
@@ -80700,7 +80770,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusResponseProto> done) {
         channel.callMethod(
-          getDescriptor().getMethods().get(69),
+          getDescriptor().getMethods().get(70),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusResponseProto.getDefaultInstance(),
@@ -80718,6 +80788,11 @@ public final class ClientNamenodeProtocolProtos {
 
     public interface BlockingInterface {
       public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto getBlockLocations(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto request)
+          throws com.google.protobuf.ServiceException;
+
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto getBlockLocationsNoCreate(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -81087,12 +81162,24 @@ public final class ClientNamenodeProtocolProtos {
       }
 
 
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto getBlockLocationsNoCreate(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto request)
+          throws com.google.protobuf.ServiceException {
+        return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto) channel.callBlockingMethod(
+          getDescriptor().getMethods().get(1),
+          controller,
+          request,
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto.getDefaultInstance());
+      }
+
+
       public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto getServerDefaults(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(1),
+          getDescriptor().getMethods().get(2),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetServerDefaultsResponseProto.getDefaultInstance());
@@ -81104,7 +81191,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(2),
+          getDescriptor().getMethods().get(3),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto.getDefaultInstance());
@@ -81116,7 +81203,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(3),
+          getDescriptor().getMethods().get(4),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance());
@@ -81128,7 +81215,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(4),
+          getDescriptor().getMethods().get(5),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance());
@@ -81140,7 +81227,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(5),
+          getDescriptor().getMethods().get(6),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto.getDefaultInstance());
@@ -81152,7 +81239,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(6),
+          getDescriptor().getMethods().get(7),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetPermissionResponseProto.getDefaultInstance());
@@ -81164,7 +81251,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(7),
+          getDescriptor().getMethods().get(8),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetOwnerResponseProto.getDefaultInstance());
@@ -81176,7 +81263,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(8),
+          getDescriptor().getMethods().get(9),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto.getDefaultInstance());
@@ -81188,7 +81275,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(9),
+          getDescriptor().getMethods().get(10),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto.getDefaultInstance());
@@ -81200,7 +81287,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(10),
+          getDescriptor().getMethods().get(11),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeResponseProto.getDefaultInstance());
@@ -81212,7 +81299,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(11),
+          getDescriptor().getMethods().get(12),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto.getDefaultInstance());
@@ -81224,7 +81311,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(12),
+          getDescriptor().getMethods().get(13),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksResponseProto.getDefaultInstance());
@@ -81236,7 +81323,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(13),
+          getDescriptor().getMethods().get(14),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto.getDefaultInstance());
@@ -81248,7 +81335,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(14),
+          getDescriptor().getMethods().get(15),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto.getDefaultInstance());
@@ -81260,7 +81347,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(15),
+          getDescriptor().getMethods().get(16),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto.getDefaultInstance());
@@ -81272,7 +81359,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(16),
+          getDescriptor().getMethods().get(17),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto.getDefaultInstance());
@@ -81284,7 +81371,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(17),
+          getDescriptor().getMethods().get(18),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto.getDefaultInstance());
@@ -81296,7 +81383,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(18),
+          getDescriptor().getMethods().get(19),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetListingResponseProto.getDefaultInstance());
@@ -81308,7 +81395,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(19),
+          getDescriptor().getMethods().get(20),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseResponseProto.getDefaultInstance());
@@ -81320,7 +81407,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(20),
+          getDescriptor().getMethods().get(21),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto.getDefaultInstance());
@@ -81332,7 +81419,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatusRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(21),
+          getDescriptor().getMethods().get(22),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFsStatsResponseProto.getDefaultInstance());
@@ -81344,7 +81431,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(22),
+          getDescriptor().getMethods().get(23),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDatanodeReportResponseProto.getDefaultInstance());
@@ -81356,7 +81443,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(23),
+          getDescriptor().getMethods().get(24),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetPreferredBlockSizeResponseProto.getDefaultInstance());
@@ -81368,7 +81455,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(24),
+          getDescriptor().getMethods().get(25),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetSafeModeResponseProto.getDefaultInstance());
@@ -81380,7 +81467,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(25),
+          getDescriptor().getMethods().get(26),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SaveNamespaceResponseProto.getDefaultInstance());
@@ -81392,7 +81479,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(26),
+          getDescriptor().getMethods().get(27),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollEditsResponseProto.getDefaultInstance());
@@ -81404,7 +81491,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(27),
+          getDescriptor().getMethods().get(28),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RestoreFailedStorageResponseProto.getDefaultInstance());
@@ -81416,7 +81503,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(28),
+          getDescriptor().getMethods().get(29),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesResponseProto.getDefaultInstance());
@@ -81428,7 +81515,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(29),
+          getDescriptor().getMethods().get(30),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeResponseProto.getDefaultInstance());
@@ -81440,7 +81527,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(30),
+          getDescriptor().getMethods().get(31),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RollingUpgradeResponseProto.getDefaultInstance());
@@ -81452,7 +81539,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(31),
+          getDescriptor().getMethods().get(32),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksResponseProto.getDefaultInstance());
@@ -81464,7 +81551,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(32),
+          getDescriptor().getMethods().get(33),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveResponseProto.getDefaultInstance());
@@ -81476,7 +81563,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(33),
+          getDescriptor().getMethods().get(34),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileInfoResponseProto.getDefaultInstance());
@@ -81488,7 +81575,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(34),
+          getDescriptor().getMethods().get(35),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveResponseProto.getDefaultInstance());
@@ -81500,7 +81587,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(35),
+          getDescriptor().getMethods().get(36),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto.getDefaultInstance());
@@ -81512,7 +81599,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(36),
+          getDescriptor().getMethods().get(37),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveResponseProto.getDefaultInstance());
@@ -81524,7 +81611,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(37),
+          getDescriptor().getMethods().get(38),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCacheDirectivesResponseProto.getDefaultInstance());
@@ -81536,7 +81623,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(38),
+          getDescriptor().getMethods().get(39),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolResponseProto.getDefaultInstance());
@@ -81548,7 +81635,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(39),
+          getDescriptor().getMethods().get(40),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto.getDefaultInstance());
@@ -81560,7 +81647,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(40),
+          getDescriptor().getMethods().get(41),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolResponseProto.getDefaultInstance());
@@ -81572,7 +81659,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(41),
+          getDescriptor().getMethods().get(42),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCachePoolsResponseProto.getDefaultInstance());
@@ -81584,7 +81671,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(42),
+          getDescriptor().getMethods().get(43),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetFileLinkInfoResponseProto.getDefaultInstance());
@@ -81596,7 +81683,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(43),
+          getDescriptor().getMethods().get(44),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetContentSummaryResponseProto.getDefaultInstance());
@@ -81608,7 +81695,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(44),
+          getDescriptor().getMethods().get(45),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetQuotaResponseProto.getDefaultInstance());
@@ -81620,7 +81707,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(45),
+          getDescriptor().getMethods().get(46),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto.getDefaultInstance());
@@ -81632,7 +81719,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(46),
+          getDescriptor().getMethods().get(47),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetTimesResponseProto.getDefaultInstance());
@@ -81644,7 +81731,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(47),
+          getDescriptor().getMethods().get(48),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkResponseProto.getDefaultInstance());
@@ -81656,7 +81743,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(48),
+          getDescriptor().getMethods().get(49),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetLinkTargetResponseProto.getDefaultInstance());
@@ -81668,7 +81755,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(49),
+          getDescriptor().getMethods().get(50),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdateBlockForPipelineResponseProto.getDefaultInstance());
@@ -81680,7 +81767,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(50),
+          getDescriptor().getMethods().get(51),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.UpdatePipelineResponseProto.getDefaultInstance());
@@ -81692,7 +81779,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(51),
+          getDescriptor().getMethods().get(52),
           controller,
           request,
           org.apache.hadoop.security.proto.SecurityProtos.GetDelegationTokenResponseProto.getDefaultInstance());
@@ -81704,7 +81791,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(52),
+          getDescriptor().getMethods().get(53),
           controller,
           request,
           org.apache.hadoop.security.proto.SecurityProtos.RenewDelegationTokenResponseProto.getDefaultInstance());
@@ -81716,7 +81803,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(53),
+          getDescriptor().getMethods().get(54),
           controller,
           request,
           org.apache.hadoop.security.proto.SecurityProtos.CancelDelegationTokenResponseProto.getDefaultInstance());
@@ -81728,7 +81815,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(54),
+          getDescriptor().getMethods().get(55),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetBalancerBandwidthResponseProto.getDefaultInstance());
@@ -81740,7 +81827,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(55),
+          getDescriptor().getMethods().get(56),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetDataEncryptionKeyResponseProto.getDefaultInstance());
@@ -81752,7 +81839,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(56),
+          getDescriptor().getMethods().get(57),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotResponseProto.getDefaultInstance());
@@ -81764,7 +81851,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(57),
+          getDescriptor().getMethods().get(58),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotResponseProto.getDefaultInstance());
@@ -81776,7 +81863,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(58),
+          getDescriptor().getMethods().get(59),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotResponseProto.getDefaultInstance());
@@ -81788,7 +81875,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(59),
+          getDescriptor().getMethods().get(60),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotResponseProto.getDefaultInstance());
@@ -81800,7 +81887,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(60),
+          getDescriptor().getMethods().get(61),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshottableDirListingResponseProto.getDefaultInstance());
@@ -81812,7 +81899,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(61),
+          getDescriptor().getMethods().get(62),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotResponseProto.getDefaultInstance());
@@ -81824,7 +81911,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(62),
+          getDescriptor().getMethods().get(63),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetSnapshotDiffReportResponseProto.getDefaultInstance());
@@ -81836,7 +81923,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(63),
+          getDescriptor().getMethods().get(64),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.IsFileClosedResponseProto.getDefaultInstance());
@@ -81848,7 +81935,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(64),
+          getDescriptor().getMethods().get(65),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.ModifyAclEntriesResponseProto.getDefaultInstance());
@@ -81860,7 +81947,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(65),
+          getDescriptor().getMethods().get(66),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclEntriesResponseProto.getDefaultInstance());
@@ -81872,7 +81959,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(66),
+          getDescriptor().getMethods().get(67),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclResponseProto.getDefaultInstance());
@@ -81884,7 +81971,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(67),
+          getDescriptor().getMethods().get(68),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclResponseProto.getDefaultInstance());
@@ -81896,7 +81983,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(68),
+          getDescriptor().getMethods().get(69),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclResponseProto.getDefaultInstance());
@@ -81908,7 +81995,7 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusResponseProto) channel.callBlockingMethod(
-          getDescriptor().getMethods().get(69),
+          getDescriptor().getMethods().get(70),
           controller,
           request,
           org.apache.hadoop.hdfs.protocol.proto.AclProtos.GetAclStatusResponseProto.getDefaultInstance());
@@ -82813,184 +82900,187 @@ public final class ClientNamenodeProtocolProtos {
       "LEAVE\020\001\022\022\n\016SAFEMODE_ENTER\020\002\022\020\n\014SAFEMODE_" +
       "GET\020\003*?\n\031RollingUpgradeActionProto\022\t\n\005QU" +
       "ERY\020\001\022\t\n\005START\020\002\022\014\n\010FINALIZE\020\003*\033\n\016CacheF" +
-      "lagProto\022\t\n\005FORCE\020\0012\3526\n\026ClientNamenodePr" +
+      "lagProto\022\t\n\005FORCE\020\0012\3407\n\026ClientNamenodePr" +
       "otocol\022l\n\021getBlockLocations\022*.hadoop.hdf" +
       "s.GetBlockLocationsRequestProto\032+.hadoop" +
-      ".hdfs.GetBlockLocationsResponseProto\022l\n\021" +
-      "getServerDefaults\022*.hadoop.hdfs.GetServe",
-      "rDefaultsRequestProto\032+.hadoop.hdfs.GetS" +
-      "erverDefaultsResponseProto\022K\n\006create\022\037.h" +
-      "adoop.hdfs.CreateRequestProto\032 .hadoop.h" +
-      "dfs.CreateResponseProto\022K\n\006append\022\037.hado" +
-      "op.hdfs.AppendRequestProto\032 .hadoop.hdfs" +
-      ".AppendResponseProto\022T\n\toverwrite\022\".hado" +
-      "op.hdfs.OverwriteRequestProto\032#.hadoop.h" +
-      "dfs.OverwriteResponseProto\022c\n\016setReplica" +
-      "tion\022\'.hadoop.hdfs.SetReplicationRequest" +
-      "Proto\032(.hadoop.hdfs.SetReplicationRespon",
-      "seProto\022`\n\rsetPermission\022&.hadoop.hdfs.S" +
-      "etPermissionRequestProto\032\'.hadoop.hdfs.S" +
-      "etPermissionResponseProto\022Q\n\010setOwner\022!." +
-      "hadoop.hdfs.SetOwnerRequestProto\032\".hadoo" +
-      "p.hdfs.SetOwnerResponseProto\022]\n\014abandonB" +
-      "lock\022%.hadoop.hdfs.AbandonBlockRequestPr" +
-      "oto\032&.hadoop.hdfs.AbandonBlockResponsePr" +
-      "oto\022Q\n\010addBlock\022!.hadoop.hdfs.AddBlockRe" +
-      "questProto\032\".hadoop.hdfs.AddBlockRespons" +
-      "eProto\022x\n\025getAdditionalDatanode\022..hadoop",
-      ".hdfs.GetAdditionalDatanodeRequestProto\032" +
-      "/.hadoop.hdfs.GetAdditionalDatanodeRespo" +
-      "nseProto\022Q\n\010complete\022!.hadoop.hdfs.Compl" +
-      "eteRequestProto\032\".hadoop.hdfs.CompleteRe" +
-      "sponseProto\022f\n\017reportBadBlocks\022(.hadoop." +
-      "hdfs.ReportBadBlocksRequestProto\032).hadoo" +
-      "p.hdfs.ReportBadBlocksResponseProto\022K\n\006c" +
-      "oncat\022\037.hadoop.hdfs.ConcatRequestProto\032 " +
-      ".hadoop.hdfs.ConcatResponseProto\022K\n\006rena" +
-      "me\022\037.hadoop.hdfs.RenameRequestProto\032 .ha",
-      "doop.hdfs.RenameResponseProto\022N\n\007rename2" +
-      "\022 .hadoop.hdfs.Rename2RequestProto\032!.had" +
-      "oop.hdfs.Rename2ResponseProto\022K\n\006delete\022" +
-      "\037.hadoop.hdfs.DeleteRequestProto\032 .hadoo" +
-      "p.hdfs.DeleteResponseProto\022K\n\006mkdirs\022\037.h" +
-      "adoop.hdfs.MkdirsRequestProto\032 .hadoop.h" +
-      "dfs.MkdirsResponseProto\022W\n\ngetListing\022#." +
-      "hadoop.hdfs.GetListingRequestProto\032$.had" +
-      "oop.hdfs.GetListingResponseProto\022W\n\nrene" +
-      "wLease\022#.hadoop.hdfs.RenewLeaseRequestPr",
-      "oto\032$.hadoop.hdfs.RenewLeaseResponseProt" +
-      "o\022]\n\014recoverLease\022%.hadoop.hdfs.RecoverL" +
-      "easeRequestProto\032&.hadoop.hdfs.RecoverLe" +
-      "aseResponseProto\022X\n\ngetFsStats\022$.hadoop." +
-      "hdfs.GetFsStatusRequestProto\032$.hadoop.hd" +
-      "fs.GetFsStatsResponseProto\022l\n\021getDatanod" +
-      "eReport\022*.hadoop.hdfs.GetDatanodeReportR" +
-      "equestProto\032+.hadoop.hdfs.GetDatanodeRep" +
-      "ortResponseProto\022x\n\025getPreferredBlockSiz" +
-      "e\022..hadoop.hdfs.GetPreferredBlockSizeReq",
-      "uestProto\032/.hadoop.hdfs.GetPreferredBloc" +
-      "kSizeResponseProto\022Z\n\013setSafeMode\022$.hado" +
-      "op.hdfs.SetSafeModeRequestProto\032%.hadoop" +
-      ".hdfs.SetSafeModeResponseProto\022`\n\rsaveNa" +
-      "mespace\022&.hadoop.hdfs.SaveNamespaceReque" +
-      "stProto\032\'.hadoop.hdfs.SaveNamespaceRespo" +
-      "nseProto\022T\n\trollEdits\022\".hadoop.hdfs.Roll" +
-      "EditsRequestProto\032#.hadoop.hdfs.RollEdit" +
-      "sResponseProto\022u\n\024restoreFailedStorage\022-" +
-      ".hadoop.hdfs.RestoreFailedStorageRequest",
-      "Proto\032..hadoop.hdfs.RestoreFailedStorage" +
-      "ResponseProto\022]\n\014refreshNodes\022%.hadoop.h" +
-      "dfs.RefreshNodesRequestProto\032&.hadoop.hd" +
-      "fs.RefreshNodesResponseProto\022f\n\017finalize" +
-      "Upgrade\022(.hadoop.hdfs.FinalizeUpgradeReq" +
-      "uestProto\032).hadoop.hdfs.FinalizeUpgradeR" +
-      "esponseProto\022c\n\016rollingUpgrade\022\'.hadoop." +
-      "hdfs.RollingUpgradeRequestProto\032(.hadoop" +
-      ".hdfs.RollingUpgradeResponseProto\022x\n\025lis" +
-      "tCorruptFileBlocks\022..hadoop.hdfs.ListCor",
-      "ruptFileBlocksRequestProto\032/.hadoop.hdfs" +
-      ".ListCorruptFileBlocksResponseProto\022Q\n\010m" +
-      "etaSave\022!.hadoop.hdfs.MetaSaveRequestPro" +
-      "to\032\".hadoop.hdfs.MetaSaveResponseProto\022Z" +
-      "\n\013getFileInfo\022$.hadoop.hdfs.GetFileInfoR" +
-      "equestProto\032%.hadoop.hdfs.GetFileInfoRes" +
-      "ponseProto\022l\n\021addCacheDirective\022*.hadoop" +
-      ".hdfs.AddCacheDirectiveRequestProto\032+.ha" +
-      "doop.hdfs.AddCacheDirectiveResponseProto" +
-      "\022u\n\024modifyCacheDirective\022-.hadoop.hdfs.M",
-      "odifyCacheDirectiveRequestProto\032..hadoop" +
-      ".hdfs.ModifyCacheDirectiveResponseProto\022" +
-      "u\n\024removeCacheDirective\022-.hadoop.hdfs.Re" +
-      "moveCacheDirectiveRequestProto\032..hadoop." +
-      "hdfs.RemoveCacheDirectiveResponseProto\022r" +
-      "\n\023listCacheDirectives\022,.hadoop.hdfs.List" +
-      "CacheDirectivesRequestProto\032-.hadoop.hdf" +
-      "s.ListCacheDirectivesResponseProto\022]\n\014ad" +
-      "dCachePool\022%.hadoop.hdfs.AddCachePoolReq" +
-      "uestProto\032&.hadoop.hdfs.AddCachePoolResp",
-      "onseProto\022f\n\017modifyCachePool\022(.hadoop.hd" +
-      "fs.ModifyCachePoolRequestProto\032).hadoop." +
-      "hdfs.ModifyCachePoolResponseProto\022f\n\017rem" +
-      "oveCachePool\022(.hadoop.hdfs.RemoveCachePo" +
-      "olRequestProto\032).hadoop.hdfs.RemoveCache" +
-      "PoolResponseProto\022c\n\016listCachePools\022\'.ha" +
-      "doop.hdfs.ListCachePoolsRequestProto\032(.h" +
-      "adoop.hdfs.ListCachePoolsResponseProto\022f" +
-      "\n\017getFileLinkInfo\022(.hadoop.hdfs.GetFileL" +
-      "inkInfoRequestProto\032).hadoop.hdfs.GetFil",
-      "eLinkInfoResponseProto\022l\n\021getContentSumm" +
-      "ary\022*.hadoop.hdfs.GetContentSummaryReque" +
-      "stProto\032+.hadoop.hdfs.GetContentSummaryR" +
-      "esponseProto\022Q\n\010setQuota\022!.hadoop.hdfs.S" +
-      "etQuotaRequestProto\032\".hadoop.hdfs.SetQuo" +
-      "taResponseProto\022H\n\005fsync\022\036.hadoop.hdfs.F" +
-      "syncRequestProto\032\037.hadoop.hdfs.FsyncResp" +
-      "onseProto\022Q\n\010setTimes\022!.hadoop.hdfs.SetT" +
-      "imesRequestProto\032\".hadoop.hdfs.SetTimesR" +
-      "esponseProto\022`\n\rcreateSymlink\022&.hadoop.h",
-      "dfs.CreateSymlinkRequestProto\032\'.hadoop.h" +
-      "dfs.CreateSymlinkResponseProto\022`\n\rgetLin" +
-      "kTarget\022&.hadoop.hdfs.GetLinkTargetReque" +
-      "stProto\032\'.hadoop.hdfs.GetLinkTargetRespo" +
-      "nseProto\022{\n\026updateBlockForPipeline\022/.had" +
-      "oop.hdfs.UpdateBlockForPipelineRequestPr" +
-      "oto\0320.hadoop.hdfs.UpdateBlockForPipeline" +
-      "ResponseProto\022c\n\016updatePipeline\022\'.hadoop" +
-      ".hdfs.UpdatePipelineRequestProto\032(.hadoo" +
-      "p.hdfs.UpdatePipelineResponseProto\022s\n\022ge",
-      "tDelegationToken\022-.hadoop.common.GetDele" +
-      "gationTokenRequestProto\032..hadoop.common." +
-      "GetDelegationTokenResponseProto\022y\n\024renew" +
-      "DelegationToken\022/.hadoop.common.RenewDel" +
-      "egationTokenRequestProto\0320.hadoop.common" +
-      ".RenewDelegationTokenResponseProto\022|\n\025ca" +
-      "ncelDelegationToken\0220.hadoop.common.Canc" +
-      "elDelegationTokenRequestProto\0321.hadoop.c" +
-      "ommon.CancelDelegationTokenResponseProto" +
-      "\022u\n\024setBalancerBandwidth\022-.hadoop.hdfs.S",
-      "etBalancerBandwidthRequestProto\032..hadoop" +
-      ".hdfs.SetBalancerBandwidthResponseProto\022" +
-      "u\n\024getDataEncryptionKey\022-.hadoop.hdfs.Ge" +
-      "tDataEncryptionKeyRequestProto\032..hadoop." +
-      "hdfs.GetDataEncryptionKeyResponseProto\022c" +
-      "\n\016createSnapshot\022\'.hadoop.hdfs.CreateSna" +
-      "pshotRequestProto\032(.hadoop.hdfs.CreateSn" +
-      "apshotResponseProto\022c\n\016renameSnapshot\022\'." +
-      "hadoop.hdfs.RenameSnapshotRequestProto\032(" +
-      ".hadoop.hdfs.RenameSnapshotResponseProto",
-      "\022`\n\rallowSnapshot\022&.hadoop.hdfs.AllowSna" +
-      "pshotRequestProto\032\'.hadoop.hdfs.AllowSna" +
-      "pshotResponseProto\022i\n\020disallowSnapshot\022)" +
-      ".hadoop.hdfs.DisallowSnapshotRequestProt" +
-      "o\032*.hadoop.hdfs.DisallowSnapshotResponse" +
-      "Proto\022\207\001\n\032getSnapshottableDirListing\0223.h" +
-      "adoop.hdfs.GetSnapshottableDirListingReq" +
-      "uestProto\0324.hadoop.hdfs.GetSnapshottable" +
-      "DirListingResponseProto\022c\n\016deleteSnapsho" +
-      "t\022\'.hadoop.hdfs.DeleteSnapshotRequestPro",
-      "to\032(.hadoop.hdfs.DeleteSnapshotResponseP" +
-      "roto\022x\n\025getSnapshotDiffReport\022..hadoop.h" +
-      "dfs.GetSnapshotDiffReportRequestProto\032/." +
-      "hadoop.hdfs.GetSnapshotDiffReportRespons" +
-      "eProto\022]\n\014isFileClosed\022%.hadoop.hdfs.IsF" +
-      "ileClosedRequestProto\032&.hadoop.hdfs.IsFi" +
-      "leClosedResponseProto\022i\n\020modifyAclEntrie" +
-      "s\022).hadoop.hdfs.ModifyAclEntriesRequestP" +
-      "roto\032*.hadoop.hdfs.ModifyAclEntriesRespo" +
-      "nseProto\022i\n\020removeAclEntries\022).hadoop.hd",
-      "fs.RemoveAclEntriesRequestProto\032*.hadoop" +
-      ".hdfs.RemoveAclEntriesResponseProto\022i\n\020r" +
-      "emoveDefaultAcl\022).hadoop.hdfs.RemoveDefa" +
-      "ultAclRequestProto\032*.hadoop.hdfs.RemoveD" +
-      "efaultAclResponseProto\022T\n\tremoveAcl\022\".ha" +
-      "doop.hdfs.RemoveAclRequestProto\032#.hadoop" +
-      ".hdfs.RemoveAclResponseProto\022K\n\006setAcl\022\037" +
-      ".hadoop.hdfs.SetAclRequestProto\032 .hadoop" +
-      ".hdfs.SetAclResponseProto\022]\n\014getAclStatu" +
-      "s\022%.hadoop.hdfs.GetAclStatusRequestProto",
-      "\032&.hadoop.hdfs.GetAclStatusResponseProto" +
-      "BK\n%org.apache.hadoop.hdfs.protocol.prot" +
-      "oB\034ClientNamenodeProtocolProtos\210\001\001\240\001\001"
+      ".hdfs.GetBlockLocationsResponseProto\022t\n\031" +
+      "getBlockLocationsNoCreate\022*.hadoop.hdfs.",
+      "GetBlockLocationsRequestProto\032+.hadoop.h" +
+      "dfs.GetBlockLocationsResponseProto\022l\n\021ge" +
+      "tServerDefaults\022*.hadoop.hdfs.GetServerD" +
+      "efaultsRequestProto\032+.hadoop.hdfs.GetSer" +
+      "verDefaultsResponseProto\022K\n\006create\022\037.had" +
+      "oop.hdfs.CreateRequestProto\032 .hadoop.hdf" +
+      "s.CreateResponseProto\022K\n\006append\022\037.hadoop" +
+      ".hdfs.AppendRequestProto\032 .hadoop.hdfs.A" +
+      "ppendResponseProto\022T\n\toverwrite\022\".hadoop" +
+      ".hdfs.OverwriteRequestProto\032#.hadoop.hdf",
+      "s.OverwriteResponseProto\022c\n\016setReplicati" +
+      "on\022\'.hadoop.hdfs.SetReplicationRequestPr" +
+      "oto\032(.hadoop.hdfs.SetReplicationResponse" +
+      "Proto\022`\n\rsetPermission\022&.hadoop.hdfs.Set" +
+      "PermissionRequestProto\032\'.hadoop.hdfs.Set" +
+      "PermissionResponseProto\022Q\n\010setOwner\022!.ha" +
+      "doop.hdfs.SetOwnerRequestProto\032\".hadoop." +
+      "hdfs.SetOwnerResponseProto\022]\n\014abandonBlo" +
+      "ck\022%.hadoop.hdfs.AbandonBlockRequestProt" +
+      "o\032&.hadoop.hdfs.AbandonBlockResponseProt",
+      "o\022Q\n\010addBlock\022!.hadoop.hdfs.AddBlockRequ" +
+      "estProto\032\".hadoop.hdfs.AddBlockResponseP" +
+      "roto\022x\n\025getAdditionalDatanode\022..hadoop.h" +
+      "dfs.GetAdditionalDatanodeRequestProto\032/." +
+      "hadoop.hdfs.GetAdditionalDatanodeRespons" +
+      "eProto\022Q\n\010complete\022!.hadoop.hdfs.Complet" +
+      "eRequestProto\032\".hadoop.hdfs.CompleteResp" +
+      "onseProto\022f\n\017reportBadBlocks\022(.hadoop.hd" +
+      "fs.ReportBadBlocksRequestProto\032).hadoop." +
+      "hdfs.ReportBadBlocksResponseProto\022K\n\006con",
+      "cat\022\037.hadoop.hdfs.ConcatRequestProto\032 .h" +
+      "adoop.hdfs.ConcatResponseProto\022K\n\006rename" +
+      "\022\037.hadoop.hdfs.RenameRequestProto\032 .hado" +
+      "op.hdfs.RenameResponseProto\022N\n\007rename2\022 " +
+      ".hadoop.hdfs.Rename2RequestProto\032!.hadoo" +
+      "p.hdfs.Rename2ResponseProto\022K\n\006delete\022\037." +
+      "hadoop.hdfs.DeleteRequestProto\032 .hadoop." +
+      "hdfs.DeleteResponseProto\022K\n\006mkdirs\022\037.had" +
+      "oop.hdfs.MkdirsRequestProto\032 .hadoop.hdf" +
+      "s.MkdirsResponseProto\022W\n\ngetListing\022#.ha",
+      "doop.hdfs.GetListingRequestProto\032$.hadoo" +
+      "p.hdfs.GetListingResponseProto\022W\n\nrenewL" +
+      "ease\022#.hadoop.hdfs.RenewLeaseRequestProt" +
+      "o\032$.hadoop.hdfs.RenewLeaseResponseProto\022" +
+      "]\n\014recoverLease\022%.hadoop.hdfs.RecoverLea" +
+      "seRequestProto\032&.hadoop.hdfs.RecoverLeas" +
+      "eResponseProto\022X\n\ngetFsStats\022$.hadoop.hd" +
+      "fs.GetFsStatusRequestProto\032$.hadoop.hdfs" +
+      ".GetFsStatsResponseProto\022l\n\021getDatanodeR" +
+      "eport\022*.hadoop.hdfs.GetDatanodeReportReq",
+      "uestProto\032+.hadoop.hdfs.GetDatanodeRepor" +
+      "tResponseProto\022x\n\025getPreferredBlockSize\022" +
+      "..hadoop.hdfs.GetPreferredBlockSizeReque" +
+      "stProto\032/.hadoop.hdfs.GetPreferredBlockS" +
+      "izeResponseProto\022Z\n\013setSafeMode\022$.hadoop" +
+      ".hdfs.SetSafeModeRequestProto\032%.hadoop.h" +
+      "dfs.SetSafeModeResponseProto\022`\n\rsaveName" +
+      "space\022&.hadoop.hdfs.SaveNamespaceRequest" +
+      "Proto\032\'.hadoop.hdfs.SaveNamespaceRespons" +
+      "eProto\022T\n\trollEdits\022\".hadoop.hdfs.RollEd",
+      "itsRequestProto\032#.hadoop.hdfs.RollEditsR" +
+      "esponseProto\022u\n\024restoreFailedStorage\022-.h" +
+      "adoop.hdfs.RestoreFailedStorageRequestPr" +
+      "oto\032..hadoop.hdfs.RestoreFailedStorageRe" +
+      "sponseProto\022]\n\014refreshNodes\022%.hadoop.hdf" +
+      "s.RefreshNodesRequestProto\032&.hadoop.hdfs" +
+      ".RefreshNodesResponseProto\022f\n\017finalizeUp" +
+      "grade\022(.hadoop.hdfs.FinalizeUpgradeReque" +
+      "stProto\032).hadoop.hdfs.FinalizeUpgradeRes" +
+      "ponseProto\022c\n\016rollingUpgrade\022\'.hadoop.hd",
+      "fs.RollingUpgradeRequestProto\032(.hadoop.h" +
+      "dfs.RollingUpgradeResponseProto\022x\n\025listC" +
+      "orruptFileBlocks\022..hadoop.hdfs.ListCorru" +
+      "ptFileBlocksRequestProto\032/.hadoop.hdfs.L" +
+      "istCorruptFileBlocksResponseProto\022Q\n\010met" +
+      "aSave\022!.hadoop.hdfs.MetaSaveRequestProto" +
+      "\032\".hadoop.hdfs.MetaSaveResponseProto\022Z\n\013" +
+      "getFileInfo\022$.hadoop.hdfs.GetFileInfoReq" +
+      "uestProto\032%.hadoop.hdfs.GetFileInfoRespo" +
+      "nseProto\022l\n\021addCacheDirective\022*.hadoop.h",
+      "dfs.AddCacheDirectiveRequestProto\032+.hado" +
+      "op.hdfs.AddCacheDirectiveResponseProto\022u" +
+      "\n\024modifyCacheDirective\022-.hadoop.hdfs.Mod" +
+      "ifyCacheDirectiveRequestProto\032..hadoop.h" +
+      "dfs.ModifyCacheDirectiveResponseProto\022u\n" +
+      "\024removeCacheDirective\022-.hadoop.hdfs.Remo" +
+      "veCacheDirectiveRequestProto\032..hadoop.hd" +
+      "fs.RemoveCacheDirectiveResponseProto\022r\n\023" +
+      "listCacheDirectives\022,.hadoop.hdfs.ListCa" +
+      "cheDirectivesRequestProto\032-.hadoop.hdfs.",
+      "ListCacheDirectivesResponseProto\022]\n\014addC" +
+      "achePool\022%.hadoop.hdfs.AddCachePoolReque" +
+      "stProto\032&.hadoop.hdfs.AddCachePoolRespon" +
+      "seProto\022f\n\017modifyCachePool\022(.hadoop.hdfs" +
+      ".ModifyCachePoolRequestProto\032).hadoop.hd" +
+      "fs.ModifyCachePoolResponseProto\022f\n\017remov" +
+      "eCachePool\022(.hadoop.hdfs.RemoveCachePool" +
+      "RequestProto\032).hadoop.hdfs.RemoveCachePo" +
+      "olResponseProto\022c\n\016listCachePools\022\'.hado" +
+      "op.hdfs.ListCachePoolsRequestProto\032(.had",
+      "oop.hdfs.ListCachePoolsResponseProto\022f\n\017" +
+      "getFileLinkInfo\022(.hadoop.hdfs.GetFileLin" +
+      "kInfoRequestProto\032).hadoop.hdfs.GetFileL" +
+      "inkInfoResponseProto\022l\n\021getContentSummar" +
+      "y\022*.hadoop.hdfs.GetContentSummaryRequest" +
+      "Proto\032+.hadoop.hdfs.GetContentSummaryRes" +
+      "ponseProto\022Q\n\010setQuota\022!.hadoop.hdfs.Set" +
+      "QuotaRequestProto\032\".hadoop.hdfs.SetQuota" +
+      "ResponseProto\022H\n\005fsync\022\036.hadoop.hdfs.Fsy" +
+      "ncRequestProto\032\037.hadoop.hdfs.FsyncRespon",
+      "seProto\022Q\n\010setTimes\022!.hadoop.hdfs.SetTim" +
+      "esRequestProto\032\".hadoop.hdfs.SetTimesRes" +
+      "ponseProto\022`\n\rcreateSymlink\022&.hadoop.hdf" +
+      "s.CreateSymlinkRequestProto\032\'.hadoop.hdf" +
+      "s.CreateSymlinkResponseProto\022`\n\rgetLinkT" +
+      "arget\022&.hadoop.hdfs.GetLinkTargetRequest" +
+      "Proto\032\'.hadoop.hdfs.GetLinkTargetRespons" +
+      "eProto\022{\n\026updateBlockForPipeline\022/.hadoo" +
+      "p.hdfs.UpdateBlockForPipelineRequestProt" +
+      "o\0320.hadoop.hdfs.UpdateBlockForPipelineRe",
+      "sponseProto\022c\n\016updatePipeline\022\'.hadoop.h" +
+      "dfs.UpdatePipelineRequestProto\032(.hadoop." +
+      "hdfs.UpdatePipelineResponseProto\022s\n\022getD" +
+      "elegationToken\022-.hadoop.common.GetDelega" +
+      "tionTokenRequestProto\032..hadoop.common.Ge" +
+      "tDelegationTokenResponseProto\022y\n\024renewDe" +
+      "legationToken\022/.hadoop.common.RenewDeleg" +
+      "ationTokenRequestProto\0320.hadoop.common.R" +
+      "enewDelegationTokenResponseProto\022|\n\025canc" +
+      "elDelegationToken\0220.hadoop.common.Cancel",
+      "DelegationTokenRequestProto\0321.hadoop.com" +
+      "mon.CancelDelegationTokenResponseProto\022u" +
+      "\n\024setBalancerBandwidth\022-.hadoop.hdfs.Set" +
+      "BalancerBandwidthRequestProto\032..hadoop.h" +
+      "dfs.SetBalancerBandwidthResponseProto\022u\n" +
+      "\024getDataEncryptionKey\022-.hadoop.hdfs.GetD" +
+      "ataEncryptionKeyRequestProto\032..hadoop.hd" +
+      "fs.GetDataEncryptionKeyResponseProto\022c\n\016" +
+      "createSnapshot\022\'.hadoop.hdfs.CreateSnaps" +
+      "hotRequestProto\032(.hadoop.hdfs.CreateSnap",
+      "shotResponseProto\022c\n\016renameSnapshot\022\'.ha" +
+      "doop.hdfs.RenameSnapshotRequestProto\032(.h" +
+      "adoop.hdfs.RenameSnapshotResponseProto\022`" +
+      "\n\rallowSnapshot\022&.hadoop.hdfs.AllowSnaps" +
+      "hotRequestProto\032\'.hadoop.hdfs.AllowSnaps" +
+      "hotResponseProto\022i\n\020disallowSnapshot\022).h" +
+      "adoop.hdfs.DisallowSnapshotRequestProto\032" +
+      "*.hadoop.hdfs.DisallowSnapshotResponsePr" +
+      "oto\022\207\001\n\032getSnapshottableDirListing\0223.had" +
+      "oop.hdfs.GetSnapshottableDirListingReque",
+      "stProto\0324.hadoop.hdfs.GetSnapshottableDi" +
+      "rListingResponseProto\022c\n\016deleteSnapshot\022" +
+      "\'.hadoop.hdfs.DeleteSnapshotRequestProto" +
+      "\032(.hadoop.hdfs.DeleteSnapshotResponsePro" +
+      "to\022x\n\025getSnapshotDiffReport\022..hadoop.hdf" +
+      "s.GetSnapshotDiffReportRequestProto\032/.ha" +
+      "doop.hdfs.GetSnapshotDiffReportResponseP" +
+      "roto\022]\n\014isFileClosed\022%.hadoop.hdfs.IsFil" +
+      "eClosedRequestProto\032&.hadoop.hdfs.IsFile" +
+      "ClosedResponseProto\022i\n\020modifyAclEntries\022",
+      ").hadoop.hdfs.ModifyAclEntriesRequestPro" +
+      "to\032*.hadoop.hdfs.ModifyAclEntriesRespons" +
+      "eProto\022i\n\020removeAclEntries\022).hadoop.hdfs" +
+      ".RemoveAclEntriesRequestProto\032*.hadoop.h" +
+      "dfs.RemoveAclEntriesResponseProto\022i\n\020rem" +
+      "oveDefaultAcl\022).hadoop.hdfs.RemoveDefaul" +
+      "tAclRequestProto\032*.hadoop.hdfs.RemoveDef" +
+      "aultAclResponseProto\022T\n\tremoveAcl\022\".hado" +
+      "op.hdfs.RemoveAclRequestProto\032#.hadoop.h" +
+      "dfs.RemoveAclResponseProto\022K\n\006setAcl\022\037.h",
+      "adoop.hdfs.SetAclRequestProto\032 .hadoop.h" +
+      "dfs.SetAclResponseProto\022]\n\014getAclStatus\022" +
+      "%.hadoop.hdfs.GetAclStatusRequestProto\032&" +
+      ".hadoop.hdfs.GetAclStatusResponseProtoBK" +
+      "\n%org.apache.hadoop.hdfs.protocol.protoB" +
+      "\034ClientNamenodeProtocolProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

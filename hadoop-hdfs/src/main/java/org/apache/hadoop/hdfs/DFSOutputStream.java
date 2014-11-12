@@ -488,7 +488,7 @@ public class DFSOutputStream extends FSOutputSummer
       //HDFSRS_RWAPI{
       LocatedBlock lb = null;
       if(newPos>=0){// go to new position
-        LocatedBlocks lbs = dfsClient.namenode.getBlockLocations(src, newPos, 1);
+        LocatedBlocks lbs = dfsClient.namenode.getBlockLocationsNoCreate(src, newPos, 1);
         if(lbs == null || lbs.locatedBlockCount() == 0)
           throw new IOException("[HDFSRS_RWAPI]Cannot find a block at newPos:"+newPos);
         lb = lbs.get(0);
@@ -497,7 +497,7 @@ public class DFSOutputStream extends FSOutputSummer
         blockNumber = newPos / blockSize;
         stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
       }else{
-        LocatedBlocks lbs = dfsClient.namenode.getBlockLocations(src,(blockNumber+1)*blockSize,1);
+        LocatedBlocks lbs = dfsClient.namenode.getBlockLocationsNoCreate(src,(blockNumber+1)*blockSize,1);
         if(lbs == null || lbs.locatedBlockCount() == 0){
           stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
           blockWriteOffset = -1;

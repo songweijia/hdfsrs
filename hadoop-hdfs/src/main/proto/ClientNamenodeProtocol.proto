@@ -651,6 +651,10 @@ message DeleteSnapshotResponseProto { // void response
 service ClientNamenodeProtocol {
   rpc getBlockLocations(GetBlockLocationsRequestProto)
       returns(GetBlockLocationsResponseProto);
+  //HDFSRS_RWAPI{
+  rpc getBlockLocationsNoCreate(GetBlockLocationsRequestProto)
+      returns(GetBlockLocationsResponseProto);
+  //}
   rpc getServerDefaults(GetServerDefaultsRequestProto)
       returns(GetServerDefaultsResponseProto);
   rpc create(CreateRequestProto)returns(CreateResponseProto);

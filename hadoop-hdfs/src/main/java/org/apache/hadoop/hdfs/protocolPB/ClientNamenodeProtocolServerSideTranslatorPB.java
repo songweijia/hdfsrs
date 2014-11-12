@@ -333,7 +333,27 @@ final private ClientProtocol server;
       throw new ServiceException(e);
     }
   }
-
+  
+  //HDFSRS_RWAPI{
+  @Override
+  public GetBlockLocationsResponseProto getBlockLocationsNoCreate(
+      RpcController controller, GetBlockLocationsRequestProto req)
+      throws ServiceException {
+    try {
+      LocatedBlocks b = server.getBlockLocationsNoCreate(req.getSrc(), req.getOffset(),
+          req.getLength());
+      Builder builder = GetBlockLocationsResponseProto
+          .newBuilder();
+      if (b != null) {
+        builder.setLocations(PBHelper.convert(b)).build();
+      }
+      return builder.build();
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
+  //}
+  
   @Override
   public GetServerDefaultsResponseProto getServerDefaults(
       RpcController controller, GetServerDefaultsRequestProto req)
