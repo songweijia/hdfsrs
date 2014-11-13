@@ -51,5 +51,5 @@ public class InterfaceAudience {
   @Retention(RetentionPolicy.RUNTIME)
   public @interface Private {};
 
-  private InterfaceAudience() {} // Audience can't exist on its own
+  private InterfaceAudience() {} // Audience can't exist on its own. So make the constructor private
 }
