@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.protocolPB;
 
 import java.io.IOException;
+
 import java.util.List;
 
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -127,8 +128,8 @@ import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Modify
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolResponseProto;
-import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto;
-import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto;
@@ -1284,16 +1285,18 @@ final private ClientProtocol server;
     }
   }
 //HDFSRS_RWAPI{
-  private static final OverwriteResponseProto VOID_OVERWRITE_RESPONSE = 
-  OverwriteResponseProto.newBuilder().build();
+  private static final OverwriteBlockResponseProto VOID_OVERWRITE_RESPONSE = 
+  OverwriteBlockResponseProto.newBuilder().build();
 
   @Override
-	public OverwriteResponseProto overwrite(RpcController controller,
-			OverwriteRequestProto req) throws ServiceException {
+	public OverwriteBlockResponseProto overwriteBlock(RpcController controller,
+			OverwriteBlockRequestProto req) throws ServiceException {
 	    try {
-	        LocatedBlock result = server.overwrite(req.getSrc(), req.getOffset(), req.getClientName());
+	        LocatedBlock result = server.overwriteBlock(req.getSrc(), 
+	            req.hasPrevious() ? PBHelper.convert(req.getPrevious()) : null,
+	            req.getBIndex(), req.getFileId(), req.getClientName());
 	        if (result != null) {
-	          return OverwriteResponseProto.newBuilder()
+	          return OverwriteBlockResponseProto.newBuilder()
 	              .setBlock(PBHelper.convert(result)).build();
 	        }
 	        return VOID_OVERWRITE_RESPONSE;

@@ -50,6 +50,7 @@ import org.apache.hadoop.hdfs.protocol.DatanodeID;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
+import org.apache.hadoop.hdfs.protocol.SnapshotAccessControlException;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.DatanodeReportType;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.RollingUpgradeAction;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.SafeModeAction;
@@ -163,9 +164,10 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
 
 
+
 //HDFSRS_RWAPI{
-import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto;
-import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto;
 //}
 
 /**
@@ -287,17 +289,21 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
   //HDFSRS_RWAPI{
   @Override
-  public LocatedBlock overwrite(String src, long offset, String clientName)
+  public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
+      int bIndex, long fileId, String clientName)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
-      IOException {
-    OverwriteRequestProto req = OverwriteRequestProto.newBuilder()
+      SnapshotAccessControlException, IOException {
+    OverwriteBlockRequestProto req = OverwriteBlockRequestProto.newBuilder()
         .setSrc(src)
-        .setOffset(offset)
+        .setPrevious(PBHelper.convert(previous))
+        .setBIndex(bIndex)
+        .setFileId(fileId)
         .setClientName(clientName)
         .build();
+
     try {
-      OverwriteResponseProto res = rpcProxy.overwrite(null, req);
+      OverwriteBlockResponseProto res = rpcProxy.overwriteBlock(null, req);
       return res.hasBlock() ? PBHelper.convert(res.getBlock()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
