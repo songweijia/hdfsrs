@@ -3113,6 +3113,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     return success;
   }
 
+  //HDFSRS_RWAPI: now the last block can be any block in the middle of the file
   private boolean completeFileInternal(String src, 
       String holder, Block last, long fileId) throws SafeModeException,
       UnresolvedLinkException, IOException {
@@ -3145,12 +3146,21 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     }
     // Check the state of the penultimate block. It should be completed
     // before attempting to complete the last one.
-    if (!checkFileProgress(pendingFile, false)) {
-      return false;
-    }
+    
+    // HDFSRS_RWAPI{: we don't perform the following check anymore,
+    // cause the "under construction" block is not the last one any more.
+    // Therefore we don't know what is the penultimate block. Hope this
+    // will not cause any further problem!
+    //if (!checkFileProgress(pendingFile, false)) {
+    //  return false;
+    // }
+    //}HDFSRS_RWAPI
 
     // commit the last block and complete it if it has minimum replicas
-    commitOrCompleteLastBlock(pendingFile, last);
+    //HDFSRS_RWAPI{ "last" block can be any block in the middle of the file
+    // commitOrCompleteLastBlock(pendingFile, last);
+    commitOrCompleteBlock(pendingFile, last);
+    //}HDFSRS_RWAPI
 
     if (!checkFileProgress(pendingFile, true)) {
       return false;

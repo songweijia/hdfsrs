@@ -647,6 +647,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
   }
 
   @Override // ClientProtocol
+  //HDFSRS_RWAPI:Now the last block can be any block in the middle of the file
   public boolean complete(String src, String clientName,
                           ExtendedBlock last,  long fileId)
       throws IOException {
