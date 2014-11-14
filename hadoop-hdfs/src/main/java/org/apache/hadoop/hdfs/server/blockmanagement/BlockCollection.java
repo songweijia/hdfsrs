@@ -80,12 +80,12 @@ public interface BlockCollection {
   //HDFSRS_RWAPI{
   /** Convert given block to an under-construction block and set the locations.
    * 
-   * @param block
+   * @param bIndex: block index
    * @param locations
    * @return
    * @throws IOException
    */
-  public BlockInfoUnderConstruction setBlockToUC(BlockInfo block,
+  public BlockInfoUnderConstruction setBlockToUC(int bIndex,
       DatanodeStorageInfo[] locations) throws IOException;
   //}HDFSRS_RWAPI
   /**

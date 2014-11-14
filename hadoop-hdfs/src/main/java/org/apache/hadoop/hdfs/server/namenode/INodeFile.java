@@ -223,7 +223,7 @@ public class INodeFile extends INodeWithAdditionalFields
   
   //HDFSRS_RWAPI{
   @Override // BlockCollection, the file should be under construction
-  public BlockInfoUnderConstruction setBlockToUC(BlockInfo block,
+  public BlockInfoUnderConstruction setBlockToUC(int bIndex,
       DatanodeStorageInfo[] locations) throws IOException {
     
     Preconditions.checkState(isUnderConstruction(),
@@ -232,18 +232,16 @@ public class INodeFile extends INodeWithAdditionalFields
     if (numBlocks() == 0) {
       throw new IOException("[HDFSRS_RWAPI]Failed to set block to UC: File is empty.");
     }
+
+    if(bIndex >= blocks.length || bIndex < 0)
+      throw new IOException("[HDFSRS_RWAPI]Failed to set block to UC: block index="
+          +bIndex+", but we only have "+blocks.length+" blocks in file" + getName());
     BlockInfoUnderConstruction ucBlock =
-      block.convertToBlockUnderConstruction(
-          BlockUCState.UNDER_CONSTRUCTION, locations);
+        blocks[bIndex].convertToBlockUnderConstruction(
+            BlockUCState.UNDER_CONSTRUCTION, locations);
     ucBlock.setBlockCollection(this);
-    for(int i=blocks.length-1;i>=0;i--){
-      if(blocks[i].equals(block)){
-        setBlock(i, ucBlock);
-        return ucBlock;
-      }
-    }
-    
-    throw new IOException("[HDFSRS_RWAPI]Failed to set block to UC: block"+block+" is not found in "+this.getName());
+    setBlock(bIndex,ucBlock);
+    return ucBlock;
   }
   //}HDFSRS_RWAPI
 
