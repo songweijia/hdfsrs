@@ -2666,6 +2666,82 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     blockPoolId = bpid;
     blockManager.setBlockPoolId(blockPoolId);
   }
+  
+  //HDFSRS_RWAPI{
+  /**
+   * The client would like to overwrite a completed block for the indicated
+   * filename (which is being written-to). Return an array that consists of
+   * the block, plus a set of machines. The first on this list should be where
+   * the client writes data. Subsequent items in the list must be provided in
+   * the connection to the first datanode. 
+   *
+   * Make sure the previous blocks have been reported by datanodes and are
+   * replicated.
+   * 
+   * @param src - filename
+   * @param previous - previous block that underconstruction
+   * @param bIndex - index to the block to be overwritten
+   * @param fileId - file identification
+   * @param clientName - client name
+   * @return
+   * @throws LeaseExpiredException
+   * @throws NotReplicatedYetException
+   * @throws SafeModeException
+   * @throws UnresolvedLinkException
+   * @throws IOException
+   */
+  LocatedBlock overwriteBlock(String src, ExtendedBlock previous, int bIndex,
+      long fileId, String clientName)
+  throws LeaseExpiredException, NotReplicatedYetException,
+  SafeModeException, UnresolvedLinkException, IOException
+  {
+    if(NameNode.stateChangeLog.isDebugEnabled()){
+      NameNode.stateChangeLog.debug("BLOCK* NameSystem.overwriteBlock: "
+          + src + " bIndex " + bIndex + " for " + clientName);
+    }
+    
+    // STEP 1: check bIndex and previous block;
+    if(bIndex < 0)
+      throw new IOException("[HDFSRS_RWAPI]:Invalid bIndex in overwriteBlock:"+bIndex);
+    
+    checkOperation(OperationCategory.READ);
+    byte[][] pathComponents = FSDirectory.getPathComponentsForReservedPath(src);
+    readLock();
+    try{
+      checkOperation(OperationCategory.READ);
+      src = FSDirectory.resolvePath(src, pathComponents, dir);
+      final INodesInPath iip = dir.getINodesInPath4Write(src);
+      final INodeFile pendingFile = checkLease(src, fileId, clientName, iip.getLastINode());
+      BlockInfo blocks [] = pendingFile.getBlocks();
+      if(bIndex >= blocks.length)
+        throw new IOException("[HDFSRS_RWAPI]:Invalid bIndex in overwriteBlock:"+bIndex);
+      if(blocks[bIndex].equals(ExtendedBlock.getLocalBlock(previous))){
+        assert blocks[bIndex].getBlockUCState() == BlockUCState.UNDER_CONSTRUCTION : 
+          "[HDFSRS_RWAPI]:previous block in overwriteBlock() is in "+
+            blocks[bIndex].getBlockUCState() + "instead of " + BlockUCState.UNDER_CONSTRUCTION;
+        return makeLocatedBlock(blocks[bIndex],
+            ((BlockInfoUnderConstruction)blocks[bIndex]).getExpectedStorageLocations(),
+            bIndex*pendingFile.getPreferredBlockSize());
+      }
+    }finally{
+      readUnlock();
+    }
+    
+    // STEP 2: complete the previous block and convert the new block
+    checkOperation(OperationCategory.WRITE);
+    writeLock();
+    try{
+      checkOperation(OperationCategory.WRITE);
+      final INodesInPath iip = dir.getINodesInPath4Write(src);
+      final INodeFile pendingFile = checkLease(src, fileId, clientName, iip.getLastINode());
+      BlockInfo blocks [] = pendingFile.getBlocks();
+      commitOrCompleteBlock(pendingFile,ExtendedBlock.getLocalBlock(previous));
+      return blockManager.convertBlockToUnderConstruction(pendingFile, bIndex);
+    }finally{
+      writeUnlock();
+    }
+  }
+  //}HDFSRS_RWAPI
 
   /**
    * The client would like to obtain an additional block for the indicated
@@ -3909,8 +3985,14 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     return leaseManager.reassignLease(lease, src, newHolder);
   }
 
+  //HDFSRS_RWAPI{
   private void commitOrCompleteLastBlock(final INodeFile fileINode,
       final Block commitBlock) throws IOException {
+    commitOrCompleteBlock(fileINode,commitBlock);
+  }
+  
+  private void commitOrCompleteBlock(final INodeFile fileINode,
+      final Block commitBlock) throws IOException{
     assert hasWriteLock();
     Preconditions.checkArgument(fileINode.isUnderConstruction());
 
@@ -3930,8 +4012,9 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       } catch (IOException e) {
         LOG.warn("Unexpected exception while updating disk space.", e);
       }
-    }
+    }    
   }
+  //}HDFSRS_RWAPI
 
   private void finalizeINodeFileUnderConstruction(String src,
       INodeFile pendingFile, int latestSnapshot) throws IOException,
