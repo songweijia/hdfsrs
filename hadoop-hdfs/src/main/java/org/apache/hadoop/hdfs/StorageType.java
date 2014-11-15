@@ -29,7 +29,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 @InterfaceStability.Unstable
 public enum StorageType {
   DISK,
-  SSD;
+  SSD,
+  MEM;
 
   public static final StorageType DEFAULT = DISK;
 }
