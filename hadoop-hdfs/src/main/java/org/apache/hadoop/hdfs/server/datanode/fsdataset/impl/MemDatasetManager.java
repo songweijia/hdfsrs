@@ -27,22 +27,6 @@ class MemDatasetManager {
       this.genStamp = genStamp;
     }
   }
-
-  class ByteBufferOutputStream extends OutputStream {
-    ByteBuffer buf;
-    
-    ByteBufferBackedOutputStream(ByteBuffer buf) {
-      this.buf = buf;
-    }
-    public synchronized void write(int b) throws IOException {
-      buf.put((byte)b);
-    }
-
-    public synchronized void write(byte[] bytes, int off, int len) throws IOException {
-      buf.put(bytes, off, len);
-    } 
-  }
-
   
   private ByteBuffer memRegion;
   private HashMap<ExtendedBlockId, MemBlockMeta> memMaps; 
@@ -108,6 +92,7 @@ class MemDatasetManager {
   }
   
   OutputStream getOutputStream(long offset) {
-    
+    // TODO: create a new OutputStream that can directly write to the ByteBuffer
+    return null;
   }
 }
