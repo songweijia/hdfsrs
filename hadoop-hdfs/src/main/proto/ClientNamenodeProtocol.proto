@@ -662,7 +662,7 @@ service ClientNamenodeProtocol {
   rpc create(CreateRequestProto)returns(CreateResponseProto);
   rpc append(AppendRequestProto) returns(AppendResponseProto);
   //HDFSRS_RWAPI{
-  rpc overwriteBlock(OverwriteBlockRequestProto) returns(OverwriteResponseProto);
+  rpc overwriteBlock(OverwriteBlockRequestProto) returns(OverwriteBlockResponseProto);
   //}
   rpc setReplication(SetReplicationRequestProto)
       returns(SetReplicationResponseProto);
