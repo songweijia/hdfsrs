@@ -6133,8 +6133,21 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     assert hasWriteLock();
     // check the vadility of the block and lease holder name
     final INodeFile pendingFile = checkUCBlock(oldBlock, clientName);
-    final BlockInfoUnderConstruction blockinfo
-        = (BlockInfoUnderConstruction)pendingFile.getLastBlock();
+    //HDFSRS_RWAPI{
+//    final BlockInfoUnderConstruction blockinfo
+//        = (BlockInfoUnderConstruction)pendingFile.getLastBlock();
+    BlockInfoUnderConstruction blockinfo = null;
+    
+    BlockInfo[] blocks = pendingFile.getBlocks();
+    for(int i=blocks.length-1;i>=0;i--){
+      if(blocks[i].equals(oldBlock.getLocalBlock())){
+        blockinfo = (BlockInfoUnderConstruction)blocks[i];
+        break;
+      }
+    }
+    if(blockinfo == null)
+      throw new IOException("[HDFSRS_RWAPI]Cannot find block:"+oldBlock);
+    //}HDFSRS_RWAPI
 
     // check new GS & length: this is not expected
     if (newBlock.getGenerationStamp() <= blockinfo.getGenerationStamp() ||
