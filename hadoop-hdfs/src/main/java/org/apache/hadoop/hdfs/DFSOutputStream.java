@@ -596,11 +596,13 @@ public class DFSOutputStream extends FSOutputSummer
               DFSClient.LOG.debug("Allocating new block");
             }
             setPipeline(nextBlockOutputStream());
+            initDataStreaming();
           }else if(stage == BlockConstructionStage.PIPELINE_SETUP_APPEND){
             if(DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("Append to block:" + block);
             }
             setupPipelineForAppendOrRecovery(); // <-- this will handle overwrite too.
+            initDataStreaming();
           }else if (stage == BlockConstructionStage.PIPELINE_SETUP_OVERWRITE){
             if(DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("Overwrite to block: blockNumber=" + blockNumber
@@ -620,8 +622,8 @@ public class DFSOutputStream extends FSOutputSummer
             bytesSent = block.getNumBytes();
             setPipeline(lb);
             setupPipelineForAppendOrRecovery(); // <-- this will handle overwrite too.
+            initDataStreaming();
           }
-          initDataStreaming();
           //}
 
           long lastByteOffsetInBlock = one.getLastByteOffsetBlock();
