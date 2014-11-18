@@ -1910,7 +1910,7 @@ public class DFSOutputStream extends FSOutputSummer
    */
   @Override
   public void hflush() throws IOException {
-    flushOrSync(false, EnumSet.noneOf(SyncFlag.class));
+    flushOrSync(false, EnumSet.noneOf(SyncFlag.class), false/*HDFSRS_RWAPI*/);
   }
 
   @Override
@@ -1932,7 +1932,7 @@ public class DFSOutputStream extends FSOutputSummer
    *          whether or not to update the block length in NameNode.
    */
   public void hsync(EnumSet<SyncFlag> syncFlags) throws IOException {
-    flushOrSync(true, syncFlags);
+    flushOrSync(true, syncFlags, false/*HDFSRS_RWAPI*/);
   }
 
   /**
@@ -1947,7 +1947,8 @@ public class DFSOutputStream extends FSOutputSummer
    *          the NameNode
    * @throws IOException
    */
-  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags)
+  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, 
+      boolean bFinalize/*HDFSRS_RWAPI: for seek flush*/)
       throws IOException {
     dfsClient.checkOpen();
     checkClosed();
@@ -2010,6 +2011,14 @@ public class DFSOutputStream extends FSOutputSummer
           currentPacket.syncBlock = isSync;
           waitAndQueueCurrentPacket();          
         }
+//HDFSRS_RWAPI{        
+        if(bFinalize){
+          currentPacket = new Packet(0, 0, bytesCurBlock);
+          currentPacket.lastPacketInBlock = true;
+          currentPacket.syncBlock = shouldSyncBlock;
+          waitAndQueueCurrentPacket();
+        }
+//}HDFSRS_RWAPI
         // Restore state of stream. Record the last flush offset 
         // of the last full chunk that was flushed.
         //
@@ -2330,8 +2339,8 @@ public class DFSOutputStream extends FSOutputSummer
 		  throw new IOException("[HDFSRS_RWAPI]Cannot seek to "+pos+" beyound the end of the file.");
 	  
 	  // STEP 3: flush
-	  this.hflush();
-	  
+    flushOrSync(true, EnumSet.noneOf(SyncFlag.class), true);
+
     // STEP 4: reset the chunkSize and write buffer
 	  this.bytesCurBlock = pos%this.blockSize;
 
