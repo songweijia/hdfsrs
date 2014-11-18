@@ -2360,6 +2360,7 @@ public class DFSOutputStream extends FSOutputSummer
     }
     //STEP 5: Reset streamer
 	  this.streamer.seek(pos,this.curFileSize);
+	  this.pos = pos;
   }
   
   private void updateFileSize(){
