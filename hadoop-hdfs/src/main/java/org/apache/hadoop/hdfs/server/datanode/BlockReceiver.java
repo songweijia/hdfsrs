@@ -70,58 +70,95 @@ class BlockReceiver implements Closeable {
   @VisibleForTesting
   static long CACHE_DROP_LAG_BYTES = 8 * 1024 * 1024;
   
-  private DataInputStream in = null; // from where data are read
-  private DataChecksum clientChecksum; // checksum used by client
-  private DataChecksum diskChecksum; // checksum we write to disk
+  protected DataInputStream in = null; // from where data are read
+  protected DataChecksum clientChecksum; // checksum used by client
+  protected DataChecksum diskChecksum; // checksum we write to disk
   
   /**
    * In the case that the client is writing with a different
    * checksum polynomial than the block is stored with on disk,
    * the DataNode needs to recalculate checksums before writing.
    */
-  private boolean needsChecksumTranslation;
-  private OutputStream out = null; // to block file at local disk
-  private FileDescriptor outFd;
-  private DataOutputStream checksumOut = null; // to crc file at local disk
-  private int bytesPerChecksum;
-  private int checksumSize;
+  protected boolean needsChecksumTranslation;
+  protected OutputStream out = null; // to block file at local disk
+  protected FileDescriptor outFd;
+  protected DataOutputStream checksumOut = null; // to crc file at local disk
+  protected int bytesPerChecksum;
+  protected int checksumSize;
   
-  private final PacketReceiver packetReceiver =
+  protected final PacketReceiver packetReceiver =
       new PacketReceiver(false);
   
   protected final String inAddr;
   protected final String myAddr;
-  private String mirrorAddr;
-  private DataOutputStream mirrorOut;
-  private Daemon responder = null;
-  private DataTransferThrottler throttler;
-  private ReplicaOutputStreams streams;
-  private DatanodeInfo srcDataNode = null;
-  private Checksum partialCrc = null;
-  private final DataNode datanode;
-  volatile private boolean mirrorError;
+  protected String mirrorAddr;
+  protected DataOutputStream mirrorOut;
+  protected Daemon responder = null;
+  protected DataTransferThrottler throttler;
+  protected ReplicaOutputStreams streams;
+  protected DatanodeInfo srcDataNode = null;
+  protected Checksum partialCrc = null;
+  protected final DataNode datanode;
+  volatile protected boolean mirrorError;
 
   // Cache management state
-  private boolean dropCacheBehindWrites;
-  private long lastCacheManagementOffset = 0;
-  private boolean syncBehindWrites;
+  protected boolean dropCacheBehindWrites;
+  protected long lastCacheManagementOffset = 0;
+  protected boolean syncBehindWrites;
 
   /** The client name.  It is empty if a datanode is the client */
-  private final String clientname;
-  private final boolean isClient; 
-  private final boolean isDatanode;
+  protected final String clientname;
+  protected final boolean isClient; 
+  protected final boolean isDatanode;
 
   /** the block to receive */
-  private final ExtendedBlock block; 
+  protected final ExtendedBlock block; 
   /** the replica to write */
-  private final ReplicaInPipelineInterface replicaInfo;
+  protected ReplicaInPipelineInterface replicaInfo;
   /** pipeline stage */
-  private final BlockConstructionStage stage;
-  private final boolean isTransfer;
+  protected final BlockConstructionStage stage;
+  protected final boolean isTransfer;
 
-  private boolean syncOnClose;
-  private long restartBudget;
+  protected boolean syncOnClose;
+  protected long restartBudget;
 
+  BlockReceiver(final ExtendedBlock block, final DataInputStream in,
+      final String inAddr, final String myAddr,
+      final BlockConstructionStage stage, 
+      final String clientname, final DatanodeInfo srcDataNode,
+      final DataNode datanode, DataChecksum requestedChecksum) throws IOException {
+    this.block = block;
+    this.in = in;
+    this.inAddr = inAddr;
+    this.myAddr = myAddr;
+    this.srcDataNode = srcDataNode;
+    this.datanode = datanode;
+
+    this.clientname = clientname;
+    this.isDatanode = clientname.length() == 0;
+    this.isClient = !this.isDatanode;
+    this.restartBudget = datanode.getDnConf().restartReplicaExpiry;
+
+    //for datanode, we have
+    //1: clientName.length() == 0, and
+    //2: stage == null or PIPELINE_SETUP_CREATE
+    this.stage = stage;
+    this.isTransfer = stage == BlockConstructionStage.TRANSFER_RBW
+        || stage == BlockConstructionStage.TRANSFER_FINALIZED;
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(getClass().getSimpleName() + ": " + block
+          + "\n  isClient  =" + isClient + ", clientname=" + clientname
+          + "\n  isDatanode=" + isDatanode + ", srcDataNode=" + srcDataNode
+          + "\n  inAddr=" + inAddr + ", myAddr=" + myAddr
+          );
+    }
+    
+    this.clientChecksum = requestedChecksum;
+    this.checksumSize = clientChecksum.getChecksumSize();
+    this.needsChecksumTranslation = true;
+  }
+  
   BlockReceiver(final ExtendedBlock block, final DataInputStream in,
       final String inAddr, final String myAddr,
       final BlockConstructionStage stage, 
@@ -162,22 +199,22 @@ class BlockReceiver implements Closeable {
       // Open local disk out
       //
       if (isDatanode) { //replication or move
-        replicaInfo = datanode.data.createTemporary(block);
+        replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block);
       } else {
         switch (stage) {
         case PIPELINE_SETUP_CREATE:
-          replicaInfo = datanode.data.createRbw(block);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createRbw(block);
           datanode.notifyNamenodeReceivingBlock(
               block, replicaInfo.getStorageUuid());
           break;
         case PIPELINE_SETUP_STREAMING_RECOVERY:
-          replicaInfo = datanode.data.recoverRbw(
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.recoverRbw(
               block, newGs, minBytesRcvd, maxBytesRcvd);
           block.setGenerationStamp(newGs);
           break;
         case PIPELINE_SETUP_APPEND:
         case PIPELINE_SETUP_OVERWRITE:
-          replicaInfo = datanode.data.append(block, newGs, minBytesRcvd);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.append(block, newGs, minBytesRcvd);
           if (datanode.blockScanner != null) { // remove from block scanner
             datanode.blockScanner.deleteBlock(block.getBlockPoolId(),
                 block.getLocalBlock());
@@ -187,7 +224,7 @@ class BlockReceiver implements Closeable {
               block, replicaInfo.getStorageUuid());
           break;
         case PIPELINE_SETUP_APPEND_RECOVERY:
-          replicaInfo = datanode.data.recoverAppend(block, newGs, minBytesRcvd);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.recoverAppend(block, newGs, minBytesRcvd);
           if (datanode.blockScanner != null) { // remove from block scanner
             datanode.blockScanner.deleteBlock(block.getBlockPoolId(),
                 block.getLocalBlock());
@@ -199,7 +236,7 @@ class BlockReceiver implements Closeable {
         case TRANSFER_RBW:
         case TRANSFER_FINALIZED:
           // this is a transfer destination
-          replicaInfo = datanode.data.createTemporary(block);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block);
           break;
         default: throw new IOException("Unsupported stage " + stage + 
               " while receiving block " + block + " from " + inAddr);
@@ -390,7 +427,7 @@ class BlockReceiver implements Closeable {
   /**
    * Verify multiple CRC chunks. 
    */
-  private void verifyChunks(ByteBuffer dataBuf, ByteBuffer checksumBuf)
+  protected void verifyChunks(ByteBuffer dataBuf, ByteBuffer checksumBuf)
       throws IOException {
     try {
       clientChecksum.verifyChunkedSums(dataBuf, checksumBuf, clientname, 0);
@@ -434,8 +471,8 @@ class BlockReceiver implements Closeable {
    * checksum.
    * @return true if checksum verification is needed, otherwise false.
    */
-  private boolean shouldVerifyChecksum() {
-    return (mirrorOut == null || isDatanode || needsChecksumTranslation);
+  protected boolean shouldVerifyChecksum() {
+    return (needsChecksumTranslation || mirrorOut == null || isDatanode);
   }
 
   /** 
@@ -885,7 +922,7 @@ class BlockReceiver implements Closeable {
   /** Cleanup a partial block 
    * if this write is for a replication request (and not from a client)
    */
-  private void cleanupBlock() throws IOException {
+  protected void cleanupBlock() throws IOException {
     if (isDatanode) {
       datanode.data.unfinalizeBlock(block);
     }
@@ -975,11 +1012,11 @@ class BlockReceiver implements Closeable {
     */
   }
   
-  private static enum PacketResponderType {
+  protected static enum PacketResponderType {
     NON_PIPELINE, LAST_IN_PIPELINE, HAS_DOWNSTREAM_IN_PIPELINE
   }
   
-  private static final Status[] MIRROR_ERROR_STATUS = {Status.SUCCESS, Status.ERROR};
+  protected static final Status[] MIRROR_ERROR_STATUS = {Status.SUCCESS, Status.ERROR};
   
   /**
    * Processes responses from downstream datanodes in the pipeline
@@ -1414,7 +1451,7 @@ class BlockReceiver implements Closeable {
   /**
    * This information is cached by the Datanode in the ackQueue.
    */
-  private static class Packet {
+  static class Packet {
     final long seqno;
     final boolean lastPacketInBlock;
     final long offsetInBlock;

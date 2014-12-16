@@ -743,13 +743,13 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized ReplicaInPipelineInterface createRbw(ExtendedBlock b) 
+  public synchronized Replica createRbw(ExtendedBlock b) 
   throws IOException {
     return createTemporary(b);
   }
 
   @Override // FsDatasetSpi
-  public synchronized ReplicaInPipelineInterface createTemporary(ExtendedBlock b)
+  public synchronized Replica createTemporary(ExtendedBlock b)
       throws IOException {
     if (isValidBlock(b)) {
           throw new ReplicaAlreadyExistsException("Block " + b + 
@@ -1097,7 +1097,7 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   }
 
   @Override
-  public List<FinalizedReplica> getFinalizedBlocks(String bpid) {
+  public List<Block> getFinalizedBlocks(String bpid) {
     throw new UnsupportedOperationException();
   }
 
@@ -1113,6 +1113,15 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
 
   @Override
   public FsVolumeSpi getVolume(ExtendedBlock b) {
+    throw new UnsupportedOperationException();
+  }
+  
+  public StorageType getStorageType() {
+    return StorageType.DEFAULT;
+  }
+  
+  public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 }

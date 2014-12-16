@@ -21,12 +21,14 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hdfs.StorageType;
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.protocol.BlockListAsLongs;
 import org.apache.hadoop.hdfs.protocol.BlockLocalPathInfo;
@@ -103,7 +105,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
   public Map<String, Object> getVolumeInfoMap();
 
   /** @return a list of finalized blocks for the given block pool. */
-  public List<FinalizedReplica> getFinalizedBlocks(String bpid);
+  public List<Block> getFinalizedBlocks(String bpid);
 
   /**
    * Check whether the in-memory block record matches the block on the disk,
@@ -136,7 +138,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @param blockId
    * @return replica from the replicas map
    */
-  @Deprecated
+  //@Deprecated
   public Replica getReplica(String bpid, long blockId);
 
   /**
@@ -160,6 +162,8 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
   public InputStream getBlockInputStream(ExtendedBlock b, long seekOffset)
             throws IOException;
 
+  public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
+            throws IOException;
   /**
    * Returns an input stream at specified offset of the specified block
    * The block is still in the tmp directory and is not finalized
@@ -180,7 +184,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return the meta info of the replica which is being written to
    * @throws IOException if an error occurs
    */
-  public ReplicaInPipelineInterface createTemporary(ExtendedBlock b
+  public Replica createTemporary(ExtendedBlock b
       ) throws IOException;
 
   /**
@@ -190,7 +194,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return the meta info of the replica which is being written to
    * @throws IOException if an error occurs
    */
-  public ReplicaInPipelineInterface createRbw(ExtendedBlock b
+  public Replica createRbw(ExtendedBlock b
       ) throws IOException;
 
   /**
@@ -203,7 +207,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return the meta info of the replica which is being written to
    * @throws IOException if an error occurs
    */
-  public ReplicaInPipelineInterface recoverRbw(ExtendedBlock b, 
+  public Replica recoverRbw(ExtendedBlock b, 
       long newGS, long minBytesRcvd, long maxBytesRcvd) throws IOException;
 
   /**
@@ -211,7 +215,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @param temporary the temporary replica being converted
    * @return the result RBW
    */
-  public ReplicaInPipelineInterface convertTemporaryToRbw(
+  public Replica convertTemporaryToRbw(
       ExtendedBlock temporary) throws IOException;
 
   /**
@@ -223,7 +227,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return the meata info of the replica which is being written to
    * @throws IOException
    */
-  public ReplicaInPipelineInterface append(ExtendedBlock b, long newGS,
+  public Replica append(ExtendedBlock b, long newGS,
       long expectedBlockLen) throws IOException;
 
   /**
@@ -236,7 +240,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return the meta info of the replica which is being written to
    * @throws IOException
    */
-  public ReplicaInPipelineInterface recoverAppend(ExtendedBlock b, long newGS,
+  public Replica recoverAppend(ExtendedBlock b, long newGS,
       long expectedBlockLen) throws IOException;
   
   /**
@@ -440,5 +444,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return true when trash is enabled
    */
   public boolean trashEnabled(String bpid);
+  
+  public StorageType getStorageType();
 }
 

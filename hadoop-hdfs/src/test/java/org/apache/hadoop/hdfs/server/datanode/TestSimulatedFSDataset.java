@@ -65,7 +65,7 @@ public class TestSimulatedFSDataset {
       ExtendedBlock b = new ExtendedBlock(bpid, i, 0, 0); 
       // we pass expected len as zero, - fsdataset should use the sizeof actual
       // data written
-      ReplicaInPipelineInterface bInfo = fsdataset.createRbw(b);
+      ReplicaInPipelineInterface bInfo = (ReplicaInPipelineInterface)fsdataset.createRbw(b);
       ReplicaOutputStreams out = bInfo.createStreams(true,
           DataChecksum.newDataChecksum(DataChecksum.Type.CRC32, 512),-1/*HDFSRS_RWAPI:unused here*/);
       try {

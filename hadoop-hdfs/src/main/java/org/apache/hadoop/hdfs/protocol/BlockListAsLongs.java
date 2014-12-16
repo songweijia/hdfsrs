@@ -86,7 +86,7 @@ public class BlockListAsLongs implements Iterable<Block> {
    * @param uc - list of under construction blocks
    */
   public BlockListAsLongs(final List<? extends Block> finalized,
-                          final List<ReplicaInfo> uc) {
+                          final List<? extends Block> uc) {
     int finalizedSize = finalized == null ? 0 : finalized.size();
     int ucSize = uc == null ? 0 : uc.size();
     int len = HEADER_SIZE
