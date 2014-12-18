@@ -613,6 +613,7 @@ public class DFSOutputStream extends FSOutputSummer
                 dataQueue.removeFirst();
                 dataQueue.notifyAll();
               }
+              continue;
             }
             //}HDFSRS_RWAPI
             if(DFSClient.LOG.isDebugEnabled()) {
