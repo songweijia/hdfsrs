@@ -9,8 +9,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import  org.apache.hadoop.conf.Configuration;
@@ -18,6 +20,7 @@ import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
 import org.apache.hadoop.hdfs.server.datanode.Replica;
+
 
 public class MemDatasetManager {
   class MemAddr {
@@ -85,12 +88,15 @@ public class MemDatasetManager {
   }
 
   private ByteBuffer memRegions[];
-  private HashMap<ExtendedBlockId, MemBlockMeta> memMaps; 
+  private LinkedHashMap<ExtendedBlockId, MemBlockMeta> memMaps; 
+  private HashMap<ExtendedBlockId, String> diskMaps;
   private MemDatasetImpl dataset;
   private LinkedList<MemAddr> availableAddr;
   private final long capacity;
   private final long blocksize; 
   private final int maxRegionSize;
+  
+  private final int cacheSize;
   
   MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
     this.dataset = dataset;
@@ -107,6 +113,21 @@ public class MemDatasetManager {
     for (int i = 0; i < this.memRegions.length; i++)
       for (int j = 0; j < this.maxRegionSize; j += this.blocksize)
         availableAddr.add(new MemAddr(i,j));
+    
+    this.cacheSize = (int)(this.capacity / this.blocksize);
+    this.memMaps = new LinkedHashMap<ExtendedBlockId, MemBlockMeta> (this.cacheSize + 1, 1F, true) {
+      private static final long serialVersionUID = 1;
+      
+      protected boolean removeEldestEntry(Map.Entry<ExtendedBlockId, MemBlockMeta> eldest) { 
+        if (size() > cacheSize) {
+          availableAddr.add(eldest.getValue().getOffset());
+          eldest.getValue().offset = null;
+          diskMaps.put(eldest.getKey(), "");
+          return true;
+        }
+        return false;
+      } 
+    };
   }
   
   long getCapacity() {
