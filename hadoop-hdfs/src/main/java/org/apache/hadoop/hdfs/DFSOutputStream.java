@@ -592,6 +592,29 @@ public class DFSOutputStream extends FSOutputSummer
             endBlock(blockNumber*blockSize+blockWriteOffset); // <-- stop current block and move to new position
           // get new block from namenode.
           if (stage == BlockConstructionStage.PIPELINE_SETUP_CREATE) {
+            // HDFSRS_RWAPI
+            // When we open a file for appending, whose length just fall on the boundary,
+            // The initial state of the streamer is "PIPELINE_SETUP_CREATE". If we seek at
+            // this point, the flush operation will send a packet with "lastPAcketInBlock"
+            // tag to try finalize pending data. However, we don't have pending data at this
+            // point. The effect is, the streamer will create an empty block by the following
+            // call on nextBlockOutputStream(), and close it at the end of this loop. This
+            // empty block will cause problem when we seek to the end of file again, where
+            // another empty block will be created by the following "OVERWRITE" handler. This
+            // cause failure at appending at this point.
+            // The solution: we do not create any block for a flush packet(lastPacketInBlock=
+            // true) in PIPELINE_SETUP_CREATE state. Once it is detected, we safely throw this
+            // packet away, and emulate an ack operation as following. This avoid creation of 
+            // an additional empty block.
+            // 
+            if(one.lastPacketInBlock){
+              synchronized(dataQueue){
+                lastAckedSeqno = one.seqno;
+                dataQueue.removeFirst();
+                dataQueue.notifyAll();
+              }
+            }
+            //}HDFSRS_RWAPI
             if(DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("Allocating new block");
             }

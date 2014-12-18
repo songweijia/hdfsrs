@@ -2715,7 +2715,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       BlockInfo blocks [] = pendingFile.getBlocks();
       if(bIndex >= blocks.length)
         throw new IOException("[HDFSRS_RWAPI]:Invalid bIndex in overwriteBlock:"+bIndex);
-      if(blocks[bIndex].equals(ExtendedBlock.getLocalBlock(previous))){
+      if(previous!=null && blocks[bIndex].equals(ExtendedBlock.getLocalBlock(previous))){
         assert blocks[bIndex].getBlockUCState() == BlockUCState.UNDER_CONSTRUCTION : 
           "[HDFSRS_RWAPI]:previous block in overwriteBlock() is in "+
             blocks[bIndex].getBlockUCState() + "instead of " + BlockUCState.UNDER_CONSTRUCTION;
@@ -2735,7 +2735,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       final INodesInPath iip = dir.getINodesInPath4Write(src);
       final INodeFile pendingFile = checkLease(src, fileId, clientName, iip.getLastINode());
       BlockInfo blocks [] = pendingFile.getBlocks();
-      commitOrCompleteBlock(pendingFile,ExtendedBlock.getLocalBlock(previous));
+      if(previous!=null)
+        commitOrCompleteBlock(pendingFile,ExtendedBlock.getLocalBlock(previous));
       return blockManager.convertBlockToUnderConstruction(pendingFile, bIndex);
     }finally{
       writeUnlock();

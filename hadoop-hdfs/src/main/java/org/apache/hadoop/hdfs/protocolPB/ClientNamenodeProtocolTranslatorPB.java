@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.protocolPB;
 
 import java.io.Closeable;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -118,6 +119,7 @@ import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSa
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.Builder;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto;
@@ -162,6 +164,7 @@ import org.apache.hadoop.security.token.Token;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
+
 
 
 
@@ -294,13 +297,15 @@ public class ClientNamenodeProtocolTranslatorPB implements
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException {
-    OverwriteBlockRequestProto req = OverwriteBlockRequestProto.newBuilder()
+    Builder bldr = OverwriteBlockRequestProto.newBuilder()
         .setSrc(src)
-        .setPrevious(PBHelper.convert(previous))
         .setBIndex(bIndex)
         .setFileId(fileId)
-        .setClientName(clientName)
-        .build();
+        .setClientName(clientName);
+    if(previous!=null)
+      bldr = bldr.setPrevious(PBHelper.convert(previous));
+
+    OverwriteBlockRequestProto req = bldr.build();
 
     try {
       OverwriteBlockResponseProto res = rpcProxy.overwriteBlock(null, req);
