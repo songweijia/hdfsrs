@@ -77,6 +77,17 @@ public interface BlockCollection {
   public BlockInfoUnderConstruction setLastBlock(BlockInfo lastBlock,
       DatanodeStorageInfo[] locations) throws IOException;
 
+  //HDFSRS_RWAPI{
+  /** Convert given block to an under-construction block and set the locations.
+   * 
+   * @param bIndex: block index
+   * @param locations
+   * @return
+   * @throws IOException
+   */
+  public BlockInfoUnderConstruction setBlockToUC(int bIndex,
+      DatanodeStorageInfo[] locations) throws IOException;
+  //}HDFSRS_RWAPI
   /**
    * @return whether the block collection is under construction.
    */

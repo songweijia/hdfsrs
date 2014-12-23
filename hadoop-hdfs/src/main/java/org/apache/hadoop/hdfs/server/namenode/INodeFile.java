@@ -220,6 +220,30 @@ public class INodeFile extends INodeWithAdditionalFields
     setBlock(numBlocks() - 1, ucBlock);
     return ucBlock;
   }
+  
+  //HDFSRS_RWAPI{
+  @Override // BlockCollection, the file should be under construction
+  public BlockInfoUnderConstruction setBlockToUC(int bIndex,
+      DatanodeStorageInfo[] locations) throws IOException {
+    
+    Preconditions.checkState(isUnderConstruction(),
+        "file is no longer under construction");
+
+    if (numBlocks() == 0) {
+      throw new IOException("[HDFSRS_RWAPI]Failed to set block to UC: File is empty.");
+    }
+
+    if(bIndex >= blocks.length || bIndex < 0)
+      throw new IOException("[HDFSRS_RWAPI]Failed to set block to UC: block index="
+          +bIndex+", but we only have "+blocks.length+" blocks in file" + getName());
+    BlockInfoUnderConstruction ucBlock =
+        blocks[bIndex].convertToBlockUnderConstruction(
+            BlockUCState.UNDER_CONSTRUCTION, locations);
+    ucBlock.setBlockCollection(this);
+    setBlock(bIndex,ucBlock);
+    return ucBlock;
+  }
+  //}HDFSRS_RWAPI
 
   /**
    * Remove a block from the block list. This block should be

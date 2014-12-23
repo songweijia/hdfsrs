@@ -758,6 +758,50 @@ public class BlockManager {
     final long pos = fileLength - ucBlock.getNumBytes();
     return createLocatedBlock(ucBlock, pos, AccessMode.WRITE);
   }
+  
+  //HDFSRS_RWAPI{
+  public LocatedBlock convertBlockToUnderConstruction(BlockCollection bc, int bIndex)
+  throws IOException{
+    //TODO
+    if(bIndex >= bc.getBlocks().length || bIndex < -1)
+      throw new IOException("[HDFSRS_RWAPI]block index given in "
+          + "convertBlockToUnderConstruction() is not corrent: bIndex="+bIndex);
+    
+    BlockInfo oldBlock = bc.getBlocks()[bIndex];
+    
+    if(oldBlock == null)
+      return null;
+    
+    assert oldBlock == getStoredBlock(oldBlock) :
+      "last block of the file is not in blocksMap";
+
+    DatanodeStorageInfo[] targets = getStorages(oldBlock);
+
+    BlockInfoUnderConstruction ucBlock = bc.setBlockToUC(bIndex, targets);
+    blocksMap.replaceBlock(ucBlock);
+
+    // Remove block from replication queue.
+    NumberReplicas replicas = countNodes(ucBlock);
+    neededReplications.remove(ucBlock, replicas.liveReplicas(),
+        replicas.decommissionedReplicas(), getReplication(ucBlock));
+    pendingReplications.remove(ucBlock);
+
+    // remove this block from the list of pending blocks to be deleted. 
+    for (DatanodeStorageInfo storage : targets) {
+      invalidateBlocks.remove(storage.getDatanodeDescriptor(), oldBlock);
+    }
+    
+    // Adjust safe-mode totals, since under-construction blocks don't
+    // count in safe-mode.
+    namesystem.adjustSafeModeBlockTotals(
+        // decrement safe if we had enough
+        targets.length >= minReplication ? -1 : 0,
+        // always decrement total blocks
+        -1);
+
+    return createLocatedBlock(ucBlock, bIndex*bc.getPreferredBlockSize(), AccessMode.WRITE);
+  }
+  //}HDFSRS_RWAPI
 
   /**
    * Get all valid locations of the block

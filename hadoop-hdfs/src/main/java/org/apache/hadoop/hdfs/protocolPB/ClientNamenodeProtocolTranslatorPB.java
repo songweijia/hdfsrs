@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.protocolPB;
 
 import java.io.Closeable;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hdfs.protocol.DatanodeID;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
+import org.apache.hadoop.hdfs.protocol.SnapshotAccessControlException;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.DatanodeReportType;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.RollingUpgradeAction;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.SafeModeAction;
@@ -117,6 +119,7 @@ import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSa
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.Builder;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RecoverLeaseRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RefreshNodesRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto;
@@ -163,9 +166,11 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
 
 
+
+
 //HDFSRS_RWAPI{
-import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto;
-import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto;
 //}
 
 /**
@@ -287,17 +292,23 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
   //HDFSRS_RWAPI{
   @Override
-  public LocatedBlock overwrite(String src, long offset, String clientName)
+  public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
+      int bIndex, long fileId, String clientName)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
-      IOException {
-    OverwriteRequestProto req = OverwriteRequestProto.newBuilder()
+      SnapshotAccessControlException, IOException {
+    Builder bldr = OverwriteBlockRequestProto.newBuilder()
         .setSrc(src)
-        .setOffset(offset)
-        .setClientName(clientName)
-        .build();
+        .setBIndex(bIndex)
+        .setFileId(fileId)
+        .setClientName(clientName);
+    if(previous!=null)
+      bldr = bldr.setPrevious(PBHelper.convert(previous));
+
+    OverwriteBlockRequestProto req = bldr.build();
+
     try {
-      OverwriteResponseProto res = rpcProxy.overwrite(null, req);
+      OverwriteBlockResponseProto res = rpcProxy.overwriteBlock(null, req);
       return res.hasBlock() ? PBHelper.convert(res.getBlock()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);

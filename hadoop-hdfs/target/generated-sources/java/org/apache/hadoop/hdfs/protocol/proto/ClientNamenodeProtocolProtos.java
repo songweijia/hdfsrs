@@ -5937,7 +5937,7 @@ public final class ClientNamenodeProtocolProtos {
     // @@protoc_insertion_point(class_scope:hadoop.hdfs.AppendResponseProto)
   }
 
-  public interface OverwriteRequestProtoOrBuilder
+  public interface OverwriteBlockRequestProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
     // required string src = 1;
@@ -5955,54 +5955,78 @@ public final class ClientNamenodeProtocolProtos {
     com.google.protobuf.ByteString
         getSrcBytes();
 
-    // required uint64 offset = 2;
+    // optional .hadoop.hdfs.ExtendedBlockProto previous = 2;
     /**
-     * <code>required uint64 offset = 2;</code>
+     * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
      */
-    boolean hasOffset();
+    boolean hasPrevious();
     /**
-     * <code>required uint64 offset = 2;</code>
+     * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
      */
-    long getOffset();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto getPrevious();
+    /**
+     * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder getPreviousOrBuilder();
 
-    // required string clientName = 3;
+    // required int32 bIndex = 3;
     /**
-     * <code>required string clientName = 3;</code>
+     * <code>required int32 bIndex = 3;</code>
+     */
+    boolean hasBIndex();
+    /**
+     * <code>required int32 bIndex = 3;</code>
+     */
+    int getBIndex();
+
+    // required uint64 fileId = 4;
+    /**
+     * <code>required uint64 fileId = 4;</code>
+     */
+    boolean hasFileId();
+    /**
+     * <code>required uint64 fileId = 4;</code>
+     */
+    long getFileId();
+
+    // required string clientName = 5;
+    /**
+     * <code>required string clientName = 5;</code>
      */
     boolean hasClientName();
     /**
-     * <code>required string clientName = 3;</code>
+     * <code>required string clientName = 5;</code>
      */
     java.lang.String getClientName();
     /**
-     * <code>required string clientName = 3;</code>
+     * <code>required string clientName = 5;</code>
      */
     com.google.protobuf.ByteString
         getClientNameBytes();
   }
   /**
-   * Protobuf type {@code hadoop.hdfs.OverwriteRequestProto}
+   * Protobuf type {@code hadoop.hdfs.OverwriteBlockRequestProto}
    *
    * <pre>
    *HDFSRS_RWAPI{
    * </pre>
    */
-  public static final class OverwriteRequestProto extends
+  public static final class OverwriteBlockRequestProto extends
       com.google.protobuf.GeneratedMessage
-      implements OverwriteRequestProtoOrBuilder {
-    // Use OverwriteRequestProto.newBuilder() to construct.
-    private OverwriteRequestProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements OverwriteBlockRequestProtoOrBuilder {
+    // Use OverwriteBlockRequestProto.newBuilder() to construct.
+    private OverwriteBlockRequestProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private OverwriteRequestProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private OverwriteBlockRequestProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final OverwriteRequestProto defaultInstance;
-    public static OverwriteRequestProto getDefaultInstance() {
+    private static final OverwriteBlockRequestProto defaultInstance;
+    public static OverwriteBlockRequestProto getDefaultInstance() {
       return defaultInstance;
     }
 
-    public OverwriteRequestProto getDefaultInstanceForType() {
+    public OverwriteBlockRequestProto getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -6012,7 +6036,7 @@ public final class ClientNamenodeProtocolProtos {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private OverwriteRequestProto(
+    private OverwriteBlockRequestProto(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -6040,13 +6064,31 @@ public final class ClientNamenodeProtocolProtos {
               src_ = input.readBytes();
               break;
             }
-            case 16: {
+            case 18: {
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = previous_.toBuilder();
+              }
+              previous_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(previous_);
+                previous_ = subBuilder.buildPartial();
+              }
               bitField0_ |= 0x00000002;
-              offset_ = input.readUInt64();
               break;
             }
-            case 26: {
+            case 24: {
               bitField0_ |= 0x00000004;
+              bIndex_ = input.readInt32();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              fileId_ = input.readUInt64();
+              break;
+            }
+            case 42: {
+              bitField0_ |= 0x00000010;
               clientName_ = input.readBytes();
               break;
             }
@@ -6064,28 +6106,28 @@ public final class ClientNamenodeProtocolProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteRequestProto_descriptor;
+      return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockRequestProto_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteRequestProto_fieldAccessorTable
+      return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockRequestProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.class, org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.Builder.class);
+              org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.class, org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<OverwriteRequestProto> PARSER =
-        new com.google.protobuf.AbstractParser<OverwriteRequestProto>() {
-      public OverwriteRequestProto parsePartialFrom(
+    public static com.google.protobuf.Parser<OverwriteBlockRequestProto> PARSER =
+        new com.google.protobuf.AbstractParser<OverwriteBlockRequestProto>() {
+      public OverwriteBlockRequestProto parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new OverwriteRequestProto(input, extensionRegistry);
+        return new OverwriteBlockRequestProto(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<OverwriteRequestProto> getParserForType() {
+    public com.google.protobuf.Parser<OverwriteBlockRequestProto> getParserForType() {
       return PARSER;
     }
 
@@ -6133,33 +6175,71 @@ public final class ClientNamenodeProtocolProtos {
       }
     }
 
-    // required uint64 offset = 2;
-    public static final int OFFSET_FIELD_NUMBER = 2;
-    private long offset_;
+    // optional .hadoop.hdfs.ExtendedBlockProto previous = 2;
+    public static final int PREVIOUS_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto previous_;
     /**
-     * <code>required uint64 offset = 2;</code>
+     * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
      */
-    public boolean hasOffset() {
+    public boolean hasPrevious() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required uint64 offset = 2;</code>
+     * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
      */
-    public long getOffset() {
-      return offset_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto getPrevious() {
+      return previous_;
+    }
+    /**
+     * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder getPreviousOrBuilder() {
+      return previous_;
     }
 
-    // required string clientName = 3;
-    public static final int CLIENTNAME_FIELD_NUMBER = 3;
-    private java.lang.Object clientName_;
+    // required int32 bIndex = 3;
+    public static final int BINDEX_FIELD_NUMBER = 3;
+    private int bIndex_;
     /**
-     * <code>required string clientName = 3;</code>
+     * <code>required int32 bIndex = 3;</code>
      */
-    public boolean hasClientName() {
+    public boolean hasBIndex() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required string clientName = 3;</code>
+     * <code>required int32 bIndex = 3;</code>
+     */
+    public int getBIndex() {
+      return bIndex_;
+    }
+
+    // required uint64 fileId = 4;
+    public static final int FILEID_FIELD_NUMBER = 4;
+    private long fileId_;
+    /**
+     * <code>required uint64 fileId = 4;</code>
+     */
+    public boolean hasFileId() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>required uint64 fileId = 4;</code>
+     */
+    public long getFileId() {
+      return fileId_;
+    }
+
+    // required string clientName = 5;
+    public static final int CLIENTNAME_FIELD_NUMBER = 5;
+    private java.lang.Object clientName_;
+    /**
+     * <code>required string clientName = 5;</code>
+     */
+    public boolean hasClientName() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>required string clientName = 5;</code>
      */
     public java.lang.String getClientName() {
       java.lang.Object ref = clientName_;
@@ -6176,7 +6256,7 @@ public final class ClientNamenodeProtocolProtos {
       }
     }
     /**
-     * <code>required string clientName = 3;</code>
+     * <code>required string clientName = 5;</code>
      */
     public com.google.protobuf.ByteString
         getClientNameBytes() {
@@ -6194,7 +6274,9 @@ public final class ClientNamenodeProtocolProtos {
 
     private void initFields() {
       src_ = "";
-      offset_ = 0L;
+      previous_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance();
+      bIndex_ = 0;
+      fileId_ = 0L;
       clientName_ = "";
     }
     private byte memoizedIsInitialized = -1;
@@ -6206,13 +6288,23 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasOffset()) {
+      if (!hasBIndex()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasFileId()) {
         memoizedIsInitialized = 0;
         return false;
       }
       if (!hasClientName()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      if (hasPrevious()) {
+        if (!getPrevious().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -6225,10 +6317,16 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBytes(1, getSrcBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeUInt64(2, offset_);
+        output.writeMessage(2, previous_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getClientNameBytes());
+        output.writeInt32(3, bIndex_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt64(4, fileId_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(5, getClientNameBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -6245,11 +6343,19 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(2, offset_);
+          .computeMessageSize(2, previous_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getClientNameBytes());
+          .computeInt32Size(3, bIndex_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(4, fileId_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getClientNameBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6268,10 +6374,10 @@ public final class ClientNamenodeProtocolProtos {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto)) {
+      if (!(obj instanceof org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto)) {
         return super.equals(obj);
       }
-      org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto other = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto) obj;
+      org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto other = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto) obj;
 
       boolean result = true;
       result = result && (hasSrc() == other.hasSrc());
@@ -6279,10 +6385,20 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getSrc()
             .equals(other.getSrc());
       }
-      result = result && (hasOffset() == other.hasOffset());
-      if (hasOffset()) {
-        result = result && (getOffset()
-            == other.getOffset());
+      result = result && (hasPrevious() == other.hasPrevious());
+      if (hasPrevious()) {
+        result = result && getPrevious()
+            .equals(other.getPrevious());
+      }
+      result = result && (hasBIndex() == other.hasBIndex());
+      if (hasBIndex()) {
+        result = result && (getBIndex()
+            == other.getBIndex());
+      }
+      result = result && (hasFileId() == other.hasFileId());
+      if (hasFileId()) {
+        result = result && (getFileId()
+            == other.getFileId());
       }
       result = result && (hasClientName() == other.hasClientName());
       if (hasClientName()) {
@@ -6306,9 +6422,17 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + SRC_FIELD_NUMBER;
         hash = (53 * hash) + getSrc().hashCode();
       }
-      if (hasOffset()) {
-        hash = (37 * hash) + OFFSET_FIELD_NUMBER;
-        hash = (53 * hash) + hashLong(getOffset());
+      if (hasPrevious()) {
+        hash = (37 * hash) + PREVIOUS_FIELD_NUMBER;
+        hash = (53 * hash) + getPrevious().hashCode();
+      }
+      if (hasBIndex()) {
+        hash = (37 * hash) + BINDEX_FIELD_NUMBER;
+        hash = (53 * hash) + getBIndex();
+      }
+      if (hasFileId()) {
+        hash = (37 * hash) + FILEID_FIELD_NUMBER;
+        hash = (53 * hash) + hashLong(getFileId());
       }
       if (hasClientName()) {
         hash = (37 * hash) + CLIENTNAME_FIELD_NUMBER;
@@ -6319,53 +6443,53 @@ public final class ClientNamenodeProtocolProtos {
       return hash;
     }
 
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseFrom(byte[] data)
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseFrom(java.io.InputStream input)
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseDelimitedFrom(java.io.InputStream input)
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseDelimitedFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6374,7 +6498,7 @@ public final class ClientNamenodeProtocolProtos {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto prototype) {
+    public static Builder newBuilder(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -6386,7 +6510,7 @@ public final class ClientNamenodeProtocolProtos {
       return builder;
     }
     /**
-     * Protobuf type {@code hadoop.hdfs.OverwriteRequestProto}
+     * Protobuf type {@code hadoop.hdfs.OverwriteBlockRequestProto}
      *
      * <pre>
      *HDFSRS_RWAPI{
@@ -6394,20 +6518,20 @@ public final class ClientNamenodeProtocolProtos {
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProtoOrBuilder {
+       implements org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProtoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteRequestProto_descriptor;
+        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockRequestProto_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteRequestProto_fieldAccessorTable
+        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockRequestProto_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.class, org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.Builder.class);
+                org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.class, org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.Builder.class);
       }
 
-      // Construct using org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.newBuilder()
+      // Construct using org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -6419,6 +6543,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getPreviousFieldBuilder();
         }
       }
       private static Builder create() {
@@ -6429,10 +6554,18 @@ public final class ClientNamenodeProtocolProtos {
         super.clear();
         src_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        offset_ = 0L;
+        if (previousBuilder_ == null) {
+          previous_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance();
+        } else {
+          previousBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000002);
-        clientName_ = "";
+        bIndex_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
+        fileId_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        clientName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -6442,23 +6575,23 @@ public final class ClientNamenodeProtocolProtos {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteRequestProto_descriptor;
+        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockRequestProto_descriptor;
       }
 
-      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto getDefaultInstanceForType() {
-        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.getDefaultInstance();
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto getDefaultInstanceForType() {
+        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.getDefaultInstance();
       }
 
-      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto build() {
-        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto result = buildPartial();
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto build() {
+        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto buildPartial() {
-        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto result = new org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto(this);
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto buildPartial() {
+        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto result = new org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -6468,9 +6601,21 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.offset_ = offset_;
+        if (previousBuilder_ == null) {
+          result.previous_ = previous_;
+        } else {
+          result.previous_ = previousBuilder_.build();
+        }
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
+        }
+        result.bIndex_ = bIndex_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.fileId_ = fileId_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
         }
         result.clientName_ = clientName_;
         result.bitField0_ = to_bitField0_;
@@ -6479,26 +6624,32 @@ public final class ClientNamenodeProtocolProtos {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto) {
-          return mergeFrom((org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto)other);
+        if (other instanceof org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto) {
+          return mergeFrom((org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto other) {
-        if (other == org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto other) {
+        if (other == org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.getDefaultInstance()) return this;
         if (other.hasSrc()) {
           bitField0_ |= 0x00000001;
           src_ = other.src_;
           onChanged();
         }
-        if (other.hasOffset()) {
-          setOffset(other.getOffset());
+        if (other.hasPrevious()) {
+          mergePrevious(other.getPrevious());
+        }
+        if (other.hasBIndex()) {
+          setBIndex(other.getBIndex());
+        }
+        if (other.hasFileId()) {
+          setFileId(other.getFileId());
         }
         if (other.hasClientName()) {
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000010;
           clientName_ = other.clientName_;
           onChanged();
         }
@@ -6511,13 +6662,23 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasOffset()) {
+        if (!hasBIndex()) {
+          
+          return false;
+        }
+        if (!hasFileId()) {
           
           return false;
         }
         if (!hasClientName()) {
           
           return false;
+        }
+        if (hasPrevious()) {
+          if (!getPrevious().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -6526,11 +6687,11 @@ public final class ClientNamenodeProtocolProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto parsedMessage = null;
+        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto) e.getUnfinishedMessage();
+          parsedMessage = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -6615,49 +6776,199 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required uint64 offset = 2;
-      private long offset_ ;
+      // optional .hadoop.hdfs.ExtendedBlockProto previous = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto previous_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder> previousBuilder_;
       /**
-       * <code>required uint64 offset = 2;</code>
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
        */
-      public boolean hasOffset() {
+      public boolean hasPrevious() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required uint64 offset = 2;</code>
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
        */
-      public long getOffset() {
-        return offset_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto getPrevious() {
+        if (previousBuilder_ == null) {
+          return previous_;
+        } else {
+          return previousBuilder_.getMessage();
+        }
       }
       /**
-       * <code>required uint64 offset = 2;</code>
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
        */
-      public Builder setOffset(long value) {
+      public Builder setPrevious(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto value) {
+        if (previousBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          previous_ = value;
+          onChanged();
+        } else {
+          previousBuilder_.setMessage(value);
+        }
         bitField0_ |= 0x00000002;
-        offset_ = value;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
+       */
+      public Builder setPrevious(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder builderForValue) {
+        if (previousBuilder_ == null) {
+          previous_ = builderForValue.build();
+          onChanged();
+        } else {
+          previousBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
+       */
+      public Builder mergePrevious(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto value) {
+        if (previousBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              previous_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance()) {
+            previous_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.newBuilder(previous_).mergeFrom(value).buildPartial();
+          } else {
+            previous_ = value;
+          }
+          onChanged();
+        } else {
+          previousBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
+       */
+      public Builder clearPrevious() {
+        if (previousBuilder_ == null) {
+          previous_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance();
+          onChanged();
+        } else {
+          previousBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder getPreviousBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getPreviousFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder getPreviousOrBuilder() {
+        if (previousBuilder_ != null) {
+          return previousBuilder_.getMessageOrBuilder();
+        } else {
+          return previous_;
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.ExtendedBlockProto previous = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder> 
+          getPreviousFieldBuilder() {
+        if (previousBuilder_ == null) {
+          previousBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder>(
+                  previous_,
+                  getParentForChildren(),
+                  isClean());
+          previous_ = null;
+        }
+        return previousBuilder_;
+      }
+
+      // required int32 bIndex = 3;
+      private int bIndex_ ;
+      /**
+       * <code>required int32 bIndex = 3;</code>
+       */
+      public boolean hasBIndex() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int32 bIndex = 3;</code>
+       */
+      public int getBIndex() {
+        return bIndex_;
+      }
+      /**
+       * <code>required int32 bIndex = 3;</code>
+       */
+      public Builder setBIndex(int value) {
+        bitField0_ |= 0x00000004;
+        bIndex_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint64 offset = 2;</code>
+       * <code>required int32 bIndex = 3;</code>
        */
-      public Builder clearOffset() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        offset_ = 0L;
+      public Builder clearBIndex() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        bIndex_ = 0;
         onChanged();
         return this;
       }
 
-      // required string clientName = 3;
-      private java.lang.Object clientName_ = "";
+      // required uint64 fileId = 4;
+      private long fileId_ ;
       /**
-       * <code>required string clientName = 3;</code>
+       * <code>required uint64 fileId = 4;</code>
        */
-      public boolean hasClientName() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+      public boolean hasFileId() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>required string clientName = 3;</code>
+       * <code>required uint64 fileId = 4;</code>
+       */
+      public long getFileId() {
+        return fileId_;
+      }
+      /**
+       * <code>required uint64 fileId = 4;</code>
+       */
+      public Builder setFileId(long value) {
+        bitField0_ |= 0x00000008;
+        fileId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint64 fileId = 4;</code>
+       */
+      public Builder clearFileId() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        fileId_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // required string clientName = 5;
+      private java.lang.Object clientName_ = "";
+      /**
+       * <code>required string clientName = 5;</code>
+       */
+      public boolean hasClientName() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>required string clientName = 5;</code>
        */
       public java.lang.String getClientName() {
         java.lang.Object ref = clientName_;
@@ -6671,7 +6982,7 @@ public final class ClientNamenodeProtocolProtos {
         }
       }
       /**
-       * <code>required string clientName = 3;</code>
+       * <code>required string clientName = 5;</code>
        */
       public com.google.protobuf.ByteString
           getClientNameBytes() {
@@ -6687,53 +6998,53 @@ public final class ClientNamenodeProtocolProtos {
         }
       }
       /**
-       * <code>required string clientName = 3;</code>
+       * <code>required string clientName = 5;</code>
        */
       public Builder setClientName(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000010;
         clientName_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string clientName = 3;</code>
+       * <code>required string clientName = 5;</code>
        */
       public Builder clearClientName() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000010);
         clientName_ = getDefaultInstance().getClientName();
         onChanged();
         return this;
       }
       /**
-       * <code>required string clientName = 3;</code>
+       * <code>required string clientName = 5;</code>
        */
       public Builder setClientNameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000010;
         clientName_ = value;
         onChanged();
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OverwriteRequestProto)
+      // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OverwriteBlockRequestProto)
     }
 
     static {
-      defaultInstance = new OverwriteRequestProto(true);
+      defaultInstance = new OverwriteBlockRequestProto(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:hadoop.hdfs.OverwriteRequestProto)
+    // @@protoc_insertion_point(class_scope:hadoop.hdfs.OverwriteBlockRequestProto)
   }
 
-  public interface OverwriteResponseProtoOrBuilder
+  public interface OverwriteBlockResponseProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
     // optional .hadoop.hdfs.LocatedBlockProto block = 1;
@@ -6751,24 +7062,24 @@ public final class ClientNamenodeProtocolProtos {
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProtoOrBuilder getBlockOrBuilder();
   }
   /**
-   * Protobuf type {@code hadoop.hdfs.OverwriteResponseProto}
+   * Protobuf type {@code hadoop.hdfs.OverwriteBlockResponseProto}
    */
-  public static final class OverwriteResponseProto extends
+  public static final class OverwriteBlockResponseProto extends
       com.google.protobuf.GeneratedMessage
-      implements OverwriteResponseProtoOrBuilder {
-    // Use OverwriteResponseProto.newBuilder() to construct.
-    private OverwriteResponseProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements OverwriteBlockResponseProtoOrBuilder {
+    // Use OverwriteBlockResponseProto.newBuilder() to construct.
+    private OverwriteBlockResponseProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private OverwriteResponseProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private OverwriteBlockResponseProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final OverwriteResponseProto defaultInstance;
-    public static OverwriteResponseProto getDefaultInstance() {
+    private static final OverwriteBlockResponseProto defaultInstance;
+    public static OverwriteBlockResponseProto getDefaultInstance() {
       return defaultInstance;
     }
 
-    public OverwriteResponseProto getDefaultInstanceForType() {
+    public OverwriteBlockResponseProto getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -6778,7 +7089,7 @@ public final class ClientNamenodeProtocolProtos {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private OverwriteResponseProto(
+    private OverwriteBlockResponseProto(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -6828,28 +7139,28 @@ public final class ClientNamenodeProtocolProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteResponseProto_descriptor;
+      return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockResponseProto_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteResponseProto_fieldAccessorTable
+      return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockResponseProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.class, org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.Builder.class);
+              org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.class, org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<OverwriteResponseProto> PARSER =
-        new com.google.protobuf.AbstractParser<OverwriteResponseProto>() {
-      public OverwriteResponseProto parsePartialFrom(
+    public static com.google.protobuf.Parser<OverwriteBlockResponseProto> PARSER =
+        new com.google.protobuf.AbstractParser<OverwriteBlockResponseProto>() {
+      public OverwriteBlockResponseProto parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new OverwriteResponseProto(input, extensionRegistry);
+        return new OverwriteBlockResponseProto(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<OverwriteResponseProto> getParserForType() {
+    public com.google.protobuf.Parser<OverwriteBlockResponseProto> getParserForType() {
       return PARSER;
     }
 
@@ -6930,10 +7241,10 @@ public final class ClientNamenodeProtocolProtos {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto)) {
+      if (!(obj instanceof org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto)) {
         return super.equals(obj);
       }
-      org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto other = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto) obj;
+      org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto other = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto) obj;
 
       boolean result = true;
       result = result && (hasBlock() == other.hasBlock());
@@ -6963,53 +7274,53 @@ public final class ClientNamenodeProtocolProtos {
       return hash;
     }
 
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseFrom(byte[] data)
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseFrom(java.io.InputStream input)
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseDelimitedFrom(java.io.InputStream input)
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseDelimitedFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parseFrom(
+    public static org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -7018,7 +7329,7 @@ public final class ClientNamenodeProtocolProtos {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto prototype) {
+    public static Builder newBuilder(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -7030,24 +7341,24 @@ public final class ClientNamenodeProtocolProtos {
       return builder;
     }
     /**
-     * Protobuf type {@code hadoop.hdfs.OverwriteResponseProto}
+     * Protobuf type {@code hadoop.hdfs.OverwriteBlockResponseProto}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProtoOrBuilder {
+       implements org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProtoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteResponseProto_descriptor;
+        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockResponseProto_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteResponseProto_fieldAccessorTable
+        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockResponseProto_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.class, org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.Builder.class);
+                org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.class, org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.Builder.class);
       }
 
-      // Construct using org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.newBuilder()
+      // Construct using org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -7083,23 +7394,23 @@ public final class ClientNamenodeProtocolProtos {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteResponseProto_descriptor;
+        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.internal_static_hadoop_hdfs_OverwriteBlockResponseProto_descriptor;
       }
 
-      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto getDefaultInstanceForType() {
-        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance();
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto getDefaultInstanceForType() {
+        return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.getDefaultInstance();
       }
 
-      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto build() {
-        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto result = buildPartial();
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto build() {
+        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto buildPartial() {
-        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto result = new org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto(this);
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto buildPartial() {
+        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto result = new org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -7116,16 +7427,16 @@ public final class ClientNamenodeProtocolProtos {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto) {
-          return mergeFrom((org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto)other);
+        if (other instanceof org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto) {
+          return mergeFrom((org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto other) {
-        if (other == org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto other) {
+        if (other == org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.getDefaultInstance()) return this;
         if (other.hasBlock()) {
           mergeBlock(other.getBlock());
         }
@@ -7147,11 +7458,11 @@ public final class ClientNamenodeProtocolProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto parsedMessage = null;
+        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto) e.getUnfinishedMessage();
+          parsedMessage = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -7279,15 +7590,15 @@ public final class ClientNamenodeProtocolProtos {
         return blockBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OverwriteResponseProto)
+      // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OverwriteBlockResponseProto)
     }
 
     static {
-      defaultInstance = new OverwriteResponseProto(true);
+      defaultInstance = new OverwriteBlockResponseProto(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:hadoop.hdfs.OverwriteResponseProto)
+    // @@protoc_insertion_point(class_scope:hadoop.hdfs.OverwriteBlockResponseProto)
   }
 
   public interface SetReplicationRequestProtoOrBuilder
@@ -76829,16 +77140,16 @@ public final class ClientNamenodeProtocolProtos {
           com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto> done);
 
       /**
-       * <code>rpc overwrite(.hadoop.hdfs.OverwriteRequestProto) returns (.hadoop.hdfs.OverwriteResponseProto);</code>
+       * <code>rpc overwriteBlock(.hadoop.hdfs.OverwriteBlockRequestProto) returns (.hadoop.hdfs.OverwriteBlockResponseProto);</code>
        *
        * <pre>
        *HDFSRS_RWAPI{
        * </pre>
        */
-      public abstract void overwrite(
+      public abstract void overwriteBlock(
           com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto request,
-          com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto> done);
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto> done);
 
       /**
        * <code>rpc setReplication(.hadoop.hdfs.SetReplicationRequestProto) returns (.hadoop.hdfs.SetReplicationResponseProto);</code>
@@ -77410,11 +77721,11 @@ public final class ClientNamenodeProtocolProtos {
         }
 
         @java.lang.Override
-        public  void overwrite(
+        public  void overwriteBlock(
             com.google.protobuf.RpcController controller,
-            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto request,
-            com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto> done) {
-          impl.overwrite(controller, request, done);
+            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto request,
+            com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto> done) {
+          impl.overwriteBlock(controller, request, done);
         }
 
         @java.lang.Override
@@ -77970,7 +78281,7 @@ public final class ClientNamenodeProtocolProtos {
             case 4:
               return impl.append(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto)request);
             case 5:
-              return impl.overwrite(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto)request);
+              return impl.overwriteBlock(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto)request);
             case 6:
               return impl.setReplication(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto)request);
             case 7:
@@ -78126,7 +78437,7 @@ public final class ClientNamenodeProtocolProtos {
             case 4:
               return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto.getDefaultInstance();
             case 5:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.getDefaultInstance();
             case 6:
               return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto.getDefaultInstance();
             case 7:
@@ -78282,7 +78593,7 @@ public final class ClientNamenodeProtocolProtos {
             case 4:
               return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance();
             case 5:
-              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance();
+              return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.getDefaultInstance();
             case 6:
               return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto.getDefaultInstance();
             case 7:
@@ -78470,16 +78781,16 @@ public final class ClientNamenodeProtocolProtos {
         com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto> done);
 
     /**
-     * <code>rpc overwrite(.hadoop.hdfs.OverwriteRequestProto) returns (.hadoop.hdfs.OverwriteResponseProto);</code>
+     * <code>rpc overwriteBlock(.hadoop.hdfs.OverwriteBlockRequestProto) returns (.hadoop.hdfs.OverwriteBlockResponseProto);</code>
      *
      * <pre>
      *HDFSRS_RWAPI{
      * </pre>
      */
-    public abstract void overwrite(
+    public abstract void overwriteBlock(
         com.google.protobuf.RpcController controller,
-        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto request,
-        com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto> done);
+        org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto request,
+        com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto> done);
 
     /**
      * <code>rpc setReplication(.hadoop.hdfs.SetReplicationRequestProto) returns (.hadoop.hdfs.SetReplicationResponseProto);</code>
@@ -79053,8 +79364,8 @@ public final class ClientNamenodeProtocolProtos {
               done));
           return;
         case 5:
-          this.overwrite(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto)request,
-            com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto>specializeCallback(
+          this.overwriteBlock(controller, (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto)request,
+            com.google.protobuf.RpcUtil.<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto>specializeCallback(
               done));
           return;
         case 6:
@@ -79407,7 +79718,7 @@ public final class ClientNamenodeProtocolProtos {
         case 4:
           return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto.getDefaultInstance();
         case 5:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.getDefaultInstance();
         case 6:
           return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationRequestProto.getDefaultInstance();
         case 7:
@@ -79563,7 +79874,7 @@ public final class ClientNamenodeProtocolProtos {
         case 4:
           return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance();
         case 5:
-          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance();
+          return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.getDefaultInstance();
         case 6:
           return org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto.getDefaultInstance();
         case 7:
@@ -79790,19 +80101,19 @@ public final class ClientNamenodeProtocolProtos {
             org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto.getDefaultInstance()));
       }
 
-      public  void overwrite(
+      public  void overwriteBlock(
           com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto request,
-          com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto> done) {
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(5),
           controller,
           request,
-          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance(),
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.class,
-            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance()));
+            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.class,
+            org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.getDefaultInstance()));
       }
 
       public  void setReplication(
@@ -80812,9 +81123,9 @@ public final class ClientNamenodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto overwrite(
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto overwriteBlock(
           com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto request)
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto request)
           throws com.google.protobuf.ServiceException;
 
       public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.SetReplicationResponseProto setReplication(
@@ -81210,15 +81521,15 @@ public final class ClientNamenodeProtocolProtos {
       }
 
 
-      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto overwrite(
+      public org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto overwriteBlock(
           com.google.protobuf.RpcController controller,
-          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteRequestProto request)
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto request)
           throws com.google.protobuf.ServiceException {
-        return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto) channel.callBlockingMethod(
+        return (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto) channel.callBlockingMethod(
           getDescriptor().getMethods().get(5),
           controller,
           request,
-          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteResponseProto.getDefaultInstance());
+          org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockResponseProto.getDefaultInstance());
       }
 
 
@@ -82047,15 +82358,15 @@ public final class ClientNamenodeProtocolProtos {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_hadoop_hdfs_AppendResponseProto_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_hadoop_hdfs_OverwriteRequestProto_descriptor;
+    internal_static_hadoop_hdfs_OverwriteBlockRequestProto_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_hadoop_hdfs_OverwriteRequestProto_fieldAccessorTable;
+      internal_static_hadoop_hdfs_OverwriteBlockRequestProto_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_hadoop_hdfs_OverwriteResponseProto_descriptor;
+    internal_static_hadoop_hdfs_OverwriteBlockResponseProto_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_hadoop_hdfs_OverwriteResponseProto_fieldAccessorTable;
+      internal_static_hadoop_hdfs_OverwriteBlockResponseProto_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_hadoop_hdfs_SetReplicationRequestProto_descriptor;
   private static
@@ -82683,404 +82994,407 @@ public final class ClientNamenodeProtocolProtos {
       "oop.hdfs.HdfsFileStatusProto\"5\n\022AppendRe" +
       "questProto\022\013\n\003src\030\001 \002(\t\022\022\n\nclientName\030\002 " +
       "\002(\t\"D\n\023AppendResponseProto\022-\n\005block\030\001 \001(" +
-      "\0132\036.hadoop.hdfs.LocatedBlockProto\"H\n\025Ove" +
-      "rwriteRequestProto\022\013\n\003src\030\001 \002(\t\022\016\n\006offse",
-      "t\030\002 \002(\004\022\022\n\nclientName\030\003 \002(\t\"G\n\026Overwrite" +
-      "ResponseProto\022-\n\005block\030\001 \001(\0132\036.hadoop.hd" +
-      "fs.LocatedBlockProto\">\n\032SetReplicationRe" +
-      "questProto\022\013\n\003src\030\001 \002(\t\022\023\n\013replication\030\002" +
-      " \002(\r\"-\n\033SetReplicationResponseProto\022\016\n\006r" +
-      "esult\030\001 \002(\010\"\\\n\031SetPermissionRequestProto" +
-      "\022\013\n\003src\030\001 \002(\t\0222\n\npermission\030\002 \002(\0132\036.hado" +
-      "op.hdfs.FsPermissionProto\"\034\n\032SetPermissi" +
-      "onResponseProto\"H\n\024SetOwnerRequestProto\022" +
-      "\013\n\003src\030\001 \002(\t\022\020\n\010username\030\002 \001(\t\022\021\n\tgroupn",
-      "ame\030\003 \001(\t\"\027\n\025SetOwnerResponseProto\"c\n\030Ab" +
-      "andonBlockRequestProto\022*\n\001b\030\001 \002(\0132\037.hado" +
-      "op.hdfs.ExtendedBlockProto\022\013\n\003src\030\002 \002(\t\022" +
-      "\016\n\006holder\030\003 \002(\t\"\033\n\031AbandonBlockResponseP" +
-      "roto\"\311\001\n\024AddBlockRequestProto\022\013\n\003src\030\001 \002" +
-      "(\t\022\022\n\nclientName\030\002 \002(\t\0221\n\010previous\030\003 \001(\013" +
-      "2\037.hadoop.hdfs.ExtendedBlockProto\0224\n\014exc" +
-      "ludeNodes\030\004 \003(\0132\036.hadoop.hdfs.DatanodeIn" +
-      "foProto\022\021\n\006fileId\030\005 \001(\004:\0010\022\024\n\014favoredNod" +
-      "es\030\006 \003(\t\"F\n\025AddBlockResponseProto\022-\n\005blo",
-      "ck\030\001 \002(\0132\036.hadoop.hdfs.LocatedBlockProto" +
-      "\"\221\002\n!GetAdditionalDatanodeRequestProto\022\013" +
-      "\n\003src\030\001 \002(\t\022,\n\003blk\030\002 \002(\0132\037.hadoop.hdfs.E" +
-      "xtendedBlockProto\0221\n\texistings\030\003 \003(\0132\036.h" +
-      "adoop.hdfs.DatanodeInfoProto\0220\n\010excludes" +
-      "\030\004 \003(\0132\036.hadoop.hdfs.DatanodeInfoProto\022\032" +
-      "\n\022numAdditionalNodes\030\005 \002(\r\022\022\n\nclientName" +
-      "\030\006 \002(\t\022\034\n\024existingStorageUuids\030\007 \003(\t\"S\n\"" +
-      "GetAdditionalDatanodeResponseProto\022-\n\005bl" +
-      "ock\030\001 \002(\0132\036.hadoop.hdfs.LocatedBlockProt",
-      "o\"y\n\024CompleteRequestProto\022\013\n\003src\030\001 \002(\t\022\022" +
-      "\n\nclientName\030\002 \002(\t\022-\n\004last\030\003 \001(\0132\037.hadoo" +
-      "p.hdfs.ExtendedBlockProto\022\021\n\006fileId\030\004 \001(" +
-      "\004:\0010\"\'\n\025CompleteResponseProto\022\016\n\006result\030" +
-      "\001 \002(\010\"M\n\033ReportBadBlocksRequestProto\022.\n\006" +
-      "blocks\030\001 \003(\0132\036.hadoop.hdfs.LocatedBlockP" +
-      "roto\"\036\n\034ReportBadBlocksResponseProto\"/\n\022" +
-      "ConcatRequestProto\022\013\n\003trg\030\001 \002(\t\022\014\n\004srcs\030" +
-      "\002 \003(\t\"\025\n\023ConcatResponseProto\".\n\022RenameRe" +
-      "questProto\022\013\n\003src\030\001 \002(\t\022\013\n\003dst\030\002 \002(\t\"%\n\023",
-      "RenameResponseProto\022\016\n\006result\030\001 \002(\010\"F\n\023R" +
-      "ename2RequestProto\022\013\n\003src\030\001 \002(\t\022\013\n\003dst\030\002" +
-      " \002(\t\022\025\n\roverwriteDest\030\003 \002(\010\"\026\n\024Rename2Re" +
-      "sponseProto\"4\n\022DeleteRequestProto\022\013\n\003src" +
-      "\030\001 \002(\t\022\021\n\trecursive\030\002 \002(\010\"%\n\023DeleteRespo" +
-      "nseProto\022\016\n\006result\030\001 \002(\010\"g\n\022MkdirsReques" +
-      "tProto\022\013\n\003src\030\001 \002(\t\022.\n\006masked\030\002 \002(\0132\036.ha" +
-      "doop.hdfs.FsPermissionProto\022\024\n\014createPar" +
-      "ent\030\003 \002(\010\"%\n\023MkdirsResponseProto\022\016\n\006resu" +
-      "lt\030\001 \002(\010\"O\n\026GetListingRequestProto\022\013\n\003sr",
-      "c\030\001 \002(\t\022\022\n\nstartAfter\030\002 \002(\014\022\024\n\014needLocat" +
-      "ion\030\003 \002(\010\"N\n\027GetListingResponseProto\0223\n\007" +
-      "dirList\030\001 \001(\0132\".hadoop.hdfs.DirectoryLis" +
-      "tingProto\"(\n&GetSnapshottableDirListingR" +
-      "equestProto\"x\n\'GetSnapshottableDirListin" +
-      "gResponseProto\022M\n\024snapshottableDirList\030\001" +
-      " \001(\0132/.hadoop.hdfs.SnapshottableDirector" +
-      "yListingProto\"c\n!GetSnapshotDiffReportRe" +
-      "questProto\022\024\n\014snapshotRoot\030\001 \002(\t\022\024\n\014from" +
-      "Snapshot\030\002 \002(\t\022\022\n\ntoSnapshot\030\003 \002(\t\"^\n\"Ge",
-      "tSnapshotDiffReportResponseProto\0228\n\ndiff" +
-      "Report\030\001 \002(\0132$.hadoop.hdfs.SnapshotDiffR" +
-      "eportProto\",\n\026RenewLeaseRequestProto\022\022\n\n" +
-      "clientName\030\001 \002(\t\"\031\n\027RenewLeaseResponsePr" +
-      "oto\";\n\030RecoverLeaseRequestProto\022\013\n\003src\030\001" +
-      " \002(\t\022\022\n\nclientName\030\002 \002(\t\"+\n\031RecoverLease" +
-      "ResponseProto\022\016\n\006result\030\001 \002(\010\"\031\n\027GetFsSt" +
-      "atusRequestProto\"\226\001\n\027GetFsStatsResponseP" +
-      "roto\022\020\n\010capacity\030\001 \002(\004\022\014\n\004used\030\002 \002(\004\022\021\n\t" +
-      "remaining\030\003 \002(\004\022\030\n\020under_replicated\030\004 \002(",
-      "\004\022\026\n\016corrupt_blocks\030\005 \002(\004\022\026\n\016missing_blo" +
-      "cks\030\006 \002(\004\"S\n\035GetDatanodeReportRequestPro" +
-      "to\0222\n\004type\030\001 \002(\0162$.hadoop.hdfs.DatanodeR" +
-      "eportTypeProto\"L\n\036GetDatanodeReportRespo" +
-      "nseProto\022*\n\002di\030\001 \003(\0132\036.hadoop.hdfs.Datan" +
-      "odeInfoProto\"5\n!GetPreferredBlockSizeReq" +
-      "uestProto\022\020\n\010filename\030\001 \002(\t\"3\n\"GetPrefer" +
-      "redBlockSizeResponseProto\022\r\n\005bsize\030\001 \002(\004" +
-      "\"c\n\027SetSafeModeRequestProto\0220\n\006action\030\001 " +
-      "\002(\0162 .hadoop.hdfs.SafeModeActionProto\022\026\n",
-      "\007checked\030\002 \001(\010:\005false\"*\n\030SetSafeModeResp" +
-      "onseProto\022\016\n\006result\030\001 \002(\010\"\033\n\031SaveNamespa" +
-      "ceRequestProto\"\034\n\032SaveNamespaceResponseP" +
-      "roto\"\027\n\025RollEditsRequestProto\"0\n\026RollEdi" +
-      "tsResponseProto\022\026\n\016newSegmentTxId\030\001 \002(\004\"" +
-      "/\n RestoreFailedStorageRequestProto\022\013\n\003a" +
-      "rg\030\001 \002(\t\"3\n!RestoreFailedStorageResponse" +
-      "Proto\022\016\n\006result\030\001 \002(\010\"\032\n\030RefreshNodesReq" +
-      "uestProto\"\033\n\031RefreshNodesResponseProto\"\035" +
-      "\n\033FinalizeUpgradeRequestProto\"\036\n\034Finaliz",
-      "eUpgradeResponseProto\"T\n\032RollingUpgradeR" +
-      "equestProto\0226\n\006action\030\001 \002(\0162&.hadoop.hdf" +
-      "s.RollingUpgradeActionProto\"\231\001\n\027RollingU" +
-      "pgradeInfoProto\0226\n\006status\030\001 \002(\0132&.hadoop" +
-      ".hdfs.RollingUpgradeStatusProto\022\021\n\tstart" +
-      "Time\030\002 \002(\004\022\024\n\014finalizeTime\030\003 \002(\004\022\035\n\025crea" +
-      "tedRollbackImages\030\004 \002(\010\"_\n\033RollingUpgrad" +
-      "eResponseProto\022@\n\022rollingUpgradeInfo\030\001 \001" +
-      "(\0132$.hadoop.hdfs.RollingUpgradeInfoProto" +
-      "\"A\n!ListCorruptFileBlocksRequestProto\022\014\n",
-      "\004path\030\001 \002(\t\022\016\n\006cookie\030\002 \001(\t\"Z\n\"ListCorru" +
-      "ptFileBlocksResponseProto\0224\n\007corrupt\030\001 \002" +
-      "(\0132#.hadoop.hdfs.CorruptFileBlocksProto\"" +
-      "(\n\024MetaSaveRequestProto\022\020\n\010filename\030\001 \002(" +
-      "\t\"\027\n\025MetaSaveResponseProto\"&\n\027GetFileInf" +
-      "oRequestProto\022\013\n\003src\030\001 \002(\t\"H\n\030GetFileInf" +
-      "oResponseProto\022,\n\002fs\030\001 \001(\0132 .hadoop.hdfs" +
-      ".HdfsFileStatusProto\"\'\n\030IsFileClosedRequ" +
-      "estProto\022\013\n\003src\030\001 \002(\t\"+\n\031IsFileClosedRes" +
-      "ponseProto\022\016\n\006result\030\001 \002(\010\"\232\001\n\027CacheDire",
-      "ctiveInfoProto\022\n\n\002id\030\001 \001(\003\022\014\n\004path\030\002 \001(\t" +
-      "\022\023\n\013replication\030\003 \001(\r\022\014\n\004pool\030\004 \001(\t\022B\n\ne" +
-      "xpiration\030\005 \001(\0132..hadoop.hdfs.CacheDirec" +
-      "tiveInfoExpirationProto\"G\n!CacheDirectiv" +
-      "eInfoExpirationProto\022\016\n\006millis\030\001 \002(\003\022\022\n\n" +
-      "isRelative\030\002 \002(\010\"\202\001\n\030CacheDirectiveStats" +
-      "Proto\022\023\n\013bytesNeeded\030\001 \002(\003\022\023\n\013bytesCache" +
-      "d\030\002 \002(\003\022\023\n\013filesNeeded\030\003 \002(\003\022\023\n\013filesCac" +
-      "hed\030\004 \002(\003\022\022\n\nhasExpired\030\005 \002(\010\"g\n\035AddCach" +
-      "eDirectiveRequestProto\0222\n\004info\030\001 \002(\0132$.h",
-      "adoop.hdfs.CacheDirectiveInfoProto\022\022\n\nca" +
-      "cheFlags\030\002 \001(\r\",\n\036AddCacheDirectiveRespo" +
-      "nseProto\022\n\n\002id\030\001 \002(\003\"j\n ModifyCacheDirec" +
-      "tiveRequestProto\0222\n\004info\030\001 \002(\0132$.hadoop." +
-      "hdfs.CacheDirectiveInfoProto\022\022\n\ncacheFla" +
-      "gs\030\002 \001(\r\"#\n!ModifyCacheDirectiveResponse" +
-      "Proto\".\n RemoveCacheDirectiveRequestProt" +
-      "o\022\n\n\002id\030\001 \002(\003\"#\n!RemoveCacheDirectiveRes" +
-      "ponseProto\"g\n\037ListCacheDirectivesRequest" +
-      "Proto\022\016\n\006prevId\030\001 \002(\003\0224\n\006filter\030\002 \002(\0132$.",
-      "hadoop.hdfs.CacheDirectiveInfoProto\"\204\001\n\030" +
-      "CacheDirectiveEntryProto\0222\n\004info\030\001 \002(\0132$" +
-      ".hadoop.hdfs.CacheDirectiveInfoProto\0224\n\005" +
-      "stats\030\002 \002(\0132%.hadoop.hdfs.CacheDirective" +
-      "StatsProto\"l\n ListCacheDirectivesRespons" +
-      "eProto\0227\n\010elements\030\001 \003(\0132%.hadoop.hdfs.C" +
-      "acheDirectiveEntryProto\022\017\n\007hasMore\030\002 \002(\010" +
-      "\"\204\001\n\022CachePoolInfoProto\022\020\n\010poolName\030\001 \001(" +
-      "\t\022\021\n\townerName\030\002 \001(\t\022\021\n\tgroupName\030\003 \001(\t\022" +
-      "\014\n\004mode\030\004 \001(\005\022\r\n\005limit\030\005 \001(\003\022\031\n\021maxRelat",
-      "iveExpiry\030\006 \001(\003\"\201\001\n\023CachePoolStatsProto\022" +
-      "\023\n\013bytesNeeded\030\001 \002(\003\022\023\n\013bytesCached\030\002 \002(" +
-      "\003\022\026\n\016bytesOverlimit\030\003 \002(\003\022\023\n\013filesNeeded" +
-      "\030\004 \002(\003\022\023\n\013filesCached\030\005 \002(\003\"I\n\030AddCacheP" +
-      "oolRequestProto\022-\n\004info\030\001 \002(\0132\037.hadoop.h" +
-      "dfs.CachePoolInfoProto\"\033\n\031AddCachePoolRe" +
-      "sponseProto\"L\n\033ModifyCachePoolRequestPro" +
-      "to\022-\n\004info\030\001 \002(\0132\037.hadoop.hdfs.CachePool" +
-      "InfoProto\"\036\n\034ModifyCachePoolResponseProt" +
-      "o\"/\n\033RemoveCachePoolRequestProto\022\020\n\010pool",
-      "Name\030\001 \002(\t\"\036\n\034RemoveCachePoolResponsePro" +
-      "to\"2\n\032ListCachePoolsRequestProto\022\024\n\014prev" +
-      "PoolName\030\001 \002(\t\"a\n\033ListCachePoolsResponse" +
-      "Proto\0221\n\007entries\030\001 \003(\0132 .hadoop.hdfs.Cac" +
-      "hePoolEntryProto\022\017\n\007hasMore\030\002 \002(\010\"u\n\023Cac" +
-      "hePoolEntryProto\022-\n\004info\030\001 \002(\0132\037.hadoop." +
-      "hdfs.CachePoolInfoProto\022/\n\005stats\030\002 \002(\0132 " +
-      ".hadoop.hdfs.CachePoolStatsProto\"*\n\033GetF" +
-      "ileLinkInfoRequestProto\022\013\n\003src\030\001 \002(\t\"L\n\034" +
-      "GetFileLinkInfoResponseProto\022,\n\002fs\030\001 \001(\013",
-      "2 .hadoop.hdfs.HdfsFileStatusProto\"-\n\035Ge" +
-      "tContentSummaryRequestProto\022\014\n\004path\030\001 \002(" +
-      "\t\"S\n\036GetContentSummaryResponseProto\0221\n\007s" +
-      "ummary\030\001 \002(\0132 .hadoop.hdfs.ContentSummar" +
-      "yProto\"T\n\024SetQuotaRequestProto\022\014\n\004path\030\001" +
-      " \002(\t\022\026\n\016namespaceQuota\030\002 \002(\004\022\026\n\016diskspac" +
-      "eQuota\030\003 \002(\004\"\027\n\025SetQuotaResponseProto\"M\n" +
-      "\021FsyncRequestProto\022\013\n\003src\030\001 \002(\t\022\016\n\006clien" +
-      "t\030\002 \002(\t\022\033\n\017lastBlockLength\030\003 \001(\022:\002-1\"\024\n\022" +
-      "FsyncResponseProto\"A\n\024SetTimesRequestPro",
-      "to\022\013\n\003src\030\001 \002(\t\022\r\n\005mtime\030\002 \002(\004\022\r\n\005atime\030" +
-      "\003 \002(\004\"\027\n\025SetTimesResponseProto\"\200\001\n\031Creat" +
-      "eSymlinkRequestProto\022\016\n\006target\030\001 \002(\t\022\014\n\004" +
-      "link\030\002 \002(\t\022/\n\007dirPerm\030\003 \002(\0132\036.hadoop.hdf" +
-      "s.FsPermissionProto\022\024\n\014createParent\030\004 \002(" +
-      "\010\"\034\n\032CreateSymlinkResponseProto\")\n\031GetLi" +
-      "nkTargetRequestProto\022\014\n\004path\030\001 \002(\t\"0\n\032Ge" +
-      "tLinkTargetResponseProto\022\022\n\ntargetPath\030\001" +
-      " \001(\t\"h\n\"UpdateBlockForPipelineRequestPro" +
-      "to\022.\n\005block\030\001 \002(\0132\037.hadoop.hdfs.Extended",
-      "BlockProto\022\022\n\nclientName\030\002 \002(\t\"T\n#Update" +
-      "BlockForPipelineResponseProto\022-\n\005block\030\001" +
-      " \002(\0132\036.hadoop.hdfs.LocatedBlockProto\"\332\001\n" +
-      "\032UpdatePipelineRequestProto\022\022\n\nclientNam" +
-      "e\030\001 \002(\t\0221\n\010oldBlock\030\002 \002(\0132\037.hadoop.hdfs." +
-      "ExtendedBlockProto\0221\n\010newBlock\030\003 \002(\0132\037.h" +
-      "adoop.hdfs.ExtendedBlockProto\022.\n\010newNode" +
-      "s\030\004 \003(\0132\034.hadoop.hdfs.DatanodeIDProto\022\022\n" +
-      "\nstorageIDs\030\005 \003(\t\"\035\n\033UpdatePipelineRespo" +
-      "nseProto\"5\n SetBalancerBandwidthRequestP",
-      "roto\022\021\n\tbandwidth\030\001 \002(\003\"#\n!SetBalancerBa" +
-      "ndwidthResponseProto\"\"\n GetDataEncryptio" +
-      "nKeyRequestProto\"c\n!GetDataEncryptionKey" +
-      "ResponseProto\022>\n\021dataEncryptionKey\030\001 \001(\013" +
-      "2#.hadoop.hdfs.DataEncryptionKeyProto\"H\n" +
-      "\032CreateSnapshotRequestProto\022\024\n\014snapshotR" +
-      "oot\030\001 \002(\t\022\024\n\014snapshotName\030\002 \001(\t\"3\n\033Creat" +
-      "eSnapshotResponseProto\022\024\n\014snapshotPath\030\001" +
-      " \002(\t\"d\n\032RenameSnapshotRequestProto\022\024\n\014sn" +
-      "apshotRoot\030\001 \002(\t\022\027\n\017snapshotOldName\030\002 \002(",
-      "\t\022\027\n\017snapshotNewName\030\003 \002(\t\"\035\n\033RenameSnap" +
-      "shotResponseProto\"1\n\031AllowSnapshotReques" +
-      "tProto\022\024\n\014snapshotRoot\030\001 \002(\t\"\034\n\032AllowSna" +
-      "pshotResponseProto\"4\n\034DisallowSnapshotRe" +
-      "questProto\022\024\n\014snapshotRoot\030\001 \002(\t\"\037\n\035Disa" +
-      "llowSnapshotResponseProto\"H\n\032DeleteSnaps" +
-      "hotRequestProto\022\024\n\014snapshotRoot\030\001 \002(\t\022\024\n" +
-      "\014snapshotName\030\002 \002(\t\"\035\n\033DeleteSnapshotRes" +
-      "ponseProto*8\n\017CreateFlagProto\022\n\n\006CREATE\020" +
-      "\001\022\r\n\tOVERWRITE\020\002\022\n\n\006APPEND\020\004*6\n\027Datanode",
-      "ReportTypeProto\022\007\n\003ALL\020\001\022\010\n\004LIVE\020\002\022\010\n\004DE" +
-      "AD\020\003*O\n\023SafeModeActionProto\022\022\n\016SAFEMODE_" +
-      "LEAVE\020\001\022\022\n\016SAFEMODE_ENTER\020\002\022\020\n\014SAFEMODE_" +
-      "GET\020\003*?\n\031RollingUpgradeActionProto\022\t\n\005QU" +
-      "ERY\020\001\022\t\n\005START\020\002\022\014\n\010FINALIZE\020\003*\033\n\016CacheF" +
-      "lagProto\022\t\n\005FORCE\020\0012\3407\n\026ClientNamenodePr" +
-      "otocol\022l\n\021getBlockLocations\022*.hadoop.hdf" +
-      "s.GetBlockLocationsRequestProto\032+.hadoop" +
-      ".hdfs.GetBlockLocationsResponseProto\022t\n\031" +
-      "getBlockLocationsNoCreate\022*.hadoop.hdfs.",
-      "GetBlockLocationsRequestProto\032+.hadoop.h" +
-      "dfs.GetBlockLocationsResponseProto\022l\n\021ge" +
-      "tServerDefaults\022*.hadoop.hdfs.GetServerD" +
-      "efaultsRequestProto\032+.hadoop.hdfs.GetSer" +
-      "verDefaultsResponseProto\022K\n\006create\022\037.had" +
-      "oop.hdfs.CreateRequestProto\032 .hadoop.hdf" +
-      "s.CreateResponseProto\022K\n\006append\022\037.hadoop" +
-      ".hdfs.AppendRequestProto\032 .hadoop.hdfs.A" +
-      "ppendResponseProto\022T\n\toverwrite\022\".hadoop" +
-      ".hdfs.OverwriteRequestProto\032#.hadoop.hdf",
-      "s.OverwriteResponseProto\022c\n\016setReplicati" +
-      "on\022\'.hadoop.hdfs.SetReplicationRequestPr" +
-      "oto\032(.hadoop.hdfs.SetReplicationResponse" +
-      "Proto\022`\n\rsetPermission\022&.hadoop.hdfs.Set" +
-      "PermissionRequestProto\032\'.hadoop.hdfs.Set" +
-      "PermissionResponseProto\022Q\n\010setOwner\022!.ha" +
-      "doop.hdfs.SetOwnerRequestProto\032\".hadoop." +
-      "hdfs.SetOwnerResponseProto\022]\n\014abandonBlo" +
-      "ck\022%.hadoop.hdfs.AbandonBlockRequestProt" +
-      "o\032&.hadoop.hdfs.AbandonBlockResponseProt",
-      "o\022Q\n\010addBlock\022!.hadoop.hdfs.AddBlockRequ" +
-      "estProto\032\".hadoop.hdfs.AddBlockResponseP" +
-      "roto\022x\n\025getAdditionalDatanode\022..hadoop.h" +
-      "dfs.GetAdditionalDatanodeRequestProto\032/." +
-      "hadoop.hdfs.GetAdditionalDatanodeRespons" +
-      "eProto\022Q\n\010complete\022!.hadoop.hdfs.Complet" +
-      "eRequestProto\032\".hadoop.hdfs.CompleteResp" +
-      "onseProto\022f\n\017reportBadBlocks\022(.hadoop.hd" +
-      "fs.ReportBadBlocksRequestProto\032).hadoop." +
-      "hdfs.ReportBadBlocksResponseProto\022K\n\006con",
-      "cat\022\037.hadoop.hdfs.ConcatRequestProto\032 .h" +
-      "adoop.hdfs.ConcatResponseProto\022K\n\006rename" +
-      "\022\037.hadoop.hdfs.RenameRequestProto\032 .hado" +
-      "op.hdfs.RenameResponseProto\022N\n\007rename2\022 " +
-      ".hadoop.hdfs.Rename2RequestProto\032!.hadoo" +
-      "p.hdfs.Rename2ResponseProto\022K\n\006delete\022\037." +
-      "hadoop.hdfs.DeleteRequestProto\032 .hadoop." +
-      "hdfs.DeleteResponseProto\022K\n\006mkdirs\022\037.had" +
-      "oop.hdfs.MkdirsRequestProto\032 .hadoop.hdf" +
-      "s.MkdirsResponseProto\022W\n\ngetListing\022#.ha",
-      "doop.hdfs.GetListingRequestProto\032$.hadoo" +
-      "p.hdfs.GetListingResponseProto\022W\n\nrenewL" +
-      "ease\022#.hadoop.hdfs.RenewLeaseRequestProt" +
-      "o\032$.hadoop.hdfs.RenewLeaseResponseProto\022" +
-      "]\n\014recoverLease\022%.hadoop.hdfs.RecoverLea" +
-      "seRequestProto\032&.hadoop.hdfs.RecoverLeas" +
-      "eResponseProto\022X\n\ngetFsStats\022$.hadoop.hd" +
-      "fs.GetFsStatusRequestProto\032$.hadoop.hdfs" +
-      ".GetFsStatsResponseProto\022l\n\021getDatanodeR" +
-      "eport\022*.hadoop.hdfs.GetDatanodeReportReq",
-      "uestProto\032+.hadoop.hdfs.GetDatanodeRepor" +
-      "tResponseProto\022x\n\025getPreferredBlockSize\022" +
-      "..hadoop.hdfs.GetPreferredBlockSizeReque" +
-      "stProto\032/.hadoop.hdfs.GetPreferredBlockS" +
-      "izeResponseProto\022Z\n\013setSafeMode\022$.hadoop" +
-      ".hdfs.SetSafeModeRequestProto\032%.hadoop.h" +
-      "dfs.SetSafeModeResponseProto\022`\n\rsaveName" +
-      "space\022&.hadoop.hdfs.SaveNamespaceRequest" +
-      "Proto\032\'.hadoop.hdfs.SaveNamespaceRespons" +
-      "eProto\022T\n\trollEdits\022\".hadoop.hdfs.RollEd",
-      "itsRequestProto\032#.hadoop.hdfs.RollEditsR" +
-      "esponseProto\022u\n\024restoreFailedStorage\022-.h" +
-      "adoop.hdfs.RestoreFailedStorageRequestPr" +
-      "oto\032..hadoop.hdfs.RestoreFailedStorageRe" +
-      "sponseProto\022]\n\014refreshNodes\022%.hadoop.hdf" +
-      "s.RefreshNodesRequestProto\032&.hadoop.hdfs" +
-      ".RefreshNodesResponseProto\022f\n\017finalizeUp" +
-      "grade\022(.hadoop.hdfs.FinalizeUpgradeReque" +
-      "stProto\032).hadoop.hdfs.FinalizeUpgradeRes" +
-      "ponseProto\022c\n\016rollingUpgrade\022\'.hadoop.hd",
-      "fs.RollingUpgradeRequestProto\032(.hadoop.h" +
-      "dfs.RollingUpgradeResponseProto\022x\n\025listC" +
-      "orruptFileBlocks\022..hadoop.hdfs.ListCorru" +
-      "ptFileBlocksRequestProto\032/.hadoop.hdfs.L" +
-      "istCorruptFileBlocksResponseProto\022Q\n\010met" +
-      "aSave\022!.hadoop.hdfs.MetaSaveRequestProto" +
-      "\032\".hadoop.hdfs.MetaSaveResponseProto\022Z\n\013" +
-      "getFileInfo\022$.hadoop.hdfs.GetFileInfoReq" +
-      "uestProto\032%.hadoop.hdfs.GetFileInfoRespo" +
-      "nseProto\022l\n\021addCacheDirective\022*.hadoop.h",
-      "dfs.AddCacheDirectiveRequestProto\032+.hado" +
-      "op.hdfs.AddCacheDirectiveResponseProto\022u" +
-      "\n\024modifyCacheDirective\022-.hadoop.hdfs.Mod" +
-      "ifyCacheDirectiveRequestProto\032..hadoop.h" +
-      "dfs.ModifyCacheDirectiveResponseProto\022u\n" +
-      "\024removeCacheDirective\022-.hadoop.hdfs.Remo" +
-      "veCacheDirectiveRequestProto\032..hadoop.hd" +
-      "fs.RemoveCacheDirectiveResponseProto\022r\n\023" +
-      "listCacheDirectives\022,.hadoop.hdfs.ListCa" +
-      "cheDirectivesRequestProto\032-.hadoop.hdfs.",
-      "ListCacheDirectivesResponseProto\022]\n\014addC" +
-      "achePool\022%.hadoop.hdfs.AddCachePoolReque" +
-      "stProto\032&.hadoop.hdfs.AddCachePoolRespon" +
-      "seProto\022f\n\017modifyCachePool\022(.hadoop.hdfs" +
-      ".ModifyCachePoolRequestProto\032).hadoop.hd" +
-      "fs.ModifyCachePoolResponseProto\022f\n\017remov" +
-      "eCachePool\022(.hadoop.hdfs.RemoveCachePool" +
-      "RequestProto\032).hadoop.hdfs.RemoveCachePo" +
-      "olResponseProto\022c\n\016listCachePools\022\'.hado" +
-      "op.hdfs.ListCachePoolsRequestProto\032(.had",
-      "oop.hdfs.ListCachePoolsResponseProto\022f\n\017" +
-      "getFileLinkInfo\022(.hadoop.hdfs.GetFileLin" +
-      "kInfoRequestProto\032).hadoop.hdfs.GetFileL" +
-      "inkInfoResponseProto\022l\n\021getContentSummar" +
-      "y\022*.hadoop.hdfs.GetContentSummaryRequest" +
-      "Proto\032+.hadoop.hdfs.GetContentSummaryRes" +
-      "ponseProto\022Q\n\010setQuota\022!.hadoop.hdfs.Set" +
-      "QuotaRequestProto\032\".hadoop.hdfs.SetQuota" +
-      "ResponseProto\022H\n\005fsync\022\036.hadoop.hdfs.Fsy" +
-      "ncRequestProto\032\037.hadoop.hdfs.FsyncRespon",
-      "seProto\022Q\n\010setTimes\022!.hadoop.hdfs.SetTim" +
-      "esRequestProto\032\".hadoop.hdfs.SetTimesRes" +
-      "ponseProto\022`\n\rcreateSymlink\022&.hadoop.hdf" +
-      "s.CreateSymlinkRequestProto\032\'.hadoop.hdf" +
-      "s.CreateSymlinkResponseProto\022`\n\rgetLinkT" +
-      "arget\022&.hadoop.hdfs.GetLinkTargetRequest" +
-      "Proto\032\'.hadoop.hdfs.GetLinkTargetRespons" +
-      "eProto\022{\n\026updateBlockForPipeline\022/.hadoo" +
-      "p.hdfs.UpdateBlockForPipelineRequestProt" +
-      "o\0320.hadoop.hdfs.UpdateBlockForPipelineRe",
-      "sponseProto\022c\n\016updatePipeline\022\'.hadoop.h" +
-      "dfs.UpdatePipelineRequestProto\032(.hadoop." +
-      "hdfs.UpdatePipelineResponseProto\022s\n\022getD" +
-      "elegationToken\022-.hadoop.common.GetDelega" +
-      "tionTokenRequestProto\032..hadoop.common.Ge" +
-      "tDelegationTokenResponseProto\022y\n\024renewDe" +
-      "legationToken\022/.hadoop.common.RenewDeleg" +
-      "ationTokenRequestProto\0320.hadoop.common.R" +
-      "enewDelegationTokenResponseProto\022|\n\025canc" +
-      "elDelegationToken\0220.hadoop.common.Cancel",
-      "DelegationTokenRequestProto\0321.hadoop.com" +
-      "mon.CancelDelegationTokenResponseProto\022u" +
-      "\n\024setBalancerBandwidth\022-.hadoop.hdfs.Set" +
-      "BalancerBandwidthRequestProto\032..hadoop.h" +
-      "dfs.SetBalancerBandwidthResponseProto\022u\n" +
-      "\024getDataEncryptionKey\022-.hadoop.hdfs.GetD" +
-      "ataEncryptionKeyRequestProto\032..hadoop.hd" +
-      "fs.GetDataEncryptionKeyResponseProto\022c\n\016" +
-      "createSnapshot\022\'.hadoop.hdfs.CreateSnaps" +
-      "hotRequestProto\032(.hadoop.hdfs.CreateSnap",
-      "shotResponseProto\022c\n\016renameSnapshot\022\'.ha" +
-      "doop.hdfs.RenameSnapshotRequestProto\032(.h" +
-      "adoop.hdfs.RenameSnapshotResponseProto\022`" +
-      "\n\rallowSnapshot\022&.hadoop.hdfs.AllowSnaps" +
-      "hotRequestProto\032\'.hadoop.hdfs.AllowSnaps" +
-      "hotResponseProto\022i\n\020disallowSnapshot\022).h" +
-      "adoop.hdfs.DisallowSnapshotRequestProto\032" +
-      "*.hadoop.hdfs.DisallowSnapshotResponsePr" +
-      "oto\022\207\001\n\032getSnapshottableDirListing\0223.had" +
-      "oop.hdfs.GetSnapshottableDirListingReque",
-      "stProto\0324.hadoop.hdfs.GetSnapshottableDi" +
-      "rListingResponseProto\022c\n\016deleteSnapshot\022" +
-      "\'.hadoop.hdfs.DeleteSnapshotRequestProto" +
-      "\032(.hadoop.hdfs.DeleteSnapshotResponsePro" +
-      "to\022x\n\025getSnapshotDiffReport\022..hadoop.hdf" +
-      "s.GetSnapshotDiffReportRequestProto\032/.ha" +
-      "doop.hdfs.GetSnapshotDiffReportResponseP" +
-      "roto\022]\n\014isFileClosed\022%.hadoop.hdfs.IsFil" +
-      "eClosedRequestProto\032&.hadoop.hdfs.IsFile" +
-      "ClosedResponseProto\022i\n\020modifyAclEntries\022",
-      ").hadoop.hdfs.ModifyAclEntriesRequestPro" +
-      "to\032*.hadoop.hdfs.ModifyAclEntriesRespons" +
-      "eProto\022i\n\020removeAclEntries\022).hadoop.hdfs" +
-      ".RemoveAclEntriesRequestProto\032*.hadoop.h" +
-      "dfs.RemoveAclEntriesResponseProto\022i\n\020rem" +
-      "oveDefaultAcl\022).hadoop.hdfs.RemoveDefaul" +
-      "tAclRequestProto\032*.hadoop.hdfs.RemoveDef" +
-      "aultAclResponseProto\022T\n\tremoveAcl\022\".hado" +
-      "op.hdfs.RemoveAclRequestProto\032#.hadoop.h" +
-      "dfs.RemoveAclResponseProto\022K\n\006setAcl\022\037.h",
-      "adoop.hdfs.SetAclRequestProto\032 .hadoop.h" +
-      "dfs.SetAclResponseProto\022]\n\014getAclStatus\022" +
-      "%.hadoop.hdfs.GetAclStatusRequestProto\032&" +
-      ".hadoop.hdfs.GetAclStatusResponseProtoBK" +
-      "\n%org.apache.hadoop.hdfs.protocol.protoB" +
-      "\034ClientNamenodeProtocolProtos\210\001\001\240\001\001"
+      "\0132\036.hadoop.hdfs.LocatedBlockProto\"\220\001\n\032Ov" +
+      "erwriteBlockRequestProto\022\013\n\003src\030\001 \002(\t\0221\n",
+      "\010previous\030\002 \001(\0132\037.hadoop.hdfs.ExtendedBl" +
+      "ockProto\022\016\n\006bIndex\030\003 \002(\005\022\016\n\006fileId\030\004 \002(\004" +
+      "\022\022\n\nclientName\030\005 \002(\t\"L\n\033OverwriteBlockRe" +
+      "sponseProto\022-\n\005block\030\001 \001(\0132\036.hadoop.hdfs" +
+      ".LocatedBlockProto\">\n\032SetReplicationRequ" +
+      "estProto\022\013\n\003src\030\001 \002(\t\022\023\n\013replication\030\002 \002" +
+      "(\r\"-\n\033SetReplicationResponseProto\022\016\n\006res" +
+      "ult\030\001 \002(\010\"\\\n\031SetPermissionRequestProto\022\013" +
+      "\n\003src\030\001 \002(\t\0222\n\npermission\030\002 \002(\0132\036.hadoop" +
+      ".hdfs.FsPermissionProto\"\034\n\032SetPermission",
+      "ResponseProto\"H\n\024SetOwnerRequestProto\022\013\n" +
+      "\003src\030\001 \002(\t\022\020\n\010username\030\002 \001(\t\022\021\n\tgroupnam" +
+      "e\030\003 \001(\t\"\027\n\025SetOwnerResponseProto\"c\n\030Aban" +
+      "donBlockRequestProto\022*\n\001b\030\001 \002(\0132\037.hadoop" +
+      ".hdfs.ExtendedBlockProto\022\013\n\003src\030\002 \002(\t\022\016\n" +
+      "\006holder\030\003 \002(\t\"\033\n\031AbandonBlockResponsePro" +
+      "to\"\311\001\n\024AddBlockRequestProto\022\013\n\003src\030\001 \002(\t" +
+      "\022\022\n\nclientName\030\002 \002(\t\0221\n\010previous\030\003 \001(\0132\037" +
+      ".hadoop.hdfs.ExtendedBlockProto\0224\n\014exclu" +
+      "deNodes\030\004 \003(\0132\036.hadoop.hdfs.DatanodeInfo",
+      "Proto\022\021\n\006fileId\030\005 \001(\004:\0010\022\024\n\014favoredNodes" +
+      "\030\006 \003(\t\"F\n\025AddBlockResponseProto\022-\n\005block" +
+      "\030\001 \002(\0132\036.hadoop.hdfs.LocatedBlockProto\"\221" +
+      "\002\n!GetAdditionalDatanodeRequestProto\022\013\n\003" +
+      "src\030\001 \002(\t\022,\n\003blk\030\002 \002(\0132\037.hadoop.hdfs.Ext" +
+      "endedBlockProto\0221\n\texistings\030\003 \003(\0132\036.had" +
+      "oop.hdfs.DatanodeInfoProto\0220\n\010excludes\030\004" +
+      " \003(\0132\036.hadoop.hdfs.DatanodeInfoProto\022\032\n\022" +
+      "numAdditionalNodes\030\005 \002(\r\022\022\n\nclientName\030\006" +
+      " \002(\t\022\034\n\024existingStorageUuids\030\007 \003(\t\"S\n\"Ge",
+      "tAdditionalDatanodeResponseProto\022-\n\005bloc" +
+      "k\030\001 \002(\0132\036.hadoop.hdfs.LocatedBlockProto\"" +
+      "y\n\024CompleteRequestProto\022\013\n\003src\030\001 \002(\t\022\022\n\n" +
+      "clientName\030\002 \002(\t\022-\n\004last\030\003 \001(\0132\037.hadoop." +
+      "hdfs.ExtendedBlockProto\022\021\n\006fileId\030\004 \001(\004:" +
+      "\0010\"\'\n\025CompleteResponseProto\022\016\n\006result\030\001 " +
+      "\002(\010\"M\n\033ReportBadBlocksRequestProto\022.\n\006bl" +
+      "ocks\030\001 \003(\0132\036.hadoop.hdfs.LocatedBlockPro" +
+      "to\"\036\n\034ReportBadBlocksResponseProto\"/\n\022Co" +
+      "ncatRequestProto\022\013\n\003trg\030\001 \002(\t\022\014\n\004srcs\030\002 ",
+      "\003(\t\"\025\n\023ConcatResponseProto\".\n\022RenameRequ" +
+      "estProto\022\013\n\003src\030\001 \002(\t\022\013\n\003dst\030\002 \002(\t\"%\n\023Re" +
+      "nameResponseProto\022\016\n\006result\030\001 \002(\010\"F\n\023Ren" +
+      "ame2RequestProto\022\013\n\003src\030\001 \002(\t\022\013\n\003dst\030\002 \002" +
+      "(\t\022\025\n\roverwriteDest\030\003 \002(\010\"\026\n\024Rename2Resp" +
+      "onseProto\"4\n\022DeleteRequestProto\022\013\n\003src\030\001" +
+      " \002(\t\022\021\n\trecursive\030\002 \002(\010\"%\n\023DeleteRespons" +
+      "eProto\022\016\n\006result\030\001 \002(\010\"g\n\022MkdirsRequestP" +
+      "roto\022\013\n\003src\030\001 \002(\t\022.\n\006masked\030\002 \002(\0132\036.hado" +
+      "op.hdfs.FsPermissionProto\022\024\n\014createParen",
+      "t\030\003 \002(\010\"%\n\023MkdirsResponseProto\022\016\n\006result" +
+      "\030\001 \002(\010\"O\n\026GetListingRequestProto\022\013\n\003src\030" +
+      "\001 \002(\t\022\022\n\nstartAfter\030\002 \002(\014\022\024\n\014needLocatio" +
+      "n\030\003 \002(\010\"N\n\027GetListingResponseProto\0223\n\007di" +
+      "rList\030\001 \001(\0132\".hadoop.hdfs.DirectoryListi" +
+      "ngProto\"(\n&GetSnapshottableDirListingReq" +
+      "uestProto\"x\n\'GetSnapshottableDirListingR" +
+      "esponseProto\022M\n\024snapshottableDirList\030\001 \001" +
+      "(\0132/.hadoop.hdfs.SnapshottableDirectoryL" +
+      "istingProto\"c\n!GetSnapshotDiffReportRequ",
+      "estProto\022\024\n\014snapshotRoot\030\001 \002(\t\022\024\n\014fromSn" +
+      "apshot\030\002 \002(\t\022\022\n\ntoSnapshot\030\003 \002(\t\"^\n\"GetS" +
+      "napshotDiffReportResponseProto\0228\n\ndiffRe" +
+      "port\030\001 \002(\0132$.hadoop.hdfs.SnapshotDiffRep" +
+      "ortProto\",\n\026RenewLeaseRequestProto\022\022\n\ncl" +
+      "ientName\030\001 \002(\t\"\031\n\027RenewLeaseResponseProt" +
+      "o\";\n\030RecoverLeaseRequestProto\022\013\n\003src\030\001 \002" +
+      "(\t\022\022\n\nclientName\030\002 \002(\t\"+\n\031RecoverLeaseRe" +
+      "sponseProto\022\016\n\006result\030\001 \002(\010\"\031\n\027GetFsStat" +
+      "usRequestProto\"\226\001\n\027GetFsStatsResponsePro",
+      "to\022\020\n\010capacity\030\001 \002(\004\022\014\n\004used\030\002 \002(\004\022\021\n\tre" +
+      "maining\030\003 \002(\004\022\030\n\020under_replicated\030\004 \002(\004\022" +
+      "\026\n\016corrupt_blocks\030\005 \002(\004\022\026\n\016missing_block" +
+      "s\030\006 \002(\004\"S\n\035GetDatanodeReportRequestProto" +
+      "\0222\n\004type\030\001 \002(\0162$.hadoop.hdfs.DatanodeRep" +
+      "ortTypeProto\"L\n\036GetDatanodeReportRespons" +
+      "eProto\022*\n\002di\030\001 \003(\0132\036.hadoop.hdfs.Datanod" +
+      "eInfoProto\"5\n!GetPreferredBlockSizeReque" +
+      "stProto\022\020\n\010filename\030\001 \002(\t\"3\n\"GetPreferre" +
+      "dBlockSizeResponseProto\022\r\n\005bsize\030\001 \002(\004\"c",
+      "\n\027SetSafeModeRequestProto\0220\n\006action\030\001 \002(" +
+      "\0162 .hadoop.hdfs.SafeModeActionProto\022\026\n\007c" +
+      "hecked\030\002 \001(\010:\005false\"*\n\030SetSafeModeRespon" +
+      "seProto\022\016\n\006result\030\001 \002(\010\"\033\n\031SaveNamespace" +
+      "RequestProto\"\034\n\032SaveNamespaceResponsePro" +
+      "to\"\027\n\025RollEditsRequestProto\"0\n\026RollEdits" +
+      "ResponseProto\022\026\n\016newSegmentTxId\030\001 \002(\004\"/\n" +
+      " RestoreFailedStorageRequestProto\022\013\n\003arg" +
+      "\030\001 \002(\t\"3\n!RestoreFailedStorageResponsePr" +
+      "oto\022\016\n\006result\030\001 \002(\010\"\032\n\030RefreshNodesReque",
+      "stProto\"\033\n\031RefreshNodesResponseProto\"\035\n\033" +
+      "FinalizeUpgradeRequestProto\"\036\n\034FinalizeU" +
+      "pgradeResponseProto\"T\n\032RollingUpgradeReq" +
+      "uestProto\0226\n\006action\030\001 \002(\0162&.hadoop.hdfs." +
+      "RollingUpgradeActionProto\"\231\001\n\027RollingUpg" +
+      "radeInfoProto\0226\n\006status\030\001 \002(\0132&.hadoop.h" +
+      "dfs.RollingUpgradeStatusProto\022\021\n\tstartTi" +
+      "me\030\002 \002(\004\022\024\n\014finalizeTime\030\003 \002(\004\022\035\n\025create" +
+      "dRollbackImages\030\004 \002(\010\"_\n\033RollingUpgradeR" +
+      "esponseProto\022@\n\022rollingUpgradeInfo\030\001 \001(\013",
+      "2$.hadoop.hdfs.RollingUpgradeInfoProto\"A" +
+      "\n!ListCorruptFileBlocksRequestProto\022\014\n\004p" +
+      "ath\030\001 \002(\t\022\016\n\006cookie\030\002 \001(\t\"Z\n\"ListCorrupt" +
+      "FileBlocksResponseProto\0224\n\007corrupt\030\001 \002(\013" +
+      "2#.hadoop.hdfs.CorruptFileBlocksProto\"(\n" +
+      "\024MetaSaveRequestProto\022\020\n\010filename\030\001 \002(\t\"" +
+      "\027\n\025MetaSaveResponseProto\"&\n\027GetFileInfoR" +
+      "equestProto\022\013\n\003src\030\001 \002(\t\"H\n\030GetFileInfoR" +
+      "esponseProto\022,\n\002fs\030\001 \001(\0132 .hadoop.hdfs.H" +
+      "dfsFileStatusProto\"\'\n\030IsFileClosedReques",
+      "tProto\022\013\n\003src\030\001 \002(\t\"+\n\031IsFileClosedRespo" +
+      "nseProto\022\016\n\006result\030\001 \002(\010\"\232\001\n\027CacheDirect" +
+      "iveInfoProto\022\n\n\002id\030\001 \001(\003\022\014\n\004path\030\002 \001(\t\022\023" +
+      "\n\013replication\030\003 \001(\r\022\014\n\004pool\030\004 \001(\t\022B\n\nexp" +
+      "iration\030\005 \001(\0132..hadoop.hdfs.CacheDirecti" +
+      "veInfoExpirationProto\"G\n!CacheDirectiveI" +
+      "nfoExpirationProto\022\016\n\006millis\030\001 \002(\003\022\022\n\nis" +
+      "Relative\030\002 \002(\010\"\202\001\n\030CacheDirectiveStatsPr" +
+      "oto\022\023\n\013bytesNeeded\030\001 \002(\003\022\023\n\013bytesCached\030" +
+      "\002 \002(\003\022\023\n\013filesNeeded\030\003 \002(\003\022\023\n\013filesCache",
+      "d\030\004 \002(\003\022\022\n\nhasExpired\030\005 \002(\010\"g\n\035AddCacheD" +
+      "irectiveRequestProto\0222\n\004info\030\001 \002(\0132$.had" +
+      "oop.hdfs.CacheDirectiveInfoProto\022\022\n\ncach" +
+      "eFlags\030\002 \001(\r\",\n\036AddCacheDirectiveRespons" +
+      "eProto\022\n\n\002id\030\001 \002(\003\"j\n ModifyCacheDirecti" +
+      "veRequestProto\0222\n\004info\030\001 \002(\0132$.hadoop.hd" +
+      "fs.CacheDirectiveInfoProto\022\022\n\ncacheFlags" +
+      "\030\002 \001(\r\"#\n!ModifyCacheDirectiveResponsePr" +
+      "oto\".\n RemoveCacheDirectiveRequestProto\022" +
+      "\n\n\002id\030\001 \002(\003\"#\n!RemoveCacheDirectiveRespo",
+      "nseProto\"g\n\037ListCacheDirectivesRequestPr" +
+      "oto\022\016\n\006prevId\030\001 \002(\003\0224\n\006filter\030\002 \002(\0132$.ha" +
+      "doop.hdfs.CacheDirectiveInfoProto\"\204\001\n\030Ca" +
+      "cheDirectiveEntryProto\0222\n\004info\030\001 \002(\0132$.h" +
+      "adoop.hdfs.CacheDirectiveInfoProto\0224\n\005st" +
+      "ats\030\002 \002(\0132%.hadoop.hdfs.CacheDirectiveSt" +
+      "atsProto\"l\n ListCacheDirectivesResponseP" +
+      "roto\0227\n\010elements\030\001 \003(\0132%.hadoop.hdfs.Cac" +
+      "heDirectiveEntryProto\022\017\n\007hasMore\030\002 \002(\010\"\204" +
+      "\001\n\022CachePoolInfoProto\022\020\n\010poolName\030\001 \001(\t\022",
+      "\021\n\townerName\030\002 \001(\t\022\021\n\tgroupName\030\003 \001(\t\022\014\n" +
+      "\004mode\030\004 \001(\005\022\r\n\005limit\030\005 \001(\003\022\031\n\021maxRelativ" +
+      "eExpiry\030\006 \001(\003\"\201\001\n\023CachePoolStatsProto\022\023\n" +
+      "\013bytesNeeded\030\001 \002(\003\022\023\n\013bytesCached\030\002 \002(\003\022" +
+      "\026\n\016bytesOverlimit\030\003 \002(\003\022\023\n\013filesNeeded\030\004" +
+      " \002(\003\022\023\n\013filesCached\030\005 \002(\003\"I\n\030AddCachePoo" +
+      "lRequestProto\022-\n\004info\030\001 \002(\0132\037.hadoop.hdf" +
+      "s.CachePoolInfoProto\"\033\n\031AddCachePoolResp" +
+      "onseProto\"L\n\033ModifyCachePoolRequestProto" +
+      "\022-\n\004info\030\001 \002(\0132\037.hadoop.hdfs.CachePoolIn",
+      "foProto\"\036\n\034ModifyCachePoolResponseProto\"" +
+      "/\n\033RemoveCachePoolRequestProto\022\020\n\010poolNa" +
+      "me\030\001 \002(\t\"\036\n\034RemoveCachePoolResponseProto" +
+      "\"2\n\032ListCachePoolsRequestProto\022\024\n\014prevPo" +
+      "olName\030\001 \002(\t\"a\n\033ListCachePoolsResponsePr" +
+      "oto\0221\n\007entries\030\001 \003(\0132 .hadoop.hdfs.Cache" +
+      "PoolEntryProto\022\017\n\007hasMore\030\002 \002(\010\"u\n\023Cache" +
+      "PoolEntryProto\022-\n\004info\030\001 \002(\0132\037.hadoop.hd" +
+      "fs.CachePoolInfoProto\022/\n\005stats\030\002 \002(\0132 .h" +
+      "adoop.hdfs.CachePoolStatsProto\"*\n\033GetFil",
+      "eLinkInfoRequestProto\022\013\n\003src\030\001 \002(\t\"L\n\034Ge" +
+      "tFileLinkInfoResponseProto\022,\n\002fs\030\001 \001(\0132 " +
+      ".hadoop.hdfs.HdfsFileStatusProto\"-\n\035GetC" +
+      "ontentSummaryRequestProto\022\014\n\004path\030\001 \002(\t\"" +
+      "S\n\036GetContentSummaryResponseProto\0221\n\007sum" +
+      "mary\030\001 \002(\0132 .hadoop.hdfs.ContentSummaryP" +
+      "roto\"T\n\024SetQuotaRequestProto\022\014\n\004path\030\001 \002" +
+      "(\t\022\026\n\016namespaceQuota\030\002 \002(\004\022\026\n\016diskspaceQ" +
+      "uota\030\003 \002(\004\"\027\n\025SetQuotaResponseProto\"M\n\021F" +
+      "syncRequestProto\022\013\n\003src\030\001 \002(\t\022\016\n\006client\030",
+      "\002 \002(\t\022\033\n\017lastBlockLength\030\003 \001(\022:\002-1\"\024\n\022Fs" +
+      "yncResponseProto\"A\n\024SetTimesRequestProto" +
+      "\022\013\n\003src\030\001 \002(\t\022\r\n\005mtime\030\002 \002(\004\022\r\n\005atime\030\003 " +
+      "\002(\004\"\027\n\025SetTimesResponseProto\"\200\001\n\031CreateS" +
+      "ymlinkRequestProto\022\016\n\006target\030\001 \002(\t\022\014\n\004li" +
+      "nk\030\002 \002(\t\022/\n\007dirPerm\030\003 \002(\0132\036.hadoop.hdfs." +
+      "FsPermissionProto\022\024\n\014createParent\030\004 \002(\010\"" +
+      "\034\n\032CreateSymlinkResponseProto\")\n\031GetLink" +
+      "TargetRequestProto\022\014\n\004path\030\001 \002(\t\"0\n\032GetL" +
+      "inkTargetResponseProto\022\022\n\ntargetPath\030\001 \001",
+      "(\t\"h\n\"UpdateBlockForPipelineRequestProto" +
+      "\022.\n\005block\030\001 \002(\0132\037.hadoop.hdfs.ExtendedBl" +
+      "ockProto\022\022\n\nclientName\030\002 \002(\t\"T\n#UpdateBl" +
+      "ockForPipelineResponseProto\022-\n\005block\030\001 \002" +
+      "(\0132\036.hadoop.hdfs.LocatedBlockProto\"\332\001\n\032U" +
+      "pdatePipelineRequestProto\022\022\n\nclientName\030" +
+      "\001 \002(\t\0221\n\010oldBlock\030\002 \002(\0132\037.hadoop.hdfs.Ex" +
+      "tendedBlockProto\0221\n\010newBlock\030\003 \002(\0132\037.had" +
+      "oop.hdfs.ExtendedBlockProto\022.\n\010newNodes\030" +
+      "\004 \003(\0132\034.hadoop.hdfs.DatanodeIDProto\022\022\n\ns",
+      "torageIDs\030\005 \003(\t\"\035\n\033UpdatePipelineRespons" +
+      "eProto\"5\n SetBalancerBandwidthRequestPro" +
+      "to\022\021\n\tbandwidth\030\001 \002(\003\"#\n!SetBalancerBand" +
+      "widthResponseProto\"\"\n GetDataEncryptionK" +
+      "eyRequestProto\"c\n!GetDataEncryptionKeyRe" +
+      "sponseProto\022>\n\021dataEncryptionKey\030\001 \001(\0132#" +
+      ".hadoop.hdfs.DataEncryptionKeyProto\"H\n\032C" +
+      "reateSnapshotRequestProto\022\024\n\014snapshotRoo" +
+      "t\030\001 \002(\t\022\024\n\014snapshotName\030\002 \001(\t\"3\n\033CreateS" +
+      "napshotResponseProto\022\024\n\014snapshotPath\030\001 \002",
+      "(\t\"d\n\032RenameSnapshotRequestProto\022\024\n\014snap" +
+      "shotRoot\030\001 \002(\t\022\027\n\017snapshotOldName\030\002 \002(\t\022" +
+      "\027\n\017snapshotNewName\030\003 \002(\t\"\035\n\033RenameSnapsh" +
+      "otResponseProto\"1\n\031AllowSnapshotRequestP" +
+      "roto\022\024\n\014snapshotRoot\030\001 \002(\t\"\034\n\032AllowSnaps" +
+      "hotResponseProto\"4\n\034DisallowSnapshotRequ" +
+      "estProto\022\024\n\014snapshotRoot\030\001 \002(\t\"\037\n\035Disall" +
+      "owSnapshotResponseProto\"H\n\032DeleteSnapsho" +
+      "tRequestProto\022\024\n\014snapshotRoot\030\001 \002(\t\022\024\n\014s" +
+      "napshotName\030\002 \002(\t\"\035\n\033DeleteSnapshotRespo",
+      "nseProto*8\n\017CreateFlagProto\022\n\n\006CREATE\020\001\022" +
+      "\r\n\tOVERWRITE\020\002\022\n\n\006APPEND\020\004*6\n\027DatanodeRe" +
+      "portTypeProto\022\007\n\003ALL\020\001\022\010\n\004LIVE\020\002\022\010\n\004DEAD" +
+      "\020\003*O\n\023SafeModeActionProto\022\022\n\016SAFEMODE_LE" +
+      "AVE\020\001\022\022\n\016SAFEMODE_ENTER\020\002\022\020\n\014SAFEMODE_GE" +
+      "T\020\003*?\n\031RollingUpgradeActionProto\022\t\n\005QUER" +
+      "Y\020\001\022\t\n\005START\020\002\022\014\n\010FINALIZE\020\003*\033\n\016CacheFla" +
+      "gProto\022\t\n\005FORCE\020\0012\3577\n\026ClientNamenodeProt" +
+      "ocol\022l\n\021getBlockLocations\022*.hadoop.hdfs." +
+      "GetBlockLocationsRequestProto\032+.hadoop.h",
+      "dfs.GetBlockLocationsResponseProto\022t\n\031ge" +
+      "tBlockLocationsNoCreate\022*.hadoop.hdfs.Ge" +
+      "tBlockLocationsRequestProto\032+.hadoop.hdf" +
+      "s.GetBlockLocationsResponseProto\022l\n\021getS" +
+      "erverDefaults\022*.hadoop.hdfs.GetServerDef" +
+      "aultsRequestProto\032+.hadoop.hdfs.GetServe" +
+      "rDefaultsResponseProto\022K\n\006create\022\037.hadoo" +
+      "p.hdfs.CreateRequestProto\032 .hadoop.hdfs." +
+      "CreateResponseProto\022K\n\006append\022\037.hadoop.h" +
+      "dfs.AppendRequestProto\032 .hadoop.hdfs.App",
+      "endResponseProto\022c\n\016overwriteBlock\022\'.had" +
+      "oop.hdfs.OverwriteBlockRequestProto\032(.ha" +
+      "doop.hdfs.OverwriteBlockResponseProto\022c\n" +
+      "\016setReplication\022\'.hadoop.hdfs.SetReplica" +
+      "tionRequestProto\032(.hadoop.hdfs.SetReplic" +
+      "ationResponseProto\022`\n\rsetPermission\022&.ha" +
+      "doop.hdfs.SetPermissionRequestProto\032\'.ha" +
+      "doop.hdfs.SetPermissionResponseProto\022Q\n\010" +
+      "setOwner\022!.hadoop.hdfs.SetOwnerRequestPr" +
+      "oto\032\".hadoop.hdfs.SetOwnerResponseProto\022",
+      "]\n\014abandonBlock\022%.hadoop.hdfs.AbandonBlo" +
+      "ckRequestProto\032&.hadoop.hdfs.AbandonBloc" +
+      "kResponseProto\022Q\n\010addBlock\022!.hadoop.hdfs" +
+      ".AddBlockRequestProto\032\".hadoop.hdfs.AddB" +
+      "lockResponseProto\022x\n\025getAdditionalDatano" +
+      "de\022..hadoop.hdfs.GetAdditionalDatanodeRe" +
+      "questProto\032/.hadoop.hdfs.GetAdditionalDa" +
+      "tanodeResponseProto\022Q\n\010complete\022!.hadoop" +
+      ".hdfs.CompleteRequestProto\032\".hadoop.hdfs" +
+      ".CompleteResponseProto\022f\n\017reportBadBlock",
+      "s\022(.hadoop.hdfs.ReportBadBlocksRequestPr" +
+      "oto\032).hadoop.hdfs.ReportBadBlocksRespons" +
+      "eProto\022K\n\006concat\022\037.hadoop.hdfs.ConcatReq" +
+      "uestProto\032 .hadoop.hdfs.ConcatResponsePr" +
+      "oto\022K\n\006rename\022\037.hadoop.hdfs.RenameReques" +
+      "tProto\032 .hadoop.hdfs.RenameResponseProto" +
+      "\022N\n\007rename2\022 .hadoop.hdfs.Rename2Request" +
+      "Proto\032!.hadoop.hdfs.Rename2ResponseProto" +
+      "\022K\n\006delete\022\037.hadoop.hdfs.DeleteRequestPr" +
+      "oto\032 .hadoop.hdfs.DeleteResponseProto\022K\n",
+      "\006mkdirs\022\037.hadoop.hdfs.MkdirsRequestProto" +
+      "\032 .hadoop.hdfs.MkdirsResponseProto\022W\n\nge" +
+      "tListing\022#.hadoop.hdfs.GetListingRequest" +
+      "Proto\032$.hadoop.hdfs.GetListingResponsePr" +
+      "oto\022W\n\nrenewLease\022#.hadoop.hdfs.RenewLea" +
+      "seRequestProto\032$.hadoop.hdfs.RenewLeaseR" +
+      "esponseProto\022]\n\014recoverLease\022%.hadoop.hd" +
+      "fs.RecoverLeaseRequestProto\032&.hadoop.hdf" +
+      "s.RecoverLeaseResponseProto\022X\n\ngetFsStat" +
+      "s\022$.hadoop.hdfs.GetFsStatusRequestProto\032",
+      "$.hadoop.hdfs.GetFsStatsResponseProto\022l\n" +
+      "\021getDatanodeReport\022*.hadoop.hdfs.GetData" +
+      "nodeReportRequestProto\032+.hadoop.hdfs.Get" +
+      "DatanodeReportResponseProto\022x\n\025getPrefer" +
+      "redBlockSize\022..hadoop.hdfs.GetPreferredB" +
+      "lockSizeRequestProto\032/.hadoop.hdfs.GetPr" +
+      "eferredBlockSizeResponseProto\022Z\n\013setSafe" +
+      "Mode\022$.hadoop.hdfs.SetSafeModeRequestPro" +
+      "to\032%.hadoop.hdfs.SetSafeModeResponseProt" +
+      "o\022`\n\rsaveNamespace\022&.hadoop.hdfs.SaveNam",
+      "espaceRequestProto\032\'.hadoop.hdfs.SaveNam" +
+      "espaceResponseProto\022T\n\trollEdits\022\".hadoo" +
+      "p.hdfs.RollEditsRequestProto\032#.hadoop.hd" +
+      "fs.RollEditsResponseProto\022u\n\024restoreFail" +
+      "edStorage\022-.hadoop.hdfs.RestoreFailedSto" +
+      "rageRequestProto\032..hadoop.hdfs.RestoreFa" +
+      "iledStorageResponseProto\022]\n\014refreshNodes" +
+      "\022%.hadoop.hdfs.RefreshNodesRequestProto\032" +
+      "&.hadoop.hdfs.RefreshNodesResponseProto\022" +
+      "f\n\017finalizeUpgrade\022(.hadoop.hdfs.Finaliz",
+      "eUpgradeRequestProto\032).hadoop.hdfs.Final" +
+      "izeUpgradeResponseProto\022c\n\016rollingUpgrad" +
+      "e\022\'.hadoop.hdfs.RollingUpgradeRequestPro" +
+      "to\032(.hadoop.hdfs.RollingUpgradeResponseP" +
+      "roto\022x\n\025listCorruptFileBlocks\022..hadoop.h" +
+      "dfs.ListCorruptFileBlocksRequestProto\032/." +
+      "hadoop.hdfs.ListCorruptFileBlocksRespons" +
+      "eProto\022Q\n\010metaSave\022!.hadoop.hdfs.MetaSav" +
+      "eRequestProto\032\".hadoop.hdfs.MetaSaveResp" +
+      "onseProto\022Z\n\013getFileInfo\022$.hadoop.hdfs.G",
+      "etFileInfoRequestProto\032%.hadoop.hdfs.Get" +
+      "FileInfoResponseProto\022l\n\021addCacheDirecti" +
+      "ve\022*.hadoop.hdfs.AddCacheDirectiveReques" +
+      "tProto\032+.hadoop.hdfs.AddCacheDirectiveRe" +
+      "sponseProto\022u\n\024modifyCacheDirective\022-.ha" +
+      "doop.hdfs.ModifyCacheDirectiveRequestPro" +
+      "to\032..hadoop.hdfs.ModifyCacheDirectiveRes" +
+      "ponseProto\022u\n\024removeCacheDirective\022-.had" +
+      "oop.hdfs.RemoveCacheDirectiveRequestProt" +
+      "o\032..hadoop.hdfs.RemoveCacheDirectiveResp",
+      "onseProto\022r\n\023listCacheDirectives\022,.hadoo" +
+      "p.hdfs.ListCacheDirectivesRequestProto\032-" +
+      ".hadoop.hdfs.ListCacheDirectivesResponse" +
+      "Proto\022]\n\014addCachePool\022%.hadoop.hdfs.AddC" +
+      "achePoolRequestProto\032&.hadoop.hdfs.AddCa" +
+      "chePoolResponseProto\022f\n\017modifyCachePool\022" +
+      "(.hadoop.hdfs.ModifyCachePoolRequestProt" +
+      "o\032).hadoop.hdfs.ModifyCachePoolResponseP" +
+      "roto\022f\n\017removeCachePool\022(.hadoop.hdfs.Re" +
+      "moveCachePoolRequestProto\032).hadoop.hdfs.",
+      "RemoveCachePoolResponseProto\022c\n\016listCach" +
+      "ePools\022\'.hadoop.hdfs.ListCachePoolsReque" +
+      "stProto\032(.hadoop.hdfs.ListCachePoolsResp" +
+      "onseProto\022f\n\017getFileLinkInfo\022(.hadoop.hd" +
+      "fs.GetFileLinkInfoRequestProto\032).hadoop." +
+      "hdfs.GetFileLinkInfoResponseProto\022l\n\021get" +
+      "ContentSummary\022*.hadoop.hdfs.GetContentS" +
+      "ummaryRequestProto\032+.hadoop.hdfs.GetCont" +
+      "entSummaryResponseProto\022Q\n\010setQuota\022!.ha" +
+      "doop.hdfs.SetQuotaRequestProto\032\".hadoop.",
+      "hdfs.SetQuotaResponseProto\022H\n\005fsync\022\036.ha" +
+      "doop.hdfs.FsyncRequestProto\032\037.hadoop.hdf" +
+      "s.FsyncResponseProto\022Q\n\010setTimes\022!.hadoo" +
+      "p.hdfs.SetTimesRequestProto\032\".hadoop.hdf" +
+      "s.SetTimesResponseProto\022`\n\rcreateSymlink" +
+      "\022&.hadoop.hdfs.CreateSymlinkRequestProto" +
+      "\032\'.hadoop.hdfs.CreateSymlinkResponseProt" +
+      "o\022`\n\rgetLinkTarget\022&.hadoop.hdfs.GetLink" +
+      "TargetRequestProto\032\'.hadoop.hdfs.GetLink" +
+      "TargetResponseProto\022{\n\026updateBlockForPip",
+      "eline\022/.hadoop.hdfs.UpdateBlockForPipeli" +
+      "neRequestProto\0320.hadoop.hdfs.UpdateBlock" +
+      "ForPipelineResponseProto\022c\n\016updatePipeli" +
+      "ne\022\'.hadoop.hdfs.UpdatePipelineRequestPr" +
+      "oto\032(.hadoop.hdfs.UpdatePipelineResponse" +
+      "Proto\022s\n\022getDelegationToken\022-.hadoop.com" +
+      "mon.GetDelegationTokenRequestProto\032..had" +
+      "oop.common.GetDelegationTokenResponsePro" +
+      "to\022y\n\024renewDelegationToken\022/.hadoop.comm" +
+      "on.RenewDelegationTokenRequestProto\0320.ha",
+      "doop.common.RenewDelegationTokenResponse" +
+      "Proto\022|\n\025cancelDelegationToken\0220.hadoop." +
+      "common.CancelDelegationTokenRequestProto" +
+      "\0321.hadoop.common.CancelDelegationTokenRe" +
+      "sponseProto\022u\n\024setBalancerBandwidth\022-.ha" +
+      "doop.hdfs.SetBalancerBandwidthRequestPro" +
+      "to\032..hadoop.hdfs.SetBalancerBandwidthRes" +
+      "ponseProto\022u\n\024getDataEncryptionKey\022-.had" +
+      "oop.hdfs.GetDataEncryptionKeyRequestProt" +
+      "o\032..hadoop.hdfs.GetDataEncryptionKeyResp",
+      "onseProto\022c\n\016createSnapshot\022\'.hadoop.hdf" +
+      "s.CreateSnapshotRequestProto\032(.hadoop.hd" +
+      "fs.CreateSnapshotResponseProto\022c\n\016rename" +
+      "Snapshot\022\'.hadoop.hdfs.RenameSnapshotReq" +
+      "uestProto\032(.hadoop.hdfs.RenameSnapshotRe" +
+      "sponseProto\022`\n\rallowSnapshot\022&.hadoop.hd" +
+      "fs.AllowSnapshotRequestProto\032\'.hadoop.hd" +
+      "fs.AllowSnapshotResponseProto\022i\n\020disallo" +
+      "wSnapshot\022).hadoop.hdfs.DisallowSnapshot" +
+      "RequestProto\032*.hadoop.hdfs.DisallowSnaps",
+      "hotResponseProto\022\207\001\n\032getSnapshottableDir" +
+      "Listing\0223.hadoop.hdfs.GetSnapshottableDi" +
+      "rListingRequestProto\0324.hadoop.hdfs.GetSn" +
+      "apshottableDirListingResponseProto\022c\n\016de" +
+      "leteSnapshot\022\'.hadoop.hdfs.DeleteSnapsho" +
+      "tRequestProto\032(.hadoop.hdfs.DeleteSnapsh" +
+      "otResponseProto\022x\n\025getSnapshotDiffReport" +
+      "\022..hadoop.hdfs.GetSnapshotDiffReportRequ" +
+      "estProto\032/.hadoop.hdfs.GetSnapshotDiffRe" +
+      "portResponseProto\022]\n\014isFileClosed\022%.hado",
+      "op.hdfs.IsFileClosedRequestProto\032&.hadoo" +
+      "p.hdfs.IsFileClosedResponseProto\022i\n\020modi" +
+      "fyAclEntries\022).hadoop.hdfs.ModifyAclEntr" +
+      "iesRequestProto\032*.hadoop.hdfs.ModifyAclE" +
+      "ntriesResponseProto\022i\n\020removeAclEntries\022" +
+      ").hadoop.hdfs.RemoveAclEntriesRequestPro" +
+      "to\032*.hadoop.hdfs.RemoveAclEntriesRespons" +
+      "eProto\022i\n\020removeDefaultAcl\022).hadoop.hdfs" +
+      ".RemoveDefaultAclRequestProto\032*.hadoop.h" +
+      "dfs.RemoveDefaultAclResponseProto\022T\n\trem",
+      "oveAcl\022\".hadoop.hdfs.RemoveAclRequestPro" +
+      "to\032#.hadoop.hdfs.RemoveAclResponseProto\022" +
+      "K\n\006setAcl\022\037.hadoop.hdfs.SetAclRequestPro" +
+      "to\032 .hadoop.hdfs.SetAclResponseProto\022]\n\014" +
+      "getAclStatus\022%.hadoop.hdfs.GetAclStatusR" +
+      "equestProto\032&.hadoop.hdfs.GetAclStatusRe" +
+      "sponseProtoBK\n%org.apache.hadoop.hdfs.pr" +
+      "otocol.protoB\034ClientNamenodeProtocolProt" +
+      "os\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -83135,17 +83449,17 @@ public final class ClientNamenodeProtocolProtos {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_AppendResponseProto_descriptor,
               new java.lang.String[] { "Block", });
-          internal_static_hadoop_hdfs_OverwriteRequestProto_descriptor =
+          internal_static_hadoop_hdfs_OverwriteBlockRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(8);
-          internal_static_hadoop_hdfs_OverwriteRequestProto_fieldAccessorTable = new
+          internal_static_hadoop_hdfs_OverwriteBlockRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_hadoop_hdfs_OverwriteRequestProto_descriptor,
-              new java.lang.String[] { "Src", "Offset", "ClientName", });
-          internal_static_hadoop_hdfs_OverwriteResponseProto_descriptor =
+              internal_static_hadoop_hdfs_OverwriteBlockRequestProto_descriptor,
+              new java.lang.String[] { "Src", "Previous", "BIndex", "FileId", "ClientName", });
+          internal_static_hadoop_hdfs_OverwriteBlockResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(9);
-          internal_static_hadoop_hdfs_OverwriteResponseProto_fieldAccessorTable = new
+          internal_static_hadoop_hdfs_OverwriteBlockResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_hadoop_hdfs_OverwriteResponseProto_descriptor,
+              internal_static_hadoop_hdfs_OverwriteBlockResponseProto_descriptor,
               new java.lang.String[] { "Block", });
           internal_static_hadoop_hdfs_SetReplicationRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(10);

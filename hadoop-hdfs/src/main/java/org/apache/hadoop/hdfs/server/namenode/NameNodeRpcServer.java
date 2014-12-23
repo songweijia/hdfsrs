@@ -647,6 +647,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
   }
 
   @Override // ClientProtocol
+  //HDFSRS_RWAPI:Now the last block can be any block in the middle of the file
   public boolean complete(String src, String clientName,
                           ExtendedBlock last,  long fileId)
       throws IOException {
@@ -1385,14 +1386,22 @@ class NameNodeRpcServer implements NamenodeProtocols {
     return namesystem.getAclStatus(src);
   }
   
-  //TODO: implement Namenode update
+  //HDFSRS{
   @Override
-  public LocatedBlock overwrite(String src, long offset, String clientName)
-    throws AccessControlException, DSQuotaExceededException,
-    FileNotFoundException, SafeModeException, UnresolvedLinkException,
-    SnapshotAccessControlException, IOException {
-    // TODO Auto-generated method
-    throw new IOException("Unimplemented yet");
+  public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
+      int bIndex, long fileId, String clientName)
+      throws AccessControlException, DSQuotaExceededException,
+      FileNotFoundException, SafeModeException, UnresolvedLinkException,
+      SnapshotAccessControlException, IOException{
+    if(stateChangeLog.isDebugEnabled()){
+      stateChangeLog.debug("*BLOCK* NameNode.overwriteBlock: file" + src
+          + " fileId=" + fileId 
+          + " previous=" + previous
+          + " bIndex=" + bIndex
+          + " for " + clientName);
+    }
+    LocatedBlock locatedBlock = namesystem.overwriteBlock(src, previous, bIndex, fileId, clientName);
+    return locatedBlock;
   }
 
   @Override
@@ -1403,5 +1412,6 @@ class NameNodeRpcServer implements NamenodeProtocols {
     return namesystem.getBlockLocations(getClientMachine(), 
                                         src, offset, length, false);
   }
+  //}HDFSRS
 }
 

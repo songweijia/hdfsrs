@@ -88,13 +88,15 @@ message AppendResponseProto {
 }
 
 //HDFSRS_RWAPI{
-message OverwriteRequestProto {
+message OverwriteBlockRequestProto {
   required string src = 1;
-  required uint64 offset = 2;
-  required string clientName = 3;
+  optional ExtendedBlockProto previous = 2;
+  required int32 bIndex = 3;
+  required uint64 fileId = 4;
+  required string clientName = 5;
 }
 
-message OverwriteResponseProto {
+message OverwriteBlockResponseProto {
   optional LocatedBlockProto block = 1;
 }
 //}
@@ -660,7 +662,7 @@ service ClientNamenodeProtocol {
   rpc create(CreateRequestProto)returns(CreateResponseProto);
   rpc append(AppendRequestProto) returns(AppendResponseProto);
   //HDFSRS_RWAPI{
-  rpc overwrite(OverwriteRequestProto) returns(OverwriteResponseProto);
+  rpc overwriteBlock(OverwriteBlockRequestProto) returns(OverwriteBlockResponseProto);
   //}
   rpc setReplication(SetReplicationRequestProto)
       returns(SetReplicationResponseProto);

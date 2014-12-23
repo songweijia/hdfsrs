@@ -328,6 +328,7 @@ public class DFSOutputStream extends FSOutputSummer
     // the streamer will use blockWriteOffset.
     private long blockWriteOffset = -1; // write offset into the block.
     private long blockNumber = -1; // the number of the block being written, start from zero
+    private long fileSizeAtSeek = -1; // the current file size when seek() is invoked
     //}
     private Token<BlockTokenIdentifier> accessToken;
     private DataOutputStream blockStream;
@@ -487,38 +488,29 @@ public class DFSOutputStream extends FSOutputSummer
       setPipeline(null, null);
       //HDFSRS_RWAPI{
       LocatedBlock lb = null;
+      //TODO
       if(newPos>=0){// go to new position
-        LocatedBlocks lbs = dfsClient.namenode.getBlockLocationsNoCreate(src, newPos, 1);
-        if(lbs == null || lbs.locatedBlockCount() == 0)
-          throw new IOException("[HDFSRS_RWAPI]Cannot find a block at newPos:"+newPos);
-        lb = lbs.get(0);
-        block = lb.getBlock();
-        blockWriteOffset = newPos % blockSize;
-        blockNumber = newPos / blockSize;
-        stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
-      }else{
-        LocatedBlocks lbs = dfsClient.namenode.getBlockLocationsNoCreate(src,(blockNumber+1)*blockSize,1);
-        if(lbs == null || lbs.locatedBlockCount() == 0){
+        if(newPos > fileSizeAtSeek)
+          throw new IOException("[HDFSRS_RWAPI]newPos("+newPos+") exceeds currentFileSize("+fileSizeAtSeek+")");
+        else if(newPos == fileSizeAtSeek && newPos%blockSize == 0){
           stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
           blockWriteOffset = -1;
         }else{
-          lb = lbs.get(0);
           stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
-          block = lb.getBlock();
+          blockNumber = newPos / blockSize;
+          blockWriteOffset = newPos % blockSize;
+        }
+      }else{
+        if((blockNumber+1)*blockSize >= fileSizeAtSeek){
+          stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
+          blockWriteOffset = -1;
+        }else{
+          stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
           blockWriteOffset = 0;
         }
         blockNumber ++;
-      //}
+//      LocatedBlocks lbs = dfsClient.namenode.getBlockLocationsNoCreate(src,(blockNumber+1)*blockSize,1);
       }
-      
-      //HDFSRS_RWAPI{
-      if(stage == BlockConstructionStage.PIPELINE_SETUP_OVERWRITE){
-        // setting up other members
-        accessToken = lb.getBlockToken();
-        bytesSent = block.getNumBytes();
-        setPipeline(lb);
-      }
-      //}
     }
     //HDFSRS_RWAPI{
     /**
@@ -529,11 +521,12 @@ public class DFSOutputStream extends FSOutputSummer
     //we just set the block, blockNumber, blockWriteOffset
     //then let the streamer thread handle the BlockConstructionStage.PIPELINE_SETUP_SEEK
     //status by itself.
-    private void seek(long offset)
+    private void seek(long offset,long curFileSize)
     throws IOException {
       blockNumber = offset / blockSize;
       blockWriteOffset = offset % blockSize;
       stage = BlockConstructionStage.PIPELINE_SETUP_SEEK;
+      fileSizeAtSeek = curFileSize;
     }
     //}
     /*
@@ -595,33 +588,63 @@ public class DFSOutputStream extends FSOutputSummer
           assert one != null;
 
           //HDFSRS_RWAPI{
+          if(stage==BlockConstructionStage.PIPELINE_SETUP_SEEK)
+            endBlock(blockNumber*blockSize+blockWriteOffset); // <-- stop current block and move to new position
           // get new block from namenode.
           if (stage == BlockConstructionStage.PIPELINE_SETUP_CREATE) {
+            // HDFSRS_RWAPI
+            // When we open a file for appending, whose length just fall on the boundary,
+            // The initial state of the streamer is "PIPELINE_SETUP_CREATE". If we seek at
+            // this point, the flush operation will send a packet with "lastPAcketInBlock"
+            // tag to try finalize pending data. However, we don't have pending data at this
+            // point. The effect is, the streamer will create an empty block by the following
+            // call on nextBlockOutputStream(), and close it at the end of this loop. This
+            // empty block will cause problem when we seek to the end of file again, where
+            // another empty block will be created by the following "OVERWRITE" handler. This
+            // cause failure at appending at this point.
+            // The solution: we do not create any block for a flush packet(lastPacketInBlock=
+            // true) in PIPELINE_SETUP_CREATE state. Once it is detected, we safely throw this
+            // packet away, and emulate an ack operation as following. This avoid creation of 
+            // an additional empty block.
+            // 
+            if(one.lastPacketInBlock){
+              synchronized(dataQueue){
+                lastAckedSeqno = one.seqno;
+                dataQueue.removeFirst();
+                dataQueue.notifyAll();
+              }
+              continue;
+            }
+            //}HDFSRS_RWAPI
             if(DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("Allocating new block");
             }
             setPipeline(nextBlockOutputStream());
             initDataStreaming();
-          } else if (stage == BlockConstructionStage.PIPELINE_SETUP_APPEND ||
-              stage == BlockConstructionStage.PIPELINE_SETUP_OVERWRITE ||
-              stage == BlockConstructionStage.PIPELINE_SETUP_SEEK) {
+          }else if(stage == BlockConstructionStage.PIPELINE_SETUP_APPEND){
             if(DFSClient.LOG.isDebugEnabled()) {
-              switch(stage){
-              case PIPELINE_SETUP_APPEND:
-                DFSClient.LOG.debug("Append to block " + block);
-                break;
-              case PIPELINE_SETUP_SEEK:
-                DFSClient.LOG.debug("Seek to block " + block);
-                break;
-              case PIPELINE_SETUP_OVERWRITE:
-                DFSClient.LOG.debug("Overwrite to block " + block);
-                break;
-              default: // do nothing
-                break;
-              }
+              DFSClient.LOG.debug("Append to block:" + block);
             }
-            if(stage==BlockConstructionStage.PIPELINE_SETUP_SEEK)
-              endBlock(blockNumber*blockSize+blockWriteOffset); // <-- stop current block and move to new position
+            setupPipelineForAppendOrRecovery(); // <-- this will handle overwrite too.
+            initDataStreaming();
+          }else if (stage == BlockConstructionStage.PIPELINE_SETUP_OVERWRITE){
+            if(DFSClient.LOG.isDebugEnabled()) {
+              DFSClient.LOG.debug("Overwrite to block: blockNumber=" + blockNumber
+                  + "fileId=" + fileId 
+                  + "src=" + src
+                  + "clientName=" + dfsClient.clientName);
+            }
+            //Till now, we have blockNumber and blockWriteOffset. The 'block'
+            //member points to the previous block, which is in "Under construction"
+            //state in NameNode. The overwriteBlock method will complete that block
+            //and open convert the new block specified by blockNumber in to "Under construction"
+            //state.
+            LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, block, (int)blockNumber, fileId, dfsClient.clientName);
+            if(lb==null)throw new IOException("[HDFSRS_RWAPI]overwriteBlock() returns null:blockNumber="+blockNumber);
+            accessToken = lb.getBlockToken();
+            block = lb.getBlock();
+            bytesSent = block.getNumBytes();
+            setPipeline(lb);
             setupPipelineForAppendOrRecovery(); // <-- this will handle overwrite too.
             initDataStreaming();
           }
@@ -1911,7 +1934,7 @@ public class DFSOutputStream extends FSOutputSummer
    */
   @Override
   public void hflush() throws IOException {
-    flushOrSync(false, EnumSet.noneOf(SyncFlag.class));
+    flushOrSync(false, EnumSet.noneOf(SyncFlag.class), false/*HDFSRS_RWAPI*/);
   }
 
   @Override
@@ -1933,7 +1956,7 @@ public class DFSOutputStream extends FSOutputSummer
    *          whether or not to update the block length in NameNode.
    */
   public void hsync(EnumSet<SyncFlag> syncFlags) throws IOException {
-    flushOrSync(true, syncFlags);
+    flushOrSync(true, syncFlags, false/*HDFSRS_RWAPI*/);
   }
 
   /**
@@ -1948,7 +1971,8 @@ public class DFSOutputStream extends FSOutputSummer
    *          the NameNode
    * @throws IOException
    */
-  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags)
+  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, 
+      boolean bFinalize/*HDFSRS_RWAPI: for seek flush*/)
       throws IOException {
     dfsClient.checkOpen();
     checkClosed();
@@ -2011,6 +2035,14 @@ public class DFSOutputStream extends FSOutputSummer
           currentPacket.syncBlock = isSync;
           waitAndQueueCurrentPacket();          
         }
+//HDFSRS_RWAPI{        
+        if(bFinalize){
+          currentPacket = new Packet(0, 0, bytesCurBlock);
+          currentPacket.lastPacketInBlock = true;
+          currentPacket.syncBlock = shouldSyncBlock;
+          waitAndQueueCurrentPacket();
+        }
+//}HDFSRS_RWAPI
         // Restore state of stream. Record the last flush offset 
         // of the last full chunk that was flushed.
         //
@@ -2331,8 +2363,8 @@ public class DFSOutputStream extends FSOutputSummer
 		  throw new IOException("[HDFSRS_RWAPI]Cannot seek to "+pos+" beyound the end of the file.");
 	  
 	  // STEP 3: flush
-	  this.hflush();
-	  
+    flushOrSync(true, EnumSet.noneOf(SyncFlag.class), true);
+
     // STEP 4: reset the chunkSize and write buffer
 	  this.bytesCurBlock = pos%this.blockSize;
 
@@ -2360,7 +2392,8 @@ public class DFSOutputStream extends FSOutputSummer
           checksum.getBytesPerChecksum());
     }
     //STEP 5: Reset streamer
-	  this.streamer.seek(pos);
+	  this.streamer.seek(pos,this.curFileSize);
+	  this.pos = pos;
   }
   
   private void updateFileSize(){

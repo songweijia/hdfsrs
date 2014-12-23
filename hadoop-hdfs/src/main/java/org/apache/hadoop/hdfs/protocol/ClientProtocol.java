@@ -232,9 +232,24 @@ public interface ClientProtocol {
       SnapshotAccessControlException, IOException;
 
   //HDFSRS_RWAPI{
-  //TODO: implement the update function.
+  /**
+   * @param src - file
+   * @param previous - previous block to be completed
+   * @param bIndex - index to the new block
+   * @param fileId - fileId
+   * @param clientName - clientname
+   * @return
+   * @throws AccessControlException
+   * @throws DSQuotaExceededException
+   * @throws FileNotFoundException
+   * @throws SafeModeException
+   * @throws UnresolvedLinkException
+   * @throws SnapshotAccessControlException
+   * @throws IOException
+   */
   @AtMostOnce
-  public LocatedBlock overwrite(String src, long offset, String clientName)
+  public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
+      int bIndex, long fileId, String clientName)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException;
