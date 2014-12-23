@@ -52,6 +52,7 @@ class MemVolumeImpl implements FsVolumeSpi {
         DFSConfigKeys.DFS_DATANODE_DU_RESERVED_DEFAULT);
     this.usage = dataset.memManager.getCapacity();
     this.storageType = storageType;
+    this.bpSlices = new HashMap<String, Long>();
   }
   
   void decDfsUsed(String bpid, long value) {

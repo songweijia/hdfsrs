@@ -118,13 +118,14 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     this.datanode = datanode;
     this.dataStorage = storage;
     this.validVolsRequired = 1;
-
+    
+    memManager = new MemDatasetManager(this, conf);
+    
     storageMap = new HashMap<String, DatanodeStorage>();
     storageMap.put("0", new DatanodeStorage("0", DatanodeStorage.State.NORMAL, StorageType.MEM));
     volumes = new ArrayList<MemVolumeImpl>(1);
     volumes.add(new MemVolumeImpl(this, "0", conf, StorageType.MEM));
 
-    memManager = new MemDatasetManager(this, conf);
     registerMBean(datanode.getDatanodeUuid());
   }
 
@@ -535,10 +536,10 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       }
     }
 
-    for (FsVolumeSpi v : volumes) {
+    for (MemVolumeImpl v : volumes) {
       ArrayList<Block> finalizedList = finalized.get(v.getStorageID());
       ArrayList<Block> ucList = uc.get(v.getStorageID());
-      blockReportsMap.put(((FsVolumeImpl) v).toDatanodeStorage(),
+      blockReportsMap.put(v.toDatanodeStorage(),
                           new BlockListAsLongs(finalizedList, ucList));
     }
 

@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import  org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.protocol.Block;
@@ -23,6 +25,8 @@ import org.apache.hadoop.hdfs.server.datanode.Replica;
 
 
 public class MemDatasetManager {
+  static final Log LOG = LogFactory.getLog(MemDatasetManager.class);
+  
   class MemAddr {
     int regionID;
     int offset;
@@ -35,12 +39,14 @@ public class MemDatasetManager {
   
   public class MemBlockMeta extends Block implements Replica {
     MemAddr offset;
+    long bytesAcked;
     ReplicaState state;
     
     MemBlockMeta(MemAddr offset, long length, long genStamp, long blockId, ReplicaState state) {
       super(blockId, length, genStamp);
       this.offset = offset;
       this.state = state;
+      this.bytesAcked = 0;
     }
 
     public ReplicaState getState() {
@@ -48,11 +54,15 @@ public class MemDatasetManager {
     }
     
     public long getBytesOnDisk() {
-      return getNumBytes();
+      return bytesAcked;
     }
 
+    public void setBytesOnDisk(long bytes) {
+      bytesAcked = bytes;
+    }
+    
     public long getVisibleLength() {
-      return getNumBytes();
+      return bytesAcked;
     }
 
     public String getStorageUuid() {
@@ -64,11 +74,11 @@ public class MemDatasetManager {
     }
     
     public long getBytesAcked() {
-      return getNumBytes();
+      return bytesAcked;
     }
     
     public void setBytesAcked(long bytes) {
-      setNumBytes(bytes);
+      bytesAcked = bytes;
     }
   }
 
@@ -76,6 +86,7 @@ public class MemDatasetManager {
     ByteBuffer buf;
     
     ByteBufferOutputStream(byte[] buf, int offset) {
+      LOG.warn("CQ: ByteBufferOutputStream: buf length:" + buf.length + " offset:" + offset);
       this.buf = ByteBuffer.wrap(buf, offset, buf.length - offset);
     }
     public synchronized void write(int b) throws IOException {
@@ -109,12 +120,14 @@ public class MemDatasetManager {
     for (int i = 0; i < this.memRegions.length; i++)
       this.memRegions[i] = ByteBuffer.allocate(this.maxRegionSize);
     
+    LOG.warn("CQ: MemDatasetManager: blocksize:" + blocksize + " maxregionsize:" + maxRegionSize + " capacity:" + capacity);
     availableAddr = new LinkedList<MemAddr>();
     for (int i = 0; i < this.memRegions.length; i++)
       for (int j = 0; j < this.maxRegionSize; j += this.blocksize)
         availableAddr.add(new MemAddr(i,j));
     
     this.cacheSize = (int)(this.capacity / this.blocksize);
+    this.diskMaps = new HashMap<ExtendedBlockId, String>();
     this.memMaps = new LinkedHashMap<ExtendedBlockId, MemBlockMeta> (this.cacheSize + 1, 1F, true) {
       private static final long serialVersionUID = 1;
       
@@ -149,6 +162,7 @@ public class MemDatasetManager {
       if (availableAddr.size() > 0) {
         MemBlockMeta meta = new MemBlockMeta(availableAddr.poll(), 0, genStamp, blockId, ReplicaState.TEMPORARY);
         memMaps.put(key, meta);
+        LOG.warn("CQ: getNewBlock: regionID:" + meta.offset.regionID + " addr:" + meta.offset.offset);
         return meta;
       }
     }
@@ -173,6 +187,7 @@ public class MemDatasetManager {
   }
   
   OutputStream getOutputStream(MemAddr baseOffset, long offset) {
+    if (offset < 0) offset = 0;
     return new ByteBufferOutputStream(memRegions[baseOffset.regionID].array(), (int)(baseOffset.offset + offset));
   }
   

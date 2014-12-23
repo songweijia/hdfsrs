@@ -114,7 +114,7 @@ class BlockReceiver implements Closeable {
   /** the block to receive */
   protected final ExtendedBlock block; 
   /** the replica to write */
-  protected ReplicaInPipelineInterface replicaInfo;
+  private ReplicaInPipelineInterface replicaInfo;
   /** pipeline stage */
   protected final BlockConstructionStage stage;
   protected final boolean isTransfer;
@@ -156,6 +156,7 @@ class BlockReceiver implements Closeable {
     
     this.clientChecksum = requestedChecksum;
     this.checksumSize = clientChecksum.getChecksumSize();
+    this.bytesPerChecksum = clientChecksum.getBytesPerChecksum();
     this.needsChecksumTranslation = true;
   }
   
@@ -479,13 +480,13 @@ class BlockReceiver implements Closeable {
    * Receives and processes a packet. It can contain many chunks.
    * returns the number of data bytes that the packet has.
    */
-  private int receivePacket() throws IOException {
+  int receivePacket() throws IOException {
     // read the next packet
     packetReceiver.receiveNextPacket(in);
 
     PacketHeader header = packetReceiver.getHeader();
     if (LOG.isDebugEnabled()){
-      LOG.debug("Receiving one packet for block " + block +
+      LOG.debug("BlockReceiver: Receiving one packet for block " + block +
                 ": " + header);
     }
 
