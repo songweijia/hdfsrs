@@ -883,6 +883,8 @@ public class FSEditLogLoader {
       Block newBlock = newBlocks[i];
       
       boolean isLastBlock = i == newBlocks.length - 1;
+/* HDFSRS_RWAPI{ We don't do this check since we may change blocks other than
+ * the last one.
       if (oldBlock.getBlockId() != newBlock.getBlockId() ||
           (oldBlock.getGenerationStamp() != newBlock.getGenerationStamp() && 
               !(isGenStampUpdate && isLastBlock))) {
@@ -891,7 +893,7 @@ public class FSEditLogLoader {
             " as block # " + i + "/" + newBlocks.length + " of " +
             path);
       }
-      
+}HDFSRS_RWAPI */      
       oldBlock.setNumBytes(newBlock.getNumBytes());
       boolean changeMade =
         oldBlock.getGenerationStamp() != newBlock.getGenerationStamp();
