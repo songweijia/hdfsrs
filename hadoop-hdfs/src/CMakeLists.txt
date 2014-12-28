@@ -112,6 +112,11 @@ add_library(posix_util
     main/native/util/posix_util.c
 )
 
+add_library(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer SHARED
+    main/native/mem-dfs/org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer.cc
+)
+output_directory(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer target/usr/local/lib)
+
 add_executable(test_libhdfs_ops
     main/native/libhdfs/test/test_libhdfs_ops.c
 )

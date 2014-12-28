@@ -26,6 +26,17 @@ import org.apache.hadoop.hdfs.server.datanode.Replica;
 
 public class MemDatasetManager {
   static final Log LOG = LogFactory.getLog(MemDatasetManager.class);
+   
+  private ByteBuffer memRegions[];
+  private LinkedHashMap<ExtendedBlockId, MemBlockMeta> memMaps; 
+  private HashMap<ExtendedBlockId, String> diskMaps;
+  private MemDatasetImpl dataset;
+  private JNIBuffer jnibuf;
+  private LinkedList<MemAddr> availableAddr;
+  private final long capacity;
+  private final long blocksize; 
+  private final int maxRegionSize;
+  private final int cacheSize;
   
   class MemAddr {
     int regionID;
@@ -82,13 +93,36 @@ public class MemDatasetManager {
     }
   }
 
+  class ByteBufferInputStream extends InputStream {
+    ByteBuffer buf;
+    
+    ByteBufferInputStream(int bufID, int offset) {
+      buf = memRegions[bufID].duplicate();
+      buf.position(offset);
+      buf.limit(Math.min((int)((offset/blocksize + 1) * blocksize), maxRegionSize));
+    }
+    
+    public synchronized int read() throws IOException {
+      if (!buf.hasRemaining()) return -1;
+      return buf.get();
+    }
+    
+    public synchronized int read(byte[] bytes, int off, int len) throws IOException {
+      len = Math.min(len, buf.remaining());
+      buf.get(bytes, off, len);
+      return len;
+    }
+  }
+  
   class ByteBufferOutputStream extends OutputStream {
     ByteBuffer buf;
     
-    ByteBufferOutputStream(byte[] buf, int offset) {
-      LOG.warn("CQ: ByteBufferOutputStream: buf length:" + buf.length + " offset:" + offset);
-      this.buf = ByteBuffer.wrap(buf, offset, buf.length - offset);
+    ByteBufferOutputStream(int bufID, int offset) {
+      buf = memRegions[bufID].duplicate();
+      buf.position(offset);
+      buf.limit(Math.min((int)((offset/blocksize + 1) * blocksize), maxRegionSize));
     }
+    
     public synchronized void write(int b) throws IOException {
       buf.put((byte)b);
     }
@@ -97,17 +131,6 @@ public class MemDatasetManager {
       buf.put(bytes, off, len);
     } 
   }
-
-  private ByteBuffer memRegions[];
-  private LinkedHashMap<ExtendedBlockId, MemBlockMeta> memMaps; 
-  private HashMap<ExtendedBlockId, String> diskMaps;
-  private MemDatasetImpl dataset;
-  private LinkedList<MemAddr> availableAddr;
-  private final long capacity;
-  private final long blocksize; 
-  private final int maxRegionSize;
-  
-  private final int cacheSize;
   
   MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
     this.dataset = dataset;
@@ -115,10 +138,12 @@ public class MemDatasetManager {
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2);
     this.maxRegionSize = conf.getInt("dfs.memory.regionsize", 1024 * 1024 * 1024 * 1);
     
+    this.jnibuf = new JNIBuffer();
     this.memRegions = new ByteBuffer[(int)((this.capacity + this.maxRegionSize - 1) / this.maxRegionSize)];
     // TODO: try to replace this buffer to the infiniband registered buffer
     for (int i = 0; i < this.memRegions.length; i++)
-      this.memRegions[i] = ByteBuffer.allocate(this.maxRegionSize);
+      //this.memRegions[i] = ByteBuffer.allocate(this.maxRegionSize);
+      this.memRegions[i] = this.jnibuf.createBuffer(this.maxRegionSize);
     
     LOG.warn("CQ: MemDatasetManager: blocksize:" + blocksize + " maxregionsize:" + maxRegionSize + " capacity:" + capacity);
     availableAddr = new LinkedList<MemAddr>();
@@ -141,6 +166,10 @@ public class MemDatasetManager {
         return false;
       } 
     };
+  }
+  
+  void shutdown() {
+    this.jnibuf.deleteBuffers();
   }
   
   long getCapacity() {
@@ -181,14 +210,13 @@ public class MemDatasetManager {
   }
   
   InputStream getInputStream(MemAddr baseOffset, long offset) {
-    ByteArrayInputStream in = new ByteArrayInputStream(memRegions[baseOffset.regionID].array());
-    in.skip(baseOffset.offset + offset);
-    return in;
+    if (offset < 0) offset = 0;
+    return new ByteBufferInputStream(baseOffset.regionID, (int)(baseOffset.offset + offset));
   }
   
   OutputStream getOutputStream(MemAddr baseOffset, long offset) {
     if (offset < 0) offset = 0;
-    return new ByteBufferOutputStream(memRegions[baseOffset.regionID].array(), (int)(baseOffset.offset + offset));
+    return new ByteBufferOutputStream(baseOffset.regionID, (int)(baseOffset.offset + offset));
   }
   
   List<Block> getBlockMetas(String bpid, ReplicaState state) {
@@ -199,5 +227,5 @@ public class MemDatasetManager {
           results.add(entry.getValue());
     }
     return results;
-  }
+  } 
 }

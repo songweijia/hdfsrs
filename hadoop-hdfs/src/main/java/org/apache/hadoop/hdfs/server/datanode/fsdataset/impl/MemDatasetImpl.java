@@ -672,6 +672,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   public void shutdown() {
     if (mbeanName != null)
       MBeans.unregister(mbeanName);
+    memManager.shutdown();
   }
 
   @Override // FSDatasetMBean
