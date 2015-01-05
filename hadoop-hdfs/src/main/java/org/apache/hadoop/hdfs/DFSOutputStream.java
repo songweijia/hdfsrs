@@ -501,6 +501,14 @@ public class DFSOutputStream extends FSOutputSummer
           blockWriteOffset = newPos % blockSize;
         }
       }else{
+        //HDFSRS_RWAPI{ 
+        // In DFSOutputStream.seek(), after flushing existing data, the DataStreamer may
+        // still keep the pipeline. If the DataStreamer.seek() is invoked before the 
+        // pipeline being destructed by endblock(), we should keep the blockNumber and 
+        // blockWriteOffset settings here.
+        if(stage==BlockConstructionStage.PIPELINE_SETUP_SEEK)
+          return;
+        //}HDFSRS_RWAPI
         if((blockNumber+1)*blockSize >= fileSizeAtSeek){
           stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
           blockWriteOffset = -1;
