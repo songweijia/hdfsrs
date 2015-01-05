@@ -91,67 +91,67 @@ import com.google.common.base.Preconditions;
 class BlockSender implements java.io.Closeable {
   static final Log LOG = DataNode.LOG;
   static final Log ClientTraceLog = DataNode.ClientTraceLog;
-  private static final boolean is32Bit = 
+  static final boolean is32Bit = 
       System.getProperty("sun.arch.data.model").equals("32");
   /**
    * Minimum buffer used while sending data to clients. Used only if
    * transferTo() is enabled. 64KB is not that large. It could be larger, but
    * not sure if there will be much more improvement.
    */
-  private static final int MIN_BUFFER_WITH_TRANSFERTO = 64*1024;
-  private static final int TRANSFERTO_BUFFER_SIZE = Math.max(
+  static final int MIN_BUFFER_WITH_TRANSFERTO = 64*1024;
+  static final int TRANSFERTO_BUFFER_SIZE = Math.max(
       HdfsConstants.IO_FILE_BUFFER_SIZE, MIN_BUFFER_WITH_TRANSFERTO);
   
   /** the block to read from */
-  private final ExtendedBlock block;
+  protected final ExtendedBlock block;
   /** Stream to read block data from */
-  private InputStream blockIn;
+  protected InputStream blockIn;
   /** updated while using transferTo() */
-  private long blockInPosition = -1;
+  protected long blockInPosition = -1;
   /** Stream to read checksum */
-  private DataInputStream checksumIn;
+  protected DataInputStream checksumIn;
   /** Checksum utility */
-  private final DataChecksum checksum;
+  protected final DataChecksum checksum;
   /** Initial position to read */
-  private long initialOffset;
+  protected long initialOffset;
   /** Current position of read */
-  private long offset;
+  protected long offset;
   /** Position of last byte to read from block file */
-  private final long endOffset;
+  protected long endOffset;
   /** Number of bytes in chunk used for computing checksum */
-  private final int chunkSize;
+  protected final int chunkSize;
   /** Number bytes of checksum computed for a chunk */
-  private final int checksumSize;
+  protected final int checksumSize;
   /** If true, failure to read checksum is ignored */
-  private final boolean corruptChecksumOk;
+  protected boolean corruptChecksumOk;
   /** Sequence number of packet being sent */
-  private long seqno;
+  protected long seqno;
   /** Set to true if transferTo is allowed for sending data to the client */
-  private final boolean transferToAllowed;
+  protected boolean transferToAllowed;
   /** Set to true once entire requested byte range has been sent to the client */
-  private boolean sentEntireByteRange;
+  protected boolean sentEntireByteRange;
   /** When true, verify checksum while reading from checksum file */
-  private final boolean verifyChecksum;
+  protected boolean verifyChecksum;
   /** Format used to print client trace log messages */
-  private final String clientTraceFmt;
-  private volatile ChunkChecksum lastChunkChecksum = null;
-  private DataNode datanode;
+  protected final String clientTraceFmt;
+  protected volatile ChunkChecksum lastChunkChecksum = null;
+  protected DataNode datanode;
   
   /** The file descriptor of the block being sent */
-  private FileDescriptor blockInFd;
+  protected FileDescriptor blockInFd;
 
   // Cache-management related fields
-  private final long readaheadLength;
+  protected long readaheadLength;
 
-  private ReadaheadRequest curReadahead;
+  protected ReadaheadRequest curReadahead;
 
-  private final boolean alwaysReadahead;
+  protected boolean alwaysReadahead;
   
-  private final boolean dropCacheBehindLargeReads;
+  protected boolean dropCacheBehindLargeReads;
   
-  private final boolean dropCacheBehindAllReads;
+  protected boolean dropCacheBehindAllReads;
   
-  private long lastCacheDropOffset;
+  protected long lastCacheDropOffset;
   
   @VisibleForTesting
   static long CACHE_DROP_INTERVAL_BYTES = 1024 * 1024; // 1MB
@@ -159,9 +159,19 @@ class BlockSender implements java.io.Closeable {
   /**
    * See {{@link BlockSender#isLongRead()}
    */
-  private static final long LONG_READ_THRESHOLD_BYTES = 256 * 1024;
+  static final long LONG_READ_THRESHOLD_BYTES = 256 * 1024;
   
-
+  
+  BlockSender(ExtendedBlock block, DataNode datanode, String clientTraceFmt) throws IOException {
+    this.block = block;
+    this.clientTraceFmt = clientTraceFmt;
+    this.datanode = datanode;
+    
+    this.checksum = DataChecksum.newDataChecksum(DataChecksum.Type.NULL, 512);
+    this.checksumSize = checksum.getChecksumSize();
+    this.chunkSize = checksum.getBytesPerChecksum();
+  }
+  
   /**
    * Constructor
    * 
@@ -411,7 +421,7 @@ class BlockSender implements java.io.Closeable {
     }
   }
   
-  private static Replica getReplica(ExtendedBlock block, DataNode datanode)
+  static Replica getReplica(ExtendedBlock block, DataNode datanode)
       throws ReplicaNotFoundException {
     Replica replica = datanode.data.getReplica(block.getBlockPoolId(),
         block.getBlockId());
@@ -451,7 +461,7 @@ class BlockSender implements java.io.Closeable {
    * was a socket error rather than often more serious exceptions like 
    * disk errors.
    */
-  private static IOException ioeToSocketException(IOException ioe) {
+  static IOException ioeToSocketException(IOException ioe) {
     if (ioe.getClass().equals(IOException.class)) {
       // "se" could be a new class in stead of SocketException.
       IOException se = new SocketException("Original Exception : " + ioe);
@@ -469,7 +479,7 @@ class BlockSender implements java.io.Closeable {
    * @param datalen Length of data 
    * @return number of chunks for data of given size
    */
-  private int numberOfChunks(long datalen) {
+  protected int numberOfChunks(long datalen) {
     return (int) ((datalen + chunkSize - 1)/chunkSize);
   }
   
@@ -787,7 +797,7 @@ class BlockSender implements java.io.Closeable {
    * This is also used to determine when to invoke
    * posix_fadvise(POSIX_FADV_SEQUENTIAL).
    */
-  private boolean isLongRead() {
+  boolean isLongRead() {
     return (endOffset - initialOffset) > LONG_READ_THRESHOLD_BYTES;
   }
 
@@ -795,7 +805,7 @@ class BlockSender implements java.io.Closeable {
    * Write packet header into {@code pkt},
    * return the length of the header written.
    */
-  private int writePacketHeader(ByteBuffer pkt, int dataLen, int packetLen) {
+  int writePacketHeader(ByteBuffer pkt, int dataLen, int packetLen) {
     pkt.clear();
     // both syncBlock and syncPacket are false
     PacketHeader header = new PacketHeader(packetLen, offset, seqno,

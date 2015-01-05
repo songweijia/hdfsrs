@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DFSUtil;
+import org.apache.hadoop.hdfs.StorageType;
 import org.apache.hadoop.hdfs.DFSUtil.ConfiguredNNAddress;
 import org.apache.hadoop.hdfs.HDFSPolicyProvider;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
@@ -988,6 +989,10 @@ public class DataNode extends Configured
     }
   }
 
+  public boolean isInMemoryStorage() {
+    return data.getStorageType() == StorageType.MEM; 
+  }
+  
   /**
    * Determine the http server's effective addr
    */

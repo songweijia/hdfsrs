@@ -5070,6 +5070,22 @@ public final class DataTransferProtos {
        * </pre>
        */
       TRANSFER_FINALIZED(8, 8),
+      /**
+       * <code>PIPELINE_SETUP_OVERWRITE = 9;</code>
+       *
+       * <pre>
+       * HDFSRS_RWAPI: overwrite pipeline
+       * </pre>
+       */
+      PIPELINE_SETUP_OVERWRITE(9, 9),
+      /**
+       * <code>PIPELINE_SETUP_SEEK = 10;</code>
+       *
+       * <pre>
+       * HDFSRS_RWAPI: seek: not used on wire.
+       * </pre>
+       */
+      PIPELINE_SETUP_SEEK(10, 10),
       ;
 
       /**
@@ -5140,6 +5156,22 @@ public final class DataTransferProtos {
        * </pre>
        */
       public static final int TRANSFER_FINALIZED_VALUE = 8;
+      /**
+       * <code>PIPELINE_SETUP_OVERWRITE = 9;</code>
+       *
+       * <pre>
+       * HDFSRS_RWAPI: overwrite pipeline
+       * </pre>
+       */
+      public static final int PIPELINE_SETUP_OVERWRITE_VALUE = 9;
+      /**
+       * <code>PIPELINE_SETUP_SEEK = 10;</code>
+       *
+       * <pre>
+       * HDFSRS_RWAPI: seek: not used on wire.
+       * </pre>
+       */
+      public static final int PIPELINE_SETUP_SEEK_VALUE = 10;
 
 
       public final int getNumber() { return value; }
@@ -5155,6 +5187,8 @@ public final class DataTransferProtos {
           case 6: return PIPELINE_SETUP_CREATE;
           case 7: return TRANSFER_RBW;
           case 8: return TRANSFER_FINALIZED;
+          case 9: return PIPELINE_SETUP_OVERWRITE;
+          case 10: return PIPELINE_SETUP_SEEK;
           default: return null;
         }
       }
@@ -20468,7 +20502,7 @@ public final class DataTransferProtos {
       "ngStrategy\030\005 \001(\0132!.hadoop.hdfs.CachingSt" +
       "rategyProto\"W\n\rChecksumProto\022,\n\004type\030\001 \002",
       "(\0162\036.hadoop.hdfs.ChecksumTypeProto\022\030\n\020by" +
-      "tesPerChecksum\030\002 \002(\r\"\342\005\n\021OpWriteBlockPro" +
+      "tesPerChecksum\030\002 \002(\r\"\231\006\n\021OpWriteBlockPro" +
       "to\0227\n\006header\030\001 \002(\0132\'.hadoop.hdfs.ClientO" +
       "perationHeaderProto\022/\n\007targets\030\002 \003(\0132\036.h" +
       "adoop.hdfs.DatanodeInfoProto\022.\n\006source\030\003" +
@@ -20480,69 +20514,71 @@ public final class DataTransferProtos {
       "\002(\004\0225\n\021requestedChecksum\030\t \002(\0132\032.hadoop." +
       "hdfs.ChecksumProto\022:\n\017cachingStrategy\030\n " +
       "\001(\0132!.hadoop.hdfs.CachingStrategyProto\022\016" +
-      "\n\006offset\030\013 \001(\004\"\210\002\n\026BlockConstructionStag" +
+      "\n\006offset\030\013 \001(\004\"\277\002\n\026BlockConstructionStag" +
       "e\022\031\n\025PIPELINE_SETUP_APPEND\020\000\022\"\n\036PIPELINE" +
       "_SETUP_APPEND_RECOVERY\020\001\022\022\n\016DATA_STREAMI" +
       "NG\020\002\022%\n!PIPELINE_SETUP_STREAMING_RECOVER" +
       "Y\020\003\022\022\n\016PIPELINE_CLOSE\020\004\022\033\n\027PIPELINE_CLOS" +
       "E_RECOVERY\020\005\022\031\n\025PIPELINE_SETUP_CREATE\020\006\022" +
       "\020\n\014TRANSFER_RBW\020\007\022\026\n\022TRANSFER_FINALIZED\020",
-      "\010\"\200\001\n\024OpTransferBlockProto\0227\n\006header\030\001 \002" +
-      "(\0132\'.hadoop.hdfs.ClientOperationHeaderPr" +
-      "oto\022/\n\007targets\030\002 \003(\0132\036.hadoop.hdfs.Datan" +
-      "odeInfoProto\"\204\001\n\023OpReplaceBlockProto\022,\n\006" +
-      "header\030\001 \002(\0132\034.hadoop.hdfs.BaseHeaderPro" +
-      "to\022\017\n\007delHint\030\002 \002(\t\022.\n\006source\030\003 \002(\0132\036.ha" +
-      "doop.hdfs.DatanodeInfoProto\"@\n\020OpCopyBlo" +
-      "ckProto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs.Ba" +
-      "seHeaderProto\"D\n\024OpBlockChecksumProto\022,\n" +
-      "\006header\030\001 \002(\0132\034.hadoop.hdfs.BaseHeaderPr",
-      "oto\"0\n\026ShortCircuitShmIdProto\022\n\n\002hi\030\001 \002(" +
-      "\003\022\n\n\002lo\030\002 \002(\003\"_\n\030ShortCircuitShmSlotProt" +
-      "o\0222\n\005shmId\030\001 \002(\0132#.hadoop.hdfs.ShortCirc" +
-      "uitShmIdProto\022\017\n\007slotIdx\030\002 \002(\005\"\233\001\n OpReq" +
-      "uestShortCircuitAccessProto\022,\n\006header\030\001 " +
-      "\002(\0132\034.hadoop.hdfs.BaseHeaderProto\022\022\n\nmax" +
-      "Version\030\002 \002(\r\0225\n\006slotId\030\003 \001(\0132%.hadoop.h" +
-      "dfs.ShortCircuitShmSlotProto\"^\n%ReleaseS" +
-      "hortCircuitAccessRequestProto\0225\n\006slotId\030" +
-      "\001 \002(\0132%.hadoop.hdfs.ShortCircuitShmSlotP",
-      "roto\"\\\n&ReleaseShortCircuitAccessRespons" +
-      "eProto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Sta" +
-      "tus\022\r\n\005error\030\002 \001(\t\"1\n\033ShortCircuitShmReq" +
-      "uestProto\022\022\n\nclientName\030\001 \002(\t\"\203\001\n\034ShortC" +
-      "ircuitShmResponseProto\022#\n\006status\030\001 \002(\0162\023" +
-      ".hadoop.hdfs.Status\022\r\n\005error\030\002 \001(\t\022/\n\002id" +
-      "\030\003 \001(\0132#.hadoop.hdfs.ShortCircuitShmIdPr" +
-      "oto\"\177\n\021PacketHeaderProto\022\025\n\roffsetInBloc" +
-      "k\030\001 \002(\020\022\r\n\005seqno\030\002 \002(\020\022\031\n\021lastPacketInBl" +
-      "ock\030\003 \002(\010\022\017\n\007dataLen\030\004 \002(\017\022\030\n\tsyncBlock\030",
-      "\005 \001(\010:\005false\"i\n\020PipelineAckProto\022\r\n\005seqn" +
-      "o\030\001 \002(\022\022#\n\006status\030\002 \003(\0162\023.hadoop.hdfs.St" +
-      "atus\022!\n\026downstreamAckTimeNanos\030\003 \001(\004:\0010\"" +
-      "\\\n\027ReadOpChecksumInfoProto\022,\n\010checksum\030\001" +
-      " \002(\0132\032.hadoop.hdfs.ChecksumProto\022\023\n\013chun" +
-      "kOffset\030\002 \002(\004\"\214\002\n\024BlockOpResponseProto\022#" +
-      "\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Status\022\024\n\014f" +
-      "irstBadLink\030\002 \001(\t\022C\n\020checksumResponse\030\003 " +
-      "\001(\0132).hadoop.hdfs.OpBlockChecksumRespons" +
-      "eProto\022@\n\022readOpChecksumInfo\030\004 \001(\0132$.had",
-      "oop.hdfs.ReadOpChecksumInfoProto\022\017\n\007mess" +
-      "age\030\005 \001(\t\022!\n\031shortCircuitAccessVersion\030\006" +
-      " \001(\r\"<\n\025ClientReadStatusProto\022#\n\006status\030" +
-      "\001 \002(\0162\023.hadoop.hdfs.Status\"9\n\022DNTransfer" +
-      "AckProto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.S" +
-      "tatus\"\206\001\n\034OpBlockChecksumResponseProto\022\023" +
-      "\n\013bytesPerCrc\030\001 \002(\r\022\023\n\013crcPerBlock\030\002 \002(\004" +
-      "\022\013\n\003md5\030\003 \002(\014\022/\n\007crcType\030\004 \001(\0162\036.hadoop." +
-      "hdfs.ChecksumTypeProto*\343\001\n\006Status\022\013\n\007SUC" +
-      "CESS\020\000\022\t\n\005ERROR\020\001\022\022\n\016ERROR_CHECKSUM\020\002\022\021\n",
-      "\rERROR_INVALID\020\003\022\020\n\014ERROR_EXISTS\020\004\022\026\n\022ER" +
-      "ROR_ACCESS_TOKEN\020\005\022\017\n\013CHECKSUM_OK\020\006\022\025\n\021E" +
-      "RROR_UNSUPPORTED\020\007\022\017\n\013OOB_RESTART\020\010\022\021\n\rO" +
-      "OB_RESERVED1\020\t\022\021\n\rOOB_RESERVED2\020\n\022\021\n\rOOB" +
-      "_RESERVED3\020\013B>\n%org.apache.hadoop.hdfs.p" +
-      "rotocol.protoB\022DataTransferProtos\240\001\001"
+      "\010\022\034\n\030PIPELINE_SETUP_OVERWRITE\020\t\022\027\n\023PIPEL" +
+      "INE_SETUP_SEEK\020\n\"\200\001\n\024OpTransferBlockProt" +
+      "o\0227\n\006header\030\001 \002(\0132\'.hadoop.hdfs.ClientOp" +
+      "erationHeaderProto\022/\n\007targets\030\002 \003(\0132\036.ha" +
+      "doop.hdfs.DatanodeInfoProto\"\204\001\n\023OpReplac" +
+      "eBlockProto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdf" +
+      "s.BaseHeaderProto\022\017\n\007delHint\030\002 \002(\t\022.\n\006so" +
+      "urce\030\003 \002(\0132\036.hadoop.hdfs.DatanodeInfoPro" +
+      "to\"@\n\020OpCopyBlockProto\022,\n\006header\030\001 \002(\0132\034" +
+      ".hadoop.hdfs.BaseHeaderProto\"D\n\024OpBlockC",
+      "hecksumProto\022,\n\006header\030\001 \002(\0132\034.hadoop.hd" +
+      "fs.BaseHeaderProto\"0\n\026ShortCircuitShmIdP" +
+      "roto\022\n\n\002hi\030\001 \002(\003\022\n\n\002lo\030\002 \002(\003\"_\n\030ShortCir" +
+      "cuitShmSlotProto\0222\n\005shmId\030\001 \002(\0132#.hadoop" +
+      ".hdfs.ShortCircuitShmIdProto\022\017\n\007slotIdx\030" +
+      "\002 \002(\005\"\233\001\n OpRequestShortCircuitAccessPro" +
+      "to\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs.BaseHea" +
+      "derProto\022\022\n\nmaxVersion\030\002 \002(\r\0225\n\006slotId\030\003" +
+      " \001(\0132%.hadoop.hdfs.ShortCircuitShmSlotPr" +
+      "oto\"^\n%ReleaseShortCircuitAccessRequestP",
+      "roto\0225\n\006slotId\030\001 \002(\0132%.hadoop.hdfs.Short" +
+      "CircuitShmSlotProto\"\\\n&ReleaseShortCircu" +
+      "itAccessResponseProto\022#\n\006status\030\001 \002(\0162\023." +
+      "hadoop.hdfs.Status\022\r\n\005error\030\002 \001(\t\"1\n\033Sho" +
+      "rtCircuitShmRequestProto\022\022\n\nclientName\030\001" +
+      " \002(\t\"\203\001\n\034ShortCircuitShmResponseProto\022#\n" +
+      "\006status\030\001 \002(\0162\023.hadoop.hdfs.Status\022\r\n\005er" +
+      "ror\030\002 \001(\t\022/\n\002id\030\003 \001(\0132#.hadoop.hdfs.Shor" +
+      "tCircuitShmIdProto\"\177\n\021PacketHeaderProto\022" +
+      "\025\n\roffsetInBlock\030\001 \002(\020\022\r\n\005seqno\030\002 \002(\020\022\031\n",
+      "\021lastPacketInBlock\030\003 \002(\010\022\017\n\007dataLen\030\004 \002(" +
+      "\017\022\030\n\tsyncBlock\030\005 \001(\010:\005false\"i\n\020PipelineA" +
+      "ckProto\022\r\n\005seqno\030\001 \002(\022\022#\n\006status\030\002 \003(\0162\023" +
+      ".hadoop.hdfs.Status\022!\n\026downstreamAckTime" +
+      "Nanos\030\003 \001(\004:\0010\"\\\n\027ReadOpChecksumInfoProt" +
+      "o\022,\n\010checksum\030\001 \002(\0132\032.hadoop.hdfs.Checks" +
+      "umProto\022\023\n\013chunkOffset\030\002 \002(\004\"\214\002\n\024BlockOp" +
+      "ResponseProto\022#\n\006status\030\001 \002(\0162\023.hadoop.h" +
+      "dfs.Status\022\024\n\014firstBadLink\030\002 \001(\t\022C\n\020chec" +
+      "ksumResponse\030\003 \001(\0132).hadoop.hdfs.OpBlock",
+      "ChecksumResponseProto\022@\n\022readOpChecksumI" +
+      "nfo\030\004 \001(\0132$.hadoop.hdfs.ReadOpChecksumIn" +
+      "foProto\022\017\n\007message\030\005 \001(\t\022!\n\031shortCircuit" +
+      "AccessVersion\030\006 \001(\r\"<\n\025ClientReadStatusP" +
+      "roto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Statu" +
+      "s\"9\n\022DNTransferAckProto\022#\n\006status\030\001 \002(\0162" +
+      "\023.hadoop.hdfs.Status\"\206\001\n\034OpBlockChecksum" +
+      "ResponseProto\022\023\n\013bytesPerCrc\030\001 \002(\r\022\023\n\013cr" +
+      "cPerBlock\030\002 \002(\004\022\013\n\003md5\030\003 \002(\014\022/\n\007crcType\030" +
+      "\004 \001(\0162\036.hadoop.hdfs.ChecksumTypeProto*\343\001",
+      "\n\006Status\022\013\n\007SUCCESS\020\000\022\t\n\005ERROR\020\001\022\022\n\016ERRO" +
+      "R_CHECKSUM\020\002\022\021\n\rERROR_INVALID\020\003\022\020\n\014ERROR" +
+      "_EXISTS\020\004\022\026\n\022ERROR_ACCESS_TOKEN\020\005\022\017\n\013CHE" +
+      "CKSUM_OK\020\006\022\025\n\021ERROR_UNSUPPORTED\020\007\022\017\n\013OOB" +
+      "_RESTART\020\010\022\021\n\rOOB_RESERVED1\020\t\022\021\n\rOOB_RES" +
+      "ERVED2\020\n\022\021\n\rOOB_RESERVED3\020\013B>\n%org.apach" +
+      "e.hadoop.hdfs.protocol.protoB\022DataTransf" +
+      "erProtos\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

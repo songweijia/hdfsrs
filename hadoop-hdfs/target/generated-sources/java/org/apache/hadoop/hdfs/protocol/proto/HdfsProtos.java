@@ -26,6 +26,10 @@ public final class HdfsProtos {
      * <code>SSD = 2;</code>
      */
     SSD(1, 2),
+    /**
+     * <code>MEM = 3;</code>
+     */
+    MEM(2, 3),
     ;
 
     /**
@@ -36,6 +40,10 @@ public final class HdfsProtos {
      * <code>SSD = 2;</code>
      */
     public static final int SSD_VALUE = 2;
+    /**
+     * <code>MEM = 3;</code>
+     */
+    public static final int MEM_VALUE = 3;
 
 
     public final int getNumber() { return value; }
@@ -44,6 +52,7 @@ public final class HdfsProtos {
       switch (value) {
         case 1: return DISK;
         case 2: return SSD;
+        case 3: return MEM;
         default: return null;
       }
     }
@@ -37281,13 +37290,13 @@ public final class HdfsProtos {
       " \002(\0132\036.hadoop.hdfs.FsPermissionProto\022\r\n\005" +
       "owner\030\004 \002(\t\022\r\n\005group\030\005 \002(\t\022\022\n\ncreateTime",
       "\030\006 \002(\t\"0\n\031RollingUpgradeStatusProto\022\023\n\013b" +
-      "lockPoolId\030\001 \002(\t*%\n\020StorageTypeProto\022\010\n\004" +
-      "DISK\020\001\022\007\n\003SSD\020\002*O\n\021ChecksumTypeProto\022\021\n\r" +
-      "CHECKSUM_NULL\020\000\022\022\n\016CHECKSUM_CRC32\020\001\022\023\n\017C" +
-      "HECKSUM_CRC32C\020\002*L\n\021ReplicaStateProto\022\r\n" +
-      "\tFINALIZED\020\000\022\007\n\003RBW\020\001\022\007\n\003RWR\020\002\022\007\n\003RUR\020\003\022" +
-      "\r\n\tTEMPORARY\020\004B6\n%org.apache.hadoop.hdfs" +
-      ".protocol.protoB\nHdfsProtos\240\001\001"
+      "lockPoolId\030\001 \002(\t*.\n\020StorageTypeProto\022\010\n\004" +
+      "DISK\020\001\022\007\n\003SSD\020\002\022\007\n\003MEM\020\003*O\n\021ChecksumType" +
+      "Proto\022\021\n\rCHECKSUM_NULL\020\000\022\022\n\016CHECKSUM_CRC" +
+      "32\020\001\022\023\n\017CHECKSUM_CRC32C\020\002*L\n\021ReplicaStat" +
+      "eProto\022\r\n\tFINALIZED\020\000\022\007\n\003RBW\020\001\022\007\n\003RWR\020\002\022" +
+      "\007\n\003RUR\020\003\022\r\n\tTEMPORARY\020\004B6\n%org.apache.ha" +
+      "doop.hdfs.protocol.protoB\nHdfsProtos\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

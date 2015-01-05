@@ -46,6 +46,7 @@ import org.apache.hadoop.util.Time;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -1062,9 +1063,9 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
    * Get the list of finalized blocks from in-memory blockmap for a block pool.
    */
   @Override
-  public synchronized List<FinalizedReplica> getFinalizedBlocks(String bpid) {
-    ArrayList<FinalizedReplica> finalized =
-        new ArrayList<FinalizedReplica>(volumeMap.size(bpid));
+  public synchronized List<Block> getFinalizedBlocks(String bpid) {
+    ArrayList<Block> finalized =
+        new ArrayList<Block>(volumeMap.size(bpid));
     for (ReplicaInfo b : volumeMap.replicas(bpid)) {
       if(b.getState() == ReplicaState.FINALIZED) {
         finalized.add(new FinalizedReplica((FinalizedReplica)b));
@@ -1908,6 +1909,15 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
       dir = volumes.get(0).getPath(bpid);
     }
     return new RollingLogsImpl(dir, prefix);
+  }
+  
+  public StorageType getStorageType() {
+    return StorageType.DISK;
+  }
+  
+  public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
+      throws IOException {
+    return null;
   }
 }
 

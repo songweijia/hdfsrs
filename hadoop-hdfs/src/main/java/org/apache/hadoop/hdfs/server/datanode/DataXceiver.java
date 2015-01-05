@@ -490,9 +490,13 @@ class DataXceiver extends Receiver implements Runnable {
     updateCurrentThreadName("Sending block " + block);
     try {
       try {
-        blockSender = new BlockSender(block, blockOffset, length,
-            true, false, sendChecksum, datanode, clientTraceFmt,
-            cachingStrategy);
+        if (datanode.isInMemoryStorage()) {
+          blockSender = new MemBlockSender(block, blockOffset, length, datanode, clientTraceFmt);
+        } else {
+          blockSender = new BlockSender(block, blockOffset, length,
+              true, false, sendChecksum, datanode, clientTraceFmt,
+              cachingStrategy);
+        }
       } catch(IOException e) {
         String msg = "opReadBlock " + block + " received exception " + e; 
         LOG.info(msg);
@@ -622,12 +626,20 @@ class DataXceiver extends Receiver implements Runnable {
       if (isDatanode || 
           stage != BlockConstructionStage.PIPELINE_CLOSE_RECOVERY) {
         // open a block receiver
-        blockReceiver = new BlockReceiver(block, in, 
-            peer.getRemoteAddressString(),
-            peer.getLocalAddressString(),
-            stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
-            clientname, srcDataNode, datanode, requestedChecksum,
-            cachingStrategy,offset/*HDFSRS_RWAPI*/);
+        if (datanode.isInMemoryStorage()) {
+          blockReceiver = new MemBlockReceiver(block, in, 
+              peer.getRemoteAddressString(),
+              peer.getLocalAddressString(),
+              stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
+              clientname, srcDataNode, datanode, requestedChecksum, offset/*HDFSRS_RWAPI*/);
+        } else {
+          blockReceiver = new BlockReceiver(block, in, 
+              peer.getRemoteAddressString(),
+              peer.getLocalAddressString(),
+              stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
+              clientname, srcDataNode, datanode, requestedChecksum,
+              cachingStrategy,offset/*HDFSRS_RWAPI*/);
+        }
         storageUuid = blockReceiver.getStorageUuid();
       } else {
         storageUuid = datanode.data.recoverClose(
@@ -894,9 +906,12 @@ class DataXceiver extends Receiver implements Runnable {
 
     try {
       // check if the block exists or not
-      blockSender = new BlockSender(block, 0, -1, false, false, true, datanode, 
-          null, CachingStrategy.newDropBehind());
-
+      if (datanode.isInMemoryStorage()) {
+        blockSender = new MemBlockSender(block, 0, -1, datanode, null);
+      } else {
+        blockSender = new BlockSender(block, 0, -1, false, false, true, datanode, 
+            null, CachingStrategy.newDropBehind());
+      }
       // set up response stream
       OutputStream baseStream = getOutputStream();
       reply = new DataOutputStream(new BufferedOutputStream(
@@ -1025,12 +1040,18 @@ class DataXceiver extends Receiver implements Runnable {
       DataChecksum remoteChecksum = DataTransferProtoUtil.fromProto(
           checksumInfo.getChecksum());
       // open a block receiver and check if the block does not exist
-      blockReceiver = new BlockReceiver(
-          block, proxyReply, proxySock.getRemoteSocketAddress().toString(),
-          proxySock.getLocalSocketAddress().toString(),
-          null, 0, 0, 0, "", null, datanode, remoteChecksum,
-          CachingStrategy.newDropBehind(),-1/*HDFSRS_RWAPI*/);
-
+      if (datanode.isInMemoryStorage()) {
+        blockReceiver = new MemBlockReceiver(block, proxyReply, 
+            proxySock.getRemoteSocketAddress().toString(),
+            proxySock.getLocalSocketAddress().toString(),
+            null, 0, 0, 0, "", null, datanode, remoteChecksum, -1/*HDFSRS_RWAPI*/);
+      } else {
+        blockReceiver = new BlockReceiver(
+            block, proxyReply, proxySock.getRemoteSocketAddress().toString(),
+            proxySock.getLocalSocketAddress().toString(),
+            null, 0, 0, 0, "", null, datanode, remoteChecksum,
+            CachingStrategy.newDropBehind(),-1/*HDFSRS_RWAPI*/);
+      }
       // receive a block
       blockReceiver.receiveBlock(null, null, null, null, 
           dataXceiverServer.balanceThrottler, null);

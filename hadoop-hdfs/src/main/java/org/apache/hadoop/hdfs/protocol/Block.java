@@ -82,9 +82,9 @@ public class Block implements Writable, Comparable<Block> {
     return m.matches() ? Long.parseLong(m.group(1)) : 0;
   }
 
-  private long blockId;
-  private long numBytes;
-  private long generationStamp;
+  protected long blockId;
+  protected long numBytes;
+  protected long generationStamp;
 
   public Block() {this(0, 0, 0);}
 

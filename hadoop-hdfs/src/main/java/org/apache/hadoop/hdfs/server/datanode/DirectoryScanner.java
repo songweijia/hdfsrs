@@ -434,8 +434,8 @@ public class DirectoryScanner implements Runnable {
         diffs.put(bpid, diffRecord);
         
         statsRecord.totalBlocks = blockpoolReport.length;
-        List<FinalizedReplica> bl = dataset.getFinalizedBlocks(bpid);
-        FinalizedReplica[] memReport = bl.toArray(new FinalizedReplica[bl.size()]);
+        List<Block> bl = dataset.getFinalizedBlocks(bpid);
+        Block[] memReport = bl.toArray(new Block[bl.size()]);
         Arrays.sort(memReport); // Sort based on blockId
   
         int d = 0; // index for blockpoolReport
@@ -474,9 +474,10 @@ public class DirectoryScanner implements Runnable {
           m++;
         }
         while (m < memReport.length) {
-          FinalizedReplica current = memReport[m++];
+          Block current = memReport[m++];
           addDifference(diffRecord, statsRecord,
-                        current.getBlockId(), current.getVolume());
+                        current.getBlockId(), 
+                        current instanceof FinalizedReplica? ((FinalizedReplica)current).getVolume(): null);
         }
         while (d < blockpoolReport.length) {
           statsRecord.missingMemoryBlocks++;
