@@ -2398,6 +2398,12 @@ public class DFSOutputStream extends FSOutputSummer
       //
       computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize, freeInBlock), 
           checksum.getBytesPerChecksum());
+      // We still need to reset the checksum and buffere here. 
+      // since we didn't actually reset the buffer in flushOrSync(),
+      // which is just write the buffer to underlying packet layer but
+      // the buffer is still holding it. We simply flushed them here.
+      // TODO: revisit this part for real checksum.
+      resetChecksumChunk(checksum.getBytesPerChecksum());
     }
     //STEP 5: Reset streamer
 	  this.streamer.seek(pos,this.curFileSize);
