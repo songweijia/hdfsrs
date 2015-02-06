@@ -501,6 +501,14 @@ public class DFSOutputStream extends FSOutputSummer
           blockWriteOffset = newPos % blockSize;
         }
       }else{
+        //HDFSRS_RWAPI{ 
+        // In DFSOutputStream.seek(), after flushing existing data, the DataStreamer may
+        // still keep the pipeline. If the DataStreamer.seek() is invoked before the 
+        // pipeline being destructed by endblock(), we should keep the blockNumber and 
+        // blockWriteOffset settings here.
+        if(stage==BlockConstructionStage.PIPELINE_SETUP_SEEK)
+          return;
+        //}HDFSRS_RWAPI
         if((blockNumber+1)*blockSize >= fileSizeAtSeek){
           stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
           blockWriteOffset = -1;
@@ -2390,6 +2398,12 @@ public class DFSOutputStream extends FSOutputSummer
       //
       computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize, freeInBlock), 
           checksum.getBytesPerChecksum());
+      // We still need to reset the checksum and buffere here. 
+      // since we didn't actually reset the buffer in flushOrSync(),
+      // which is just write the buffer to underlying packet layer but
+      // the buffer is still holding it. We simply flushed them here.
+      // TODO: revisit this part for real checksum.
+      resetChecksumChunk(checksum.getBytesPerChecksum());
     }
     //STEP 5: Reset streamer
 	  this.streamer.seek(pos,this.curFileSize);
