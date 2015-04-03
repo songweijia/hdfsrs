@@ -3136,8 +3136,166 @@ void hdfsFreeFileInfo(hdfsFileInfo *hdfsFileInfo, int numEntries)
     free(hdfsFileInfo);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// below are added by sonic
+int hdfsMkdirs(hdfsFS fs, const char* path){
+  jvalue jVal;
+  JNIEnv* env = getJNIEnv();
+  if (env == NULL) {
+    errno = EINTERNAL;
+    return -1;
+  }
+  jobject jFS = (jobject)fs;
+  //create a Path Object from path:
+  jobject jPath;
+  jthrowable jthr = constructNewObjectOfPath(env, path, &jPath);
+  if (jthr) {
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsMkdirs(%s): constructNewObjectOfPath", path);
+    return -1;
+  }
+  //create Path
+  jthr = invokeMethod(env,&jVal,INSTANCE,jFS,
+    HADOOP_FS,"mkdirs",JMETHOD1(JPARAM(HADOOP_PATH),"Z"),jPath);
+  destroyLocalReference(env,jPath);
+  if (jthr) {
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsMkdirs(%s): mkdirs()", path);
+    return -1;
+  }
+  return (int)jVal.z;
+}
+int hdfsCreateSnapshot(hdfsFS fs, const char* path, const char* name)
+{
+  jvalue jVal;
+  JNIEnv* env = getJNIEnv();
+  if (env == NULL) {
+    errno = EINTERNAL;
+    return -1;
+  }
+  jobject jFS = (jobject)fs;
+  jobject jPath;
+  jstring jName;
+  //createSnapshot
+  jthrowable jthr = constructNewObjectOfPath(env,path,&jPath);
+  if(jthr){
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsCreateSnapshot(%s): constructNewObjectOfPath", path);
+    return -1;
+  }
+  jthr = newJavaStr(env, name, &jName);
+  if(jthr){
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsCreateSnapshot(%s): newJavaStr", path);
+    return -1;
+  }
+  // create snapshot
+  jthr = invokeMethod(env,&jVal,INSTANCE,jFS,
+    HADOOP_FS,"createSnapshot",JMETHOD2(JPARAM(HADOOP_PATH),JPARAM(JAVA_STRING),JPARAM(HADOOP_PATH)),jPath,jName);
+  destroyLocalReference(env,jName);
+  destroyLocalReference(env,jPath);
+  destroyLocalReference(env,jVal.l);
+  if (jthr) {
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsCreateSnapshot(%s): createSnapshot", path);
+    return -1;
+  }
+  return 0;
+}
+int hdfsDeleteSnapshot(hdfsFS fs, const char* path, const char* name)
+{
+  jvalue jVal;
+  //TODO
+  JNIEnv* env = getJNIEnv();
+  if (env == NULL) {
+    errno = EINTERNAL;
+    return -1;
+  }
+  jobject jFS = (jobject)fs;
+  jobject jPath;
+  jstring jName;
+  //deleteSnapshot
+  jthrowable jthr = constructNewObjectOfPath(env,path,&jPath);
+  if(jthr){
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsCreateSnapshot(%s): constructNewObjectOfPath", path);
+    return -1;
+  }
+  jthr = newJavaStr(env, name, &jName);
+  if(jthr){
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsCreateSnapshot(%s): newJavaStr", path);
+    return -1;
+  }
 
-
+  jthr = invokeMethod(env,&jVal,INSTANCE,jFS,
+    HADOOP_FS,"deleteSnapshot",JMETHOD2(JPARAM(HADOOP_PATH),JPARAM(JAVA_STRING),"V"),jPath,jName);
+  destroyLocalReference(env,jName);
+  destroyLocalReference(env,jPath);
+  if (jthr) {
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsCreateSnapshot(%s): createSnapshot", path);
+    return -1;
+  }
+  return 0;
+}
+int hdfsAllowSnapshot(hdfsFS fs, const char* path)
+{
+  jvalue jVal;
+  JNIEnv* env = getJNIEnv();
+  if (env == NULL) {
+    errno = EINTERNAL;
+    return -1;
+  }
+  jobject jFS = (jobject)fs;
+  //allowSnapshot
+  jobject jPath;
+  jthrowable jthr = constructNewObjectOfPath(env, path, &jPath);
+  if(jthr){
+    errno = printExceptionAndFree(env,jthr, PRINT_EXC_ALL,
+            "hdfsAllowSnapshot(%s): constructNewObjectOfPath", path);
+    return -1;
+  }
+  //allowSnapshot
+  jthr = invokeMethod(env,&jVal,INSTANCE,jFS,HADOOP_DFS,
+         "allowSnapshot",JMETHOD1(JPARAM(HADOOP_PATH),"V"),jPath);
+  destroyLocalReference(env,jPath);
+  if(jthr){
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsAllowSnapshot(%s): allowSnapshot", path);
+    return -1;
+  }
+  return 0;
+}
+int hdfsDisallowSnapshot(hdfsFS fs, const char* path)
+{
+  //TODO
+  jvalue jVal;
+  JNIEnv* env = getJNIEnv();
+  if (env == NULL) {
+    errno = EINTERNAL;
+    return -1;
+  }
+  jobject jFS = (jobject)fs;
+  //disallowSnapshot
+  jobject jPath;
+  jthrowable jthr = constructNewObjectOfPath(env, path, &jPath);
+  if(jthr){
+    errno = printExceptionAndFree(env,jthr, PRINT_EXC_ALL,
+            "hdfsDisallowSnapshot(%s): constructNewObjectOfPath", path);
+    return -1;
+  }
+  //disallowSnapshot
+  jthr = invokeMethod(env,&jVal,INSTANCE,jFS,HADOOP_DFS,
+         "disallowSnapshot",JMETHOD1(JPARAM(HADOOP_PATH),"V"),jPath);
+  destroyLocalReference(env,jPath);
+  if(jthr){
+    errno = printExceptionAndFree(env, jthr, PRINT_EXC_ALL,
+            "hdfsDisallowSnapshot(%s): disallowSnapshot", path);
+    return -1;
+  }
+  return 0;
+}
 
 /**
  * vim: ts=4: sw=4: et:

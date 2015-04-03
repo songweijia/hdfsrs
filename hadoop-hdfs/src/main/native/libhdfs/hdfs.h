@@ -791,6 +791,32 @@ extern  "C" {
      * @param buffer     The buffer to release.
      */
     void hadoopRzBufferFree(hdfsFile file, struct hadoopRzBuffer *buffer);
+///////////////////////////////////////////////////////////////////////////////
+// Below are added by sonic
+    /**
+     * Create directories
+     * @param path	The path 
+     */
+    int hdfsMkdirs(hdfsFS fs,const char* path);
+    /**
+     * Create Snapshots
+     * @param path	The path of the file
+     * @param name	The name of the snapshot
+     */
+    int hdfsCreateSnapshot(hdfsFS fs,const char* path, const char* name);
+    /**
+     * Delete Snapshots
+     * @param path	The path of the file
+     * @param name	The name of the snapshot
+     */
+    int hdfsDeleteSnapshot(hdfsFS fs,const char* path, const char* name);
+    /**
+     * Allow/Disallow snapshot on a path
+     * @param path	The directory to enable snapshot
+     */
+    int hdfsAllowSnapshot(hdfsFS fs,const char* path);
+    int hdfsDisallowSnapshot(hdfsFS fs,const char* Path);
+    
 
 #ifdef __cplusplus
 }
