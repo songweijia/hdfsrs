@@ -1799,13 +1799,14 @@ public class DFSOutputStream extends FSOutputSummer
 
   private void computePacketChunkSize(int psize, int csize) {
     int chunkSize = csize + checksum.getChecksumSize();
-    chunksPerPacket = Math.max(psize/csize, 1);
+    chunksPerPacket = Math.max((psize + csize - 1)/csize, 1);
     packetSize = chunkSize*chunksPerPacket;
     if (DFSClient.LOG.isDebugEnabled()) {
       DFSClient.LOG.debug("computePacketChunkSize: src=" + src +
                 ", chunkSize=" + chunkSize +
                 ", chunksPerPacket=" + chunksPerPacket +
-                ", packetSize=" + packetSize);
+                ", packetSize=" + packetSize +
+                ", csize=" + csize);
     }
   }
 
@@ -1909,7 +1910,7 @@ public class DFSOutputStream extends FSOutputSummer
       }
 
       if (!appendChunk) {
-        int psize = Math.min((int)(blockSize-bytesCurBlock), dfsClient.getConf().writePacketSize);
+        int psize = Math.min((int)(blockSize + cklen * chunksPerPacket - bytesCurBlock), dfsClient.getConf().writePacketSize);
         computePacketChunkSize(psize, bytesPerChecksum);
       }
       //
