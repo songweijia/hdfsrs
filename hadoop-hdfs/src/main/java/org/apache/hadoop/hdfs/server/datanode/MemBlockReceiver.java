@@ -211,14 +211,6 @@ class MemBlockReceiver extends BlockReceiver {
           " headerLen = " + headerLen);
     }
     
-    // Sanity check the buffer size so we don't allocate too much memory
-    // and OOME.
-    int totalLen = payloadLen + headerLen;
-    if (totalLen < 0 || totalLen > MAX_PACKET_SIZE + PacketHeader.PKT_MAX_HEADER_LEN) {
-      throw new IOException("Incorrect value for packet payload size: " +
-                            payloadLen + "total size: " + totalLen);
-    }
-    
     byte[] headerBuf = new byte[headerLen];
     in.readFully(headerBuf);
     header.setFieldsFromData(dataPlusChecksumLen, headerBuf);

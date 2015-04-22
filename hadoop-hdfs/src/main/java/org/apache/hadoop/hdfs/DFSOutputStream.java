@@ -1799,7 +1799,7 @@ public class DFSOutputStream extends FSOutputSummer
 
   private void computePacketChunkSize(int psize, int csize) {
     int chunkSize = csize + checksum.getChecksumSize();
-    chunksPerPacket = Math.max(psize/chunkSize, 1);
+    chunksPerPacket = Math.max(psize/csize, 1);
     packetSize = chunkSize*chunksPerPacket;
     if (DFSClient.LOG.isDebugEnabled()) {
       DFSClient.LOG.debug("computePacketChunkSize: src=" + src +
@@ -1889,7 +1889,7 @@ public class DFSOutputStream extends FSOutputSummer
     // If packet is full, enqueue it for transmission
     //
     if (currentPacket.numChunks == currentPacket.maxChunks ||
-        bytesCurBlock == blockSize) {
+        bytesCurBlock == blockSize + cklen * chunksPerPacket) {
       if (DFSClient.LOG.isDebugEnabled()) {
         DFSClient.LOG.debug("DFSClient writeChunk packet full seqno=" +
             currentPacket.seqno +
