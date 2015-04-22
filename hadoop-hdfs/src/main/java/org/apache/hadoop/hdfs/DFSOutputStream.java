@@ -625,7 +625,7 @@ public class DFSOutputStream extends FSOutputSummer
             }
             //}HDFSRS_RWAPI
             if(DFSClient.LOG.isDebugEnabled()) {
-              DFSClient.LOG.debug("Allocating new block");
+              DFSClient.LOG.debug("CQDEBUG: Allocating new block");
             }
             setPipeline(nextBlockOutputStream());
             initDataStreaming();
@@ -740,6 +740,9 @@ public class DFSOutputStream extends FSOutputSummer
             }
 
             endBlock();
+            if(DFSClient.LOG.isDebugEnabled()) {
+              DFSClient.LOG.debug("CQDEBUG: finish a block");
+            }
           }
           if (progress != null) { progress.progress(); }
 

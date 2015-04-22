@@ -41,6 +41,11 @@ import org.apache.hadoop.util.Daemon;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.StringUtils;
 
+import org.apache.hadoop.hdfs.protocol.datatransfer.PacketHeader;
+import org.apache.hadoop.io.IOUtils;
+import com.google.common.primitives.Ints;
+import static org.apache.hadoop.util.Time.now;
+
 /** A class that receives a block and writes to its own disk, meanwhile
  * may copies it to another site. If a throttler is provided,
  * streaming throttling is also supported.
@@ -181,15 +186,65 @@ class MemBlockReceiver extends BlockReceiver {
     }
   }
 
+  private static final int MAX_PACKET_SIZE = 64 * 1024 * 1024;
+  private PacketHeader header = new PacketHeader();
+  private byte[] dataBuf = new byte[MAX_PACKET_SIZE];  
+  private long packetRecvTime;
+
+  void receiveNextPacket(DataInputStream in) throws IOException {
+    int payloadLen = in.readInt();
+    if (payloadLen < Ints.BYTES) {
+      // The "payload length" includes its own length. Therefore it
+      // should never be less than 4 bytes
+      throw new IOException("Invalid payload length " +
+          payloadLen);
+    }
+    
+    int dataPlusChecksumLen = payloadLen - Ints.BYTES;
+    int headerLen = in.readShort();
+    if (headerLen < 0) {
+      throw new IOException("Invalid header length " + headerLen);
+    }
+    
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("readNextPacket: dataPlusChecksumLen = " + dataPlusChecksumLen +
+          " headerLen = " + headerLen);
+    }
+    
+    // Sanity check the buffer size so we don't allocate too much memory
+    // and OOME.
+    int totalLen = payloadLen + headerLen;
+    if (totalLen < 0 || totalLen > MAX_PACKET_SIZE) {
+      throw new IOException("Incorrect value for packet payload size: " +
+                            payloadLen + "total size: " + totalLen);
+    }
+    
+    byte[] headerBuf = new byte[headerLen];
+    in.readFully(headerBuf);
+    header.setFieldsFromData(dataPlusChecksumLen, headerBuf);
+    
+    int checksumLen = dataPlusChecksumLen - header.getDataLen();
+    if (checksumLen < 0) {
+      throw new IOException("Invalid packet: data length in packet header " + 
+          "exceeds data length received. dataPlusChecksumLen=" +
+          dataPlusChecksumLen + " header: " + header); 
+    }
+    
+    in.skipBytes(checksumLen);
+
+    long startTime = now();
+    IOUtils.readFully(in, dataBuf, 0, header.getDataLen());
+    this.packetRecvTime += now() - startTime;
+  }
+  
   /** 
    * Receives and processes a packet. It can contain many chunks.
    * returns the number of data bytes that the packet has.
    */
   int receivePacket() throws IOException {
     // read the next packet
-    packetReceiver.receiveNextPacket(in);
+    receiveNextPacket(in);
 
-    PacketHeader header = packetReceiver.getHeader();
     if (LOG.isDebugEnabled()){
       LOG.debug("MemBlockReceiver: Receiving one packet for block " + block +
                 ": " + header);
@@ -232,9 +287,6 @@ class MemBlockReceiver extends BlockReceiver {
           lastPacketInBlock, offsetInBlock, Status.SUCCESS);
     }
     
-    ByteBuffer dataBuf = packetReceiver.getDataSlice();
-    ByteBuffer checksumBuf = packetReceiver.getChecksumSlice();
-    
     if (lastPacketInBlock || len == 0) {
       if(LOG.isDebugEnabled()) {
         LOG.debug("Receiving an empty packet or the end of the block " + block);
@@ -244,34 +296,6 @@ class MemBlockReceiver extends BlockReceiver {
         flushOrSync(true);
       }
     } else {
-      int checksumLen = ((len + bytesPerChecksum - 1)/bytesPerChecksum)*
-                                                            checksumSize;
-
-      if ( checksumBuf.capacity() != checksumLen) {
-        throw new IOException("Length of checksums in packet " +
-            checksumBuf.capacity() + " does not match calculated checksum " +
-            "length " + checksumLen);
-      }
-
-      if (shouldVerifyChecksum()) {
-        try {
-          verifyChunks(dataBuf, checksumBuf);
-        } catch (IOException ioe) {
-          // checksum error detected locally. there is no reason to continue.
-          if (responder != null) {
-            try {
-              ((PacketResponder) responder.getRunnable()).enqueue(seqno,
-                  lastPacketInBlock, offsetInBlock,
-                  Status.ERROR_CHECKSUM);
-              // Wait until the responder sends back the response
-              // and interrupt this thread.
-              Thread.sleep(3000);
-            } catch (InterruptedException e) { }
-          }
-          throw new IOException("Terminating due to a checksum error." + ioe);
-        }
-      }
-      
       // by this point, the data in the buffer uses the disk checksum
       
       try {
@@ -279,7 +303,7 @@ class MemBlockReceiver extends BlockReceiver {
         //HDFSRS_RWAPI{
         //if (onDiskLen<offsetInBlock) {
         if (onDiskLen==firstByteInBlock) {
-          LOG.debug("[HDFSRS_RWAPI]BlockReceiver.receivePacket():appending packet received.");
+          LOG.debug("[HDFSRS_RWAPI]MemBlockReceiver.receivePacket():appending packet received.");
         //}
           //finally write to the disk :
           
@@ -288,13 +312,12 @@ class MemBlockReceiver extends BlockReceiver {
             out.flush();
           }
 
-          int startByteToDisk = (int)(onDiskLen-firstByteInBlock) 
-              + dataBuf.arrayOffset() + dataBuf.position();
+          int startByteToDisk = (int)(onDiskLen-firstByteInBlock);
 
           int numBytesToDisk = (int)(offsetInBlock-onDiskLen);
           
           // Write data to disk.
-          out.write(dataBuf.array(), startByteToDisk, numBytesToDisk);
+          out.write(dataBuf, startByteToDisk, numBytesToDisk);
 
           /// flush entire packet, sync if requested
           flushOrSync(syncBlock);
@@ -305,12 +328,12 @@ class MemBlockReceiver extends BlockReceiver {
 
         }//HDFSRS_RWAPI
         else{// for overwriting
-          LOG.debug("[HDFSRS_RWAPI]BlockReceiver.receivePacket():overwriting packet received:packet(" +
+          LOG.debug("[HDFSRS_RWAPI]MemBlockReceiver.receivePacket():overwriting packet received:packet(" +
               firstByteInBlock+","+offsetInBlock+")/replica("+onDiskLen+")");
           
           //dx.2 write data to disk.
-          int startByteToDisk = dataBuf.arrayOffset() + dataBuf.position();
-          out.write(dataBuf.array(), startByteToDisk, len);//packet len
+          int startByteToDisk = 0;
+          out.write(dataBuf, startByteToDisk, len);//packet len
           
           /// dx.7 flush entire packet, sync if requested
           flushOrSync(syncBlock);
@@ -359,7 +382,10 @@ class MemBlockReceiver extends BlockReceiver {
         responder.start(); // start thread to processes responses
       }
 
+      this.packetRecvTime = 0;
       while (receivePacket() >= 0) { /* Receive until the last packet */ }
+      LOG.info("CQDEBUG: packet receive time:" + this.packetRecvTime + " ms");
+
 
       // wait for all outstanding packet responses. And then
       // indicate responder to gracefully shutdown.
@@ -521,7 +547,6 @@ class MemBlockReceiver extends BlockReceiver {
       synchronized(ackQueue) {
         if (running) {
           ackQueue.addLast(p);
-          LOG.debug("CQ: ackQueue size:" + ackQueue.size());
           ackQueue.notifyAll();
         }
       }
@@ -592,7 +617,6 @@ class MemBlockReceiver extends BlockReceiver {
     public void close() {
       synchronized(ackQueue) {
         while (isRunning() && ackQueue.size() != 0) {
-          LOG.warn("CQ: wait for closing. ackQueue.size:" + ackQueue.size());
           try {
             ackQueue.wait();
           } catch (InterruptedException e) {
@@ -651,7 +675,6 @@ class MemBlockReceiver extends BlockReceiver {
             if (seqno != PipelineAck.UNKOWN_SEQNO
                 || type == PacketResponderType.LAST_IN_PIPELINE) {
               pkt = waitForAckHead(seqno);
-              LOG.warn("CQ: get package " + pkt);
               if (!isRunning()) {
                 break;
               }
@@ -882,7 +905,6 @@ class MemBlockReceiver extends BlockReceiver {
      */
     private void removeAckHead() {
       synchronized(ackQueue) {
-        LOG.warn("CQ: remove ack, ackSize:" + ackQueue.size());
         ackQueue.removeFirst();
         ackQueue.notifyAll();
       }

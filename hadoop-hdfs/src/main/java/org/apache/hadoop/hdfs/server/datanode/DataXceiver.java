@@ -795,6 +795,7 @@ class DataXceiver extends Receiver implements Runnable {
     }
 
     //update metrics
+    Log.info("CQDEBUG: write block elapsed time:" + elapsed() + " ms");
     datanode.metrics.addWriteBlockOp(elapsed());
     datanode.metrics.incrWritesFromClient(peer.isLocal());
   }
