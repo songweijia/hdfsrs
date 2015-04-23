@@ -1908,10 +1908,6 @@ public class DFSOutputStream extends FSOutputSummer
         resetChecksumChunk(bytesPerChecksum);
       }
 
-      if (!appendChunk) {
-        //int psize = Math.min((int)(blockSize + cklen * chunksPerPacket - bytesCurBlock), dfsClient.getConf().writePacketSize);
-        computePacketChunkSize(dfsClient.getConf().writePacketSize, bytesPerChecksum);
-      }
       //
       // if encountering a block boundary, send an empty packet to 
       // indicate the end of block and reset bytesCurBlock.
@@ -1923,6 +1919,11 @@ public class DFSOutputStream extends FSOutputSummer
         waitAndQueueCurrentPacket();
         bytesCurBlock = 0;
         lastFlushOffset = 0;
+      }
+      
+      if (!appendChunk) {
+        int psize = Math.min((int)(blockSize-bytesCurBlock), dfsClient.getConf().writePacketSize);
+        computePacketChunkSize(psize, bytesPerChecksum);
       }
     }
   }
