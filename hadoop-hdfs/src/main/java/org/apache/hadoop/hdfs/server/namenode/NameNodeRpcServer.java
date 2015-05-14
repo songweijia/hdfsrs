@@ -1255,7 +1255,8 @@ class NameNodeRpcServer implements NamenodeProtocols {
           + MAX_PATH_LENGTH + " characters, " + MAX_PATH_DEPTH + " levels.");
     }
     metrics.incrCreateSnapshotOps();
-    return namesystem.createSnapshot(snapshotRoot, snapshotName);
+    //return namesystem.createSnapshot(snapshotRoot, snapshotName);
+    return namesystem.createBlockSnapshot(snapshotRoot, snapshotName);
   }
   
   @Override

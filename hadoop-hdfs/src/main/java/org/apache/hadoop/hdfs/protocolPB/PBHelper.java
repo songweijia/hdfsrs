@@ -611,6 +611,26 @@ public class PBHelper {
     return builder.build();
   }
 
+  public static ExtendedBlock[] convert(List<ExtendedBlockProto> list) {
+    ExtendedBlock[] blocks = new ExtendedBlock[list.size()];
+    for (int i = 0; i < blocks.length; i++) {
+      blocks[i] = convert(list.get(i));
+    }
+    return blocks;
+  }
+  
+  public static List<? extends HdfsProtos.ExtendedBlockProto> convert(
+      ExtendedBlock[] blks) {
+    if (blks == null)
+      return null;
+    ArrayList<HdfsProtos.ExtendedBlockProto> protos = Lists
+        .newArrayListWithCapacity(blks.length);
+    for (int i = 0; i < blks.length; i++) {
+      protos.add(convert(blks[i]));
+    }
+    return protos;
+  }
+  
   public static AdminStates convert(AdminState adminState) {
     switch(adminState) {
     case DECOMMISSION_INPROGRESS:

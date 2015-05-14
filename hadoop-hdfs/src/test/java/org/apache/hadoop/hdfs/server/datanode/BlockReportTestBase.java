@@ -826,8 +826,7 @@ public abstract class BlockReportTestBase {
 
       // Get block from the first DN
       ret = cluster.getDataNodes().get(DN_N0).
-        data.getStoredBlock(lb.getBlock()
-        .getBlockPoolId(), lb.getBlock().getBlockId());
+        data.getStoredBlock(lb.getBlock());
     return ret;
   }
 

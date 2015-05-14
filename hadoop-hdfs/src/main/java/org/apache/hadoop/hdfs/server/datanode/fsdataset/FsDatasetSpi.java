@@ -139,17 +139,17 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return replica from the replicas map
    */
   //@Deprecated
-  public Replica getReplica(String bpid, long blockId);
+  public Replica getReplica(ExtendedBlock b);
 
   /**
    * @return replica meta information
    */
-  public String getReplicaString(String bpid, long blockId);
+  public String getReplicaString(ExtendedBlock b);
 
   /**
    * @return the generation stamp stored with the block.
    */
-  public Block getStoredBlock(String bpid, long blkid) throws IOException;
+  public Block getStoredBlock(ExtendedBlock b) throws IOException;
   
   /**
    * Returns an input stream at specified offset of the specified block
@@ -446,5 +446,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
   public boolean trashEnabled(String bpid);
   
   public StorageType getStorageType();
+  
+  public void snapshot(long timestamp, ExtendedBlock[] blks) throws IOException;
 }
 

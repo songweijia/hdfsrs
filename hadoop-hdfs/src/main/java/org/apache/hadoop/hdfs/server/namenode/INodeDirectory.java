@@ -92,6 +92,22 @@ public class INodeDirectory extends INodeWithAdditionalFields
     this.features = featuresToCopy;
   }
 
+  public INodeDirectory(INodeDirectory other, int sid) {
+    super(other);
+    if (other.children != null) {
+      for (INode child : other.children) {
+        if (child.isDirectory()) {
+          this.children.add(new INodeDirectory(child.asDirectory(), sid));
+        } else if (child.isFile()) {
+          this.children.add(new INodeFile(child.asFile(), sid));
+        } else {
+          this.children.add(child);
+        }
+      }
+    }
+    this.features = other.features;
+  }
+  
   /** @return true unconditionally. */
   @Override
   public final boolean isDirectory() {

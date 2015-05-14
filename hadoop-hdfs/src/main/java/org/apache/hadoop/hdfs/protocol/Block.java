@@ -85,7 +85,8 @@ public class Block implements Writable, Comparable<Block> {
   protected long blockId;
   protected long numBytes;
   protected long generationStamp;
-
+  protected int sid = -1;
+  
   public Block() {this(0, 0, 0);}
 
   public Block(final long blkid, final long len, final long generationStamp) {
@@ -159,6 +160,17 @@ public class Block implements Writable, Comparable<Block> {
       .append(getGenerationStamp());
   }
 
+  public String getSid() {
+    return "[" + String.valueOf(sid) + "]";
+  }
+  
+  public static String getDefaultSid() {
+    return "[-1]";
+  }
+  
+  public void setSid(int id) {
+    sid = id;
+  }
 
   /////////////////////////////////////
   // Writable
@@ -177,12 +189,14 @@ public class Block implements Writable, Comparable<Block> {
     out.writeLong(blockId);
     out.writeLong(numBytes);
     out.writeLong(generationStamp);
+    out.writeInt(sid);
   }
   
   final void readHelper(DataInput in) throws IOException {
     this.blockId = in.readLong();
     this.numBytes = in.readLong();
     this.generationStamp = in.readLong();
+    this.sid = in.readInt();
     if (numBytes < 0) {
       throw new IOException("Unexpected block size: " + numBytes);
     }

@@ -141,11 +141,12 @@ public class Snapshot implements Comparable<byte[]> {
 
   /** The root directory of the snapshot. */
   static public class Root extends INodeDirectory {
-    Root(INodeDirectory other) {
+    Root(INodeDirectory other, int sid, boolean blockLevel) {
       // Always preserve ACL.
-      super(other, false, Lists.newArrayList(
-        Iterables.filter(Arrays.asList(other.getFeatures()), AclFeature.class))
-        .toArray(new Feature[0]));
+      super(other, sid);
+      //super(other, false, Lists.newArrayList(
+      //  Iterables.filter(Arrays.asList(other.getFeatures()), AclFeature.class))
+      //  .toArray(new Feature[0]));
     }
 
     @Override
@@ -169,14 +170,16 @@ public class Snapshot implements Comparable<byte[]> {
   /** The root directory of the snapshot. */
   private final Root root;
 
-  Snapshot(int id, String name, INodeDirectorySnapshottable dir) {
-    this(id, dir, dir);
+  Snapshot(int id, String name, INodeDirectorySnapshottable dir, boolean blockLevel) {
+    this.id = id;
+    this.root = new Root(dir, id, blockLevel);
+    this.root.setParent(dir);
     this.root.setLocalName(DFSUtil.string2Bytes(name));
   }
-
+  
   Snapshot(int id, INodeDirectory dir, INodeDirectorySnapshottable parent) {
     this.id = id;
-    this.root = new Root(dir);
+    this.root = new Root(dir, id, false);
 
     this.root.setParent(parent);
   }

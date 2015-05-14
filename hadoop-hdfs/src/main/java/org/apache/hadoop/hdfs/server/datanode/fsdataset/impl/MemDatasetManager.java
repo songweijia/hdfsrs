@@ -3,7 +3,6 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -223,7 +222,7 @@ public class MemDatasetManager {
     LinkedList<Block> results = new LinkedList<Block>();
     synchronized (memMaps) {
       for (Entry<ExtendedBlockId, MemBlockMeta> entry: memMaps.entrySet())
-        if (entry.getKey().getBlockPoolId().equals(bpid) && (state == null || entry.getValue().getState() == state))
+        if (entry.getKey().getBlockPoolId().startsWith(bpid) && (state == null || entry.getValue().getState() == state))
           results.add(entry.getValue());
     }
     return results;

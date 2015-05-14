@@ -801,6 +801,20 @@ class DataXceiver extends Receiver implements Runnable {
   }
 
   @Override
+  public void snapshot(final long timestamp, final ExtendedBlock[] blks) throws IOException {
+    updateCurrentThreadName(Op.REQUEST_SNAPSHOT + " " + timestamp);
+
+    final DataOutputStream out = new DataOutputStream(
+        getOutputStream());
+    try {
+      datanode.data.snapshot(timestamp, blks);
+      writeResponse(Status.SUCCESS, null, out);
+    } finally {
+      IOUtils.closeStream(out);
+    }
+  }
+  
+  @Override
   public void transferBlock(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,
       final String clientName,

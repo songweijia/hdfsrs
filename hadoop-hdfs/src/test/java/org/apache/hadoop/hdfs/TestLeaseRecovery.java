@@ -129,8 +129,7 @@ public class TestLeaseRecovery {
           dfs.dfs.getNamenode(), filestr).getBlock();
       long currentGS = lastblock.getGenerationStamp();
       for(int i = 0; i < REPLICATION_NUM; i++) {
-        updatedmetainfo[i] = DataNodeTestUtils.getFSDataset(datanodes[i]).getStoredBlock(
-            lastblock.getBlockPoolId(), lastblock.getBlockId());
+        updatedmetainfo[i] = DataNodeTestUtils.getFSDataset(datanodes[i]).getStoredBlock(lastblock);
         assertEquals(lastblock.getBlockId(), updatedmetainfo[i].getBlockId());
         assertEquals(oldSize, updatedmetainfo[i].getNumBytes());
         assertEquals(currentGS, updatedmetainfo[i].getGenerationStamp());

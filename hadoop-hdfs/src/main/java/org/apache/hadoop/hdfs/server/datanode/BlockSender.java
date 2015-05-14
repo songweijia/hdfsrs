@@ -423,8 +423,7 @@ class BlockSender implements java.io.Closeable {
   
   static Replica getReplica(ExtendedBlock block, DataNode datanode)
       throws ReplicaNotFoundException {
-    Replica replica = datanode.data.getReplica(block.getBlockPoolId(),
-        block.getBlockId());
+    Replica replica = datanode.data.getReplica(block);
     if (replica == null) {
       throw new ReplicaNotFoundException(block);
     }

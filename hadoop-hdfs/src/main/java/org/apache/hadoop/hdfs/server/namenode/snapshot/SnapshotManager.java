@@ -216,6 +216,23 @@ public class SnapshotManager implements SnapshotStats {
     return Snapshot.getSnapshotPath(path, snapshotName);
   }
   
+  public String createBlockSnapshot(final String path, String snapshotName
+      ) throws IOException {
+    if (snapshotCounter == getMaxSnapshotID()) {
+      throw new SnapshotException(
+          "Failed to create the snapshot. The FileSystem has run out of " +
+          "snapshot IDs and ID rollover is not supported.");
+    }
+    
+    INodeDirectorySnapshottable srcRoot = getSnapshottableRoot(path);
+    srcRoot.addBlockSnapshot(snapshotCounter, snapshotName);
+      
+    //create success, update id
+    snapshotCounter++;
+    numSnapshots.getAndIncrement();
+    return Snapshot.getSnapshotPath(path, snapshotName);
+  }
+  
   /**
    * Delete a snapshot for a snapshottable directory
    * @param path Path to the directory where the snapshot was taken
