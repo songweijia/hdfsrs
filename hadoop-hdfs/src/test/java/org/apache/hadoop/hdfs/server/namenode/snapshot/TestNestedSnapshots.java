@@ -317,10 +317,10 @@ public class TestNestedSnapshots {
     final INodeDirectorySnapshottable snapshottable
         = new INodeDirectorySnapshottable(dir);
     final Snapshot[] snapshots = {
-      new Snapshot(1, "s1", snapshottable),
-      new Snapshot(1, "s1", snapshottable),
-      new Snapshot(2, "s2", snapshottable),
-      new Snapshot(2, "s2", snapshottable),
+      new Snapshot(1, "s1", snapshottable, false),
+      new Snapshot(1, "s1", snapshottable, false),
+      new Snapshot(2, "s2", snapshottable, false),
+      new Snapshot(2, "s2", snapshottable, false),
     };
 
     Assert.assertEquals(0, Snapshot.ID_COMPARATOR.compare(null, null));
