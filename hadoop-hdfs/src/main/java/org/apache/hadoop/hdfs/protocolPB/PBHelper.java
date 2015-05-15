@@ -611,18 +611,18 @@ public class PBHelper {
     return builder.build();
   }
 
-  public static ExtendedBlock[] convert(List<ExtendedBlockProto> list) {
-    ExtendedBlock[] blocks = new ExtendedBlock[list.size()];
+  public static ExtendedBlock[] convert(ExtendedBlockProto list[]) {
+    if (list == null) return null;
+    ExtendedBlock[] blocks = new ExtendedBlock[list.length];
     for (int i = 0; i < blocks.length; i++) {
-      blocks[i] = convert(list.get(i));
+      blocks[i] = convert(list[i]);
     }
     return blocks;
   }
   
   public static List<? extends HdfsProtos.ExtendedBlockProto> convert(
       ExtendedBlock[] blks) {
-    if (blks == null)
-      return null;
+    if (blks == null) return null;
     ArrayList<HdfsProtos.ExtendedBlockProto> protos = Lists
         .newArrayListWithCapacity(blks.length);
     for (int i = 0; i < blks.length; i++) {
