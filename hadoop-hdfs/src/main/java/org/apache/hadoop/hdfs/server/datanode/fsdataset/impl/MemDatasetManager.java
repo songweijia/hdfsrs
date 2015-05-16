@@ -226,5 +226,16 @@ public class MemDatasetManager {
           results.add(entry.getValue());
     }
     return results;
-  } 
+  }
+  
+  void copy(MemAddr src, MemAddr dst, long len) {
+    ByteBuffer srcbuf = memRegions[src.regionID].duplicate();
+    srcbuf.position(src.offset);
+    srcbuf.limit((int)(src.offset + len));
+    
+    ByteBuffer dstbuf = memRegions[dst.regionID].duplicate();
+    dstbuf.position(dst.offset);
+    dstbuf.limit((int)(dst.offset + len));
+    dstbuf.put(srcbuf);
+  }
 }

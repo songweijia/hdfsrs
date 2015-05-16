@@ -1040,5 +1040,16 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       throws IOException {
     // TODO: add snapshot support
     LOG.info("CQDEBUG: snapshot for time:" + timestamp + " blks:" + ((blks == null)? 0 : blks.length));
+    if (blks == null) return;
+    
+    for (ExtendedBlock b : blks) {
+      MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + 
+          Block.getDefaultSid(), b.getBlockId());
+   // create a new block
+      MemDatasetManager.MemBlockMeta newMeta = memManager.getNewBlock(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId(), 
+          b.getGenerationStamp());
+      
+      memManager.copy(meta.offset, newMeta.offset, meta.getNumBytes());
+    }
   }
 }
