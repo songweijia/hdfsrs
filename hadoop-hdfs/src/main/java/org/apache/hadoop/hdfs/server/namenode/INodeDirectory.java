@@ -95,6 +95,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   public INodeDirectory(INodeDirectory other, int sid) {
     super(other);
     if (other.children != null) {
+      this.children = new ArrayList<INode> (other.children.size());
       for (INode child : other.children) {
         if (child.isDirectory()) {
           this.children.add(new INodeDirectory(child.asDirectory(), sid));
