@@ -159,7 +159,7 @@ public abstract class Receiver implements DataTransferProtocol {
   private void opRequestSnapshot(DataInputStream in) throws IOException {
     final OpRequestSnapshotProto proto = 
         OpRequestSnapshotProto.parseFrom(vintPrefixed(in));
-    snapshot(proto.getTimestamp(), PBHelper.convert((ExtendedBlockProto[])proto.getBlocksList().toArray()));
+    snapshot(proto.getTimestamp(), PBHelper.convert(proto.getBlocksList().toArray(new ExtendedBlockProto[0])));
   }
   
   /** Receive {@link Op#REQUEST_SHORT_CIRCUIT_FDS} */
