@@ -151,12 +151,14 @@ public class Snapshot implements Comparable<byte[]> {
 
     @Override
     public ReadOnlyList<INode> getChildrenList(int snapshotId) {
-      return getParent().getChildrenList(snapshotId);
+      return getCurrentChildrenList();
     }
 
     @Override
     public INode getChild(byte[] name, int snapshotId) {
-      return getParent().getChild(name, snapshotId);
+      ReadOnlyList<INode> c = getCurrentChildrenList();
+      final int i = ReadOnlyList.Util.binarySearch(c, name);
+      return i < 0 ? null : c.get(i);
     }
     
     @Override
