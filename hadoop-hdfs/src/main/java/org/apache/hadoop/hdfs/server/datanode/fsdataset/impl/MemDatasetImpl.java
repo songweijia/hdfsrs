@@ -1050,6 +1050,8 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           b.getGenerationStamp());
       
       memManager.copy(meta.offset, newMeta.offset, meta.getNumBytes());
+      newMeta.setNumBytes(meta.getNumBytes());
+      newMeta.setBytesAcked(meta.getBytesAcked());
     }
   }
 }
