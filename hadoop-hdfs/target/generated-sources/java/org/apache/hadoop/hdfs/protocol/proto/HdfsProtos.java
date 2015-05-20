@@ -404,19 +404,29 @@ public final class HdfsProtos {
      */
     long getBlockId();
 
-    // required uint64 generationStamp = 3;
+    // required uint32 sId = 3;
     /**
-     * <code>required uint64 generationStamp = 3;</code>
+     * <code>required uint32 sId = 3;</code>
+     */
+    boolean hasSId();
+    /**
+     * <code>required uint32 sId = 3;</code>
+     */
+    int getSId();
+
+    // required uint64 generationStamp = 4;
+    /**
+     * <code>required uint64 generationStamp = 4;</code>
      */
     boolean hasGenerationStamp();
     /**
-     * <code>required uint64 generationStamp = 3;</code>
+     * <code>required uint64 generationStamp = 4;</code>
      */
     long getGenerationStamp();
 
-    // optional uint64 numBytes = 4 [default = 0];
+    // optional uint64 numBytes = 5 [default = 0];
     /**
-     * <code>optional uint64 numBytes = 4 [default = 0];</code>
+     * <code>optional uint64 numBytes = 5 [default = 0];</code>
      *
      * <pre>
      * len does not belong in ebid 
@@ -424,7 +434,7 @@ public final class HdfsProtos {
      */
     boolean hasNumBytes();
     /**
-     * <code>optional uint64 numBytes = 4 [default = 0];</code>
+     * <code>optional uint64 numBytes = 5 [default = 0];</code>
      *
      * <pre>
      * len does not belong in ebid 
@@ -500,11 +510,16 @@ public final class HdfsProtos {
             }
             case 24: {
               bitField0_ |= 0x00000004;
-              generationStamp_ = input.readUInt64();
+              sId_ = input.readUInt32();
               break;
             }
             case 32: {
               bitField0_ |= 0x00000008;
+              generationStamp_ = input.readUInt64();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
               numBytes_ = input.readUInt64();
               break;
             }
@@ -627,37 +642,53 @@ public final class HdfsProtos {
       return blockId_;
     }
 
-    // required uint64 generationStamp = 3;
-    public static final int GENERATIONSTAMP_FIELD_NUMBER = 3;
-    private long generationStamp_;
+    // required uint32 sId = 3;
+    public static final int SID_FIELD_NUMBER = 3;
+    private int sId_;
     /**
-     * <code>required uint64 generationStamp = 3;</code>
+     * <code>required uint32 sId = 3;</code>
      */
-    public boolean hasGenerationStamp() {
+    public boolean hasSId() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required uint64 generationStamp = 3;</code>
+     * <code>required uint32 sId = 3;</code>
+     */
+    public int getSId() {
+      return sId_;
+    }
+
+    // required uint64 generationStamp = 4;
+    public static final int GENERATIONSTAMP_FIELD_NUMBER = 4;
+    private long generationStamp_;
+    /**
+     * <code>required uint64 generationStamp = 4;</code>
+     */
+    public boolean hasGenerationStamp() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>required uint64 generationStamp = 4;</code>
      */
     public long getGenerationStamp() {
       return generationStamp_;
     }
 
-    // optional uint64 numBytes = 4 [default = 0];
-    public static final int NUMBYTES_FIELD_NUMBER = 4;
+    // optional uint64 numBytes = 5 [default = 0];
+    public static final int NUMBYTES_FIELD_NUMBER = 5;
     private long numBytes_;
     /**
-     * <code>optional uint64 numBytes = 4 [default = 0];</code>
+     * <code>optional uint64 numBytes = 5 [default = 0];</code>
      *
      * <pre>
      * len does not belong in ebid 
      * </pre>
      */
     public boolean hasNumBytes() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>optional uint64 numBytes = 4 [default = 0];</code>
+     * <code>optional uint64 numBytes = 5 [default = 0];</code>
      *
      * <pre>
      * len does not belong in ebid 
@@ -670,6 +701,7 @@ public final class HdfsProtos {
     private void initFields() {
       poolId_ = "";
       blockId_ = 0L;
+      sId_ = 0;
       generationStamp_ = 0L;
       numBytes_ = 0L;
     }
@@ -683,6 +715,10 @@ public final class HdfsProtos {
         return false;
       }
       if (!hasBlockId()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSId()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -704,10 +740,13 @@ public final class HdfsProtos {
         output.writeUInt64(2, blockId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeUInt64(3, generationStamp_);
+        output.writeUInt32(3, sId_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeUInt64(4, numBytes_);
+        output.writeUInt64(4, generationStamp_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeUInt64(5, numBytes_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -728,11 +767,15 @@ public final class HdfsProtos {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(3, generationStamp_);
+          .computeUInt32Size(3, sId_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(4, numBytes_);
+          .computeUInt64Size(4, generationStamp_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(5, numBytes_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -767,6 +810,11 @@ public final class HdfsProtos {
         result = result && (getBlockId()
             == other.getBlockId());
       }
+      result = result && (hasSId() == other.hasSId());
+      if (hasSId()) {
+        result = result && (getSId()
+            == other.getSId());
+      }
       result = result && (hasGenerationStamp() == other.hasGenerationStamp());
       if (hasGenerationStamp()) {
         result = result && (getGenerationStamp()
@@ -797,6 +845,10 @@ public final class HdfsProtos {
       if (hasBlockId()) {
         hash = (37 * hash) + BLOCKID_FIELD_NUMBER;
         hash = (53 * hash) + hashLong(getBlockId());
+      }
+      if (hasSId()) {
+        hash = (37 * hash) + SID_FIELD_NUMBER;
+        hash = (53 * hash) + getSId();
       }
       if (hasGenerationStamp()) {
         hash = (37 * hash) + GENERATIONSTAMP_FIELD_NUMBER;
@@ -924,10 +976,12 @@ public final class HdfsProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         blockId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
-        generationStamp_ = 0L;
+        sId_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
-        numBytes_ = 0L;
+        generationStamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000008);
+        numBytes_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -967,9 +1021,13 @@ public final class HdfsProtos {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.generationStamp_ = generationStamp_;
+        result.sId_ = sId_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
+        }
+        result.generationStamp_ = generationStamp_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
         }
         result.numBytes_ = numBytes_;
         result.bitField0_ = to_bitField0_;
@@ -996,6 +1054,9 @@ public final class HdfsProtos {
         if (other.hasBlockId()) {
           setBlockId(other.getBlockId());
         }
+        if (other.hasSId()) {
+          setSId(other.getSId());
+        }
         if (other.hasGenerationStamp()) {
           setGenerationStamp(other.getGenerationStamp());
         }
@@ -1012,6 +1073,10 @@ public final class HdfsProtos {
           return false;
         }
         if (!hasBlockId()) {
+          
+          return false;
+        }
+        if (!hasSId()) {
           
           return false;
         }
@@ -1188,53 +1253,86 @@ public final class HdfsProtos {
         return this;
       }
 
-      // required uint64 generationStamp = 3;
-      private long generationStamp_ ;
+      // required uint32 sId = 3;
+      private int sId_ ;
       /**
-       * <code>required uint64 generationStamp = 3;</code>
+       * <code>required uint32 sId = 3;</code>
        */
-      public boolean hasGenerationStamp() {
+      public boolean hasSId() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required uint64 generationStamp = 3;</code>
+       * <code>required uint32 sId = 3;</code>
+       */
+      public int getSId() {
+        return sId_;
+      }
+      /**
+       * <code>required uint32 sId = 3;</code>
+       */
+      public Builder setSId(int value) {
+        bitField0_ |= 0x00000004;
+        sId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint32 sId = 3;</code>
+       */
+      public Builder clearSId() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        sId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required uint64 generationStamp = 4;
+      private long generationStamp_ ;
+      /**
+       * <code>required uint64 generationStamp = 4;</code>
+       */
+      public boolean hasGenerationStamp() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>required uint64 generationStamp = 4;</code>
        */
       public long getGenerationStamp() {
         return generationStamp_;
       }
       /**
-       * <code>required uint64 generationStamp = 3;</code>
+       * <code>required uint64 generationStamp = 4;</code>
        */
       public Builder setGenerationStamp(long value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         generationStamp_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint64 generationStamp = 3;</code>
+       * <code>required uint64 generationStamp = 4;</code>
        */
       public Builder clearGenerationStamp() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         generationStamp_ = 0L;
         onChanged();
         return this;
       }
 
-      // optional uint64 numBytes = 4 [default = 0];
+      // optional uint64 numBytes = 5 [default = 0];
       private long numBytes_ ;
       /**
-       * <code>optional uint64 numBytes = 4 [default = 0];</code>
+       * <code>optional uint64 numBytes = 5 [default = 0];</code>
        *
        * <pre>
        * len does not belong in ebid 
        * </pre>
        */
       public boolean hasNumBytes() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional uint64 numBytes = 4 [default = 0];</code>
+       * <code>optional uint64 numBytes = 5 [default = 0];</code>
        *
        * <pre>
        * len does not belong in ebid 
@@ -1244,27 +1342,27 @@ public final class HdfsProtos {
         return numBytes_;
       }
       /**
-       * <code>optional uint64 numBytes = 4 [default = 0];</code>
+       * <code>optional uint64 numBytes = 5 [default = 0];</code>
        *
        * <pre>
        * len does not belong in ebid 
        * </pre>
        */
       public Builder setNumBytes(long value) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         numBytes_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional uint64 numBytes = 4 [default = 0];</code>
+       * <code>optional uint64 numBytes = 5 [default = 0];</code>
        *
        * <pre>
        * len does not belong in ebid 
        * </pre>
        */
       public Builder clearNumBytes() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         numBytes_ = 0L;
         onChanged();
         return this;
@@ -25910,23 +26008,33 @@ public final class HdfsProtos {
      */
     long getBlockId();
 
-    // required uint64 genStamp = 2;
+    // required uint32 sId = 2;
     /**
-     * <code>required uint64 genStamp = 2;</code>
+     * <code>required uint32 sId = 2;</code>
+     */
+    boolean hasSId();
+    /**
+     * <code>required uint32 sId = 2;</code>
+     */
+    int getSId();
+
+    // required uint64 genStamp = 3;
+    /**
+     * <code>required uint64 genStamp = 3;</code>
      */
     boolean hasGenStamp();
     /**
-     * <code>required uint64 genStamp = 2;</code>
+     * <code>required uint64 genStamp = 3;</code>
      */
     long getGenStamp();
 
-    // optional uint64 numBytes = 3 [default = 0];
+    // optional uint64 numBytes = 4 [default = 0];
     /**
-     * <code>optional uint64 numBytes = 3 [default = 0];</code>
+     * <code>optional uint64 numBytes = 4 [default = 0];</code>
      */
     boolean hasNumBytes();
     /**
-     * <code>optional uint64 numBytes = 3 [default = 0];</code>
+     * <code>optional uint64 numBytes = 4 [default = 0];</code>
      */
     long getNumBytes();
   }
@@ -25999,11 +26107,16 @@ public final class HdfsProtos {
             }
             case 16: {
               bitField0_ |= 0x00000002;
-              genStamp_ = input.readUInt64();
+              sId_ = input.readUInt32();
               break;
             }
             case 24: {
               bitField0_ |= 0x00000004;
+              genStamp_ = input.readUInt64();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
               numBytes_ = input.readUInt64();
               break;
             }
@@ -26063,33 +26176,49 @@ public final class HdfsProtos {
       return blockId_;
     }
 
-    // required uint64 genStamp = 2;
-    public static final int GENSTAMP_FIELD_NUMBER = 2;
-    private long genStamp_;
+    // required uint32 sId = 2;
+    public static final int SID_FIELD_NUMBER = 2;
+    private int sId_;
     /**
-     * <code>required uint64 genStamp = 2;</code>
+     * <code>required uint32 sId = 2;</code>
      */
-    public boolean hasGenStamp() {
+    public boolean hasSId() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required uint64 genStamp = 2;</code>
+     * <code>required uint32 sId = 2;</code>
+     */
+    public int getSId() {
+      return sId_;
+    }
+
+    // required uint64 genStamp = 3;
+    public static final int GENSTAMP_FIELD_NUMBER = 3;
+    private long genStamp_;
+    /**
+     * <code>required uint64 genStamp = 3;</code>
+     */
+    public boolean hasGenStamp() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required uint64 genStamp = 3;</code>
      */
     public long getGenStamp() {
       return genStamp_;
     }
 
-    // optional uint64 numBytes = 3 [default = 0];
-    public static final int NUMBYTES_FIELD_NUMBER = 3;
+    // optional uint64 numBytes = 4 [default = 0];
+    public static final int NUMBYTES_FIELD_NUMBER = 4;
     private long numBytes_;
     /**
-     * <code>optional uint64 numBytes = 3 [default = 0];</code>
+     * <code>optional uint64 numBytes = 4 [default = 0];</code>
      */
     public boolean hasNumBytes() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional uint64 numBytes = 3 [default = 0];</code>
+     * <code>optional uint64 numBytes = 4 [default = 0];</code>
      */
     public long getNumBytes() {
       return numBytes_;
@@ -26097,6 +26226,7 @@ public final class HdfsProtos {
 
     private void initFields() {
       blockId_ = 0L;
+      sId_ = 0;
       genStamp_ = 0L;
       numBytes_ = 0L;
     }
@@ -26106,6 +26236,10 @@ public final class HdfsProtos {
       if (isInitialized != -1) return isInitialized == 1;
 
       if (!hasBlockId()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSId()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -26124,10 +26258,13 @@ public final class HdfsProtos {
         output.writeUInt64(1, blockId_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeUInt64(2, genStamp_);
+        output.writeUInt32(2, sId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeUInt64(3, numBytes_);
+        output.writeUInt64(3, genStamp_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt64(4, numBytes_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -26144,11 +26281,15 @@ public final class HdfsProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(2, genStamp_);
+          .computeUInt32Size(2, sId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(3, numBytes_);
+          .computeUInt64Size(3, genStamp_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(4, numBytes_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -26178,6 +26319,11 @@ public final class HdfsProtos {
         result = result && (getBlockId()
             == other.getBlockId());
       }
+      result = result && (hasSId() == other.hasSId());
+      if (hasSId()) {
+        result = result && (getSId()
+            == other.getSId());
+      }
       result = result && (hasGenStamp() == other.hasGenStamp());
       if (hasGenStamp()) {
         result = result && (getGenStamp()
@@ -26204,6 +26350,10 @@ public final class HdfsProtos {
       if (hasBlockId()) {
         hash = (37 * hash) + BLOCKID_FIELD_NUMBER;
         hash = (53 * hash) + hashLong(getBlockId());
+      }
+      if (hasSId()) {
+        hash = (37 * hash) + SID_FIELD_NUMBER;
+        hash = (53 * hash) + getSId();
       }
       if (hasGenStamp()) {
         hash = (37 * hash) + GENSTAMP_FIELD_NUMBER;
@@ -26335,10 +26485,12 @@ public final class HdfsProtos {
         super.clear();
         blockId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
-        genStamp_ = 0L;
+        sId_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
-        numBytes_ = 0L;
+        genStamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
+        numBytes_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -26374,9 +26526,13 @@ public final class HdfsProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.genStamp_ = genStamp_;
+        result.sId_ = sId_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
+        }
+        result.genStamp_ = genStamp_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
         }
         result.numBytes_ = numBytes_;
         result.bitField0_ = to_bitField0_;
@@ -26398,6 +26554,9 @@ public final class HdfsProtos {
         if (other.hasBlockId()) {
           setBlockId(other.getBlockId());
         }
+        if (other.hasSId()) {
+          setSId(other.getSId());
+        }
         if (other.hasGenStamp()) {
           setGenStamp(other.getGenStamp());
         }
@@ -26410,6 +26569,10 @@ public final class HdfsProtos {
 
       public final boolean isInitialized() {
         if (!hasBlockId()) {
+          
+          return false;
+        }
+        if (!hasSId()) {
           
           return false;
         }
@@ -26472,67 +26635,100 @@ public final class HdfsProtos {
         return this;
       }
 
-      // required uint64 genStamp = 2;
-      private long genStamp_ ;
+      // required uint32 sId = 2;
+      private int sId_ ;
       /**
-       * <code>required uint64 genStamp = 2;</code>
+       * <code>required uint32 sId = 2;</code>
        */
-      public boolean hasGenStamp() {
+      public boolean hasSId() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required uint64 genStamp = 2;</code>
+       * <code>required uint32 sId = 2;</code>
+       */
+      public int getSId() {
+        return sId_;
+      }
+      /**
+       * <code>required uint32 sId = 2;</code>
+       */
+      public Builder setSId(int value) {
+        bitField0_ |= 0x00000002;
+        sId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required uint32 sId = 2;</code>
+       */
+      public Builder clearSId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        sId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required uint64 genStamp = 3;
+      private long genStamp_ ;
+      /**
+       * <code>required uint64 genStamp = 3;</code>
+       */
+      public boolean hasGenStamp() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required uint64 genStamp = 3;</code>
        */
       public long getGenStamp() {
         return genStamp_;
       }
       /**
-       * <code>required uint64 genStamp = 2;</code>
+       * <code>required uint64 genStamp = 3;</code>
        */
       public Builder setGenStamp(long value) {
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         genStamp_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint64 genStamp = 2;</code>
+       * <code>required uint64 genStamp = 3;</code>
        */
       public Builder clearGenStamp() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         genStamp_ = 0L;
         onChanged();
         return this;
       }
 
-      // optional uint64 numBytes = 3 [default = 0];
+      // optional uint64 numBytes = 4 [default = 0];
       private long numBytes_ ;
       /**
-       * <code>optional uint64 numBytes = 3 [default = 0];</code>
+       * <code>optional uint64 numBytes = 4 [default = 0];</code>
        */
       public boolean hasNumBytes() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional uint64 numBytes = 3 [default = 0];</code>
+       * <code>optional uint64 numBytes = 4 [default = 0];</code>
        */
       public long getNumBytes() {
         return numBytes_;
       }
       /**
-       * <code>optional uint64 numBytes = 3 [default = 0];</code>
+       * <code>optional uint64 numBytes = 4 [default = 0];</code>
        */
       public Builder setNumBytes(long value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         numBytes_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional uint64 numBytes = 3 [default = 0];</code>
+       * <code>optional uint64 numBytes = 4 [default = 0];</code>
        */
       public Builder clearNumBytes() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         numBytes_ = 0L;
         onChanged();
         return this;
@@ -37160,143 +37356,144 @@ public final class HdfsProtos {
   static {
     java.lang.String[] descriptorData = {
       "\n\nhdfs.proto\022\013hadoop.hdfs\032\016Security.prot" +
-      "o\"c\n\022ExtendedBlockProto\022\016\n\006poolId\030\001 \002(\t\022" +
-      "\017\n\007blockId\030\002 \002(\004\022\027\n\017generationStamp\030\003 \002(" +
-      "\004\022\023\n\010numBytes\030\004 \001(\004:\0010\"\231\001\n\017DatanodeIDPro" +
-      "to\022\016\n\006ipAddr\030\001 \002(\t\022\020\n\010hostName\030\002 \002(\t\022\024\n\014" +
-      "datanodeUuid\030\003 \002(\t\022\020\n\010xferPort\030\004 \002(\r\022\020\n\010" +
-      "infoPort\030\005 \002(\r\022\017\n\007ipcPort\030\006 \002(\r\022\031\n\016infoS" +
-      "ecurePort\030\007 \001(\r:\0010\"X\n\026DatanodeLocalInfoP" +
-      "roto\022\027\n\017softwareVersion\030\001 \002(\t\022\025\n\rconfigV" +
-      "ersion\030\002 \002(\t\022\016\n\006uptime\030\003 \002(\004\"G\n\022Datanode",
-      "InfosProto\0221\n\tdatanodes\030\001 \003(\0132\036.hadoop.h" +
-      "dfs.DatanodeInfoProto\"\232\003\n\021DatanodeInfoPr" +
-      "oto\022(\n\002id\030\001 \002(\0132\034.hadoop.hdfs.DatanodeID" +
-      "Proto\022\023\n\010capacity\030\002 \001(\004:\0010\022\022\n\007dfsUsed\030\003 " +
-      "\001(\004:\0010\022\024\n\tremaining\030\004 \001(\004:\0010\022\030\n\rblockPoo" +
-      "lUsed\030\005 \001(\004:\0010\022\025\n\nlastUpdate\030\006 \001(\004:\0010\022\027\n" +
-      "\014xceiverCount\030\007 \001(\r:\0010\022\020\n\010location\030\010 \001(\t" +
-      "\022E\n\nadminState\030\n \001(\0162).hadoop.hdfs.Datan" +
-      "odeInfoProto.AdminState:\006NORMAL\022\030\n\rcache" +
-      "Capacity\030\013 \001(\004:\0010\022\024\n\tcacheUsed\030\014 \001(\004:\0010\"",
-      "I\n\nAdminState\022\n\n\006NORMAL\020\000\022\033\n\027DECOMMISSIO" +
-      "N_INPROGRESS\020\001\022\022\n\016DECOMMISSIONED\020\002\"\212\001\n\023C" +
-      "ontentSummaryProto\022\016\n\006length\030\001 \002(\004\022\021\n\tfi" +
-      "leCount\030\002 \002(\004\022\026\n\016directoryCount\030\003 \002(\004\022\r\n" +
-      "\005quota\030\004 \002(\004\022\025\n\rspaceConsumed\030\005 \002(\004\022\022\n\ns" +
-      "paceQuota\030\006 \002(\004\"7\n\026CorruptFileBlocksProt" +
-      "o\022\r\n\005files\030\001 \003(\t\022\016\n\006cookie\030\002 \002(\t\"!\n\021FsPe" +
-      "rmissionProto\022\014\n\004perm\030\001 \002(\r\")\n\021StorageUu" +
-      "idsProto\022\024\n\014storageUuids\030\001 \003(\t\"\234\002\n\021Locat" +
-      "edBlockProto\022*\n\001b\030\001 \002(\0132\037.hadoop.hdfs.Ex",
-      "tendedBlockProto\022\016\n\006offset\030\002 \002(\004\022,\n\004locs" +
-      "\030\003 \003(\0132\036.hadoop.hdfs.DatanodeInfoProto\022\017" +
-      "\n\007corrupt\030\004 \002(\010\022-\n\nblockToken\030\005 \002(\0132\031.ha" +
-      "doop.common.TokenProto\022\024\n\010isCached\030\006 \003(\010" +
-      "B\002\020\001\0223\n\014storageTypes\030\007 \003(\0162\035.hadoop.hdfs" +
-      ".StorageTypeProto\022\022\n\nstorageIDs\030\010 \003(\t\"\223\001" +
-      "\n\026DataEncryptionKeyProto\022\r\n\005keyId\030\001 \002(\r\022" +
-      "\023\n\013blockPoolId\030\002 \002(\t\022\r\n\005nonce\030\003 \002(\014\022\025\n\re" +
-      "ncryptionKey\030\004 \002(\014\022\022\n\nexpiryDate\030\005 \002(\004\022\033" +
-      "\n\023encryptionAlgorithm\030\006 \001(\t\"\303\001\n\022LocatedB",
-      "locksProto\022\022\n\nfileLength\030\001 \002(\004\022.\n\006blocks" +
-      "\030\002 \003(\0132\036.hadoop.hdfs.LocatedBlockProto\022\031" +
-      "\n\021underConstruction\030\003 \002(\010\0221\n\tlastBlock\030\004" +
-      " \001(\0132\036.hadoop.hdfs.LocatedBlockProto\022\033\n\023" +
-      "isLastBlockComplete\030\005 \002(\010\"\314\003\n\023HdfsFileSt" +
-      "atusProto\022;\n\010fileType\030\001 \002(\0162).hadoop.hdf" +
-      "s.HdfsFileStatusProto.FileType\022\014\n\004path\030\002" +
-      " \002(\014\022\016\n\006length\030\003 \002(\004\0222\n\npermission\030\004 \002(\013" +
-      "2\036.hadoop.hdfs.FsPermissionProto\022\r\n\005owne" +
-      "r\030\005 \002(\t\022\r\n\005group\030\006 \002(\t\022\031\n\021modification_t",
-      "ime\030\007 \002(\004\022\023\n\013access_time\030\010 \002(\004\022\017\n\007symlin" +
-      "k\030\t \001(\014\022\034\n\021block_replication\030\n \001(\r:\0010\022\024\n" +
-      "\tblocksize\030\013 \001(\004:\0010\0222\n\tlocations\030\014 \001(\0132\037" +
-      ".hadoop.hdfs.LocatedBlocksProto\022\021\n\006fileI" +
-      "d\030\r \001(\004:\0010\022\027\n\013childrenNum\030\016 \001(\005:\002-1\"3\n\010F" +
-      "ileType\022\n\n\006IS_DIR\020\001\022\013\n\007IS_FILE\020\002\022\016\n\nIS_S" +
-      "YMLINK\020\003\"\216\002\n\025FsServerDefaultsProto\022\021\n\tbl" +
-      "ockSize\030\001 \002(\004\022\030\n\020bytesPerChecksum\030\002 \002(\r\022" +
-      "\027\n\017writePacketSize\030\003 \002(\r\022\023\n\013replication\030" +
-      "\004 \002(\r\022\026\n\016fileBufferSize\030\005 \002(\r\022\"\n\023encrypt",
-      "DataTransfer\030\006 \001(\010:\005false\022\030\n\rtrashInterv" +
-      "al\030\007 \001(\004:\0010\022D\n\014checksumType\030\010 \001(\0162\036.hado" +
-      "op.hdfs.ChecksumTypeProto:\016CHECKSUM_CRC3" +
-      "2\"k\n\025DirectoryListingProto\0228\n\016partialLis" +
-      "ting\030\001 \003(\0132 .hadoop.hdfs.HdfsFileStatusP" +
-      "roto\022\030\n\020remainingEntries\030\002 \002(\r\"\242\001\n!Snaps" +
-      "hottableDirectoryStatusProto\0223\n\tdirStatu" +
-      "s\030\001 \002(\0132 .hadoop.hdfs.HdfsFileStatusProt" +
-      "o\022\026\n\016snapshot_quota\030\002 \002(\r\022\027\n\017snapshot_nu" +
-      "mber\030\003 \002(\r\022\027\n\017parent_fullpath\030\004 \002(\014\"u\n\"S",
-      "napshottableDirectoryListingProto\022O\n\027sna" +
-      "pshottableDirListing\030\001 \003(\0132..hadoop.hdfs" +
-      ".SnapshottableDirectoryStatusProto\"K\n\034Sn" +
-      "apshotDiffReportEntryProto\022\020\n\010fullpath\030\001" +
-      " \002(\014\022\031\n\021modificationLabel\030\002 \002(\t\"\237\001\n\027Snap" +
-      "shotDiffReportProto\022\024\n\014snapshotRoot\030\001 \002(" +
-      "\t\022\024\n\014fromSnapshot\030\002 \002(\t\022\022\n\ntoSnapshot\030\003 " +
-      "\002(\t\022D\n\021diffReportEntries\030\004 \003(\0132).hadoop." +
-      "hdfs.SnapshotDiffReportEntryProto\"_\n\020Sto" +
-      "rageInfoProto\022\025\n\rlayoutVersion\030\001 \002(\r\022\022\n\n",
-      "namespceID\030\002 \002(\r\022\021\n\tclusterID\030\003 \002(\t\022\r\n\005c" +
-      "Time\030\004 \002(\004\"\211\002\n\031NamenodeRegistrationProto" +
-      "\022\022\n\nrpcAddress\030\001 \002(\t\022\023\n\013httpAddress\030\002 \002(" +
-      "\t\0222\n\013storageInfo\030\003 \002(\0132\035.hadoop.hdfs.Sto" +
-      "rageInfoProto\022P\n\004role\030\004 \001(\01628.hadoop.hdf" +
-      "s.NamenodeRegistrationProto.NamenodeRole" +
-      "Proto:\010NAMENODE\"=\n\021NamenodeRoleProto\022\014\n\010" +
-      "NAMENODE\020\001\022\n\n\006BACKUP\020\002\022\016\n\nCHECKPOINT\020\003\"\235" +
-      "\001\n\030CheckpointSignatureProto\022\023\n\013blockPool" +
-      "Id\030\001 \002(\t\022 \n\030mostRecentCheckpointTxId\030\002 \002",
-      "(\004\022\026\n\016curSegmentTxId\030\003 \002(\004\0222\n\013storageInf" +
-      "o\030\004 \002(\0132\035.hadoop.hdfs.StorageInfoProto\"\314" +
-      "\001\n\024NamenodeCommandProto\022\016\n\006action\030\001 \002(\r\022" +
-      "4\n\004type\030\002 \002(\0162&.hadoop.hdfs.NamenodeComm" +
-      "andProto.Type\022:\n\rcheckpointCmd\030\003 \001(\0132#.h" +
-      "adoop.hdfs.CheckpointCommandProto\"2\n\004Typ" +
-      "e\022\023\n\017NamenodeCommand\020\000\022\025\n\021CheckPointComm" +
-      "and\020\001\"m\n\026CheckpointCommandProto\0228\n\tsigna" +
-      "ture\030\001 \002(\0132%.hadoop.hdfs.CheckpointSigna" +
-      "tureProto\022\031\n\021needToReturnImage\030\002 \002(\010\"D\n\n",
-      "BlockProto\022\017\n\007blockId\030\001 \002(\004\022\020\n\010genStamp\030" +
-      "\002 \002(\004\022\023\n\010numBytes\030\003 \001(\004:\0010\"n\n\027BlockWithL" +
-      "ocationsProto\022&\n\005block\030\001 \002(\0132\027.hadoop.hd" +
-      "fs.BlockProto\022\025\n\rdatanodeUuids\030\002 \003(\t\022\024\n\014" +
-      "storageUuids\030\003 \003(\t\"P\n\030BlocksWithLocation" +
-      "sProto\0224\n\006blocks\030\001 \003(\0132$.hadoop.hdfs.Blo" +
-      "ckWithLocationsProto\"U\n\022RemoteEditLogPro" +
-      "to\022\021\n\tstartTxId\030\001 \002(\004\022\017\n\007endTxId\030\002 \002(\004\022\033" +
-      "\n\014isInProgress\030\003 \001(\010:\005false\"K\n\032RemoteEdi" +
-      "tLogManifestProto\022-\n\004logs\030\001 \003(\0132\037.hadoop",
-      ".hdfs.RemoteEditLogProto\"\234\001\n\022NamespaceIn" +
-      "foProto\022\024\n\014buildVersion\030\001 \002(\t\022\016\n\006unused\030" +
-      "\002 \002(\r\022\023\n\013blockPoolID\030\003 \002(\t\0222\n\013storageInf" +
-      "o\030\004 \002(\0132\035.hadoop.hdfs.StorageInfoProto\022\027" +
-      "\n\017softwareVersion\030\005 \002(\t\"D\n\rBlockKeyProto" +
-      "\022\r\n\005keyId\030\001 \002(\r\022\022\n\nexpiryDate\030\002 \002(\004\022\020\n\010k" +
-      "eyBytes\030\003 \001(\014\"\304\001\n\026ExportedBlockKeysProto" +
-      "\022\033\n\023isBlockTokenEnabled\030\001 \002(\010\022\031\n\021keyUpda" +
-      "teInterval\030\002 \002(\004\022\025\n\rtokenLifeTime\030\003 \002(\004\022" +
-      ".\n\ncurrentKey\030\004 \002(\0132\032.hadoop.hdfs.BlockK",
-      "eyProto\022+\n\007allKeys\030\005 \003(\0132\032.hadoop.hdfs.B" +
-      "lockKeyProto\"Z\n\024RecoveringBlockProto\022\023\n\013" +
-      "newGenStamp\030\001 \002(\004\022-\n\005block\030\002 \002(\0132\036.hadoo" +
-      "p.hdfs.LocatedBlockProto\"\025\n\023VersionReque" +
-      "stProto\"E\n\024VersionResponseProto\022-\n\004info\030" +
-      "\001 \002(\0132\037.hadoop.hdfs.NamespaceInfoProto\"\245" +
-      "\001\n\021SnapshotInfoProto\022\024\n\014snapshotName\030\001 \002" +
-      "(\t\022\024\n\014snapshotRoot\030\002 \002(\t\0222\n\npermission\030\003" +
-      " \002(\0132\036.hadoop.hdfs.FsPermissionProto\022\r\n\005" +
-      "owner\030\004 \002(\t\022\r\n\005group\030\005 \002(\t\022\022\n\ncreateTime",
-      "\030\006 \002(\t\"0\n\031RollingUpgradeStatusProto\022\023\n\013b" +
-      "lockPoolId\030\001 \002(\t*.\n\020StorageTypeProto\022\010\n\004" +
-      "DISK\020\001\022\007\n\003SSD\020\002\022\007\n\003MEM\020\003*O\n\021ChecksumType" +
-      "Proto\022\021\n\rCHECKSUM_NULL\020\000\022\022\n\016CHECKSUM_CRC" +
-      "32\020\001\022\023\n\017CHECKSUM_CRC32C\020\002*L\n\021ReplicaStat" +
-      "eProto\022\r\n\tFINALIZED\020\000\022\007\n\003RBW\020\001\022\007\n\003RWR\020\002\022" +
-      "\007\n\003RUR\020\003\022\r\n\tTEMPORARY\020\004B6\n%org.apache.ha" +
-      "doop.hdfs.protocol.protoB\nHdfsProtos\240\001\001"
+      "o\"p\n\022ExtendedBlockProto\022\016\n\006poolId\030\001 \002(\t\022" +
+      "\017\n\007blockId\030\002 \002(\004\022\013\n\003sId\030\003 \002(\r\022\027\n\017generat" +
+      "ionStamp\030\004 \002(\004\022\023\n\010numBytes\030\005 \001(\004:\0010\"\231\001\n\017" +
+      "DatanodeIDProto\022\016\n\006ipAddr\030\001 \002(\t\022\020\n\010hostN" +
+      "ame\030\002 \002(\t\022\024\n\014datanodeUuid\030\003 \002(\t\022\020\n\010xferP" +
+      "ort\030\004 \002(\r\022\020\n\010infoPort\030\005 \002(\r\022\017\n\007ipcPort\030\006" +
+      " \002(\r\022\031\n\016infoSecurePort\030\007 \001(\r:\0010\"X\n\026Datan" +
+      "odeLocalInfoProto\022\027\n\017softwareVersion\030\001 \002" +
+      "(\t\022\025\n\rconfigVersion\030\002 \002(\t\022\016\n\006uptime\030\003 \002(",
+      "\004\"G\n\022DatanodeInfosProto\0221\n\tdatanodes\030\001 \003" +
+      "(\0132\036.hadoop.hdfs.DatanodeInfoProto\"\232\003\n\021D" +
+      "atanodeInfoProto\022(\n\002id\030\001 \002(\0132\034.hadoop.hd" +
+      "fs.DatanodeIDProto\022\023\n\010capacity\030\002 \001(\004:\0010\022" +
+      "\022\n\007dfsUsed\030\003 \001(\004:\0010\022\024\n\tremaining\030\004 \001(\004:\001" +
+      "0\022\030\n\rblockPoolUsed\030\005 \001(\004:\0010\022\025\n\nlastUpdat" +
+      "e\030\006 \001(\004:\0010\022\027\n\014xceiverCount\030\007 \001(\r:\0010\022\020\n\010l" +
+      "ocation\030\010 \001(\t\022E\n\nadminState\030\n \001(\0162).hado" +
+      "op.hdfs.DatanodeInfoProto.AdminState:\006NO" +
+      "RMAL\022\030\n\rcacheCapacity\030\013 \001(\004:\0010\022\024\n\tcacheU",
+      "sed\030\014 \001(\004:\0010\"I\n\nAdminState\022\n\n\006NORMAL\020\000\022\033" +
+      "\n\027DECOMMISSION_INPROGRESS\020\001\022\022\n\016DECOMMISS" +
+      "IONED\020\002\"\212\001\n\023ContentSummaryProto\022\016\n\006lengt" +
+      "h\030\001 \002(\004\022\021\n\tfileCount\030\002 \002(\004\022\026\n\016directoryC" +
+      "ount\030\003 \002(\004\022\r\n\005quota\030\004 \002(\004\022\025\n\rspaceConsum" +
+      "ed\030\005 \002(\004\022\022\n\nspaceQuota\030\006 \002(\004\"7\n\026CorruptF" +
+      "ileBlocksProto\022\r\n\005files\030\001 \003(\t\022\016\n\006cookie\030" +
+      "\002 \002(\t\"!\n\021FsPermissionProto\022\014\n\004perm\030\001 \002(\r" +
+      "\")\n\021StorageUuidsProto\022\024\n\014storageUuids\030\001 " +
+      "\003(\t\"\234\002\n\021LocatedBlockProto\022*\n\001b\030\001 \002(\0132\037.h",
+      "adoop.hdfs.ExtendedBlockProto\022\016\n\006offset\030" +
+      "\002 \002(\004\022,\n\004locs\030\003 \003(\0132\036.hadoop.hdfs.Datano" +
+      "deInfoProto\022\017\n\007corrupt\030\004 \002(\010\022-\n\nblockTok" +
+      "en\030\005 \002(\0132\031.hadoop.common.TokenProto\022\024\n\010i" +
+      "sCached\030\006 \003(\010B\002\020\001\0223\n\014storageTypes\030\007 \003(\0162" +
+      "\035.hadoop.hdfs.StorageTypeProto\022\022\n\nstorag" +
+      "eIDs\030\010 \003(\t\"\223\001\n\026DataEncryptionKeyProto\022\r\n" +
+      "\005keyId\030\001 \002(\r\022\023\n\013blockPoolId\030\002 \002(\t\022\r\n\005non" +
+      "ce\030\003 \002(\014\022\025\n\rencryptionKey\030\004 \002(\014\022\022\n\nexpir" +
+      "yDate\030\005 \002(\004\022\033\n\023encryptionAlgorithm\030\006 \001(\t",
+      "\"\303\001\n\022LocatedBlocksProto\022\022\n\nfileLength\030\001 " +
+      "\002(\004\022.\n\006blocks\030\002 \003(\0132\036.hadoop.hdfs.Locate" +
+      "dBlockProto\022\031\n\021underConstruction\030\003 \002(\010\0221" +
+      "\n\tlastBlock\030\004 \001(\0132\036.hadoop.hdfs.LocatedB" +
+      "lockProto\022\033\n\023isLastBlockComplete\030\005 \002(\010\"\314" +
+      "\003\n\023HdfsFileStatusProto\022;\n\010fileType\030\001 \002(\016" +
+      "2).hadoop.hdfs.HdfsFileStatusProto.FileT" +
+      "ype\022\014\n\004path\030\002 \002(\014\022\016\n\006length\030\003 \002(\004\0222\n\nper" +
+      "mission\030\004 \002(\0132\036.hadoop.hdfs.FsPermission" +
+      "Proto\022\r\n\005owner\030\005 \002(\t\022\r\n\005group\030\006 \002(\t\022\031\n\021m",
+      "odification_time\030\007 \002(\004\022\023\n\013access_time\030\010 " +
+      "\002(\004\022\017\n\007symlink\030\t \001(\014\022\034\n\021block_replicatio" +
+      "n\030\n \001(\r:\0010\022\024\n\tblocksize\030\013 \001(\004:\0010\0222\n\tloca" +
+      "tions\030\014 \001(\0132\037.hadoop.hdfs.LocatedBlocksP" +
+      "roto\022\021\n\006fileId\030\r \001(\004:\0010\022\027\n\013childrenNum\030\016" +
+      " \001(\005:\002-1\"3\n\010FileType\022\n\n\006IS_DIR\020\001\022\013\n\007IS_F" +
+      "ILE\020\002\022\016\n\nIS_SYMLINK\020\003\"\216\002\n\025FsServerDefaul" +
+      "tsProto\022\021\n\tblockSize\030\001 \002(\004\022\030\n\020bytesPerCh" +
+      "ecksum\030\002 \002(\r\022\027\n\017writePacketSize\030\003 \002(\r\022\023\n" +
+      "\013replication\030\004 \002(\r\022\026\n\016fileBufferSize\030\005 \002",
+      "(\r\022\"\n\023encryptDataTransfer\030\006 \001(\010:\005false\022\030" +
+      "\n\rtrashInterval\030\007 \001(\004:\0010\022D\n\014checksumType" +
+      "\030\010 \001(\0162\036.hadoop.hdfs.ChecksumTypeProto:\016" +
+      "CHECKSUM_CRC32\"k\n\025DirectoryListingProto\022" +
+      "8\n\016partialListing\030\001 \003(\0132 .hadoop.hdfs.Hd" +
+      "fsFileStatusProto\022\030\n\020remainingEntries\030\002 " +
+      "\002(\r\"\242\001\n!SnapshottableDirectoryStatusProt" +
+      "o\0223\n\tdirStatus\030\001 \002(\0132 .hadoop.hdfs.HdfsF" +
+      "ileStatusProto\022\026\n\016snapshot_quota\030\002 \002(\r\022\027" +
+      "\n\017snapshot_number\030\003 \002(\r\022\027\n\017parent_fullpa",
+      "th\030\004 \002(\014\"u\n\"SnapshottableDirectoryListin" +
+      "gProto\022O\n\027snapshottableDirListing\030\001 \003(\0132" +
+      "..hadoop.hdfs.SnapshottableDirectoryStat" +
+      "usProto\"K\n\034SnapshotDiffReportEntryProto\022" +
+      "\020\n\010fullpath\030\001 \002(\014\022\031\n\021modificationLabel\030\002" +
+      " \002(\t\"\237\001\n\027SnapshotDiffReportProto\022\024\n\014snap" +
+      "shotRoot\030\001 \002(\t\022\024\n\014fromSnapshot\030\002 \002(\t\022\022\n\n" +
+      "toSnapshot\030\003 \002(\t\022D\n\021diffReportEntries\030\004 " +
+      "\003(\0132).hadoop.hdfs.SnapshotDiffReportEntr" +
+      "yProto\"_\n\020StorageInfoProto\022\025\n\rlayoutVers",
+      "ion\030\001 \002(\r\022\022\n\nnamespceID\030\002 \002(\r\022\021\n\tcluster" +
+      "ID\030\003 \002(\t\022\r\n\005cTime\030\004 \002(\004\"\211\002\n\031NamenodeRegi" +
+      "strationProto\022\022\n\nrpcAddress\030\001 \002(\t\022\023\n\013htt" +
+      "pAddress\030\002 \002(\t\0222\n\013storageInfo\030\003 \002(\0132\035.ha" +
+      "doop.hdfs.StorageInfoProto\022P\n\004role\030\004 \001(\016" +
+      "28.hadoop.hdfs.NamenodeRegistrationProto" +
+      ".NamenodeRoleProto:\010NAMENODE\"=\n\021Namenode" +
+      "RoleProto\022\014\n\010NAMENODE\020\001\022\n\n\006BACKUP\020\002\022\016\n\nC" +
+      "HECKPOINT\020\003\"\235\001\n\030CheckpointSignatureProto" +
+      "\022\023\n\013blockPoolId\030\001 \002(\t\022 \n\030mostRecentCheck",
+      "pointTxId\030\002 \002(\004\022\026\n\016curSegmentTxId\030\003 \002(\004\022" +
+      "2\n\013storageInfo\030\004 \002(\0132\035.hadoop.hdfs.Stora" +
+      "geInfoProto\"\314\001\n\024NamenodeCommandProto\022\016\n\006" +
+      "action\030\001 \002(\r\0224\n\004type\030\002 \002(\0162&.hadoop.hdfs" +
+      ".NamenodeCommandProto.Type\022:\n\rcheckpoint" +
+      "Cmd\030\003 \001(\0132#.hadoop.hdfs.CheckpointComman" +
+      "dProto\"2\n\004Type\022\023\n\017NamenodeCommand\020\000\022\025\n\021C" +
+      "heckPointCommand\020\001\"m\n\026CheckpointCommandP" +
+      "roto\0228\n\tsignature\030\001 \002(\0132%.hadoop.hdfs.Ch" +
+      "eckpointSignatureProto\022\031\n\021needToReturnIm",
+      "age\030\002 \002(\010\"Q\n\nBlockProto\022\017\n\007blockId\030\001 \002(\004" +
+      "\022\013\n\003sId\030\002 \002(\r\022\020\n\010genStamp\030\003 \002(\004\022\023\n\010numBy" +
+      "tes\030\004 \001(\004:\0010\"n\n\027BlockWithLocationsProto\022" +
+      "&\n\005block\030\001 \002(\0132\027.hadoop.hdfs.BlockProto\022" +
+      "\025\n\rdatanodeUuids\030\002 \003(\t\022\024\n\014storageUuids\030\003" +
+      " \003(\t\"P\n\030BlocksWithLocationsProto\0224\n\006bloc" +
+      "ks\030\001 \003(\0132$.hadoop.hdfs.BlockWithLocation" +
+      "sProto\"U\n\022RemoteEditLogProto\022\021\n\tstartTxI" +
+      "d\030\001 \002(\004\022\017\n\007endTxId\030\002 \002(\004\022\033\n\014isInProgress" +
+      "\030\003 \001(\010:\005false\"K\n\032RemoteEditLogManifestPr",
+      "oto\022-\n\004logs\030\001 \003(\0132\037.hadoop.hdfs.RemoteEd" +
+      "itLogProto\"\234\001\n\022NamespaceInfoProto\022\024\n\014bui" +
+      "ldVersion\030\001 \002(\t\022\016\n\006unused\030\002 \002(\r\022\023\n\013block" +
+      "PoolID\030\003 \002(\t\0222\n\013storageInfo\030\004 \002(\0132\035.hado" +
+      "op.hdfs.StorageInfoProto\022\027\n\017softwareVers" +
+      "ion\030\005 \002(\t\"D\n\rBlockKeyProto\022\r\n\005keyId\030\001 \002(" +
+      "\r\022\022\n\nexpiryDate\030\002 \002(\004\022\020\n\010keyBytes\030\003 \001(\014\"" +
+      "\304\001\n\026ExportedBlockKeysProto\022\033\n\023isBlockTok" +
+      "enEnabled\030\001 \002(\010\022\031\n\021keyUpdateInterval\030\002 \002" +
+      "(\004\022\025\n\rtokenLifeTime\030\003 \002(\004\022.\n\ncurrentKey\030",
+      "\004 \002(\0132\032.hadoop.hdfs.BlockKeyProto\022+\n\007all" +
+      "Keys\030\005 \003(\0132\032.hadoop.hdfs.BlockKeyProto\"Z" +
+      "\n\024RecoveringBlockProto\022\023\n\013newGenStamp\030\001 " +
+      "\002(\004\022-\n\005block\030\002 \002(\0132\036.hadoop.hdfs.Located" +
+      "BlockProto\"\025\n\023VersionRequestProto\"E\n\024Ver" +
+      "sionResponseProto\022-\n\004info\030\001 \002(\0132\037.hadoop" +
+      ".hdfs.NamespaceInfoProto\"\245\001\n\021SnapshotInf" +
+      "oProto\022\024\n\014snapshotName\030\001 \002(\t\022\024\n\014snapshot" +
+      "Root\030\002 \002(\t\0222\n\npermission\030\003 \002(\0132\036.hadoop." +
+      "hdfs.FsPermissionProto\022\r\n\005owner\030\004 \002(\t\022\r\n",
+      "\005group\030\005 \002(\t\022\022\n\ncreateTime\030\006 \002(\t\"0\n\031Roll" +
+      "ingUpgradeStatusProto\022\023\n\013blockPoolId\030\001 \002" +
+      "(\t*.\n\020StorageTypeProto\022\010\n\004DISK\020\001\022\007\n\003SSD\020" +
+      "\002\022\007\n\003MEM\020\003*O\n\021ChecksumTypeProto\022\021\n\rCHECK" +
+      "SUM_NULL\020\000\022\022\n\016CHECKSUM_CRC32\020\001\022\023\n\017CHECKS" +
+      "UM_CRC32C\020\002*L\n\021ReplicaStateProto\022\r\n\tFINA" +
+      "LIZED\020\000\022\007\n\003RBW\020\001\022\007\n\003RWR\020\002\022\007\n\003RUR\020\003\022\r\n\tTE" +
+      "MPORARY\020\004B6\n%org.apache.hadoop.hdfs.prot" +
+      "ocol.protoB\nHdfsProtos\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -37308,7 +37505,7 @@ public final class HdfsProtos {
           internal_static_hadoop_hdfs_ExtendedBlockProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_ExtendedBlockProto_descriptor,
-              new java.lang.String[] { "PoolId", "BlockId", "GenerationStamp", "NumBytes", });
+              new java.lang.String[] { "PoolId", "BlockId", "SId", "GenerationStamp", "NumBytes", });
           internal_static_hadoop_hdfs_DatanodeIDProto_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_hadoop_hdfs_DatanodeIDProto_fieldAccessorTable = new
@@ -37452,7 +37649,7 @@ public final class HdfsProtos {
           internal_static_hadoop_hdfs_BlockProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_BlockProto_descriptor,
-              new java.lang.String[] { "BlockId", "GenStamp", "NumBytes", });
+              new java.lang.String[] { "BlockId", "SId", "GenStamp", "NumBytes", });
           internal_static_hadoop_hdfs_BlockWithLocationsProto_descriptor =
             getDescriptor().getMessageTypes().get(25);
           internal_static_hadoop_hdfs_BlockWithLocationsProto_fieldAccessorTable = new

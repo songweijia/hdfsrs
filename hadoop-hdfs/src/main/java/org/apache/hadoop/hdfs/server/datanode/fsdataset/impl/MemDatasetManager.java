@@ -190,7 +190,7 @@ public class MemDatasetManager {
       if (availableAddr.size() > 0) {
         MemBlockMeta meta = new MemBlockMeta(availableAddr.poll(), 0, genStamp, blockId, ReplicaState.TEMPORARY);
         memMaps.put(key, meta);
-        LOG.warn("CQ: getNewBlock: regionID:" + meta.offset.regionID + " addr:" + meta.offset.offset);
+        LOG.warn("CQ: getNewBlock(" + bpid + blockId + "): regionID:" + meta.offset.regionID + " addr:" + meta.offset.offset);
         return meta;
       }
     }

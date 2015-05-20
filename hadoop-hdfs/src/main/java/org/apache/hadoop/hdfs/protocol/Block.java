@@ -126,7 +126,7 @@ public class Block implements Writable, Comparable<Block> {
   /**
    */
   public String getBlockName() {
-    return BLOCK_FILE_PREFIX + String.valueOf(blockId);
+    return BLOCK_FILE_PREFIX + String.valueOf(blockId) + getSid();
   }
 
   /**
@@ -168,6 +168,10 @@ public class Block implements Writable, Comparable<Block> {
     return "[-1]";
   }
   
+  public int getIntSid() {
+    return sid;
+  }
+  
   public void setSid(int id) {
     sid = id;
   }
@@ -205,12 +209,14 @@ public class Block implements Writable, Comparable<Block> {
   // write only the identifier part of the block
   public void writeId(DataOutput out) throws IOException {
     out.writeLong(blockId);
+    out.writeInt(sid);
     out.writeLong(generationStamp);
   }
 
   // Read only the identifier part of the block
   public void readId(DataInput in) throws IOException {
     this.blockId = in.readLong();
+    this.sid = in.readInt();
     this.generationStamp = in.readLong();
   }
 

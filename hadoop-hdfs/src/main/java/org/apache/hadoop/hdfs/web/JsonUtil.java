@@ -260,6 +260,7 @@ public class JsonUtil {
     final Map<String, Object> m = new TreeMap<String, Object>();
     m.put("blockPoolId", extendedblock.getBlockPoolId());
     m.put("blockId", extendedblock.getBlockId());
+    m.put("sId", extendedblock.getLocalBlock().getIntSid());
     m.put("numBytes", extendedblock.getNumBytes());
     m.put("generationStamp", extendedblock.getGenerationStamp());
     return m;
@@ -273,9 +274,10 @@ public class JsonUtil {
     
     final String blockPoolId = (String)m.get("blockPoolId");
     final long blockId = (Long)m.get("blockId");
+    final int  sId = (Integer)m.get("sId");
     final long numBytes = (Long)m.get("numBytes");
     final long generationStamp = (Long)m.get("generationStamp");
-    return new ExtendedBlock(blockPoolId, blockId, numBytes, generationStamp);
+    return new ExtendedBlock(blockPoolId, blockId, sId, numBytes, generationStamp);
   }
   
   /** Convert a DatanodeInfo to a Json map. */

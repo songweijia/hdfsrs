@@ -328,13 +328,15 @@ public class PBHelper {
   
   // Block
   public static BlockProto convert(Block b) {
-    return BlockProto.newBuilder().setBlockId(b.getBlockId())
+    return BlockProto.newBuilder().setBlockId(b.getBlockId()).setSId(b.getIntSid())
         .setGenStamp(b.getGenerationStamp()).setNumBytes(b.getNumBytes())
         .build();
   }
 
   public static Block convert(BlockProto b) {
-    return new Block(b.getBlockId(), b.getNumBytes(), b.getGenStamp());
+    Block newb = new Block(b.getBlockId(), b.getNumBytes(), b.getGenStamp());
+    newb.setSid(b.getSId());
+    return newb;
   }
 
   public static BlockWithLocationsProto convert(BlockWithLocations blk) {
@@ -496,7 +498,7 @@ public class PBHelper {
   
   public static ExtendedBlock convert(ExtendedBlockProto eb) {
     if (eb == null) return null;
-    return new ExtendedBlock( eb.getPoolId(),  eb.getBlockId(),   eb.getNumBytes(),
+    return new ExtendedBlock( eb.getPoolId(),  eb.getBlockId(),  eb.getSId(), eb.getNumBytes(),
        eb.getGenerationStamp());
   }
   
@@ -505,6 +507,7 @@ public class PBHelper {
    return ExtendedBlockProto.newBuilder().
       setPoolId(b.getBlockPoolId()).
       setBlockId(b.getBlockId()).
+      setSId(b.getLocalBlock().getIntSid()).
       setNumBytes(b.getNumBytes()).
       setGenerationStamp(b.getGenerationStamp()).
       build();

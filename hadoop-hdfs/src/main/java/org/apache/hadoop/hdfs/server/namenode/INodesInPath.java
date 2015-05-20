@@ -216,7 +216,7 @@ public class INodesInPath {
       } else {
         // normal case, and also for resolving file/dir under snapshot root
         curNode = dir.getChild(childName, existing.getPathSnapshotId());
-        LOG.info("CQDEBUG: normal case:" + curNode.getFullPathName());
+        LOG.info("CQDEBUG: normal case:" + childName);
       }
       count++;
       index++;

@@ -2272,8 +2272,8 @@ public class DataNode extends Configured
     // Calculate list of nodes that will participate in the recovery
     // and the new block size
     List<BlockRecord> participatingList = new ArrayList<BlockRecord>();
-    final ExtendedBlock newBlock = new ExtendedBlock(bpid, block.getBlockId(),
-        -1, recoveryId);
+    final ExtendedBlock newBlock = new ExtendedBlock(bpid, block.getBlockId(), 
+        block.getLocalBlock().getIntSid(), -1, recoveryId);
     switch(bestState) {
     case FINALIZED:
       assert finalizedLength > 0 : "finalizedLength is not positive";
