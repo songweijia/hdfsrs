@@ -208,6 +208,7 @@ public class INodesInPath {
         } else {
           curNode = s.getRoot();
           existing.setSnapshotId(s.getId());
+          LOG.info("CQDEBUG: snapshot path:" + curNode.getFullPathName());
         }
         if (index >= -1) {
           existing.snapshotRootIndex = existing.numNonNull;
@@ -215,6 +216,7 @@ public class INodesInPath {
       } else {
         // normal case, and also for resolving file/dir under snapshot root
         curNode = dir.getChild(childName, existing.getPathSnapshotId());
+        LOG.info("CQDEBUG: normal case:" + curNode.getFullPathName());
       }
       count++;
       index++;

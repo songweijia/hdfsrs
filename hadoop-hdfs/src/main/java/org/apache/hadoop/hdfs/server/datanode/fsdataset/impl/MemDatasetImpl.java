@@ -199,6 +199,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public InputStream getBlockInputStream(ExtendedBlock b,
       long seekOffset) throws IOException {
+    LOG.info("CQDEBUG:Read Block:" + (b.getBlockPoolId() + b.getLocalBlock().getSid()));
     MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     if (meta != null) return memManager.getInputStream(meta.offset, seekOffset);
     return null;
