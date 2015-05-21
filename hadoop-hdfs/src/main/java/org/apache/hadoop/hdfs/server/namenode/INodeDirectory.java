@@ -97,10 +97,11 @@ public class INodeDirectory extends INodeWithAdditionalFields
     if (other.children != null) {
       this.children = new ArrayList<INode> (other.children.size());
       for (INode child : other.children) {
-        if (child.isDirectory()) {
-          this.children.add(new INodeDirectory(child.asDirectory(), sid));
-        } else if (child.isFile()) {
-          this.children.add(new INodeFile(child.asFile(), sid));
+        if (child.isDirectory() || child.isFile()) {
+          INode newChild = child.isDirectory()? new INodeDirectory(child.asDirectory(), sid):
+            new INodeFile(child.asFile(), sid);
+          newChild.setParent(this);
+          this.children.add(newChild);
         } else {
           this.children.add(child);
         }

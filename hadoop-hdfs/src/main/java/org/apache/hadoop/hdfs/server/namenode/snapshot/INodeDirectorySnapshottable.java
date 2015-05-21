@@ -298,7 +298,7 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
           + n + " snapshot(s) and the snapshot quota is "
           + snapshotQuota);
     }
-    final Snapshot s = new Snapshot(id, name, this, false);
+    final Snapshot s = new Snapshot(id, name, this);
     final byte[] nameBytes = s.getRoot().getLocalNameBytes();
     final int i = searchSnapshot(nameBytes);
     if (i >= 0) {
@@ -327,7 +327,7 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
           + n + " snapshot(s) and the snapshot quota is "
           + snapshotQuota);
     }
-    final Snapshot s = new Snapshot(id, name, this, true);
+    final Snapshot s = new Snapshot(id, name, this);
     final byte[] nameBytes = s.getRoot().getLocalNameBytes();
     final int i = searchSnapshot(nameBytes);
     if (i >= 0) {
