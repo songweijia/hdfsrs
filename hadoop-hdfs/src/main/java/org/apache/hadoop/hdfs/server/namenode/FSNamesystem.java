@@ -7146,11 +7146,12 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   
   public void getBlocks(INode root, Map<DatanodeInfo, List<ExtendedBlock>> blocks) {
     if (root.isDirectory()) {
-      for (INode i : root.asDirectory().getChildrenList(Snapshot.CURRENT_STATE_ID)) {
+      for (INode i : root.asDirectory().getCurrentChildrenList()) {
         getBlocks(i, blocks);
       }
     } else if (root.isFile()) {
-      for (Block b : root.asFile().getBlocks()) {
+      for (BlockInfo b : root.asFile().getBlocks()) {
+        blockManager.addBlockCollection(b, root.asFile());
         for (DatanodeStorageInfo d : blockManager.getStorages(b)) {
           List<ExtendedBlock> blkList = blocks.get(d.getDatanodeDescriptor());
           if (blkList == null) {

@@ -917,6 +917,7 @@ public class BlockManager {
       " numNodes: " + numNodes +
       " numCorrupt: " + numCorruptNodes +
       " numCorruptRepls: " + numCorruptReplicas;
+    LOG.info("CQDEBUG: numMachines=" + numMachines + " j=" + j);
     final ExtendedBlock eb = new ExtendedBlock(namesystem.getBlockPoolId(), blk);
     return new LocatedBlock(eb, machines, pos, isCorrupt);
   }
