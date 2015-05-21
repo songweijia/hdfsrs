@@ -44,6 +44,8 @@ class BlocksMap {
 
     @Override
     public boolean hasNext() {
+      System.out.println("CQDEBUG: capacity:" + blockInfo.getCapacity() + 
+                         " getNextDatanode:" + blockInfo.getDatanode(nextIdx));
       return blockInfo != null && nextIdx < blockInfo.getCapacity()
               && blockInfo.getDatanode(nextIdx) != null;
     }
