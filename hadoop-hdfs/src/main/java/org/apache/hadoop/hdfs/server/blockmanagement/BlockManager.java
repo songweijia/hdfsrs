@@ -907,6 +907,7 @@ public class BlockManager {
       for(DatanodeStorageInfo storage : blocksMap.getStorages(blk)) {
         final DatanodeDescriptor d = storage.getDatanodeDescriptor();
         final boolean replicaCorrupt = corruptReplicas.isReplicaCorrupt(blk, d);
+        LOG.info("CQDEBUG: isCorrupt:" + isCorrupt + " replicaCorrupt:" + replicaCorrupt);
         if (isCorrupt || (!isCorrupt && !replicaCorrupt))
           machines[j++] = storage;
       }
@@ -917,7 +918,12 @@ public class BlockManager {
       " numNodes: " + numNodes +
       " numCorrupt: " + numCorruptNodes +
       " numCorruptRepls: " + numCorruptReplicas;
-    LOG.info("CQDEBUG: numMachines=" + numMachines + " j=" + j);
+    LOG.info("CQDEBUG: isCorrupt: " + isCorrupt + 
+      " numMachines: " + numMachines +
+      " numNodes: " + numNodes +
+      " numCorrupt: " + numCorruptNodes +
+      " numCorruptRepls: " + numCorruptReplicas +
+      " j: " + j);
     final ExtendedBlock eb = new ExtendedBlock(namesystem.getBlockPoolId(), blk);
     return new LocatedBlock(eb, machines, pos, isCorrupt);
   }
