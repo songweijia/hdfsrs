@@ -82,7 +82,7 @@ public class BlockInfo extends Block implements LightWeightGSet.LinkedElement {
   }
 
   @Override
-  public Object clone() {
+  public BlockInfo clone() {
     BlockInfo b = null;
     try { 
       b = (BlockInfo) super.clone();

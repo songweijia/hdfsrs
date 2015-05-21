@@ -130,9 +130,10 @@ public class INodeFile extends INodeWithAdditionalFields
     super(that);
     this.header = that.header;
     this.features = that.features;
-    this.blocks = that.blocks.clone();
-    for (BlockInfo b : this.blocks) {
-      b.setSid(sid);
+    this.blocks = new BlockInfo [that.blocks.length];
+    for (int i = 0; i < that.blocks.length; i++) {
+      this.blocks[i] = that.blocks[i].clone();
+      this.blocks[i].setSid(sid);
     }
   }
   
