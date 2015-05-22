@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.hadoop.hdfs.StorageType;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
@@ -32,7 +33,7 @@ import org.apache.hadoop.hdfs.server.protocol.StorageReport;
  * A Datanode has one or more storages. A storage in the Datanode is represented
  * by this class.
  */
-public class DatanodeStorageInfo {
+public class DatanodeStorageInfo implements Cloneable {
   public static final DatanodeStorageInfo[] EMPTY_ARRAY = {};
 
   public static DatanodeInfo[] toDatanodeInfos(DatanodeStorageInfo[] storages) {
@@ -140,6 +141,11 @@ public class DatanodeStorageInfo {
     this.state = s.getState();
   }
 
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    return (DatanodeStorageInfo)super.clone();
+  }
+  
   int getBlockReportCount() {
     return blockReportCount;
   }

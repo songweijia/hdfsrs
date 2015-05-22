@@ -83,11 +83,18 @@ public class BlockInfo extends Block implements LightWeightGSet.LinkedElement {
 
   @Override
   public BlockInfo clone() {
-    BlockInfo b = new BlockInfo(this, bc.getBlockReplication());
-    for (int index = 0; index * 3 < triplets.length; index ++)
-      b.setStorageInfo(index, getStorageInfo(index));
-    //System.arraycopy(triplets, 0, b.triplets, 0, triplets.length);
-    return b;
+    BlockInfo bi = null;
+    try {
+      bi = (BlockInfo)super.clone();
+      bi.triplets = new Object [triplets.length];
+      //System.arraycopy(triplets, 0, b.triplets, 0, triplets.length);
+      for (int index = 0; index * 3 < triplets.length; index ++) {
+        triplets[index*3] = getStorageInfo(index).clone();
+      }
+    } catch (CloneNotSupportedException e) {
+      e.printStackTrace();
+    }
+    return bi;
   }
   
   public BlockCollection getBlockCollection() {
@@ -100,7 +107,6 @@ public class BlockInfo extends Block implements LightWeightGSet.LinkedElement {
 
   public DatanodeDescriptor getDatanode(int index) {
     DatanodeStorageInfo storage = getStorageInfo(index);
-    if (storage == null) System.out.println("CQDEBUG: storage[" + index + "] is null!");
     return storage == null ? null : storage.getDatanodeDescriptor();
   }
 

@@ -33,7 +33,7 @@ import org.apache.hadoop.io.*;
  **************************************************/
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-public class Block implements Writable, Comparable<Block> {
+public class Block implements Cloneable, Writable, Comparable<Block> {
   public static final String BLOCK_FILE_PREFIX = "blk_";
   public static final String METADATA_EXTENSION = ".meta";
   static {                                      // register a ctor
@@ -108,6 +108,11 @@ public class Block implements Writable, Comparable<Block> {
     this(filename2id(f.getName()), len, genstamp);
   }
 
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    return (Block)super.clone();
+  }
+  
   public void set(long blkid, long len, long genStamp) {
     this.blockId = blkid;
     this.numBytes = len;
