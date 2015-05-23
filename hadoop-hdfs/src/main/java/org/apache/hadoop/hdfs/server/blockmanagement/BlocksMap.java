@@ -220,6 +220,7 @@ class BlocksMap {
    */
   BlockInfo replaceBlock(BlockInfo newBlock) {
     BlockInfo currentBlock = blocks.get(newBlock);
+    System.out.println("CQDEBUG: replaceBlock: currentBlock " + currentBlock.getBlockName());
     assert currentBlock != null : "the block if not in blocksMap";
     // replace block in data-node lists
     for(int idx = currentBlock.numNodes()-1; idx >= 0; idx--) {

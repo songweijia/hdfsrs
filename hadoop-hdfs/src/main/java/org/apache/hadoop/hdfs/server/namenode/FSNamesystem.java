@@ -2432,6 +2432,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       // the referenced file.  
       myFile = INodeFile.valueOf(dir.getINode(src), src, true);
       final BlockInfo lastBlock = myFile.getLastBlock();
+      LOG.info("CQDEBUG: append to last block:" + lastBlock.getBlockName());
       // Check that the block has at least minimum replication.
       if(lastBlock != null && lastBlock.isComplete() &&
           !getBlockManager().isSufficientlyReplicated(lastBlock)) {

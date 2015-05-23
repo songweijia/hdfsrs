@@ -724,6 +724,7 @@ public class BlockManager {
   public LocatedBlock convertLastBlockToUnderConstruction(
       BlockCollection bc) throws IOException {
     BlockInfo oldBlock = bc.getLastBlock();
+    LOG.info("CQDEBUG: convertLastBlockToUC:" + oldBlock.getBlockName());
     if(oldBlock == null ||
         bc.getPreferredBlockSize() == oldBlock.getNumBytes())
       return null;

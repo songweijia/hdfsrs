@@ -228,7 +228,7 @@ public class Block implements Cloneable, Writable, Comparable<Block> {
   @Override // Comparable
   public int compareTo(Block b) {
     return blockId < b.blockId ? -1 :
-           blockId > b.blockId ? 1 : 0;
+           blockId > b.blockId ? 1 : sid - b.sid;
   }
 
   @Override // Object
