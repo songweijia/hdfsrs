@@ -306,39 +306,14 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
           + "snapshot with the same name \"" + Snapshot.getSnapshotName(s) + "\".");
     }
 
-    final DirectoryDiff d = getDiffs().addDiff(id, this);
-    d.setSnapshotRoot(s.getRoot());
+    //final DirectoryDiff d = getDiffs().addDiff(id, this);
+    //d.setSnapshotRoot(s.getRoot());
     snapshotsByNames.add(-i - 1, s);
 
     //set modification time
     updateModificationTime(Time.now(), Snapshot.CURRENT_STATE_ID);
     s.getRoot().setModificationTime(getModificationTime(),
         Snapshot.CURRENT_STATE_ID);
-    return s;
-  }
-  
-  /** Add a snapshot. */
-  Snapshot addBlockSnapshot(int id, String name) throws SnapshotException,
-      QuotaExceededException {
-    //check snapshot quota
-    final int n = getNumSnapshots();
-    if (n + 1 > snapshotQuota) {
-      throw new SnapshotException("Failed to add snapshot: there are already "
-          + n + " snapshot(s) and the snapshot quota is "
-          + snapshotQuota);
-    }
-    final Snapshot s = new Snapshot(id, name, this);
-    final byte[] nameBytes = s.getRoot().getLocalNameBytes();
-    final int i = searchSnapshot(nameBytes);
-    if (i >= 0) {
-      throw new SnapshotException("Failed to add snapshot: there is already a "
-          + "snapshot with the same name \"" + Snapshot.getSnapshotName(s) + "\".");
-    }
-    snapshotsByNames.add(-i - 1, s);
-
-    //set modification time
-    updateModificationTime(Time.now(), Snapshot.CURRENT_STATE_ID);
-    s.getRoot().setModificationTime(getModificationTime(), Snapshot.CURRENT_STATE_ID);
     return s;
   }
     

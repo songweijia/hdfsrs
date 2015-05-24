@@ -44,7 +44,7 @@ class BlocksMap {
 
     @Override
     public boolean hasNext() {
-        return blockInfo != null && nextIdx < blockInfo.getCapacity()
+      return blockInfo != null && nextIdx < blockInfo.getCapacity()
               && blockInfo.getDatanode(nextIdx) != null;
     }
 

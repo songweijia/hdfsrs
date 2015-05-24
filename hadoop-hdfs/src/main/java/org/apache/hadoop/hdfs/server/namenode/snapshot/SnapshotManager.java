@@ -225,7 +225,7 @@ public class SnapshotManager implements SnapshotStats {
     }
     
     INodeDirectorySnapshottable srcRoot = getSnapshottableRoot(path);
-    srcRoot.addBlockSnapshot(snapshotCounter, snapshotName);
+    srcRoot.addSnapshot(snapshotCounter, snapshotName);
       
     //create success, update id
     snapshotCounter++;

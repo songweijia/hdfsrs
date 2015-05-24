@@ -33,7 +33,7 @@ import org.apache.hadoop.hdfs.server.protocol.StorageReport;
  * A Datanode has one or more storages. A storage in the Datanode is represented
  * by this class.
  */
-public class DatanodeStorageInfo implements Cloneable {
+public class DatanodeStorageInfo {
   public static final DatanodeStorageInfo[] EMPTY_ARRAY = {};
 
   public static DatanodeInfo[] toDatanodeInfos(DatanodeStorageInfo[] storages) {
@@ -141,11 +141,6 @@ public class DatanodeStorageInfo implements Cloneable {
     this.state = s.getState();
   }
 
-  @Override
-  public Object clone() throws CloneNotSupportedException {
-    return (DatanodeStorageInfo)super.clone();
-  }
-  
   int getBlockReportCount() {
     return blockReportCount;
   }
