@@ -208,7 +208,6 @@ public class INodesInPath {
         } else {
           curNode = s.getRoot();
           existing.setSnapshotId(s.getId());
-          LOG.info("CQDEBUG: snapshot path:" + curNode.getFullPathName());
         }
         if (index >= -1) {
           existing.snapshotRootIndex = existing.numNonNull;
