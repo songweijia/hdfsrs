@@ -86,8 +86,8 @@ public class Block implements Writable, Comparable<Block> {
   protected int sid;
   protected long numBytes;
   protected long generationStamp;
-  
-  public Block() {this(0,-1,0,0);}
+
+  public Block() {this(0, -1, 0, 0);}
 
   public Block(final long blkid, final long len, final long generationStamp) {
     this(blkid, -1, len, generationStamp);
