@@ -1044,12 +1044,10 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + 
           Block.getDefaultSid(), b.getBlockId());
 
-      MemDatasetManager.MemBlockMeta newMeta = memManager.getNewBlock(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId(), 
-          b.getGenerationStamp());
+      MemDatasetManager.MemBlockMeta newMeta = memManager.getNewBlock(b.getBlockPoolId() + 
+          b.getLocalBlock().getSid(), b.getBlockId(), b.getGenerationStamp());
       
-      memManager.copy(meta.offset, newMeta.offset, meta.getNumBytes());
-      newMeta.setNumBytes(meta.getNumBytes());
-      newMeta.setBytesAcked(meta.getBytesAcked());
+      memManager.blockSnapshot(meta, newMeta);
     }
   }
 }

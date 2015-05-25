@@ -228,14 +228,16 @@ public class MemDatasetManager {
     return results;
   }
   
-  void copy(MemAddr src, MemAddr dst, long len) {
-    ByteBuffer srcbuf = memRegions[src.regionID].duplicate();
-    srcbuf.position(src.offset);
-    srcbuf.limit((int)(src.offset + len));
+  void blockSnapshot(MemBlockMeta src, MemBlockMeta dst) {
+    ByteBuffer srcbuf = memRegions[src.offset.regionID].duplicate();
+    srcbuf.position(src.offset.offset);
+    srcbuf.limit((int)(src.offset.offset + src.getNumBytes()));
     
-    ByteBuffer dstbuf = memRegions[dst.regionID].duplicate();
-    dstbuf.position(dst.offset);
-    dstbuf.limit((int)(dst.offset + len));
+    ByteBuffer dstbuf = memRegions[dst.offset.regionID].duplicate();
+    dstbuf.position(dst.offset.offset);
     dstbuf.put(srcbuf);
+    
+    dst.setNumBytes(src.getNumBytes());
+    dst.setBytesAcked(src.getBytesAcked());
   }
 }

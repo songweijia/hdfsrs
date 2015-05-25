@@ -114,7 +114,7 @@ public class Block implements Writable, Comparable<Block> {
   public Block(File f, long len, long genstamp) {
     this(filename2id(f.getName()), -1, len, genstamp);
   }
-  
+
   public void set(long blkid, long len, long genStamp) {
     this.blockId = blkid;
     this.numBytes = len;
