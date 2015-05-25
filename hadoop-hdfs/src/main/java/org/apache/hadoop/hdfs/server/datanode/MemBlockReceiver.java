@@ -376,7 +376,7 @@ class MemBlockReceiver extends BlockReceiver {
 
       this.packetRecvTime = 0;
       while (receivePacket() >= 0) { /* Receive until the last packet */ }
-      LOG.info("CQDEBUG: packet receive time:" + this.packetRecvTime + " ms");
+      LOG.info("CQDEBUG: MemBlockReceiver: packet receive time:" + this.packetRecvTime + " ms");
 
 
       // wait for all outstanding packet responses. And then

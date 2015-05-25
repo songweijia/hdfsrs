@@ -316,7 +316,7 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
         Snapshot.CURRENT_STATE_ID);
     return s;
   }
-    
+  
   /**
    * Remove the snapshot with the given name from {@link #snapshotsByNames},
    * and delete all the corresponding DirectoryDiff.

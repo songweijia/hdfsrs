@@ -33,7 +33,7 @@ import org.apache.hadoop.io.*;
  **************************************************/
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-public class Block implements Cloneable, Writable, Comparable<Block> {
+public class Block implements Writable, Comparable<Block> {
   public static final String BLOCK_FILE_PREFIX = "blk_";
   public static final String METADATA_EXTENSION = ".meta";
   static {                                      // register a ctor
@@ -83,34 +83,36 @@ public class Block implements Cloneable, Writable, Comparable<Block> {
   }
 
   protected long blockId;
+  protected int sid;
   protected long numBytes;
   protected long generationStamp;
-  protected int sid = -1;
   
-  public Block() {this(0, 0, 0);}
+  public Block() {this(0,-1,0,0);}
 
   public Block(final long blkid, final long len, final long generationStamp) {
-    set(blkid, len, generationStamp);
+    this(blkid, -1, len, generationStamp);
   }
 
   public Block(final long blkid) {
-    this(blkid, 0, GenerationStamp.GRANDFATHER_GENERATION_STAMP);
+    this(blkid, -1, 0, GenerationStamp.GRANDFATHER_GENERATION_STAMP);
   }
 
+  public Block(final long blkid, final int sid, final long len, final long generationStamp) {
+    this.blockId = blkid;
+    this.sid = sid;
+    this.numBytes = len;
+    this.generationStamp = generationStamp;
+  }
+  
   public Block(Block blk) {
-    this(blk.blockId, blk.numBytes, blk.generationStamp);
+    this(blk.blockId, blk.sid, blk.numBytes, blk.generationStamp);
   }
 
   /**
    * Find the blockid from the given filename
    */
   public Block(File f, long len, long genstamp) {
-    this(filename2id(f.getName()), len, genstamp);
-  }
-
-  @Override
-  public Object clone() throws CloneNotSupportedException {
-    return (Block)super.clone();
+    this(filename2id(f.getName()), -1, len, genstamp);
   }
   
   public void set(long blkid, long len, long genStamp) {

@@ -2432,7 +2432,6 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       // the referenced file.  
       myFile = INodeFile.valueOf(dir.getINode(src), src, true);
       final BlockInfo lastBlock = myFile.getLastBlock();
-
       // Check that the block has at least minimum replication.
       if(lastBlock != null && lastBlock.isComplete() &&
           !getBlockManager().isSufficientlyReplicated(lastBlock)) {
@@ -7230,7 +7229,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       dir.verifySnapshotName(snapshotName, snapshotRoot);
       dir.writeLock();
       try {
-        snapshotPath = snapshotManager.createBlockSnapshot(snapshotRoot, snapshotName);
+        snapshotPath = snapshotManager.createSnapshot(snapshotRoot, snapshotName);
       } finally {
         dir.writeUnlock();
       }

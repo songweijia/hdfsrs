@@ -334,8 +334,7 @@ public class PBHelper {
   }
 
   public static Block convert(BlockProto b) {
-    Block newb = new Block(b.getBlockId(), b.getNumBytes(), b.getGenStamp());
-    newb.setSid(b.getSId());
+    Block newb = new Block(b.getBlockId(), b.getSId(), b.getNumBytes(), b.getGenStamp());
     return newb;
   }
 

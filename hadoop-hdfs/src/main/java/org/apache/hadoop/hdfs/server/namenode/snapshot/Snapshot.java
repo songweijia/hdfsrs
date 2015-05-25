@@ -151,11 +151,13 @@ public class Snapshot implements Comparable<byte[]> {
 
     @Override
     public ReadOnlyList<INode> getChildrenList(int snapshotId) {
+      //return getParent().getChildrenList(snapshotId);
       return getCurrentChildrenList();
     }
 
     @Override
     public INode getChild(byte[] name, int snapshotId) {
+      //return getParent().getChild(name, snapshotId);
       ReadOnlyList<INode> c = getCurrentChildrenList();
       final int i = ReadOnlyList.Util.binarySearch(c, name);
       return i < 0 ? null : c.get(i);
@@ -173,12 +175,10 @@ public class Snapshot implements Comparable<byte[]> {
   private final Root root;
 
   Snapshot(int id, String name, INodeDirectorySnapshottable dir) {
-    this.id = id;
-    this.root = new Root(dir, id);
-    this.root.setParent(dir);
+    this(id, dir, dir);
     this.root.setLocalName(DFSUtil.string2Bytes(name));
   }
-  
+
   Snapshot(int id, INodeDirectory dir, INodeDirectorySnapshottable parent) {
     this.id = id;
     this.root = new Root(dir, id);

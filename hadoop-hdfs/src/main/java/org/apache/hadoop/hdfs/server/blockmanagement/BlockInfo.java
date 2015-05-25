@@ -83,15 +83,9 @@ public class BlockInfo extends Block implements LightWeightGSet.LinkedElement {
 
   @Override
   public BlockInfo clone() {
-    BlockInfo bi = null;
-    try {
-      bi = (BlockInfo)super.clone();
-      bi.triplets = new Object [triplets.length];
-      for (int index = 0; index*3 < triplets.length; index++) {
-        getStorageInfo(index).addBlock(bi);
-      }
-    } catch (CloneNotSupportedException e) {
-      e.printStackTrace();
+    BlockInfo bi = new BlockInfo(this, bc.getBlockReplication());
+    for (int index = 0; index < triplets.length/3; index++) {
+      getStorageInfo(index).addBlock(bi);
     }
     return bi;
   }
