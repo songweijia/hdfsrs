@@ -399,6 +399,7 @@ public class DFSOutputStream extends FSOutputSummer
       block = lastBlock.getBlock();
       //HDFSRS_RWAPI{
       this.blockNumber = blockNumber;
+      this.blockWriteOffset = block.getNumBytes();
       //}
       bytesSent = block.getNumBytes();
       accessToken = lastBlock.getBlockToken();
