@@ -83,28 +83,36 @@ public class Block implements Writable, Comparable<Block> {
   }
 
   protected long blockId;
+  protected int sid;
   protected long numBytes;
   protected long generationStamp;
 
-  public Block() {this(0, 0, 0);}
+  public Block() {this(0, -1, 0, 0);}
 
   public Block(final long blkid, final long len, final long generationStamp) {
-    set(blkid, len, generationStamp);
+    this(blkid, -1, len, generationStamp);
   }
 
   public Block(final long blkid) {
-    this(blkid, 0, GenerationStamp.GRANDFATHER_GENERATION_STAMP);
+    this(blkid, -1, 0, GenerationStamp.GRANDFATHER_GENERATION_STAMP);
   }
 
+  public Block(final long blkid, final int sid, final long len, final long generationStamp) {
+    this.blockId = blkid;
+    this.sid = sid;
+    this.numBytes = len;
+    this.generationStamp = generationStamp;
+  }
+  
   public Block(Block blk) {
-    this(blk.blockId, blk.numBytes, blk.generationStamp);
+    this(blk.blockId, blk.sid, blk.numBytes, blk.generationStamp);
   }
 
   /**
    * Find the blockid from the given filename
    */
   public Block(File f, long len, long genstamp) {
-    this(filename2id(f.getName()), len, genstamp);
+    this(filename2id(f.getName()), -1, len, genstamp);
   }
 
   public void set(long blkid, long len, long genStamp) {
@@ -125,7 +133,7 @@ public class Block implements Writable, Comparable<Block> {
   /**
    */
   public String getBlockName() {
-    return BLOCK_FILE_PREFIX + String.valueOf(blockId);
+    return BLOCK_FILE_PREFIX + String.valueOf(blockId) + getSid();
   }
 
   /**
@@ -159,6 +167,21 @@ public class Block implements Writable, Comparable<Block> {
       .append(getGenerationStamp());
   }
 
+  public String getSid() {
+    return "[" + String.valueOf(sid) + "]";
+  }
+  
+  public static String getDefaultSid() {
+    return "[-1]";
+  }
+  
+  public int getIntSid() {
+    return sid;
+  }
+  
+  public void setSid(int id) {
+    sid = id;
+  }
 
   /////////////////////////////////////
   // Writable
@@ -177,12 +200,14 @@ public class Block implements Writable, Comparable<Block> {
     out.writeLong(blockId);
     out.writeLong(numBytes);
     out.writeLong(generationStamp);
+    out.writeInt(sid);
   }
   
   final void readHelper(DataInput in) throws IOException {
     this.blockId = in.readLong();
     this.numBytes = in.readLong();
     this.generationStamp = in.readLong();
+    this.sid = in.readInt();
     if (numBytes < 0) {
       throw new IOException("Unexpected block size: " + numBytes);
     }
@@ -191,19 +216,21 @@ public class Block implements Writable, Comparable<Block> {
   // write only the identifier part of the block
   public void writeId(DataOutput out) throws IOException {
     out.writeLong(blockId);
+    out.writeInt(sid);
     out.writeLong(generationStamp);
   }
 
   // Read only the identifier part of the block
   public void readId(DataInput in) throws IOException {
     this.blockId = in.readLong();
+    this.sid = in.readInt();
     this.generationStamp = in.readLong();
   }
 
   @Override // Comparable
   public int compareTo(Block b) {
     return blockId < b.blockId ? -1 :
-           blockId > b.blockId ? 1 : 0;
+           blockId > b.blockId ? 1 : sid - b.sid;
   }
 
   @Override // Object

@@ -572,33 +572,33 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
 
   @Override
   @Deprecated
-  public Replica getReplica(String bpid, long blockId) {
-    final Map<Block, BInfo> map = blockMap.get(bpid);
+  public Replica getReplica(ExtendedBlock b) {
+    final Map<Block, BInfo> map = blockMap.get(b.getBlockPoolId());
     if (map != null) {
-      return map.get(new Block(blockId));
+      return map.get(new Block(b.getBlockId()));
     }
     return null;
   }
 
   @Override 
-  public synchronized String getReplicaString(String bpid, long blockId) {
+  public synchronized String getReplicaString(ExtendedBlock b) {
     Replica r = null;
-    final Map<Block, BInfo> map = blockMap.get(bpid);
+    final Map<Block, BInfo> map = blockMap.get(b.getBlockPoolId());
     if (map != null) {
-      r = map.get(new Block(blockId));
+      r = map.get(new Block(b.getBlockId()));
     }
     return r == null? "null": r.toString();
   }
 
   @Override // FsDatasetSpi
-  public Block getStoredBlock(String bpid, long blkid) throws IOException {
-    final Map<Block, BInfo> map = blockMap.get(bpid);
+  public Block getStoredBlock(ExtendedBlock b) throws IOException {
+    final Map<Block, BInfo> map = blockMap.get(b.getBlockPoolId());
     if (map != null) {
-      BInfo binfo = map.get(new Block(blkid));
+      BInfo binfo = map.get(new Block(b.getBlockId()));
       if (binfo == null) {
         return null;
       }
-      return new Block(blkid, binfo.getGenerationStamp(), binfo.getNumBytes());
+      return new Block(b.getBlockId(), binfo.getGenerationStamp(), binfo.getNumBytes());
     }
     return null;
   }
@@ -1121,6 +1121,11 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   }
   
   public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+  
+  public void snapshot(long timestamp, ExtendedBlock[] blks) 
       throws IOException {
     throw new UnsupportedOperationException();
   }

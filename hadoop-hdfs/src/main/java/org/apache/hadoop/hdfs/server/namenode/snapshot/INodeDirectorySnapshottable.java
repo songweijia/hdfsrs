@@ -306,8 +306,8 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
           + "snapshot with the same name \"" + Snapshot.getSnapshotName(s) + "\".");
     }
 
-    final DirectoryDiff d = getDiffs().addDiff(id, this);
-    d.setSnapshotRoot(s.getRoot());
+    //final DirectoryDiff d = getDiffs().addDiff(id, this);
+    //d.setSnapshotRoot(s.getRoot());
     snapshotsByNames.add(-i - 1, s);
 
     //set modification time

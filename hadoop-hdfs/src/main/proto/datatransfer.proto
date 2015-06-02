@@ -67,6 +67,10 @@ message OpReadBlockProto {
   optional CachingStrategyProto cachingStrategy = 5;
 }
 
+message OpRequestSnapshotProto {
+  required uint64 timestamp = 1;
+  repeated ExtendedBlockProto blocks = 2;
+}
 
 message ChecksumProto {
   required ChecksumTypeProto type = 1;

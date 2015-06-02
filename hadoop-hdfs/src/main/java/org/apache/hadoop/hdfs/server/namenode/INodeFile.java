@@ -126,6 +126,17 @@ public class INodeFile extends INodeWithAdditionalFields
     this.features = that.features;
   }
   
+  public INodeFile(INodeFile that, int sid) {
+    super(that);
+    this.header = that.header;
+    this.features = that.features;
+    this.blocks = new BlockInfo [that.blocks.length];
+    for (int i = 0; i < that.blocks.length; i++) {
+      this.blocks[i] = that.blocks[i].clone();
+      this.blocks[i].setSid(sid);
+    }
+  }
+  
   public INodeFile(INodeFile that, FileDiffList diffs) {
     this(that);
     Preconditions.checkArgument(!that.isWithSnapshot());

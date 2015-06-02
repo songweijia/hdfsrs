@@ -561,8 +561,7 @@ public class TestDNFencing {
       throws IOException {
     int count = 0;
     for (DataNode dn : cluster.getDataNodes()) {
-      if (DataNodeTestUtils.getFSDataset(dn).getStoredBlock(
-          block.getBlockPoolId(), block.getBlockId()) != null) {
+      if (DataNodeTestUtils.getFSDataset(dn).getStoredBlock(block) != null) {
         count++;
       }
     }

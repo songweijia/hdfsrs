@@ -52,6 +52,12 @@ public class ExtendedBlock {
     block = new Block(blkid, len, genstamp);
   }
 
+  public ExtendedBlock(final String poolId, final long blkid, final int sid, final long len,
+      final long genstamp) {
+    this.poolId = poolId;
+    block = new Block(blkid, sid, len, genstamp);
+  }
+  
   public String getBlockPoolId() {
     return poolId;
   }

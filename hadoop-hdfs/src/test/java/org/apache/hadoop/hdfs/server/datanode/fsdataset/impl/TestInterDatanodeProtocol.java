@@ -111,8 +111,7 @@ public class TestInterDatanodeProtocol {
   }
 
   public static void checkMetaInfo(ExtendedBlock b, DataNode dn) throws IOException {
-    Block metainfo = DataNodeTestUtils.getFSDataset(dn).getStoredBlock(
-        b.getBlockPoolId(), b.getBlockId());
+    Block metainfo = DataNodeTestUtils.getFSDataset(dn).getStoredBlock(b);
     Assert.assertEquals(b.getBlockId(), metainfo.getBlockId());
     Assert.assertEquals(b.getNumBytes(), metainfo.getNumBytes());
   }

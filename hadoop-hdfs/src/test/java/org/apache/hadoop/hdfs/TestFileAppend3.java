@@ -277,8 +277,7 @@ public class TestFileAppend3  {
       }
       for(DatanodeInfo datanodeinfo : lb.getLocations()) {
         final DataNode dn = cluster.getDataNode(datanodeinfo.getIpcPort());
-        final Block metainfo = DataNodeTestUtils.getFSDataset(dn).getStoredBlock(
-            blk.getBlockPoolId(), blk.getBlockId());
+        final Block metainfo = DataNodeTestUtils.getFSDataset(dn).getStoredBlock(blk);
         assertEquals(size, metainfo.getNumBytes());
       }
     }

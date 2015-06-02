@@ -3,7 +3,6 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -191,7 +190,7 @@ public class MemDatasetManager {
       if (availableAddr.size() > 0) {
         MemBlockMeta meta = new MemBlockMeta(availableAddr.poll(), 0, genStamp, blockId, ReplicaState.TEMPORARY);
         memMaps.put(key, meta);
-        LOG.warn("CQ: getNewBlock: regionID:" + meta.offset.regionID + " addr:" + meta.offset.offset);
+        LOG.warn("CQ: getNewBlock(" + bpid + blockId + "): regionID:" + meta.offset.regionID + " addr:" + meta.offset.offset);
         return meta;
       }
     }
@@ -223,9 +222,22 @@ public class MemDatasetManager {
     LinkedList<Block> results = new LinkedList<Block>();
     synchronized (memMaps) {
       for (Entry<ExtendedBlockId, MemBlockMeta> entry: memMaps.entrySet())
-        if (entry.getKey().getBlockPoolId().equals(bpid) && (state == null || entry.getValue().getState() == state))
+        if (entry.getKey().getBlockPoolId().startsWith(bpid) && (state == null || entry.getValue().getState() == state))
           results.add(entry.getValue());
     }
     return results;
-  } 
+  }
+  
+  void blockSnapshot(MemBlockMeta src, MemBlockMeta dst) {
+    ByteBuffer srcbuf = memRegions[src.offset.regionID].duplicate();
+    srcbuf.position(src.offset.offset);
+    srcbuf.limit((int)(src.offset.offset + src.getNumBytes()));
+    
+    ByteBuffer dstbuf = memRegions[dst.offset.regionID].duplicate();
+    dstbuf.position(dst.offset.offset);
+    dstbuf.put(srcbuf);
+    
+    dst.setNumBytes(src.getNumBytes());
+    dst.setBytesAcked(src.getBytesAcked());
+  }
 }

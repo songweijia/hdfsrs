@@ -328,13 +328,13 @@ public class PBHelper {
   
   // Block
   public static BlockProto convert(Block b) {
-    return BlockProto.newBuilder().setBlockId(b.getBlockId())
+    return BlockProto.newBuilder().setBlockId(b.getBlockId()).setSId(b.getIntSid())
         .setGenStamp(b.getGenerationStamp()).setNumBytes(b.getNumBytes())
         .build();
   }
 
   public static Block convert(BlockProto b) {
-    return new Block(b.getBlockId(), b.getNumBytes(), b.getGenStamp());
+    return new Block(b.getBlockId(), b.getSId(), b.getNumBytes(), b.getGenStamp());
   }
 
   public static BlockWithLocationsProto convert(BlockWithLocations blk) {
@@ -496,7 +496,7 @@ public class PBHelper {
   
   public static ExtendedBlock convert(ExtendedBlockProto eb) {
     if (eb == null) return null;
-    return new ExtendedBlock( eb.getPoolId(),  eb.getBlockId(),   eb.getNumBytes(),
+    return new ExtendedBlock( eb.getPoolId(),  eb.getBlockId(),  eb.getSId(), eb.getNumBytes(),
        eb.getGenerationStamp());
   }
   
@@ -505,6 +505,7 @@ public class PBHelper {
    return ExtendedBlockProto.newBuilder().
       setPoolId(b.getBlockPoolId()).
       setBlockId(b.getBlockId()).
+      setSId(b.getLocalBlock().getIntSid()).
       setNumBytes(b.getNumBytes()).
       setGenerationStamp(b.getGenerationStamp()).
       build();
@@ -611,6 +612,26 @@ public class PBHelper {
     return builder.build();
   }
 
+  public static ExtendedBlock[] convert(ExtendedBlockProto list[]) {
+    if (list == null) return null;
+    ExtendedBlock[] blocks = new ExtendedBlock[list.length];
+    for (int i = 0; i < blocks.length; i++) {
+      blocks[i] = convert(list[i]);
+    }
+    return blocks;
+  }
+  
+  public static List<? extends HdfsProtos.ExtendedBlockProto> convert(
+      ExtendedBlock[] blks) {
+    if (blks == null) return null;
+    ArrayList<HdfsProtos.ExtendedBlockProto> protos = Lists
+        .newArrayListWithCapacity(blks.length);
+    for (int i = 0; i < blks.length; i++) {
+      protos.add(convert(blks[i]));
+    }
+    return protos;
+  }
+  
   public static AdminStates convert(AdminState adminState) {
     switch(adminState) {
     case DECOMMISSION_INPROGRESS:

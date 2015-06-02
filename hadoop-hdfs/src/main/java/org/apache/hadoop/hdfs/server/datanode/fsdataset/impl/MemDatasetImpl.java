@@ -87,9 +87,10 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized Block getStoredBlock(String bpid, long blkid)
+  public synchronized Block getStoredBlock(ExtendedBlock b)
       throws IOException {
-    MemDatasetManager.MemBlockMeta meta = memManager.get(bpid, blkid);
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + 
+        b.getLocalBlock().getSid(), b.getBlockId());
     if (meta == null) return null;
     return meta;
   }
@@ -190,7 +191,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
    */
   @Override // FsDatasetSpi
   public long getLength(ExtendedBlock b) throws IOException {
-    Replica meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    Replica meta = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     if (meta != null) return meta.getBytesOnDisk();
     return -1;
   }
@@ -198,7 +199,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public InputStream getBlockInputStream(ExtendedBlock b,
       long seekOffset) throws IOException {
-    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     if (meta != null) return memManager.getInputStream(meta.offset, seekOffset);
     return null;
   }
@@ -226,7 +227,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       throw new IOException("The new generation stamp " + newGS + 
           " should be greater than the replica " + b + "'s generation stamp");
     }
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     LOG.info("Appending to block " + replicaInfo.getBlockId());
     if (replicaInfo.getState() != ReplicaState.FINALIZED) {
       throw new ReplicaNotFoundException(
@@ -277,7 +278,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
 
   private MemDatasetManager.MemBlockMeta recoverCheck(ExtendedBlock b, long newGS, 
       long expectedBlockLen) throws IOException {
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     
     // check state
     if (replicaInfo.getState() != ReplicaState.FINALIZED &&
@@ -341,13 +342,13 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public synchronized Replica createRbw(ExtendedBlock b)
       throws IOException {
-    Replica meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    Replica meta = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     if (meta != null) {
       throw new ReplicaAlreadyExistsException("Block " + b +
       " already exists and thus cannot be created.");
     }
     // create a new block
-    return memManager.getNewBlock(b.getBlockPoolId(), b.getBlockId(), b.getGenerationStamp());
+    return memManager.getNewBlock(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId(), b.getGenerationStamp());
   }
   
   @Override // FsDatasetSpi
@@ -356,7 +357,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       throws IOException {
     LOG.info("Recover RBW replica " + b);
 
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     
     // check the replica's state
     if (replicaInfo.getState() != ReplicaState.RBW) {
@@ -396,7 +397,8 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     LOG.info("Convert " + b + " from Temporary to RBW, visible length="
         + visible);
 
-    MemDatasetManager.MemBlockMeta r = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta r = memManager.get(b.getBlockPoolId() + 
+        b.getLocalBlock().getSid(), b.getBlockId());
  
     if (r == null) {
       throw new ReplicaNotFoundException(
@@ -415,7 +417,6 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           + ", temp=" + r.getBlockId());
     }
 
-    // TODO: check writer?
     // set writer to the current thread
     // temp.setWriter(Thread.currentThread());
 
@@ -433,14 +434,14 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public synchronized Replica createTemporary(ExtendedBlock b)
       throws IOException {
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     if (replicaInfo != null) {
       throw new ReplicaAlreadyExistsException("Block " + b +
           " already exists in state " + replicaInfo.getState() +
           " and thus cannot be created.");
     }
     
-    return memManager.getNewBlock(b.getBlockPoolId(), b.getBlockId(), b.getGenerationStamp());
+    return memManager.getNewBlock(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId(), b.getGenerationStamp());
   }
 
   /**
@@ -469,7 +470,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       throw new IOException("Cannot finalize block from Interrupted Thread");
     }
     
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     if (replicaInfo.getState() == ReplicaState.FINALIZED) {
       // this is legal, when recovery happens on a file that has
       // been opened for append but never modified
@@ -496,9 +497,9 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
    */
   @Override // FsDatasetSpi
   public synchronized void unfinalizeBlock(ExtendedBlock b) throws IOException {
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     if (replicaInfo != null && replicaInfo.getState() == ReplicaState.TEMPORARY) {
-      memManager.deleteBlock(b.getBlockPoolId(), b.getBlockId());
+      memManager.deleteBlock(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     }
   }
 
@@ -579,7 +580,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
 
   /** Does the block exist and have the given state? */
   private boolean isValid(final ExtendedBlock b, final ReplicaState state) {
-    final Replica replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    final Replica replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     return replicaInfo != null
         && replicaInfo.getState() == state;
   }
@@ -595,7 +596,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     for (int i = 0; i < invalidBlks.length; i++) {
       final MemVolumeImpl v = volumes.get(0);
       synchronized (this) {
-        final MemDatasetManager.MemBlockMeta info = memManager.get(bpid, invalidBlks[i].getBlockId());
+        final MemDatasetManager.MemBlockMeta info = memManager.get(bpid + invalidBlks[i].getSid(), invalidBlks[i].getBlockId());
         if (info == null) {
           // It is okay if the block is not found -- it may be deleted earlier.
           LOG.info("Failed to delete replica " + invalidBlks[i]
@@ -613,7 +614,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
             replicaState == ReplicaState.RUR) {
           v.decDfsUsed(bpid, info.getNumBytes());
         }
-        memManager.deleteBlock(bpid, invalidBlks[i].getBlockId());
+        memManager.deleteBlock(bpid + invalidBlks[i].getSid(), invalidBlks[i].getBlockId());
       }
     }
     if (!errors.isEmpty()) {
@@ -629,7 +630,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
 
   @Override // FsDatasetSpi
   public synchronized boolean contains(final ExtendedBlock block) {
-    return memManager.get(block.getBlockPoolId(), block.getBlockId()) != null;
+    return memManager.get(block.getBlockPoolId() + block.getLocalBlock().getSid(), block.getBlockId()) != null;
   }
 
   /**
@@ -714,13 +715,13 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
    */
   @Override // FsDatasetSpi
   //@Deprecated
-  public Replica getReplica(String bpid, long blockId) {
-    return memManager.get(bpid, blockId);
+  public Replica getReplica(ExtendedBlock b) {
+    return memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
   }
 
   @Override 
-  public synchronized String getReplicaString(String bpid, long blockId) {
-    final Replica r = memManager.get(bpid, blockId);
+  public synchronized String getReplicaString(ExtendedBlock b) {
+    final Replica r = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
     return r == null? "null": r.toString();
   }
 
@@ -728,7 +729,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   public synchronized ReplicaRecoveryInfo initReplicaRecovery(
       RecoveringBlock rBlock) throws IOException {
     return initReplicaRecovery(rBlock.getBlock().getBlockPoolId(), 
-        memManager.get(rBlock.getBlock().getBlockPoolId(), rBlock.getBlock().getBlockId()),
+        memManager.get(rBlock.getBlock().getBlockPoolId() + rBlock.getBlock().getLocalBlock().getSid(), rBlock.getBlock().getBlockId()),
         rBlock.getBlock().getLocalBlock(), rBlock.getNewGenerationStamp(),
         datanode.getDnConf().getXceiverStopTimeout());
   }
@@ -770,8 +771,8 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
                                     final long recoveryId,
                                     final long newlength) throws IOException {
     //get replica
-    final String bpid = oldBlock.getBlockPoolId();
-    final MemDatasetManager.MemBlockMeta replica = memManager.get(bpid, oldBlock.getBlockId());
+    final MemDatasetManager.MemBlockMeta replica = memManager.get(oldBlock.getBlockPoolId() + 
+        oldBlock.getLocalBlock().getSid(), oldBlock.getBlockId());
     LOG.info("updateReplica: " + oldBlock
         + ", recoveryId=" + recoveryId
         + ", length=" + newlength
@@ -834,7 +835,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public synchronized long getReplicaVisibleLength(final ExtendedBlock block)
   throws IOException {
-    final Replica replica = memManager.get(block.getBlockPoolId(), 
+    final Replica replica = memManager.get(block.getBlockPoolId() + block.getLocalBlock().getSid(), 
         block.getBlockId());
     if (replica.getGenerationStamp() < block.getGenerationStamp()) {
       throw new IOException(
@@ -947,7 +948,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     // Determine the index of the VolumeId of each block's volume, by comparing 
     // the block's volume against the enumerated volumes
     for (int i = 0; i < blockIds.length; i++) {
-      blocksVolumeIndexes.add(memManager.get(poolId, blockIds[i]) == null? Integer.MAX_VALUE: 0);
+      blocksVolumeIndexes.add(memManager.get(poolId + Block.getDefaultSid(), blockIds[i]) == null? Integer.MAX_VALUE: 0);
     }
     return new HdfsBlocksMetadata(poolId, blockIds,
         blocksVolumeIds, blocksVolumeIndexes);
@@ -1029,8 +1030,24 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   
   public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
       throws IOException {
-    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + 
+        b.getLocalBlock().getSid(), b.getBlockId());
     if (meta != null) return memManager.getOutputStream(meta.offset, seekOffset);
     return null;
+  }
+  
+  public void snapshot(long timestamp, ExtendedBlock[] blks) 
+      throws IOException {
+    if (blks == null) return;
+    
+    for (ExtendedBlock b : blks) {
+      MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + 
+          Block.getDefaultSid(), b.getBlockId());
+
+      MemDatasetManager.MemBlockMeta newMeta = memManager.getNewBlock(b.getBlockPoolId() + 
+          b.getLocalBlock().getSid(), b.getBlockId(), b.getGenerationStamp());
+      
+      memManager.blockSnapshot(meta, newMeta);
+    }
   }
 }

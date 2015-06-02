@@ -196,8 +196,6 @@ public class SnapshotManager implements SnapshotStats {
    */
   public String createSnapshot(final String path, String snapshotName
       ) throws IOException {
-    INodeDirectorySnapshottable srcRoot = getSnapshottableRoot(path);
-
     if (snapshotCounter == getMaxSnapshotID()) {
       // We have reached the maximum allowable snapshot ID and since we don't
       // handle rollover we will fail all subsequent snapshot creation
@@ -207,7 +205,8 @@ public class SnapshotManager implements SnapshotStats {
           "Failed to create the snapshot. The FileSystem has run out of " +
           "snapshot IDs and ID rollover is not supported.");
     }
-
+    
+    INodeDirectorySnapshottable srcRoot = getSnapshottableRoot(path);
     srcRoot.addSnapshot(snapshotCounter, snapshotName);
       
     //create success, update id

@@ -2272,8 +2272,8 @@ public class DataNode extends Configured
     // Calculate list of nodes that will participate in the recovery
     // and the new block size
     List<BlockRecord> participatingList = new ArrayList<BlockRecord>();
-    final ExtendedBlock newBlock = new ExtendedBlock(bpid, block.getBlockId(),
-        -1, recoveryId);
+    final ExtendedBlock newBlock = new ExtendedBlock(bpid, block.getBlockId(), 
+        block.getLocalBlock().getIntSid(), -1, recoveryId);
     switch(bestState) {
     case FINALIZED:
       assert finalizedLength > 0 : "finalizedLength is not positive";
@@ -2392,8 +2392,7 @@ public class DataNode extends Configured
 
     //get replica information
     synchronized(data) {
-      Block storedBlock = data.getStoredBlock(b.getBlockPoolId(),
-          b.getBlockId());
+      Block storedBlock = data.getStoredBlock(b);
       if (null == storedBlock) {
         throw new IOException(b + " not found in datanode.");
       }
@@ -2409,7 +2408,7 @@ public class DataNode extends Configured
       } else if (data.isValidBlock(b)) {
         stage = BlockConstructionStage.TRANSFER_FINALIZED;
       } else {
-        final String r = data.getReplicaString(b.getBlockPoolId(), b.getBlockId());
+        final String r = data.getReplicaString(b);
         throw new IOException(b + " is neither a RBW nor a Finalized, r=" + r);
       }
       visible = data.getReplicaVisibleLength(b);

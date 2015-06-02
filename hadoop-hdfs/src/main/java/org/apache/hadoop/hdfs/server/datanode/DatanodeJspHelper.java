@@ -420,6 +420,8 @@ public class DatanodeJspHelper {
     final DFSClient dfs = getDFSClient(ugi, nnAddr, conf);
 
     String bpid = null;
+    int sid = -1;
+    
     Token<BlockTokenIdentifier> blockToken = BlockTokenSecretManager.DUMMY_TOKEN;
     List<LocatedBlock> blks = dfs.getNamenode().getBlockLocations(filename, 0,
         Long.MAX_VALUE).getLocatedBlocks();
@@ -436,6 +438,7 @@ public class DatanodeJspHelper {
     for (int i = 0; i < blks.size(); i++) {
       if (blks.get(i).getBlock().getBlockId() == blockId) {
         bpid = blks.get(i).getBlock().getBlockPoolId();
+        sid = blks.get(i).getBlock().getLocalBlock().getIntSid();
         if (needBlockToken) {
           blockToken = blks.get(i).getBlockToken();
         }
@@ -508,7 +511,7 @@ public class DatanodeJspHelper {
     out.print("<textarea cols=\"100\" rows=\"25\" wrap=\"virtual\" style=\"width:100%\" READONLY>");
     try {
       JspHelper.streamBlockInAscii(new InetSocketAddress(req.getServerName(),
-          datanodePort), bpid, blockId, blockToken, genStamp, blockSize,
+          datanodePort), bpid, blockId, sid, blockToken, genStamp, blockSize,
           startOffset, chunkSizeToView, out, conf, dfs.getConf(),
           dfs.getDataEncryptionKey());
     } catch (Exception e) {
@@ -650,6 +653,7 @@ public class DatanodeJspHelper {
     String poolId = lastBlk.getBlock().getBlockPoolId();
     long blockSize = lastBlk.getBlock().getNumBytes();
     long blockId = lastBlk.getBlock().getBlockId();
+    int sId = lastBlk.getBlock().getLocalBlock().getIntSid();
     Token<BlockTokenIdentifier> accessToken = lastBlk.getBlockToken();
     long genStamp = lastBlk.getBlock().getGenerationStamp();
     DatanodeInfo chosenNode;
@@ -667,7 +671,7 @@ public class DatanodeJspHelper {
         - chunkSizeToView : 0;
 
     out.print("<textarea cols=\"100\" rows=\"25\" wrap=\"virtual\" style=\"width:100%\" READONLY>");
-    JspHelper.streamBlockInAscii(addr, poolId, blockId, accessToken, genStamp,
+    JspHelper.streamBlockInAscii(addr, poolId, blockId, sId, accessToken, genStamp,
         blockSize, startOffset, chunkSizeToView, out, conf, dfs.getConf(),
         dfs.getDataEncryptionKey());
     out.print("</textarea>");

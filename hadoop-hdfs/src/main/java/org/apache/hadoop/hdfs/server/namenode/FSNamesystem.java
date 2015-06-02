@@ -85,12 +85,15 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_REPLICATION_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_REPLICATION_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_SUPPORT_APPEND_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_SUPPORT_APPEND_KEY;
+import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.SUCCESS;
 import static org.apache.hadoop.util.Time.now;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -100,6 +103,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,8 +115,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -121,6 +127,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
+import javax.net.SocketFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -180,6 +187,9 @@ import org.apache.hadoop.hdfs.protocol.SnapshotDiffReport;
 import org.apache.hadoop.hdfs.protocol.SnapshotDiffReport.DiffReportEntry;
 import org.apache.hadoop.hdfs.protocol.SnapshottableDirectoryStatus;
 import org.apache.hadoop.hdfs.protocol.datatransfer.ReplaceDatanodeOnFailure;
+import org.apache.hadoop.hdfs.protocol.datatransfer.Sender;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.BlockOpResponseProto;
+import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.AccessMode;
 import org.apache.hadoop.hdfs.security.token.delegation.DelegationTokenIdentifier;
@@ -247,6 +257,7 @@ import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.metrics2.util.MBeans;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.net.Node;
 import org.apache.hadoop.security.AccessControlException;
@@ -508,6 +519,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
 
   private final AclConfigFlag aclConfigFlag;
 
+  final SocketFactory socketFactory;
+  
   /**
    * Set the last allocated inode id when fsimage or editlog is loaded. 
    */
@@ -776,6 +789,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
         auditLoggers.get(0) instanceof DefaultAuditLogger;
       this.retryCache = ignoreRetryCache ? null : initRetryCache(conf);
       this.aclConfigFlag = new AclConfigFlag(conf);
+      this.socketFactory = NetUtils.getSocketFactory(conf, ClientProtocol.class);
     } catch(IOException e) {
       LOG.error(getClass().getSimpleName() + " initialization failed.", e);
       close();
@@ -2442,7 +2456,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       String leaseHolder, String clientMachine, DatanodeDescriptor clientNode,
       boolean writeToEditLog, int latestSnapshot, boolean logRetryCache)
       throws IOException {
-    file = file.recordModification(latestSnapshot);
+    //file = file.recordModification(latestSnapshot);
     final INodeFile cons = file.toUnderConstruction(leaseHolder, clientMachine,
         clientNode);
 
@@ -7118,6 +7132,110 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     return snapshotPath;
   }
   
+  public void getBlocks(INode root, Map<DatanodeInfo, List<ExtendedBlock>> blocks) {
+    if (root.isDirectory()) {
+      for (INode i : root.asDirectory().getCurrentChildrenList()) {
+        getBlocks(i, blocks);
+      }
+    } else if (root.isFile()) {
+      for (BlockInfo b : root.asFile().getBlocks()) {
+        blockManager.addBlockCollection(b, root.asFile());
+        for (DatanodeStorageInfo d : blockManager.getStorages(b)) {
+          List<ExtendedBlock> blkList = blocks.get(d.getDatanodeDescriptor());
+          if (blkList == null) {
+            blkList = new LinkedList<ExtendedBlock>();
+            blocks.put(d.getDatanodeDescriptor(), blkList);
+          }
+          blkList.add(new ExtendedBlock(blockPoolId, b));
+        }
+      }
+    }
+  }
+  
+  final int timeout = 3000;
+  
+  private void sendToDNs(Map<DatanodeInfo, List<ExtendedBlock>> blks, 
+      long timestamp) throws IOException {
+    ArrayList<Socket> clients = new ArrayList<Socket>(blks.size());
+    for (Entry<DatanodeInfo, List<ExtendedBlock>> e : blks.entrySet()) {
+      Socket s = socketFactory.createSocket();
+      s.connect(NetUtils.createSocketAddr(e.getKey().getXferAddr(false)));
+      s.setSoTimeout(timeout);
+      s.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
+      
+      DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
+          NetUtils.getOutputStream(s, timeout),
+          HdfsConstants.SMALL_BUFFER_SIZE));
+      
+      new Sender(out).snapshot(timestamp, e.getValue().toArray(new ExtendedBlock[0]));
+      s.shutdownOutput();
+      
+      clients.add(s);
+    }
+    
+    //ack
+    for (Socket s : clients) {
+      DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
+      BlockOpResponseProto response = BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(in));
+      if (SUCCESS != response.getStatus()) {
+        throw new IOException("Failed to add a datanode:" + s.getInetAddress().getHostAddress());
+      }
+      
+      IOUtils.closeStream(in);
+      IOUtils.closeSocket(s);
+    }
+  }
+  
+  /**
+   * Create a snapshot
+   * @param snapshotRoot The directory path where the snapshot is taken
+   * @param snapshotName The name of the snapshot
+   */
+  String createBlockSnapshot(String snapshotRoot, String snapshotName)
+      throws SafeModeException, IOException {
+    checkOperation(OperationCategory.WRITE);
+    final FSPermissionChecker pc = getPermissionChecker();
+    String snapshotPath = null;
+    writeLock();
+    long timestamp = Time.now();
+    try {
+      checkOperation(OperationCategory.WRITE);
+      checkNameNodeSafeMode("Cannot create snapshot for " + snapshotRoot);
+      if (isPermissionEnabled) {
+        checkOwner(pc, snapshotRoot);
+      }
+
+      if (snapshotName == null || snapshotName.isEmpty()) {
+        snapshotName = Snapshot.generateDefaultSnapshotName();
+      }
+      if(snapshotName != null){
+        if (!DFSUtil.isValidNameForComponent(snapshotName)) {
+            throw new InvalidPathException("Invalid snapshot name: "
+                + snapshotName);
+        }
+      }
+      dir.verifySnapshotName(snapshotName, snapshotRoot);
+      dir.writeLock();
+      try {
+        snapshotPath = snapshotManager.createSnapshot(snapshotRoot, snapshotName);
+      } finally {
+        dir.writeUnlock();
+      }
+    } finally {
+      writeUnlock();
+    }
+    
+    INode srcRoot = snapshotManager.getSnapshottableRoot(snapshotRoot).getSnapshot(
+        DFSUtil.string2Bytes(snapshotName)).getRoot();
+    Map<DatanodeInfo, List<ExtendedBlock>> blks = new HashMap<DatanodeInfo, List<ExtendedBlock>>();
+    getBlocks(srcRoot, blks);    
+    sendToDNs(blks, timestamp);
+
+    if (auditLog.isInfoEnabled() && isExternalInvocation()) {
+      logAuditEvent(true, "createSnapshot", snapshotRoot, snapshotPath, null);
+    }
+    return snapshotPath;
+  }
   /**
    * Rename a snapshot
    * @param path The directory path where the snapshot was taken

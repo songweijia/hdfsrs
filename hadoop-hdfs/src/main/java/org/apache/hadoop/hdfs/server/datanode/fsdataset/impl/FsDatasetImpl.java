@@ -108,15 +108,15 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized Block getStoredBlock(String bpid, long blkid)
+  public synchronized Block getStoredBlock(ExtendedBlock b)
       throws IOException {
-    File blockfile = getFile(bpid, blkid);
+    File blockfile = getFile(b.getBlockPoolId(), b.getBlockId());
     if (blockfile == null) {
       return null;
     }
     final File metafile = FsDatasetUtil.findMetaFile(blockfile);
     final long gs = FsDatasetUtil.parseGenerationStamp(blockfile, metafile);
-    return new Block(blkid, blockfile.length(), gs);
+    return new Block(b.getBlockId(), blockfile.length(), gs);
   }
 
 
@@ -1564,13 +1564,13 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
    */
   @Override // FsDatasetSpi
   @Deprecated
-  public ReplicaInfo getReplica(String bpid, long blockId) {
-    return volumeMap.get(bpid, blockId);
+  public ReplicaInfo getReplica(ExtendedBlock b) {
+    return volumeMap.get(b.getBlockPoolId(), b.getBlockId());
   }
 
   @Override 
-  public synchronized String getReplicaString(String bpid, long blockId) {
-    final Replica r = volumeMap.get(bpid, blockId);
+  public synchronized String getReplicaString(ExtendedBlock b) {
+    final Replica r = volumeMap.get(b.getBlockPoolId(), b.getBlockId());
     return r == null? "null": r.toString();
   }
 
@@ -1918,6 +1918,11 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
   public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
       throws IOException {
     return null;
+  }
+  
+  public void snapshot(long timestamp, ExtendedBlock[] blks) 
+      throws IOException {
+    return;
   }
 }
 

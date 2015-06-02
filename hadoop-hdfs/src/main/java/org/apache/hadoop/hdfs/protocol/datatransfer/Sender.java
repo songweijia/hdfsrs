@@ -34,6 +34,7 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumP
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpCopyBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReplaceBlockProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestShortCircuitAccessProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto;
@@ -166,6 +167,17 @@ public class Sender implements DataTransferProtocol {
     send(out, Op.TRANSFER_BLOCK, proto);
   }
 
+  @Override
+  public void snapshot(final long timestamp, 
+      final ExtendedBlock[] blks) throws IOException {
+    OpRequestSnapshotProto proto = OpRequestSnapshotProto.newBuilder()
+        .setTimestamp(timestamp)
+        .addAllBlocks(PBHelper.convert(blks))
+        .build();
+    
+    send(out, Op.REQUEST_SNAPSHOT, proto);
+  }
+  
   @Override
   public void requestShortCircuitFds(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,

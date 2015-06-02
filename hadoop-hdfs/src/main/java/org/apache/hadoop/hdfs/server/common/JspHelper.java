@@ -209,7 +209,7 @@ public class JspHelper {
   }
 
   public static void streamBlockInAscii(InetSocketAddress addr, String poolId,
-      long blockId, Token<BlockTokenIdentifier> blockToken, long genStamp,
+      long blockId, int sId, Token<BlockTokenIdentifier> blockToken, long genStamp,
       long blockSize, long offsetIntoBlock, long chunkSizeToView,
       JspWriter out, final Configuration conf, DFSClient.Conf dfsConf,
       final DataEncryptionKey encryptionKey)
@@ -219,7 +219,7 @@ public class JspHelper {
       
     BlockReader blockReader = new BlockReaderFactory(dfsConf).
       setInetSocketAddress(addr).
-      setBlock(new ExtendedBlock(poolId, blockId, 0, genStamp)).
+      setBlock(new ExtendedBlock(poolId, blockId, sId, 0, genStamp)).
       setFileName(BlockReaderFactory.getFileName(addr, poolId, blockId)).
       setBlockToken(blockToken).
       setStartOffset(offsetIntoBlock).
@@ -512,6 +512,9 @@ public class JspHelper {
     return value == null? null: Long.parseLong(value);
   }
 
+  public static Integer validateInt(String value) {
+    return value == null? null: Integer.parseInt(value);
+  }
   /**
    * Validate a URL.
    * @return null if the value is invalid.

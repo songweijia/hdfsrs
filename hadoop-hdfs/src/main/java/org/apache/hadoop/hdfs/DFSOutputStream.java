@@ -399,6 +399,7 @@ public class DFSOutputStream extends FSOutputSummer
       block = lastBlock.getBlock();
       //HDFSRS_RWAPI{
       this.blockNumber = blockNumber;
+      this.blockWriteOffset = block.getNumBytes();
       //}
       bytesSent = block.getNumBytes();
       accessToken = lastBlock.getBlockToken();
@@ -625,7 +626,7 @@ public class DFSOutputStream extends FSOutputSummer
             }
             //}HDFSRS_RWAPI
             if(DFSClient.LOG.isDebugEnabled()) {
-              DFSClient.LOG.debug("Allocating new block");
+              DFSClient.LOG.debug("CQDEBUG: Allocating new block");
             }
             setPipeline(nextBlockOutputStream());
             initDataStreaming();
@@ -740,6 +741,9 @@ public class DFSOutputStream extends FSOutputSummer
             }
 
             endBlock();
+            if(DFSClient.LOG.isDebugEnabled()) {
+              DFSClient.LOG.debug("CQDEBUG: Finishing a block");
+            }
           }
           if (progress != null) { progress.progress(); }
 
@@ -1354,7 +1358,7 @@ public class DFSOutputStream extends FSOutputSummer
       if (success) {
         // update pipeline at the namenode
         ExtendedBlock newBlock = new ExtendedBlock(
-            block.getBlockPoolId(), block.getBlockId(), block.getNumBytes(), newGS);
+            block.getBlockPoolId(), block.getBlockId(), block.getLocalBlock().getIntSid(), block.getNumBytes(), newGS);
         dfsClient.namenode.updatePipeline(dfsClient.clientName, block, newBlock,
             nodes, storageIDs);
         // update client side generation stamp
@@ -1905,10 +1909,6 @@ public class DFSOutputStream extends FSOutputSummer
         resetChecksumChunk(bytesPerChecksum);
       }
 
-      if (!appendChunk) {
-        int psize = Math.min((int)(blockSize-bytesCurBlock), dfsClient.getConf().writePacketSize);
-        computePacketChunkSize(psize, bytesPerChecksum);
-      }
       //
       // if encountering a block boundary, send an empty packet to 
       // indicate the end of block and reset bytesCurBlock.
@@ -1920,6 +1920,11 @@ public class DFSOutputStream extends FSOutputSummer
         waitAndQueueCurrentPacket();
         bytesCurBlock = 0;
         lastFlushOffset = 0;
+      }
+      
+      if (!appendChunk) {
+        int psize = Math.min((int)(blockSize-bytesCurBlock), dfsClient.getConf().writePacketSize);
+        computePacketChunkSize(psize, bytesPerChecksum);
       }
     }
   }

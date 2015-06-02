@@ -64,7 +64,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   protected static final int DEFAULT_FILES_PER_DIRECTORY = 5;
   final static byte[] ROOT_NAME = DFSUtil.string2Bytes("");
 
-  private List<INode> children = null;
+  protected List<INode> children = null;
   
   /** constructor */
   public INodeDirectory(long id, byte[] name, PermissionStatus permissions,
@@ -92,6 +92,24 @@ public class INodeDirectory extends INodeWithAdditionalFields
     this.features = featuresToCopy;
   }
 
+  public INodeDirectory(INodeDirectory other, int sid) {
+    super(other);
+    if (other.children != null) {
+      this.children = new ArrayList<INode> (other.children.size());
+      for (INode child : other.children) {
+        if (child.isDirectory() || child.isFile()) {
+          INode newChild = child.isDirectory()? new INodeDirectory(child.asDirectory(), sid):
+            new INodeFile(child.asFile(), sid);
+          newChild.setParent(this);
+          this.children.add(newChild);
+        } else {
+          this.children.add(child);
+        }
+      }
+    }
+    this.features = other.features;
+  }
+  
   /** @return true unconditionally. */
   @Override
   public final boolean isDirectory() {
@@ -375,7 +393,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
     return sf.getChildrenList(this, snapshotId);
   }
   
-  private ReadOnlyList<INode> getCurrentChildrenList() {
+  public ReadOnlyList<INode> getCurrentChildrenList() {
     return children == null ? ReadOnlyList.Util.<INode> emptyList()
         : ReadOnlyList.Util.asReadOnlyList(children);
   }
