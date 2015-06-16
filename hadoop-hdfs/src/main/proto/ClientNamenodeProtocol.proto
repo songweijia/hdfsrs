@@ -143,10 +143,12 @@ message AddBlockRequestProto {
   repeated DatanodeInfoProto excludeNodes = 4;
   optional uint64 fileId = 5 [default = 0];  // default as a bogus id
   repeated string favoredNodes = 6; //the set of datanodes to use for the block
+  required VectorClockProto vc = 7; // HDFSRS_VC: vector clock
 }
 
 message AddBlockResponseProto {
   required LocatedBlockProto block = 1;
+  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
 }
 
 message GetAdditionalDatanodeRequestProto {
