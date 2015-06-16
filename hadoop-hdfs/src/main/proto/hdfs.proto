@@ -493,5 +493,5 @@ message VectorClockProto{
     required uint64 vc = 2;
   }
   
-  repeated VectorClockCEntry entry = 1;
+  repeated VectorClockEntry entry = 1;
 }
