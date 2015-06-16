@@ -483,3 +483,15 @@ message SnapshotInfoProto {
 message RollingUpgradeStatusProto {
   required string blockPoolId = 1;
 }
+
+/**
+ * HDFSRS_VC: VectorClock
+ */
+message VectorClockProto{
+  message VectorClockEntry{
+    required uint32 rank = 1;
+    required uint64 vc = 2;
+  }
+  
+  repeated VectorClockCEntry entry = 1;
+}
