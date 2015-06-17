@@ -248,7 +248,7 @@ public class TestDFSClientRetries {
                          anyString(),
                          any(ExtendedBlock.class),
                          any(DatanodeInfo[].class),
-                         anyLong(), any(String[].class))).thenAnswer(answer);
+                         anyLong(), any(String[].class),null/*HDFSRS_VC*/)).thenAnswer(answer);
     
     Mockito.doReturn(
             new HdfsFileStatus(0, false, 1, 1024, 0, 0, new FsPermission(
@@ -397,7 +397,7 @@ public class TestDFSClientRetries {
         }
       }).when(spyNN).addBlock(Mockito.anyString(), Mockito.anyString(),
           Mockito.<ExtendedBlock> any(), Mockito.<DatanodeInfo[]> any(),
-          Mockito.anyLong(), Mockito.<String[]> any());
+          Mockito.anyLong(), Mockito.<String[]> any(),null/*HDFSRS_VC*/);
 
       doAnswer(new Answer<Boolean>() {
 
@@ -439,7 +439,7 @@ public class TestDFSClientRetries {
       Mockito.verify(spyNN, Mockito.atLeastOnce()).addBlock(
           Mockito.anyString(), Mockito.anyString(),
           Mockito.<ExtendedBlock> any(), Mockito.<DatanodeInfo[]> any(),
-          Mockito.anyLong(), Mockito.<String[]> any());
+          Mockito.anyLong(), Mockito.<String[]> any(), null/*HDFSRS_VC*/);
       Mockito.verify(spyNN, Mockito.atLeastOnce()).complete(
           Mockito.anyString(), Mockito.anyString(),
           Mockito.<ExtendedBlock>any(), anyLong());

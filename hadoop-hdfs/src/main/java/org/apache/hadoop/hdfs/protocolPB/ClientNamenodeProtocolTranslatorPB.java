@@ -18,7 +18,6 @@
 package org.apache.hadoop.hdfs.protocolPB;
 
 import java.io.Closeable;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -70,6 +69,7 @@ import org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestPr
 import org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto;
@@ -166,6 +166,11 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
 
 
+
+
+
+
+import edu.cornell.cs.sa.VectorClock;
 
 
 //HDFSRS_RWAPI{
@@ -375,11 +380,11 @@ public class ClientNamenodeProtocolTranslatorPB implements
       throw ProtobufHelper.getRemoteException(e);
     }
   }
-  
+
   @Override
   public LocatedBlock addBlock(String src, String clientName,
       ExtendedBlock previous, DatanodeInfo[] excludeNodes, long fileId,
-      String[] favoredNodes)
+      String[] favoredNodes, VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException,
       NotReplicatedYetException, SafeModeException, UnresolvedLinkException,
       IOException {
@@ -392,8 +397,14 @@ public class ClientNamenodeProtocolTranslatorPB implements
     if (favoredNodes != null) {
       req.addAllFavoredNodes(Arrays.asList(favoredNodes));
     }
+    req.setVc(PBHelper.convert(mvc));/*HDFSRS_VC:vector clock*/
     try {
-      return PBHelper.convert(rpcProxy.addBlock(null, req.build()).getBlock());
+    	/* HDFSRS_VC:return mvc throught mvc parameter.
+    	 */
+      AddBlockResponseProto abrp = rpcProxy.addBlock(null, req.build());
+      if(mvc!=null)
+    	  mvc.vc = PBHelper.convert(abrp.getVc()).vc;
+      return PBHelper.convert(abrp.getBlock());
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }

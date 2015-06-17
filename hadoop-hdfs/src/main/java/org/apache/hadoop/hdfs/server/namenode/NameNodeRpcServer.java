@@ -157,6 +157,8 @@ import org.apache.hadoop.util.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.BlockingService;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This class is responsible for handling all of the RPC calls to the NameNode.
  * It is created, started, and stopped by {@link NameNode}.
@@ -582,8 +584,11 @@ class NameNodeRpcServer implements NamenodeProtocols {
   @Override
   public LocatedBlock addBlock(String src, String clientName,
       ExtendedBlock previous, DatanodeInfo[] excludedNodes, long fileId,
-      String[] favoredNodes)
+      String[] favoredNodes, VectorClock mvc/*HDFSRS_VC*/)
       throws IOException {
+	  //HDFSRS_VC: update vectorclock
+	  nn.vc.tickOnRecv(mvc);
+	  //HDFSRS_VC
     if (stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*BLOCK* NameNode.addBlock: file " + src
           + " fileId=" + fileId + " for " + clientName);
@@ -601,6 +606,10 @@ class NameNodeRpcServer implements NamenodeProtocols {
         clientName, previous, excludedNodesSet, favoredNodesList);
     if (locatedBlock != null)
       metrics.incrAddBlockOps();
+    //HDFSRS_VC:return mvc
+    nn.vc.tick();
+    mvc.vc = nn.vc.vc;
+    //HDFSRS_VC
     return locatedBlock;
   }
 

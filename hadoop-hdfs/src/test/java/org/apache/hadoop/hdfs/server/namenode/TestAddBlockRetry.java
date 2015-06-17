@@ -111,7 +111,7 @@ public class TestAddBlockRetry {
         if(count == 1) { // run second addBlock()
           LOG.info("Starting second addBlock for " + src);
           nn.addBlock(src, "clientName", null, null,
-              INodeId.GRANDFATHER_INODE_ID, null);
+              INodeId.GRANDFATHER_INODE_ID, null,null/*HDFSRS_VC*/);
           LocatedBlocks lbs = nn.getBlockLocations(src, 0, Long.MAX_VALUE);
           assertEquals("Must be one block", 1, lbs.getLocatedBlocks().size());
           lb2 = lbs.get(0);
@@ -132,7 +132,7 @@ public class TestAddBlockRetry {
 
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
-    nn.addBlock(src, "clientName", null, null, INodeId.GRANDFATHER_INODE_ID, null);
+    nn.addBlock(src, "clientName", null, null, INodeId.GRANDFATHER_INODE_ID, null,null/*HDFSRS_VC*/);
 
     // check locations
     LocatedBlocks lbs = nn.getBlockLocations(src, 0, Long.MAX_VALUE);
@@ -159,14 +159,14 @@ public class TestAddBlockRetry {
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
     LocatedBlock lb1 = nameNodeRpc.addBlock(src, "clientName", null, null,
-        INodeId.GRANDFATHER_INODE_ID, null);
+        INodeId.GRANDFATHER_INODE_ID, null,null/*HDFSRS_VC*/);
     assertTrue("Block locations should be present",
         lb1.getLocations().length > 0);
 
     cluster.restartNameNode();
     nameNodeRpc = cluster.getNameNodeRpc();
     LocatedBlock lb2 = nameNodeRpc.addBlock(src, "clientName", null, null,
-        INodeId.GRANDFATHER_INODE_ID, null);
+        INodeId.GRANDFATHER_INODE_ID, null,null/*HDFSRS_VC*/);
     assertEquals("Blocks are not equal", lb1.getBlock(), lb2.getBlock());
     assertTrue("Wrong locations with retry", lb2.getLocations().length > 0);
   }

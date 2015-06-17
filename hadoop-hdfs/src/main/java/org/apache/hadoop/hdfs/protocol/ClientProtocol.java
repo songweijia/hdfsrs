@@ -54,6 +54,8 @@ import org.apache.hadoop.security.KerberosInfo;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenInfo;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**********************************************************************
  * ClientProtocol is used by user code via 
  * {@link org.apache.hadoop.hdfs.DistributedFileSystem} class to communicate 
@@ -354,6 +356,7 @@ public interface ClientProtocol {
    * @param fileId the id uniquely identifying a file
    * @param favoredNodes the list of nodes where the client wants the blocks.
    *          Nodes are identified by either host name or address.
+   * @param mvc message vector clock.
    *
    * @return LocatedBlock allocated block information.
    *
@@ -369,7 +372,7 @@ public interface ClientProtocol {
   @Idempotent
   public LocatedBlock addBlock(String src, String clientName,
       ExtendedBlock previous, DatanodeInfo[] excludeNodes, long fileId, 
-      String[] favoredNodes)
+      String[] favoredNodes,VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException,
       NotReplicatedYetException, SafeModeException, UnresolvedLinkException,
       IOException;

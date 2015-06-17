@@ -195,6 +195,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /********************************************************
  * DFSClient can connect to a Hadoop Filesystem and 
  * perform basic file tasks.  It uses the ClientProtocol
@@ -239,6 +241,17 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   private static final DFSHedgedReadMetrics HEDGED_READ_METRIC =
       new DFSHedgedReadMetrics();
   private static ThreadPoolExecutor HEDGED_READ_THREAD_POOL;
+  
+  //HDFSRS_VC: vector clock
+  private static VectorClock vc = 
+		  new VectorClock(-1);//Client does not do tick
+  static public VectorClock getCopyOfVectorClock(){
+	  return new VectorClock(vc);
+  }
+  static void tickOnMessage(VectorClock vc){
+	  vc.tickOnRecv(vc);
+  }
+  //HDFSRS_VC
   
   /**
    * DFSClient configuration 

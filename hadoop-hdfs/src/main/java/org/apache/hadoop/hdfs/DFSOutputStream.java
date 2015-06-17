@@ -96,6 +96,8 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
+import edu.cornell.cs.sa.VectorClock;
+
 
 /****************************************************************
  * DFSOutputStream creates files from a stream of bytes.
@@ -1569,8 +1571,11 @@ public class DFSOutputStream extends FSOutputSummer
         long localstart = Time.now();
         while (true) {
           try {
-            return dfsClient.namenode.addBlock(src, dfsClient.clientName,
-                block, excludedNodes, fileId, favoredNodes);
+        	VectorClock mvc = DFSClient.getCopyOfVectorClock();//set vector clock
+            LocatedBlock lb = dfsClient.namenode.addBlock(src, dfsClient.clientName,
+                block, excludedNodes, fileId, favoredNodes,mvc/*HDFSRS_VC*/);
+            DFSClient.tickOnMessage(mvc);//tick on received Message
+            return lb;
           } catch (RemoteException e) {
             IOException ue = 
               e.unwrapRemoteException(FileNotFoundException.class,

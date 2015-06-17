@@ -37161,6 +37161,1277 @@ public final class HdfsProtos {
     // @@protoc_insertion_point(class_scope:hadoop.hdfs.RollingUpgradeStatusProto)
   }
 
+  public interface VectorClockProtoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry> 
+        getEntryList();
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry getEntry(int index);
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    int getEntryCount();
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder> 
+        getEntryOrBuilderList();
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder getEntryOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code hadoop.hdfs.VectorClockProto}
+   *
+   * <pre>
+   **
+   * HDFSRS_VC: VectorClock
+   * </pre>
+   */
+  public static final class VectorClockProto extends
+      com.google.protobuf.GeneratedMessage
+      implements VectorClockProtoOrBuilder {
+    // Use VectorClockProto.newBuilder() to construct.
+    private VectorClockProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private VectorClockProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final VectorClockProto defaultInstance;
+    public static VectorClockProto getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public VectorClockProto getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private VectorClockProto(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                entry_ = new java.util.ArrayList<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              entry_.add(input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          entry_ = java.util.Collections.unmodifiableList(entry_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.class, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<VectorClockProto> PARSER =
+        new com.google.protobuf.AbstractParser<VectorClockProto>() {
+      public VectorClockProto parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new VectorClockProto(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<VectorClockProto> getParserForType() {
+      return PARSER;
+    }
+
+    public interface VectorClockEntryOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required uint32 rank = 1;
+      /**
+       * <code>required uint32 rank = 1;</code>
+       */
+      boolean hasRank();
+      /**
+       * <code>required uint32 rank = 1;</code>
+       */
+      int getRank();
+
+      // required uint64 vc = 2;
+      /**
+       * <code>required uint64 vc = 2;</code>
+       */
+      boolean hasVc();
+      /**
+       * <code>required uint64 vc = 2;</code>
+       */
+      long getVc();
+    }
+    /**
+     * Protobuf type {@code hadoop.hdfs.VectorClockProto.VectorClockEntry}
+     */
+    public static final class VectorClockEntry extends
+        com.google.protobuf.GeneratedMessage
+        implements VectorClockEntryOrBuilder {
+      // Use VectorClockEntry.newBuilder() to construct.
+      private VectorClockEntry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private VectorClockEntry(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final VectorClockEntry defaultInstance;
+      public static VectorClockEntry getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public VectorClockEntry getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private VectorClockEntry(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 8: {
+                bitField0_ |= 0x00000001;
+                rank_ = input.readUInt32();
+                break;
+              }
+              case 16: {
+                bitField0_ |= 0x00000002;
+                vc_ = input.readUInt64();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.class, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<VectorClockEntry> PARSER =
+          new com.google.protobuf.AbstractParser<VectorClockEntry>() {
+        public VectorClockEntry parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new VectorClockEntry(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<VectorClockEntry> getParserForType() {
+        return PARSER;
+      }
+
+      private int bitField0_;
+      // required uint32 rank = 1;
+      public static final int RANK_FIELD_NUMBER = 1;
+      private int rank_;
+      /**
+       * <code>required uint32 rank = 1;</code>
+       */
+      public boolean hasRank() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required uint32 rank = 1;</code>
+       */
+      public int getRank() {
+        return rank_;
+      }
+
+      // required uint64 vc = 2;
+      public static final int VC_FIELD_NUMBER = 2;
+      private long vc_;
+      /**
+       * <code>required uint64 vc = 2;</code>
+       */
+      public boolean hasVc() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required uint64 vc = 2;</code>
+       */
+      public long getVc() {
+        return vc_;
+      }
+
+      private void initFields() {
+        rank_ = 0;
+        vc_ = 0L;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasRank()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasVc()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeUInt32(1, rank_);
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeUInt64(2, vc_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeUInt32Size(1, rank_);
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeUInt64Size(2, vc_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry)) {
+          return super.equals(obj);
+        }
+        org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry other = (org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry) obj;
+
+        boolean result = true;
+        result = result && (hasRank() == other.hasRank());
+        if (hasRank()) {
+          result = result && (getRank()
+              == other.getRank());
+        }
+        result = result && (hasVc() == other.hasVc());
+        if (hasVc()) {
+          result = result && (getVc()
+              == other.getVc());
+        }
+        result = result &&
+            getUnknownFields().equals(other.getUnknownFields());
+        return result;
+      }
+
+      private int memoizedHashCode = 0;
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (hasRank()) {
+          hash = (37 * hash) + RANK_FIELD_NUMBER;
+          hash = (53 * hash) + getRank();
+        }
+        if (hasVc()) {
+          hash = (37 * hash) + VC_FIELD_NUMBER;
+          hash = (53 * hash) + hashLong(getVc());
+        }
+        hash = (29 * hash) + getUnknownFields().hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code hadoop.hdfs.VectorClockProto.VectorClockEntry}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.class, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          rank_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000001);
+          vc_ = 0L;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_descriptor;
+        }
+
+        public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry getDefaultInstanceForType() {
+          return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry build() {
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry buildPartial() {
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry result = new org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.rank_ = rank_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.vc_ = vc_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry) {
+            return mergeFrom((org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry other) {
+          if (other == org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.getDefaultInstance()) return this;
+          if (other.hasRank()) {
+            setRank(other.getRank());
+          }
+          if (other.hasVc()) {
+            setVc(other.getVc());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasRank()) {
+            
+            return false;
+          }
+          if (!hasVc()) {
+            
+            return false;
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required uint32 rank = 1;
+        private int rank_ ;
+        /**
+         * <code>required uint32 rank = 1;</code>
+         */
+        public boolean hasRank() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required uint32 rank = 1;</code>
+         */
+        public int getRank() {
+          return rank_;
+        }
+        /**
+         * <code>required uint32 rank = 1;</code>
+         */
+        public Builder setRank(int value) {
+          bitField0_ |= 0x00000001;
+          rank_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required uint32 rank = 1;</code>
+         */
+        public Builder clearRank() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          rank_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // required uint64 vc = 2;
+        private long vc_ ;
+        /**
+         * <code>required uint64 vc = 2;</code>
+         */
+        public boolean hasVc() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required uint64 vc = 2;</code>
+         */
+        public long getVc() {
+          return vc_;
+        }
+        /**
+         * <code>required uint64 vc = 2;</code>
+         */
+        public Builder setVc(long value) {
+          bitField0_ |= 0x00000002;
+          vc_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required uint64 vc = 2;</code>
+         */
+        public Builder clearVc() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          vc_ = 0L;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:hadoop.hdfs.VectorClockProto.VectorClockEntry)
+      }
+
+      static {
+        defaultInstance = new VectorClockEntry(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:hadoop.hdfs.VectorClockProto.VectorClockEntry)
+    }
+
+    // repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;
+    public static final int ENTRY_FIELD_NUMBER = 1;
+    private java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry> entry_;
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    public java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry> getEntryList() {
+      return entry_;
+    }
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder> 
+        getEntryOrBuilderList() {
+      return entry_;
+    }
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    public int getEntryCount() {
+      return entry_.size();
+    }
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry getEntry(int index) {
+      return entry_.get(index);
+    }
+    /**
+     * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder getEntryOrBuilder(
+        int index) {
+      return entry_.get(index);
+    }
+
+    private void initFields() {
+      entry_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getEntryCount(); i++) {
+        if (!getEntry(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < entry_.size(); i++) {
+        output.writeMessage(1, entry_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < entry_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, entry_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto)) {
+        return super.equals(obj);
+      }
+      org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto other = (org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto) obj;
+
+      boolean result = true;
+      result = result && getEntryList()
+          .equals(other.getEntryList());
+      result = result &&
+          getUnknownFields().equals(other.getUnknownFields());
+      return result;
+    }
+
+    private int memoizedHashCode = 0;
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getEntryCount() > 0) {
+        hash = (37 * hash) + ENTRY_FIELD_NUMBER;
+        hash = (53 * hash) + getEntryList().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code hadoop.hdfs.VectorClockProto}
+     *
+     * <pre>
+     **
+     * HDFSRS_VC: VectorClock
+     * </pre>
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.class, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getEntryFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (entryBuilder_ == null) {
+          entry_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          entryBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.internal_static_hadoop_hdfs_VectorClockProto_descriptor;
+      }
+
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getDefaultInstanceForType() {
+        return org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto build() {
+        org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto buildPartial() {
+        org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto result = new org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto(this);
+        int from_bitField0_ = bitField0_;
+        if (entryBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            entry_ = java.util.Collections.unmodifiableList(entry_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.entry_ = entry_;
+        } else {
+          result.entry_ = entryBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto) {
+          return mergeFrom((org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto other) {
+        if (other == org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) return this;
+        if (entryBuilder_ == null) {
+          if (!other.entry_.isEmpty()) {
+            if (entry_.isEmpty()) {
+              entry_ = other.entry_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureEntryIsMutable();
+              entry_.addAll(other.entry_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.entry_.isEmpty()) {
+            if (entryBuilder_.isEmpty()) {
+              entryBuilder_.dispose();
+              entryBuilder_ = null;
+              entry_ = other.entry_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              entryBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getEntryFieldBuilder() : null;
+            } else {
+              entryBuilder_.addAllMessages(other.entry_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getEntryCount(); i++) {
+          if (!getEntry(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;
+      private java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry> entry_ =
+        java.util.Collections.emptyList();
+      private void ensureEntryIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          entry_ = new java.util.ArrayList<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry>(entry_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder> entryBuilder_;
+
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry> getEntryList() {
+        if (entryBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(entry_);
+        } else {
+          return entryBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public int getEntryCount() {
+        if (entryBuilder_ == null) {
+          return entry_.size();
+        } else {
+          return entryBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry getEntry(int index) {
+        if (entryBuilder_ == null) {
+          return entry_.get(index);
+        } else {
+          return entryBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder setEntry(
+          int index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry value) {
+        if (entryBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureEntryIsMutable();
+          entry_.set(index, value);
+          onChanged();
+        } else {
+          entryBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder setEntry(
+          int index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder builderForValue) {
+        if (entryBuilder_ == null) {
+          ensureEntryIsMutable();
+          entry_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          entryBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder addEntry(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry value) {
+        if (entryBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureEntryIsMutable();
+          entry_.add(value);
+          onChanged();
+        } else {
+          entryBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder addEntry(
+          int index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry value) {
+        if (entryBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureEntryIsMutable();
+          entry_.add(index, value);
+          onChanged();
+        } else {
+          entryBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder addEntry(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder builderForValue) {
+        if (entryBuilder_ == null) {
+          ensureEntryIsMutable();
+          entry_.add(builderForValue.build());
+          onChanged();
+        } else {
+          entryBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder addEntry(
+          int index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder builderForValue) {
+        if (entryBuilder_ == null) {
+          ensureEntryIsMutable();
+          entry_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          entryBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder addAllEntry(
+          java.lang.Iterable<? extends org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry> values) {
+        if (entryBuilder_ == null) {
+          ensureEntryIsMutable();
+          super.addAll(values, entry_);
+          onChanged();
+        } else {
+          entryBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder clearEntry() {
+        if (entryBuilder_ == null) {
+          entry_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          entryBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public Builder removeEntry(int index) {
+        if (entryBuilder_ == null) {
+          ensureEntryIsMutable();
+          entry_.remove(index);
+          onChanged();
+        } else {
+          entryBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder getEntryBuilder(
+          int index) {
+        return getEntryFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder getEntryOrBuilder(
+          int index) {
+        if (entryBuilder_ == null) {
+          return entry_.get(index);  } else {
+          return entryBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder> 
+           getEntryOrBuilderList() {
+        if (entryBuilder_ != null) {
+          return entryBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(entry_);
+        }
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder addEntryBuilder() {
+        return getEntryFieldBuilder().addBuilder(
+            org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder addEntryBuilder(
+          int index) {
+        return getEntryFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .hadoop.hdfs.VectorClockProto.VectorClockEntry entry = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder> 
+           getEntryBuilderList() {
+        return getEntryFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder> 
+          getEntryFieldBuilder() {
+        if (entryBuilder_ == null) {
+          entryBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntryOrBuilder>(
+                  entry_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          entry_ = null;
+        }
+        return entryBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:hadoop.hdfs.VectorClockProto)
+    }
+
+    static {
+      defaultInstance = new VectorClockProto(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:hadoop.hdfs.VectorClockProto)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_hadoop_hdfs_ExtendedBlockProto_descriptor;
   private static
@@ -37346,6 +38617,16 @@ public final class HdfsProtos {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_hadoop_hdfs_RollingUpgradeStatusProto_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_hadoop_hdfs_VectorClockProto_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_hadoop_hdfs_VectorClockProto_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -37487,13 +38768,16 @@ public final class HdfsProtos {
       "hdfs.FsPermissionProto\022\r\n\005owner\030\004 \002(\t\022\r\n",
       "\005group\030\005 \002(\t\022\022\n\ncreateTime\030\006 \002(\t\"0\n\031Roll" +
       "ingUpgradeStatusProto\022\023\n\013blockPoolId\030\001 \002" +
-      "(\t*.\n\020StorageTypeProto\022\010\n\004DISK\020\001\022\007\n\003SSD\020" +
-      "\002\022\007\n\003MEM\020\003*O\n\021ChecksumTypeProto\022\021\n\rCHECK" +
-      "SUM_NULL\020\000\022\022\n\016CHECKSUM_CRC32\020\001\022\023\n\017CHECKS" +
-      "UM_CRC32C\020\002*L\n\021ReplicaStateProto\022\r\n\tFINA" +
-      "LIZED\020\000\022\007\n\003RBW\020\001\022\007\n\003RWR\020\002\022\007\n\003RUR\020\003\022\r\n\tTE" +
-      "MPORARY\020\004B6\n%org.apache.hadoop.hdfs.prot" +
-      "ocol.protoB\nHdfsProtos\240\001\001"
+      "(\t\"\177\n\020VectorClockProto\022=\n\005entry\030\001 \003(\0132.." +
+      "hadoop.hdfs.VectorClockProto.VectorClock" +
+      "Entry\032,\n\020VectorClockEntry\022\014\n\004rank\030\001 \002(\r\022" +
+      "\n\n\002vc\030\002 \002(\004*.\n\020StorageTypeProto\022\010\n\004DISK\020" +
+      "\001\022\007\n\003SSD\020\002\022\007\n\003MEM\020\003*O\n\021ChecksumTypeProto" +
+      "\022\021\n\rCHECKSUM_NULL\020\000\022\022\n\016CHECKSUM_CRC32\020\001\022" +
+      "\023\n\017CHECKSUM_CRC32C\020\002*L\n\021ReplicaStateProt" +
+      "o\022\r\n\tFINALIZED\020\000\022\007\n\003RBW\020\001\022\007\n\003RWR\020\002\022\007\n\003RU",
+      "R\020\003\022\r\n\tTEMPORARY\020\004B6\n%org.apache.hadoop." +
+      "hdfs.protocol.protoB\nHdfsProtos\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -37722,6 +39006,18 @@ public final class HdfsProtos {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_RollingUpgradeStatusProto_descriptor,
               new java.lang.String[] { "BlockPoolId", });
+          internal_static_hadoop_hdfs_VectorClockProto_descriptor =
+            getDescriptor().getMessageTypes().get(37);
+          internal_static_hadoop_hdfs_VectorClockProto_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_hadoop_hdfs_VectorClockProto_descriptor,
+              new java.lang.String[] { "Entry", });
+          internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_descriptor =
+            internal_static_hadoop_hdfs_VectorClockProto_descriptor.getNestedTypes().get(0);
+          internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_hadoop_hdfs_VectorClockProto_VectorClockEntry_descriptor,
+              new java.lang.String[] { "Rank", "Vc", });
           return null;
         }
       };

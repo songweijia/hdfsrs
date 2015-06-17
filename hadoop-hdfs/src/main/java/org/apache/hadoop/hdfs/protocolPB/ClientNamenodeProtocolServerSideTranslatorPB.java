@@ -18,7 +18,6 @@
 package org.apache.hadoop.hdfs.protocolPB;
 
 import java.io.IOException;
-
 import java.util.List;
 
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -177,6 +176,7 @@ import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Update
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.DatanodeIDProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.DatanodeInfoProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProto;
+import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto;
 import org.apache.hadoop.hdfs.security.token.block.DataEncryptionKey;
 import org.apache.hadoop.hdfs.security.token.delegation.DelegationTokenIdentifier;
 import org.apache.hadoop.hdfs.server.namenode.INodeId;
@@ -191,6 +191,8 @@ import org.apache.hadoop.security.token.Token;
 
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
+
+import edu.cornell.cs.sa.VectorClock;
 
 /**
  * This class is used on the server side. Calls come across the wire for the
@@ -460,6 +462,15 @@ final private ClientProtocol server;
     try {
       List<DatanodeInfoProto> excl = req.getExcludeNodesList();
       List<String> favor = req.getFavoredNodesList();
+      /**
+       * HDFSRS_VC: get vector clock
+       * TODO: add to addBlock parameters
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */
       LocatedBlock result = server.addBlock(
           req.getSrc(),
           req.getClientName(),
@@ -467,9 +478,10 @@ final private ClientProtocol server;
           (excl == null || excl.size() == 0) ? null : PBHelper.convert(excl
               .toArray(new DatanodeInfoProto[excl.size()])), req.getFileId(),
           (favor == null || favor.size() == 0) ? null : favor
-              .toArray(new String[favor.size()]));
+              .toArray(new String[favor.size()]),vc/*HDFSRS_VC:message VC*/);
       return AddBlockResponseProto.newBuilder()
-          .setBlock(PBHelper.convert(result)).build();
+          .setBlock(PBHelper.convert(result))
+          .setVc(PBHelper.convert(vc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }

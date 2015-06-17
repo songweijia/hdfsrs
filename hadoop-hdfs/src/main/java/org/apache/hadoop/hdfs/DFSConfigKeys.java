@@ -633,4 +633,10 @@ public class DFSConfigKeys extends CommonConfigurationKeys {
   public static final int DEFAULT_DFSCLIENT_HEDGED_READ_THREADPOOL_SIZE = 0;
   public static final String DFS_NFS_KEYTAB_FILE_KEY = "dfs.nfs.keytab.file";
   public static final String DFS_NFS_USER_NAME_KEY = "dfs.nfs.kerberos.principal";
+  
+  //HDFSRS_VC: VCPID (vector clock pid) works to construct the rank for datanode or namenode
+  // calculation: vcpid(namenode) vcpid<<2+1
+  // calculation: vcpid(datanode) vcpid<<2+0
+  public static final String DFS_VCPID = "dfs.vcpid";
+  //HDFSRS_VC
 }
