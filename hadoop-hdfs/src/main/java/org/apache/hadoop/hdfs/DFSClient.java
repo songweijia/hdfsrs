@@ -248,8 +248,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   static public VectorClock getCopyOfVectorClock(){
 	  return new VectorClock(vc);
   }
-  static void tickOnMessage(VectorClock vc){
-	  vc.tickOnRecv(vc);
+  static void tickOnMessage(VectorClock mvc){
+	  mvc.tickOnRecv(mvc);
   }
   //HDFSRS_VC
   
