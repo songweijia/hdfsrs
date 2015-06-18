@@ -80,7 +80,11 @@ public class VectorClock implements ILogicalClock,Serializable
 	@Override
 	synchronized public ILogicalClock tick() {
 		if(pid>=0)//if pid < 0, we don't tick.
-			vc.put(pid, vc.get(pid)+1);
+		{
+          Long vcl = vc.get(pid);
+          if(vcl==null) vcl = new Long(0);
+          vc.put(pid, vcl+1);
+		}
 		return this;
 	}
 
