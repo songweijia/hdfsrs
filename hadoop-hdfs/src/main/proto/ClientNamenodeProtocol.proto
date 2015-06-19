@@ -211,6 +211,7 @@ message RenameRequestProto {
 
 message RenameResponseProto {
   required bool result = 1;
+  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
 }
 
 
@@ -222,6 +223,7 @@ message Rename2RequestProto {
 }
 
 message Rename2ResponseProto { // void response
+  required VectorClockProto vc = 1; // HDFSRS_VC: vector clock
 }
 
 message DeleteRequestProto {
