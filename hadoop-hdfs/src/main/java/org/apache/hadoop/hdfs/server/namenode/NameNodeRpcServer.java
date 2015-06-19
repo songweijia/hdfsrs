@@ -587,7 +587,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
       String[] favoredNodes, VectorClock mvc/*HDFSRS_VC*/)
       throws IOException {
 	  //HDFSRS_VC: update vectorclock
-	  nn.vc.tickOnRecv(mvc);
+	  //nn.vc.tickOnRecv(mvc);
 	  //HDFSRS_VC
     if (stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*BLOCK* NameNode.addBlock: file " + src
@@ -607,8 +607,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     if (locatedBlock != null)
       metrics.incrAddBlockOps();
     //HDFSRS_VC:return mvc
-    nn.vc.tick();
-    mvc.vc = nn.vc.vc;
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
     //HDFSRS_VC
     return locatedBlock;
   }
