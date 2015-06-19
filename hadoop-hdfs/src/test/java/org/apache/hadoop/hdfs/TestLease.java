@@ -53,6 +53,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import edu.cornell.cs.sa.VectorClock;
+
 public class TestLease {
   static boolean hasLease(MiniDFSCluster cluster, Path src) {
     return NameNodeAdapter.getLeaseManager(cluster.getNamesystem()
@@ -62,6 +64,15 @@ public class TestLease {
   static int leaseCount(MiniDFSCluster cluster) {
     return NameNodeAdapter.getLeaseManager(cluster.getNamesystem()).countLease();
   }
+  
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
+
   
   static final String dirString = "/test/lease";
   final Path dir = new Path(dirString);
@@ -290,6 +301,7 @@ public class TestLease {
       ugi[i] = UserGroupInformation.createUserForTesting("user" + i, groups);
     }
 
+    VectorClock mvc;
     Mockito.doReturn(
         new HdfsFileStatus(0, false, 1, 1024, 0, 0, new FsPermission(
             (short) 777), "owner", "group", new byte[0], new byte[0],
@@ -302,7 +314,8 @@ public class TestLease {
         .when(mcp)
         .create(anyString(), (FsPermission) anyObject(), anyString(),
             (EnumSetWritable<CreateFlag>) anyObject(), anyBoolean(),
-            anyShort(), anyLong());
+            anyShort(), anyLong(), mvc=copyVC());
+    tickOn(mvc);
 
     final Configuration conf = new Configuration();
     final DFSClient c1 = createDFSClientAs(ugi[0], conf);

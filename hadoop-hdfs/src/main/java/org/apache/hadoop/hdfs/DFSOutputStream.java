@@ -650,7 +650,9 @@ public class DFSOutputStream extends FSOutputSummer
             //state in NameNode. The overwriteBlock method will complete that block
             //and open convert the new block specified by blockNumber in to "Under construction"
             //state.
-            LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, block, (int)blockNumber, fileId, dfsClient.clientName);
+            VectorClock mvc = DFSClient.getCopyOfVectorClock(); //HDFSRS_VC
+            LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, block, (int)blockNumber, fileId, dfsClient.clientName, mvc);
+            DFSClient.tickOnMessage(mvc); //HDFSRS_VC
             if(lb==null)throw new IOException("[HDFSRS_RWAPI]overwriteBlock() returns null:blockNumber="+blockNumber);
             accessToken = lb.getBlockToken();
             block = lb.getBlock();
@@ -1408,7 +1410,9 @@ public class DFSOutputStream extends FSOutputSummer
 
         if (!success) {
           DFSClient.LOG.info("Abandoning " + block);
-          dfsClient.namenode.abandonBlock(block, src, dfsClient.clientName);
+          VectorClock mvc = DFSClient.getCopyOfVectorClock();//HDFSRS_VC
+          dfsClient.namenode.abandonBlock(block, src, dfsClient.clientName, mvc);
+          DFSClient.tickOnMessage(mvc);//HDFSRS_VC
           block = null;
           DFSClient.LOG.info("Excluding datanode " + nodes[errorIndex]);
           excludedNodes.put(nodes[errorIndex], nodes[errorIndex]);
@@ -1737,9 +1741,11 @@ public class DFSOutputStream extends FSOutputSummer
       DataChecksum checksum, String[] favoredNodes) throws IOException {
     final HdfsFileStatus stat;
     try {
+      VectorClock mvc = DFSClient.getCopyOfVectorClock(); //HDFSRS_VC
       stat = dfsClient.namenode.create(src, masked, dfsClient.clientName,
           new EnumSetWritable<CreateFlag>(flag), createParent, replication,
-          blockSize);
+          blockSize,mvc);
+      DFSClient.tickOnMessage(mvc);//HDFSRS_VC
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      DSQuotaExceededException.class,
@@ -2088,7 +2094,9 @@ public class DFSOutputStream extends FSOutputSummer
       // namenode.
       if (persistBlocks.getAndSet(false) || updateLength) {
         try {
-          dfsClient.namenode.fsync(src, dfsClient.clientName, lastBlockLength);
+          VectorClock mvc = DFSClient.getCopyOfVectorClock(); // HDFSRS_VC
+          dfsClient.namenode.fsync(src, dfsClient.clientName, lastBlockLength, mvc);
+          DFSClient.tickOnMessage(mvc); // HDFSRS_VC
         } catch (IOException ioe) {
           DFSClient.LOG.warn("Unable to persist blocks in hflush for " + src, ioe);
           // If we got an error here, it might be because some other thread called
@@ -2278,8 +2286,10 @@ public class DFSOutputStream extends FSOutputSummer
     boolean fileComplete = false;
     int retries = dfsClient.getConf().nBlockWriteLocateFollowingRetry;
     while (!fileComplete) {
+      VectorClock mvc = DFSClient.getCopyOfVectorClock();//HDFSRS_VC
       fileComplete =
-          dfsClient.namenode.complete(src, dfsClient.clientName, last, fileId);
+          dfsClient.namenode.complete(src, dfsClient.clientName, last, fileId, mvc);
+      DFSClient.tickOnMessage(mvc);//HDFSRS_VC
       if (!fileComplete) {
         final int hdfsTimeout = dfsClient.getHdfsTimeout();
         if (!dfsClient.clientRunning ||

@@ -50,6 +50,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * Race between two threads simultaneously calling
  * FSNamesystem.getAdditionalBlock().
@@ -59,6 +61,15 @@ public class TestAddBlockRetry {
 
   private static final short REPLICATION = 3;
 
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
+
+  
   private Configuration conf;
   private MiniDFSCluster cluster;
 
@@ -125,10 +136,12 @@ public class TestAddBlockRetry {
         Mockito.anyLong(), Mockito.<List<String>>any());
 
     // create file
+    VectorClock mvc;
     nn.create(src, FsPermission.getFileDefault(),
         "clientName",
         new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE)),
-        true, (short)3, 1024);
+        true, (short)3, 1024, mvc=copyVC());
+    tickOn(mvc);
 
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
@@ -153,9 +166,11 @@ public class TestAddBlockRetry {
     final String src = "/testAddBlockRetryShouldReturnBlockWithLocations";
     NamenodeProtocols nameNodeRpc = cluster.getNameNodeRpc();
     // create file
+    VectorClock mvc;
     nameNodeRpc.create(src, FsPermission.getFileDefault(), "clientName",
         new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE)), true,
-        (short) 3, 1024);
+        (short) 3, 1024, mvc=copyVC());
+    tickOn(mvc);
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
     LocatedBlock lb1 = nameNodeRpc.addBlock(src, "clientName", null, null,

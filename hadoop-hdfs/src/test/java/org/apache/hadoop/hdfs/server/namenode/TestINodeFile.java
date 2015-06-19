@@ -67,6 +67,8 @@ import org.apache.hadoop.util.Time;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import edu.cornell.cs.sa.VectorClock;
+
 public class TestINodeFile {
   // Re-enable symlinks for tests, see HADOOP-10020 and HADOOP-10052
   static {
@@ -76,6 +78,13 @@ public class TestINodeFile {
 
   static final short BLOCKBITS = 48;
   static final long BLKSIZE_MAXVALUE = ~(0xffffL << BLOCKBITS);
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
 
   private final PermissionStatus perm = new PermissionStatus(
       "userName", null, FsPermission.getDefault());
@@ -418,7 +427,9 @@ public class TestINodeFile {
       assertEquals(inodeCount, fsn.dir.getInodeMapSize());
       assertEquals(expectedLastInodeId, fsn.getLastInodeId());
       // Concat the /test1/file1 /test1/file2 into /test1/file2
-      nnrpc.concat(file2, new String[] {file1});
+      VectorClock mvc;
+      nnrpc.concat(file2, new String[] {file1}, mvc=copyVC());
+      tickOn(mvc);
       inodeCount--; // file1 and file2 are concatenated to file2
       assertEquals(inodeCount, fsn.dir.getInodeMapSize());
       assertEquals(expectedLastInodeId, fsn.getLastInodeId());

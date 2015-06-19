@@ -47,6 +47,8 @@ import org.apache.hadoop.test.PathUtils;
 import org.apache.log4j.Level;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * A JUnit test for checking if restarting DFS preserves the
  * blocks that are part of an unclosed file.
@@ -56,6 +58,15 @@ public class TestPersistBlocks {
     ((Log4JLogger)FSImage.LOG).getLogger().setLevel(Level.ALL);
     ((Log4JLogger)FSNamesystem.LOG).getLogger().setLevel(Level.ALL);
   }
+
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
+  
   
   private static final int BLOCK_SIZE = 4096;
   private static final int NUM_BLOCKS = 5;
@@ -163,8 +174,10 @@ public class TestPersistBlocks {
           FILE_NAME, 0, BLOCK_SIZE * NUM_BLOCKS);
       assertEquals(NUM_BLOCKS, blocks.getLocatedBlocks().size());
       LocatedBlock b = blocks.getLastLocatedBlock();
+      VectorClock mvc;
       dfsclient.getNamenode().abandonBlock(b.getBlock(), FILE_NAME,
-          dfsclient.clientName);
+          dfsclient.clientName, mvc=copyVC());
+      tickOn(mvc);
       
       // explicitly do NOT close the file.
       cluster.restartNameNode();

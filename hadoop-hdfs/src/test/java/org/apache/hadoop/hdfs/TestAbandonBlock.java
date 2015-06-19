@@ -35,11 +35,22 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * Test abandoning blocks, which clients do on pipeline creation failure.
  */
 public class TestAbandonBlock {
   public static final Log LOG = LogFactory.getLog(TestAbandonBlock.class);
+  
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
+
   
   private static final Configuration CONF = new HdfsConfiguration();
   static final String FILE_NAME_PREFIX
@@ -78,12 +89,14 @@ public class TestAbandonBlock {
       dfsclient.getNamenode().getBlockLocations(src, 0, Integer.MAX_VALUE);
     int orginalNumBlocks = blocks.locatedBlockCount();
     LocatedBlock b = blocks.getLastLocatedBlock();
+    VectorClock mvc;
     dfsclient.getNamenode().abandonBlock(b.getBlock(), src,
-        dfsclient.clientName);
-    
+        dfsclient.clientName, mvc=copyVC());
+    tickOn(mvc);
     // call abandonBlock again to make sure the operation is idempotent
     dfsclient.getNamenode().abandonBlock(b.getBlock(), src,
-        dfsclient.clientName);
+        dfsclient.clientName, mvc=copyVC());
+    tickOn(mvc);
 
     // And close the file
     fout.close();

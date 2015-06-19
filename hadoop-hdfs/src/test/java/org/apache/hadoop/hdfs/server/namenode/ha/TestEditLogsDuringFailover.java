@@ -46,6 +46,8 @@ import org.junit.Test;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * Test cases for the handling of edit logs during failover
  * and startup of the standby node.
@@ -54,6 +56,13 @@ public class TestEditLogsDuringFailover {
   private static final Log LOG =
     LogFactory.getLog(TestEditLogsDuringFailover.class);
   private static final int NUM_DIRS_IN_LOG = 5;
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
 
   static {
     // No need to fsync for the purposes of tests. This makes
@@ -90,9 +99,10 @@ public class TestEditLogsDuringFailover {
           Collections.singletonList(cluster.getSharedEditsDir(0, 1)),
           NNStorage.getInProgressEditsFileName(1));
       assertNoEditFiles(cluster.getNameDirs(1));
-      
+      VectorClock mvc;
       cluster.getNameNode(0).getRpcServer().mkdirs("/test",
-          FsPermission.createImmutable((short)0755), true);
+          FsPermission.createImmutable((short)0755), true, mvc=copyVC());
+      tickOn(mvc);
 
       // Restarting the standby should not finalize any edits files
       // in the shared directory when it starts up!
@@ -113,7 +123,8 @@ public class TestEditLogsDuringFailover {
       assertNull(NameNodeAdapter.getFileInfo(cluster.getNameNode(1), "/test", true));
       
       cluster.getNameNode(0).getRpcServer().mkdirs("/test2",
-          FsPermission.createImmutable((short)0755), true);
+          FsPermission.createImmutable((short)0755), true, mvc=copyVC());
+      tickOn(mvc);
 
       // If we restart NN0, it'll come back as standby, and we can
       // transition NN1 to active and make sure it reads edits correctly at this point.

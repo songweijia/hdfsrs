@@ -32,6 +32,8 @@ import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.util.Time;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This class tests that the DFS command mkdirs only creates valid
  * directories, and generally behaves as expected.
@@ -46,6 +48,15 @@ public class TestDFSMkdirs {
       "/test2/../test4",
       "/test5/."
   };
+  
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
+
 
   /**
    * Tests mkdirs can create a directory that does not exist and will
@@ -141,7 +152,9 @@ public class TestDFSMkdirs {
       
       for (String pathStr : NON_CANONICAL_PATHS) {
         try {
-          nnrpc.mkdirs(pathStr, new FsPermission((short)0755), true);
+          VectorClock mvc;
+          nnrpc.mkdirs(pathStr, new FsPermission((short)0755), true, mvc=copyVC());
+          tickOn(mvc);
           fail("Did not fail when called with a non-canonicalized path: "
              + pathStr);
         } catch (InvalidPathException ipe) {

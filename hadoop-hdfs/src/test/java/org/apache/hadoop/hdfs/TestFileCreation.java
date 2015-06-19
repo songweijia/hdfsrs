@@ -84,6 +84,8 @@ import org.apache.hadoop.util.Time;
 import org.apache.log4j.Level;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This class tests various cases during file creation.
  */
@@ -96,6 +98,15 @@ public class TestFileCreation {
     ((Log4JLogger)LogFactory.getLog(FSNamesystem.class)).getLogger().setLevel(Level.ALL);
     ((Log4JLogger)DFSClient.LOG).getLogger().setLevel(Level.ALL);
   }
+
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
+
 
   static final long seed = 0xDEADBEEFL;
   static final int blockSize = 8192;
@@ -1127,9 +1138,11 @@ public class TestFileCreation {
         switch (method) {
         case DIRECT_NN_RPC:
           try {
+            VectorClock mvc;
             nnrpc.create(pathStr, new FsPermission((short)0755), "client",
                 new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE)),
-                true, (short)1, 128*1024*1024L);
+                true, (short)1, 128*1024*1024L, mvc=copyVC());
+            tickOn(mvc);
             fail("Should have thrown exception when creating '"
                 + pathStr + "'" + " by " + method);
           } catch (InvalidPathException ipe) {
@@ -1185,8 +1198,10 @@ public class TestFileCreation {
       createFile(dfs, f, 3);
       long someOtherFileId = -1;
       try {
+        VectorClock mvc;
         cluster.getNameNodeRpc()
-            .complete(f.toString(), client.clientName, null, someOtherFileId);
+            .complete(f.toString(), client.clientName, null, someOtherFileId, mvc=copyVC());
+        tickOn(mvc);
         fail();
       } catch(FileNotFoundException fnf) {
         FileSystem.LOG.info("Caught Expected FileNotFoundException: ", fnf);

@@ -169,6 +169,7 @@ public interface ClientProtocol {
    * @param createParent create missing parent directory if true
    * @param replication block replication factor.
    * @param blockSize maximum block size.
+   * @param mvc --- VectorClock
    * 
    * @return the status of the created file, it could be null if the server
    *           doesn't support returning the file status
@@ -196,7 +197,8 @@ public interface ClientProtocol {
   @AtMostOnce
   public HdfsFileStatus create(String src, FsPermission masked,
       String clientName, EnumSetWritable<CreateFlag> flag,
-      boolean createParent, short replication, long blockSize)
+      boolean createParent, short replication, long blockSize,
+      VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, AlreadyBeingCreatedException,
       DSQuotaExceededException, FileAlreadyExistsException,
       FileNotFoundException, NSQuotaExceededException,
@@ -207,6 +209,7 @@ public interface ClientProtocol {
    * Append to the end of the file. 
    * @param src path of the file being created.
    * @param clientName name of the current client.
+   * @param mvc: message vector clock.
    * @return information about the last partial block if any.
    * @throws AccessControlException if permission to append file is 
    * denied by the system. As usually on the client side the exception will 
@@ -228,7 +231,7 @@ public interface ClientProtocol {
    * @throws UnsupportedOperationException if append is not supported
    */
   @AtMostOnce
-  public LocatedBlock append(String src, String clientName)
+  public LocatedBlock append(String src, String clientName,VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException;
@@ -240,6 +243,7 @@ public interface ClientProtocol {
    * @param bIndex - index to the new block
    * @param fileId - fileId
    * @param clientName - clientname
+   * @param mvc - Message Vector Clock
    * @return
    * @throws AccessControlException
    * @throws DSQuotaExceededException
@@ -251,7 +255,7 @@ public interface ClientProtocol {
    */
   @AtMostOnce
   public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
-      int bIndex, long fileId, String clientName)
+      int bIndex, long fileId, String clientName, VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException;
@@ -332,7 +336,8 @@ public interface ClientProtocol {
    * @throws IOException If an I/O error occurred
    */
   @Idempotent
-  public void abandonBlock(ExtendedBlock b, String src, String holder)
+  public void abandonBlock(ExtendedBlock b, String src, String holder,
+		  VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException,
       UnresolvedLinkException, IOException;
 
@@ -422,6 +427,7 @@ public interface ClientProtocol {
    * @param src the file being created
    * @param clientName the name of the client that adds the block
    * @param last the last block info
+   * @param mvc Message Vector Clock
    * @param fileId the id uniquely identifying a file
    *
    * @return true if all file blocks are minimally replicated or false otherwise
@@ -434,7 +440,8 @@ public interface ClientProtocol {
    */
   @Idempotent
   public boolean complete(String src, String clientName,
-                          ExtendedBlock last, long fileId)
+                          ExtendedBlock last, long fileId,
+                          VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException, SafeModeException,
       UnresolvedLinkException, IOException;
 
@@ -453,6 +460,7 @@ public interface ClientProtocol {
    * Rename an item in the file system namespace.
    * @param src existing file or directory name.
    * @param dst new name.
+   * @param mvc Message Vector Clock
    * @return true if successful, or false if the old name does not exist
    * or if the new name already belongs to the namespace.
    * 
@@ -460,7 +468,7 @@ public interface ClientProtocol {
    * @throws IOException an I/O error occurred 
    */
   @AtMostOnce
-  public boolean rename(String src, String dst) 
+  public boolean rename(String src, String dst, VectorClock mvc/*HDFSRS_VC*/) 
       throws UnresolvedLinkException, SnapshotAccessControlException, IOException;
 
   /**
@@ -468,13 +476,14 @@ public interface ClientProtocol {
    * 
    * @param trg existing file
    * @param srcs - list of existing files (same block size, same replication)
+   * @param mvc - VectorClock
    * @throws IOException if some arguments are invalid
    * @throws UnresolvedLinkException if <code>trg</code> or <code>srcs</code>
    *           contains a symlink
    * @throws SnapshotAccessControlException if path is in RO snapshot
    */
   @AtMostOnce
-  public void concat(String trg, String[] srcs) 
+  public void concat(String trg, String[] srcs, VectorClock mvc/*HDFSRS_VC*/) 
       throws IOException, UnresolvedLinkException, SnapshotAccessControlException;
 
   /**
@@ -494,6 +503,7 @@ public interface ClientProtocol {
    * @param src existing file or directory name.
    * @param dst new name.
    * @param options Rename options
+   * @param mvc message vector clock
    * 
    * @throws AccessControlException If access is denied
    * @throws DSQuotaExceededException If rename violates disk space 
@@ -513,7 +523,7 @@ public interface ClientProtocol {
    * @throws IOException If an I/O error occurred
    */
   @AtMostOnce
-  public void rename2(String src, String dst, Options.Rename... options)
+  public void rename2(String src, String dst, VectorClock mvc/*HDFSRS_VC*/, Options.Rename... options)
       throws AccessControlException, DSQuotaExceededException,
       FileAlreadyExistsException, FileNotFoundException,
       NSQuotaExceededException, ParentNotDirectoryException, SafeModeException,
@@ -527,6 +537,7 @@ public interface ClientProtocol {
    * @param src existing name
    * @param recursive if true deletes a non empty directory recursively,
    * else throws an exception.
+   * @param mvc -- Message Vector Clock
    * @return true only if the existing file or directory was actually removed 
    * from the file system.
    * 
@@ -538,7 +549,7 @@ public interface ClientProtocol {
    * @throws IOException If an I/O error occurred
    */
   @AtMostOnce
-  public boolean delete(String src, boolean recursive)
+  public boolean delete(String src, boolean recursive, VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException, SafeModeException,
       UnresolvedLinkException, SnapshotAccessControlException, IOException;
   
@@ -549,6 +560,7 @@ public interface ClientProtocol {
    * @param src The path of the directory being created
    * @param masked The masked permission of the directory being created
    * @param createParent create missing parent directory if true
+   * @param mvc Message Vecotr Clock
    *
    * @return True if the operation success.
    *
@@ -568,7 +580,8 @@ public interface ClientProtocol {
    * @throws InvalidPathException If <code>src</code> is invalid
    */
   @Idempotent
-  public boolean mkdirs(String src, FsPermission masked, boolean createParent)
+  public boolean mkdirs(String src, FsPermission masked, boolean createParent,
+		  VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileAlreadyExistsException,
       FileNotFoundException, NSQuotaExceededException,
       ParentNotDirectoryException, SafeModeException, UnresolvedLinkException,
@@ -936,13 +949,15 @@ public interface ClientProtocol {
    * @param client The string representation of the client
    * @param lastBlockLength The length of the last block (under construction) 
    *                        to be reported to NameNode 
+   * @param mvc Message Vector Clock
    * @throws AccessControlException permission denied
    * @throws FileNotFoundException file <code>src</code> is not found
    * @throws UnresolvedLinkException if <code>src</code> contains a symlink. 
    * @throws IOException If an I/O error occurred
    */
   @Idempotent
-  public void fsync(String src, String client, long lastBlockLength) 
+  public void fsync(String src, String client, long lastBlockLength,
+		  VectorClock mvc/*HDFSRS_VC*/) 
       throws AccessControlException, FileNotFoundException, 
       UnresolvedLinkException, IOException;
 

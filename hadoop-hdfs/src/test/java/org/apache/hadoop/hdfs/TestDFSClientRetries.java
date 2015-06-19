@@ -99,6 +99,8 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Joiner;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * These tests make sure that DFSClient retries fetching data from DFS
  * properly in case of errors.
@@ -110,6 +112,14 @@ public class TestDFSClientRetries {
   public static final Log LOG =
     LogFactory.getLog(TestDFSClientRetries.class.getName());
   static private Configuration conf = null;
+  
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
  
  private static class TestServer extends Server {
     private boolean sleep;
@@ -244,17 +254,19 @@ public class TestDFSClientRetries {
                                     exceptionMsg);
       }
     };
+    VectorClock mvc = copyVC();
     when(mockNN.addBlock(anyString(), 
                          anyString(),
                          any(ExtendedBlock.class),
                          any(DatanodeInfo[].class),
-                         anyLong(), any(String[].class),null/*HDFSRS_VC*/)).thenAnswer(answer);
-    
+                         anyLong(), any(String[].class),mvc)).thenAnswer(answer);
+    tickOn(mvc);
     Mockito.doReturn(
             new HdfsFileStatus(0, false, 1, 1024, 0, 0, new FsPermission(
                 (short) 777), "owner", "group", new byte[0], new byte[0],
                 1010, 0)).when(mockNN).getFileInfo(anyString());
     
+    mvc = copyVC();
     Mockito.doReturn(
             new HdfsFileStatus(0, false, 1, 1024, 0, 0, new FsPermission(
                 (short) 777), "owner", "group", new byte[0], new byte[0],
@@ -262,7 +274,8 @@ public class TestDFSClientRetries {
         .when(mockNN)
         .create(anyString(), (FsPermission) anyObject(), anyString(),
             (EnumSetWritable<CreateFlag>) anyObject(), anyBoolean(),
-            anyShort(), anyLong());
+            anyShort(), anyLong(), mvc);
+    tickOn(mvc);
 
     final DFSClient client = new DFSClient(null, mockNN, conf, null);
     OutputStream os = client.create("testfile", true);
@@ -376,6 +389,7 @@ public class TestDFSClientRetries {
       
       // Make the call to addBlock() get called twice, as if it were retried
       // due to an IPC issue.
+      VectorClock mvc;
       doAnswer(new Answer<LocatedBlock>() {
         @Override
         public LocatedBlock answer(InvocationOnMock invocation) throws Throwable {
@@ -397,7 +411,8 @@ public class TestDFSClientRetries {
         }
       }).when(spyNN).addBlock(Mockito.anyString(), Mockito.anyString(),
           Mockito.<ExtendedBlock> any(), Mockito.<DatanodeInfo[]> any(),
-          Mockito.anyLong(), Mockito.<String[]> any(),null/*HDFSRS_VC*/);
+          Mockito.anyLong(), Mockito.<String[]> any(), (mvc = copyVC()));
+      tickOn(mvc);
 
       doAnswer(new Answer<Boolean>() {
 
@@ -424,7 +439,8 @@ public class TestDFSClientRetries {
           }
         }
       }).when(spyNN).complete(Mockito.anyString(), Mockito.anyString(),
-          Mockito.<ExtendedBlock>any(), anyLong());
+          Mockito.<ExtendedBlock>any(), anyLong(), (mvc = copyVC()));
+      tickOn(mvc);
       
       OutputStream stm = client.create(file.toString(), true);
       try {
@@ -439,10 +455,12 @@ public class TestDFSClientRetries {
       Mockito.verify(spyNN, Mockito.atLeastOnce()).addBlock(
           Mockito.anyString(), Mockito.anyString(),
           Mockito.<ExtendedBlock> any(), Mockito.<DatanodeInfo[]> any(),
-          Mockito.anyLong(), Mockito.<String[]> any(), null/*HDFSRS_VC*/);
+          Mockito.anyLong(), Mockito.<String[]> any(),mvc=copyVC());
+      tickOn(mvc);
       Mockito.verify(spyNN, Mockito.atLeastOnce()).complete(
           Mockito.anyString(), Mockito.anyString(),
-          Mockito.<ExtendedBlock>any(), anyLong());
+          Mockito.<ExtendedBlock>any(), anyLong(),mvc=copyVC());
+      tickOn(mvc);
       
       AppendTestUtil.check(fs, file, 10000);
     } finally {

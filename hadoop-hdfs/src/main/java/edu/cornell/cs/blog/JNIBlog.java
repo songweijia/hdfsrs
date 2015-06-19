@@ -18,17 +18,18 @@ public class JNIBlog {
   }
   
   private long jniData = 0;
+  private VectorClock vc;
   
   /**
    * initialization
    * @param nNode - number of nodes in the system including
    *  namenode and datanodes.
-   * @param blockSize - block size for each block
+   * @param rank - the rank of the vector clock
    * @param pageSize - page size
    * @return error code, 0 for success.
    */
   public native int initialize(
-      int nNode,int blockSize,int pageSize);
+      int rank,int blockSize,int pageSize);
   
   /**
    * create a block

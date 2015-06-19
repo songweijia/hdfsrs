@@ -43,10 +43,19 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 public class TestLeaseRecovery {
   static final int BLOCK_SIZE = 1024;
   static final short REPLICATION_NUM = (short)3;
   private static final long LEASE_PERIOD = 300L;
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
 
   static void checkMetaInfo(ExtendedBlock b, DataNode dn
       ) throws IOException {
@@ -118,7 +127,9 @@ public class TestLeaseRecovery {
 
 
       DataNode.LOG.info("dfs.dfs.clientName=" + dfs.dfs.clientName);
-      cluster.getNameNodeRpc().append(filestr, dfs.dfs.clientName);
+      VectorClock mvc;
+      cluster.getNameNodeRpc().append(filestr, dfs.dfs.clientName, mvc=copyVC());
+      tickOn(mvc);
 
       // expire lease to trigger block recovery.
       waitLeaseRecovery(cluster);

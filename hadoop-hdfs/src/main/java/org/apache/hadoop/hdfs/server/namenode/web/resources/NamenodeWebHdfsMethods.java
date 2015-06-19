@@ -114,6 +114,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.sun.jersey.spi.container.ResourceFilters;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /** Web-hdfs NameNode implementation. */
 @Path("")
 @ResourceFilters(ParamFilter.class)
@@ -122,7 +124,17 @@ public class NamenodeWebHdfsMethods {
 
   private static final UriFsPathParam ROOT = new UriFsPathParam("");
   
-  private static final ThreadLocal<String> REMOTE_ADDRESS = new ThreadLocal<String>(); 
+  private static final ThreadLocal<String> REMOTE_ADDRESS = new ThreadLocal<String>();
+
+  //HDFSRS_VC
+  private static VectorClock vc = new VectorClock();
+  static public VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOnMessage(VectorClock mvc){
+	  mvc.tickOnRecv(mvc);
+  }
+  //HDFSRS_VC
 
   /** @return the remote client address. */
   public static String getRemoteAddress() {
@@ -445,7 +457,9 @@ public class NamenodeWebHdfsMethods {
     } 
     case MKDIRS:
     {
-      final boolean b = np.mkdirs(fullpath, permission.getFsPermission(), true);
+      VectorClock mvc = copyVC();
+      final boolean b = np.mkdirs(fullpath, permission.getFsPermission(), true, mvc); //HDFSRS_VC
+      tickOnMessage(mvc);
       final String js = JsonUtil.toJsonString("boolean", b);
       return Response.ok(js).type(MediaType.APPLICATION_JSON).build();
     }
@@ -458,13 +472,16 @@ public class NamenodeWebHdfsMethods {
     case RENAME:
     {
       final EnumSet<Options.Rename> s = renameOptions.getValue();
+      VectorClock mvc = copyVC();
       if (s.isEmpty()) {
-        final boolean b = np.rename(fullpath, destination.getValue());
+        final boolean b = np.rename(fullpath, destination.getValue(), mvc); // HDFSRS_VC
+        tickOnMessage(mvc);
         final String js = JsonUtil.toJsonString("boolean", b);
         return Response.ok(js).type(MediaType.APPLICATION_JSON).build();
       } else {
-        np.rename2(fullpath, destination.getValue(),
+        np.rename2(fullpath, destination.getValue(), mvc, //HDFSRS_VC
             s.toArray(new Options.Rename[s.size()]));
+        tickOnMessage(mvc);
         return Response.ok().type(MediaType.APPLICATION_OCTET_STREAM).build();
       }
     }
@@ -615,7 +632,9 @@ public class NamenodeWebHdfsMethods {
     }
     case CONCAT:
     {
-      getRPCServer(namenode).concat(fullpath, concatSrcs.getAbsolutePaths());
+      VectorClock mvc = copyVC();
+      getRPCServer(namenode).concat(fullpath, concatSrcs.getAbsolutePaths(), mvc);
+      tickOnMessage(mvc);
       return Response.ok().build();
     }
     default:
@@ -914,7 +933,9 @@ public class NamenodeWebHdfsMethods {
     switch(op.getValue()) {
     case DELETE:
     {
-      final boolean b = getRPCServer(namenode).delete(fullpath, recursive.getValue());
+      VectorClock mvc = copyVC();
+      final boolean b = getRPCServer(namenode).delete(fullpath, recursive.getValue(),mvc); // HDFSRS_VC
+      tickOnMessage(mvc);
       final String js = JsonUtil.toJsonString("boolean", b);
       return Response.ok(js).type(MediaType.APPLICATION_JSON).build();
     }

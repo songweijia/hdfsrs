@@ -55,6 +55,8 @@ import org.apache.log4j.Level;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /* File Append tests for HDFS-200 & HDFS-142, specifically focused on:
  *  using append()/sync() to recover block information
  */
@@ -64,6 +66,14 @@ public class TestFileAppend4 {
   static final long BBW_SIZE = 500; // don't align on bytes/checksum
 
   static final Object [] NO_ARGS = new Object []{};
+  
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
 
   Configuration conf;
   MiniDFSCluster cluster;
@@ -161,8 +171,10 @@ public class TestFileAppend4 {
  
       // Delay completeFile
       GenericTestUtils.DelayAnswer delayer = new GenericTestUtils.DelayAnswer(LOG);
+      VectorClock mvc = copyVC();
       doAnswer(delayer).when(spyNN).complete(
-          anyString(), anyString(), (ExtendedBlock)anyObject(), anyLong());
+          anyString(), anyString(), (ExtendedBlock)anyObject(), anyLong(), mvc);
+      tickOn(mvc);
  
       DFSClient client = new DFSClient(null, spyNN, conf, null);
       file1 = new Path("/testRecoverFinalized");
@@ -234,8 +246,10 @@ public class TestFileAppend4 {
       // Delay completeFile
       GenericTestUtils.DelayAnswer delayer =
         new GenericTestUtils.DelayAnswer(LOG);
+      VectorClock mvc = copyVC();
       doAnswer(delayer).when(spyNN).complete(anyString(), anyString(),
-          (ExtendedBlock) anyObject(), anyLong());
+          (ExtendedBlock) anyObject(), anyLong(), mvc);
+      tickOn(mvc);
  
       DFSClient client = new DFSClient(null, spyNN, conf, null);
       file1 = new Path("/testCompleteOtherLease");

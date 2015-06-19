@@ -375,17 +375,27 @@ final private ClientProtocol server;
   @Override
   public CreateResponseProto create(RpcController controller,
       CreateRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */	  
     try {
       HdfsFileStatus result = server.create(req.getSrc(),
           PBHelper.convert(req.getMasked()), req.getClientName(),
           PBHelper.convertCreateFlag(req.getCreateFlag()), req.getCreateParent(),
-          (short) req.getReplication(), req.getBlockSize());
+          (short) req.getReplication(), req.getBlockSize(),
+          vc/*HDFSRS_VC*/);
 
       if (result != null) {
         return CreateResponseProto.newBuilder().setFs(PBHelper.convert(result))
             .build();
       }
-      return VOID_CREATE_RESPONSE;
+      return CreateResponseProto.newBuilder().setVc(PBHelper.convert(vc)).build();
+      //return VOID_CREATE_RESPONSE;
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -394,11 +404,21 @@ final private ClientProtocol server;
   @Override
   public AppendResponseProto append(RpcController controller,
       AppendRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */
     try {
-      LocatedBlock result = server.append(req.getSrc(), req.getClientName());
+      LocatedBlock result = server.append(req.getSrc(), req.getClientName(),
+    		  vc/*HDFSRS_VC*/);
       if (result != null) {
         return AppendResponseProto.newBuilder()
-            .setBlock(PBHelper.convert(result)).build();
+            .setBlock(PBHelper.convert(result))
+            .setVc(PBHelper.convert(vc)).build();
       }
       return VOID_APPEND_RESPONSE;
     } catch (IOException e) {
@@ -446,13 +466,22 @@ final private ClientProtocol server;
   @Override
   public AbandonBlockResponseProto abandonBlock(RpcController controller,
       AbandonBlockRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */	  
     try {
       server.abandonBlock(PBHelper.convert(req.getB()), req.getSrc(),
-          req.getHolder());
+          req.getHolder(), vc/*HDFSRS_VC*/);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
-    return VOID_ADD_BLOCK_RESPONSE;
+//    return VOID_ADD_BLOCK_RESPONSE;
+    return AbandonBlockResponseProto.newBuilder().setVc(PBHelper.convert(vc)).build();
   }
 
   @Override
@@ -464,7 +493,6 @@ final private ClientProtocol server;
       List<String> favor = req.getFavoredNodesList();
       /**
        * HDFSRS_VC: get vector clock
-       * TODO: add to addBlock parameters
        */
       VectorClockProto vcp = req.getVc();
       VectorClock vc = PBHelper.convert(vcp);
@@ -515,12 +543,21 @@ final private ClientProtocol server;
   @Override
   public CompleteResponseProto complete(RpcController controller,
       CompleteRequestProto req) throws ServiceException {
-    try {
+    /**
+     * HDFSRS_VC: get vector clock
+     */
+    VectorClockProto vcp = req.getVc();
+    VectorClock vc = PBHelper.convert(vcp);
+    /**
+     * HDFSRS_VC: gen vector clock END
+     */
+	try {
       boolean result = 
           server.complete(req.getSrc(), req.getClientName(),
           req.hasLast() ? PBHelper.convert(req.getLast()) : null,
-          req.hasFileId() ? req.getFileId() : INodeId.GRANDFATHER_INODE_ID);
-      return CompleteResponseProto.newBuilder().setResult(result).build();
+          req.hasFileId() ? req.getFileId() : INodeId.GRANDFATHER_INODE_ID,
+          vc/*HDFSRS_VC*/);
+      return CompleteResponseProto.newBuilder().setResult(result).setVc(PBHelper.convert(vc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -542,21 +579,39 @@ final private ClientProtocol server;
   @Override
   public ConcatResponseProto concat(RpcController controller,
       ConcatRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */
     try {
       List<String> srcs = req.getSrcsList();
-      server.concat(req.getTrg(), srcs.toArray(new String[srcs.size()]));
+      server.concat(req.getTrg(), srcs.toArray(new String[srcs.size()]),vc/*HDFSRS_VC*/);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
-    return VOID_CONCAT_RESPONSE;
+//    return VOID_CONCAT_RESPONSE;
+    return ConcatResponseProto.newBuilder().setVc(PBHelper.convert(vc)).build();
   }
 
   @Override
   public RenameResponseProto rename(RpcController controller,
       RenameRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */	  
     try {
-      boolean result = server.rename(req.getSrc(), req.getDst());
-      return RenameResponseProto.newBuilder().setResult(result).build();
+      boolean result = server.rename(req.getSrc(), req.getDst(),vc /*HDFSRS_VC*/);
+      return RenameResponseProto.newBuilder().setResult(result)
+    		  .setVc(PBHelper.convert(vc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -565,22 +620,39 @@ final private ClientProtocol server;
   @Override
   public Rename2ResponseProto rename2(RpcController controller,
       Rename2RequestProto req) throws ServiceException {
-
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */
     try {
-      server.rename2(req.getSrc(), req.getDst(), 
+      server.rename2(req.getSrc(), req.getDst(), vc/*HDFSRS_VC*/,
           req.getOverwriteDest() ? Rename.OVERWRITE : Rename.NONE);
     } catch (IOException e) {
       throw new ServiceException(e);
     }   
-    return VOID_RENAME2_RESPONSE;
+//    return VOID_RENAME2_RESPONSE;
+    return Rename2ResponseProto.newBuilder()
+    		.setVc(PBHelper.convert(vc)).build();
   }
 
   @Override
   public DeleteResponseProto delete(RpcController controller,
     DeleteRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */	  
     try {
-      boolean result =  server.delete(req.getSrc(), req.getRecursive());
-      return DeleteResponseProto.newBuilder().setResult(result).build();
+      boolean result =  server.delete(req.getSrc(), req.getRecursive(), vc/*HDFSRS_VC*/);
+      return DeleteResponseProto.newBuilder().setResult(result).setVc(PBHelper.convert(vc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -589,10 +661,20 @@ final private ClientProtocol server;
   @Override
   public MkdirsResponseProto mkdirs(RpcController controller,
       MkdirsRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */	  
     try {
       boolean result = server.mkdirs(req.getSrc(),
-          PBHelper.convert(req.getMasked()), req.getCreateParent());
-      return MkdirsResponseProto.newBuilder().setResult(result).build();
+          PBHelper.convert(req.getMasked()), req.getCreateParent(),
+          vc/*HDFSRS_VC*/);
+      return MkdirsResponseProto.newBuilder().setResult(result)
+    		  .setVc(PBHelper.convert(vc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -853,9 +935,19 @@ final private ClientProtocol server;
   @Override
   public FsyncResponseProto fsync(RpcController controller,
       FsyncRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */	  
     try {
-      server.fsync(req.getSrc(), req.getClient(), req.getLastBlockLength());
-      return VOID_FSYNC_RESPONSE;
+      server.fsync(req.getSrc(), req.getClient(), req.getLastBlockLength(),
+    		  vc/*HDFSRS_VC*/);
+//      return VOID_FSYNC_RESPONSE;
+      return FsyncResponseProto.newBuilder().setVc(PBHelper.convert(vc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -1303,13 +1395,23 @@ final private ClientProtocol server;
   @Override
 	public OverwriteBlockResponseProto overwriteBlock(RpcController controller,
 			OverwriteBlockRequestProto req) throws ServiceException {
+      /**
+       * HDFSRS_VC: get vector clock
+       */
+      VectorClockProto vcp = req.getVc();
+      VectorClock vc = PBHelper.convert(vcp);
+      /**
+       * HDFSRS_VC: gen vector clock END
+       */
 	    try {
 	        LocatedBlock result = server.overwriteBlock(req.getSrc(), 
 	            req.hasPrevious() ? PBHelper.convert(req.getPrevious()) : null,
-	            req.getBIndex(), req.getFileId(), req.getClientName());
+	            req.getBIndex(), req.getFileId(), req.getClientName(),
+	            vc/*HDFSRS_VC*/);
 	        if (result != null) {
 	          return OverwriteBlockResponseProto.newBuilder()
-	              .setBlock(PBHelper.convert(result)).build();
+	              .setBlock(PBHelper.convert(result))
+	              .setVc(PBHelper.convert(vc)).build();
 	        }
 	        return VOID_OVERWRITE_RESPONSE;
 	      } catch (IOException e) {

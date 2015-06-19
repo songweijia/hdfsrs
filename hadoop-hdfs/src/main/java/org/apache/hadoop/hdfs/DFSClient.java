@@ -1573,7 +1573,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       int buffersize, Progressable progress) throws IOException {
     LocatedBlock lastBlock = null;
     try {
-      lastBlock = namenode.append(src, clientName);
+    	VectorClock mvc = DFSClient.getCopyOfVectorClock();//HDFSRS_VC
+      lastBlock = namenode.append(src, clientName, mvc);
+      DFSClient.tickOnMessage(mvc); //HDFSRS_VC
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      FileNotFoundException.class,
@@ -1648,7 +1650,10 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public boolean rename(String src, String dst) throws IOException {
     checkOpen();
     try {
-      return namenode.rename(src, dst);
+      VectorClock mvc = getCopyOfVectorClock(); // HDFSRS_VC
+      boolean bRet = namenode.rename(src, dst, mvc);
+      tickOnMessage(mvc); // HDFSRS_VC
+      return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      NSQuotaExceededException.class,
@@ -1665,7 +1670,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public void concat(String trg, String [] srcs) throws IOException {
     checkOpen();
     try {
-      namenode.concat(trg, srcs);
+      VectorClock mvc = DFSClient.getCopyOfVectorClock();
+      namenode.concat(trg, srcs, mvc);
+      DFSClient.tickOnMessage(mvc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      UnresolvedPathException.class,
@@ -1680,7 +1687,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       throws IOException {
     checkOpen();
     try {
-      namenode.rename2(src, dst, options);
+      VectorClock mvc = getCopyOfVectorClock();
+      namenode.rename2(src, dst, mvc, options);
+      tickOnMessage(mvc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      DSQuotaExceededException.class,
@@ -1700,7 +1709,10 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   @Deprecated
   public boolean delete(String src) throws IOException {
     checkOpen();
-    return namenode.delete(src, true);
+    VectorClock mvc = DFSClient.getCopyOfVectorClock();
+    boolean bRet = namenode.delete(src, true, mvc);
+    DFSClient.tickOnMessage(mvc);
+    return bRet;
   }
 
   /**
@@ -1713,7 +1725,10 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public boolean delete(String src, boolean recursive) throws IOException {
     checkOpen();
     try {
-      return namenode.delete(src, recursive);
+        VectorClock mvc = DFSClient.getCopyOfVectorClock();
+        boolean bRet = namenode.delete(src, recursive, mvc);
+        DFSClient.tickOnMessage(mvc);
+    	return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      FileNotFoundException.class,
@@ -2563,7 +2578,10 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       LOG.debug(src + ": masked=" + absPermission);
     }
     try {
-      return namenode.mkdirs(src, absPermission, createParent);
+      VectorClock mvc = getCopyOfVectorClock(); // HDFSRS_VC
+      boolean bRet = namenode.mkdirs(src, absPermission, createParent, mvc);
+      tickOnMessage(mvc); // HDFSRS_VC
+      return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      InvalidPathException.class,
