@@ -591,7 +591,6 @@ public class NameNode implements NameNodeStatusMXBean {
     myrank = conf.getInt(DFS_VCPID,0);
     myrank = (myrank<<2)+1;
     vc = new VectorClock(myrank);
-    vc.tick(); //make sure VC
     //HDFSRS_VC
     
     startCommonServices(conf);

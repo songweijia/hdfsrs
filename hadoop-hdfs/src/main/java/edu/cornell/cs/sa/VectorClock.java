@@ -67,6 +67,12 @@ public class VectorClock implements ILogicalClock,Serializable
 	public VectorClock(int pid){
 		this.vc = new HashMap<Integer,Long> ();
 		this.pid = pid;
+		if(pid >= 0)
+			this.vc.put(pid, 0l);
+	}
+	
+	public VectorClock(){
+		this(-1);
 	}
 	
 	public VectorClock(VectorClock vco){

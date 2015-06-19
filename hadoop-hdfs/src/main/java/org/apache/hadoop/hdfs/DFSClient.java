@@ -244,7 +244,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   
   //HDFSRS_VC: vector clock
   private static VectorClock vc = 
-		  new VectorClock(-1);//Client does not do tick
+		  new VectorClock();//Client does not do tick
   static public VectorClock getCopyOfVectorClock(){
 	  return new VectorClock(vc);
   }
