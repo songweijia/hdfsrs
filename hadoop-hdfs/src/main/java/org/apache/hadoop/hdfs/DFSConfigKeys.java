@@ -638,5 +638,8 @@ public class DFSConfigKeys extends CommonConfigurationKeys {
   // calculation: vcpid(namenode) vcpid<<2+1
   // calculation: vcpid(datanode) vcpid<<2+0
   public static final String DFS_VCPID = "dfs.vcpid";
+  public static final int DEFAULT_DFS_VCPID = 0;
+  public static final String DFS_MEMBLOCK_PAGESIZE = "dfs.memblock.pagesize";
+  public static final int DEFAULT_DFS_MEMBLOCK_PAGESIZE = 4096;
   //HDFSRS_VC
 }

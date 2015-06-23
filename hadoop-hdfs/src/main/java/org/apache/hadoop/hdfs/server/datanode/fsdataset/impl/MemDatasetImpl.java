@@ -47,6 +47,9 @@ import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 import org.apache.hadoop.util.DiskChecker.DiskOutOfSpaceException;
 
+import edu.cornell.cs.blog.JNIBlog;
+import edu.cornell.cs.sa.VectorClock;
+
 @InterfaceAudience.Private
 class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   static final Log LOG = LogFactory.getLog(MemDatasetImpl.class);
@@ -89,8 +92,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public synchronized Block getStoredBlock(ExtendedBlock b)
       throws IOException {
-    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + 
-        b.getLocalBlock().getSid(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
     if (meta == null) return null;
     return meta;
   }
@@ -191,17 +193,19 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
    */
   @Override // FsDatasetSpi
   public long getLength(ExtendedBlock b) throws IOException {
-    Replica meta = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
-    if (meta != null) return meta.getBytesOnDisk();
+    memManager.get(b.getBlockPoolId(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    if (meta != null) return meta.getNumBytes(b.getLocalBlock().getIntSid());
     return -1;
   }
 
   @Override // FsDatasetSpi
   public InputStream getBlockInputStream(ExtendedBlock b,
       long seekOffset) throws IOException {
-    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
-    if (meta != null) return memManager.getInputStream(meta.offset, seekOffset);
-    return null;
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    if(meta != null)
+    	return meta.getInputStream((int)seekOffset, b.getLocalBlock().getIntSid());
+    else return null;
   }
   
   /**
@@ -223,11 +227,14 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     // The other reason is that an "append" is occurring to this block.
     
     // check the validity of the parameter
+    if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID){
+      throw new IOException("Cannot append to snapshot");
+    }
     if (newGS < b.getGenerationStamp()) {
       throw new IOException("The new generation stamp " + newGS + 
           " should be greater than the replica " + b + "'s generation stamp");
     }
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
     LOG.info("Appending to block " + replicaInfo.getBlockId());
     if (replicaInfo.getState() != ReplicaState.FINALIZED) {
       throw new ReplicaNotFoundException(
@@ -278,7 +285,10 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
 
   private MemDatasetManager.MemBlockMeta recoverCheck(ExtendedBlock b, long newGS, 
       long expectedBlockLen) throws IOException {
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+    if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID){
+    	throw new IOException("Cannot recover snapshot block");
+    }
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
     
     // check state
     if (replicaInfo.getState() != ReplicaState.FINALIZED &&
@@ -338,7 +348,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     }
     return replicaInfo.getStorageUuid();
   }
-
+/*
   @Override // FsDatasetSpi
   public synchronized Replica createRbw(ExtendedBlock b)
       throws IOException {
@@ -350,14 +360,17 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     // create a new block
     return memManager.getNewBlock(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId(), b.getGenerationStamp());
   }
-  
+*/  
   @Override // FsDatasetSpi
   public synchronized Replica recoverRbw(ExtendedBlock b,
       long newGS, long minBytesRcvd, long maxBytesRcvd)
       throws IOException {
     LOG.info("Recover RBW replica " + b);
+    
+    if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
+    	throw new IOException("Cannot recover snapshot.");
 
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
     
     // check the replica's state
     if (replicaInfo.getState() != ReplicaState.RBW) {
@@ -392,13 +405,15 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public synchronized Replica convertTemporaryToRbw(
       final ExtendedBlock b) throws IOException {
+    if(b.getLocalBlock().getIntSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)
+      throw new IOException("Cannot change states of snapshot replica.");
     final long expectedGs = b.getGenerationStamp();
     final long visible = b.getNumBytes();
     LOG.info("Convert " + b + " from Temporary to RBW, visible length="
         + visible);
 
-    MemDatasetManager.MemBlockMeta r = memManager.get(b.getBlockPoolId() + 
-        b.getLocalBlock().getSid(), b.getBlockId());
+    MemDatasetManager.MemBlockMeta r = memManager.get(b.getBlockPoolId(),
+    		b.getBlockId());
  
     if (r == null) {
       throw new ReplicaNotFoundException(
@@ -430,7 +445,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     r.state = ReplicaState.RBW;
     return r;
   }
-
+/*
   @Override // FsDatasetSpi
   public synchronized Replica createTemporary(ExtendedBlock b)
       throws IOException {
@@ -443,7 +458,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     
     return memManager.getNewBlock(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId(), b.getGenerationStamp());
   }
-
+*/
   /**
    * Sets the offset in the meta file so that the
    * last checksum will be overwritten.
@@ -470,7 +485,10 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       throw new IOException("Cannot finalize block from Interrupted Thread");
     }
     
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+    if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
+    	throw new IOException("in finalizeBlock(): Cannot finalize snapshot replica.");
+    
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
     if (replicaInfo.getState() == ReplicaState.FINALIZED) {
       // this is legal, when recovery happens on a file that has
       // been opened for append but never modified
@@ -497,9 +515,11 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
    */
   @Override // FsDatasetSpi
   public synchronized void unfinalizeBlock(ExtendedBlock b) throws IOException {
-    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+    if(b.getLocalBlock().getIntSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)
+      throw new IOException("cannot unfinalize snapshoted block");
+    MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
     if (replicaInfo != null && replicaInfo.getState() == ReplicaState.TEMPORARY) {
-      memManager.deleteBlock(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+      memManager.removeBlock(b.getBlockPoolId(), b.getBlockId());
     }
   }
 
@@ -580,16 +600,18 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
 
   /** Does the block exist and have the given state? */
   private boolean isValid(final ExtendedBlock b, final ReplicaState state) {
-    final Replica replicaInfo = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+    final Replica replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
     return replicaInfo != null
         && replicaInfo.getState() == state;
   }
 
+  
   /**
    * We're informed that a block is no longer valid.  We
    * could lazily garbage-collect the block, but why bother?
    * just get rid of it.
    */
+/*
   @Override // FsDatasetSpi
   public void invalidate(String bpid, Block invalidBlks[]) throws IOException {
     final List<String> errors = new ArrayList<String>();
@@ -627,10 +649,10 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       throw new IOException(b.toString());
     }
   }
-
+*/
   @Override // FsDatasetSpi
   public synchronized boolean contains(final ExtendedBlock block) {
-    return memManager.get(block.getBlockPoolId() + block.getLocalBlock().getSid(), block.getBlockId()) != null;
+    return memManager.get(block.getBlockPoolId(), block.getBlockId()) != null;
   }
 
   /**
@@ -716,20 +738,19 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   //@Deprecated
   public Replica getReplica(ExtendedBlock b) {
-    return memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+    return memManager.get(b.getBlockPoolId(), b.getBlockId());
   }
 
   @Override 
   public synchronized String getReplicaString(ExtendedBlock b) {
-    final Replica r = memManager.get(b.getBlockPoolId() + b.getLocalBlock().getSid(), b.getBlockId());
+    final Replica r = memManager.get(b.getBlockPoolId(), b.getBlockId());
     return r == null? "null": r.toString();
   }
-
   @Override // FsDatasetSpi
   public synchronized ReplicaRecoveryInfo initReplicaRecovery(
       RecoveringBlock rBlock) throws IOException {
     return initReplicaRecovery(rBlock.getBlock().getBlockPoolId(), 
-        memManager.get(rBlock.getBlock().getBlockPoolId() + rBlock.getBlock().getLocalBlock().getSid(), rBlock.getBlock().getBlockId()),
+        memManager.get(rBlock.getBlock().getBlockPoolId() + rBlock.getBlock(), rBlock.getBlock().getBlockId()),
         rBlock.getBlock().getLocalBlock(), rBlock.getNewGenerationStamp(),
         datanode.getDnConf().getXceiverStopTimeout());
   }
@@ -744,7 +765,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     if (replica == null) {
       return null;
     }
-
+    
     //check generation stamp
     if (replica.getGenerationStamp() < block.getGenerationStamp()) {
       throw new IOException(
@@ -771,8 +792,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
                                     final long recoveryId,
                                     final long newlength) throws IOException {
     //get replica
-    final MemDatasetManager.MemBlockMeta replica = memManager.get(oldBlock.getBlockPoolId() + 
-        oldBlock.getLocalBlock().getSid(), oldBlock.getBlockId());
+    final MemDatasetManager.MemBlockMeta replica = memManager.get(oldBlock.getBlockPoolId(), oldBlock.getBlockId());
     LOG.info("updateReplica: " + oldBlock
         + ", recoveryId=" + recoveryId
         + ", length=" + newlength
@@ -795,7 +815,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           + " replica.getBytesOnDisk() != block.getNumBytes(), block="
           + oldBlock + ", replica=" + replica);
     }
-
+//TODO
     //update replica
     final Replica finalized = updateReplicaUnderRecovery(oldBlock
         .getBlockPoolId(), replica, recoveryId, newlength);
@@ -835,14 +855,13 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public synchronized long getReplicaVisibleLength(final ExtendedBlock block)
   throws IOException {
-    final Replica replica = memManager.get(block.getBlockPoolId() + block.getLocalBlock().getSid(), 
-        block.getBlockId());
+    final MemDatasetManager.MemBlockMeta replica = memManager.get(block.getBlockPoolId(), block.getBlockId());
     if (replica.getGenerationStamp() < block.getGenerationStamp()) {
       throw new IOException(
           "replica.getGenerationStamp() < block.getGenerationStamp(), block="
           + block + ", replica=" + replica);
     }
-    return replica.getVisibleLength();
+    return replica.getVisibleLength((long)block.getLocalBlock().getIntSid());
   }
   
   @Override
@@ -948,7 +967,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     // Determine the index of the VolumeId of each block's volume, by comparing 
     // the block's volume against the enumerated volumes
     for (int i = 0; i < blockIds.length; i++) {
-      blocksVolumeIndexes.add(memManager.get(poolId + Block.getDefaultSid(), blockIds[i]) == null? Integer.MAX_VALUE: 0);
+      blocksVolumeIndexes.add(memManager.get(poolId, blockIds[i]) == null? Integer.MAX_VALUE: 0);
     }
     return new HdfsBlocksMetadata(poolId, blockIds,
         blocksVolumeIds, blocksVolumeIndexes);
@@ -1030,14 +1049,18 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   
   public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
       throws IOException {
-    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + 
-        b.getLocalBlock().getSid(), b.getBlockId());
-    if (meta != null) return memManager.getOutputStream(meta.offset, seekOffset);
+  	if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
+  		throw new IOException("in getBlockOutputStream(): Cannot write to snapshot.");
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    if (meta != null) return meta.getOutputStream((int)seekOffset);
     return null;
   }
   
   public void snapshot(long timestamp, ExtendedBlock[] blks) 
       throws IOException {
+  /*
+   * TODO:
+   *
     if (blks == null) return;
     
     for (ExtendedBlock b : blks) {
@@ -1049,5 +1072,72 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       
       memManager.blockSnapshot(meta, newMeta);
     }
+    */
   }
+  
+  @Override
+  public Replica createTemporary(ExtendedBlock b, VectorClock mvc)
+	throws IOException {
+	MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    if (meta != null) {
+      throw new ReplicaAlreadyExistsException("Block " + b +
+      " already exists and thus cannot be created.");
+    }
+    // create a new block
+    meta = memManager.createBlock(b.getBlockPoolId(), b.getBlockId(), b.getGenerationStamp(), mvc);
+    meta.setState(ReplicaState.TEMPORARY);
+    return meta;
+  }
+
+  @Override
+  public Replica createRbw(ExtendedBlock b, VectorClock mvc) throws IOException {
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    if (meta != null) {
+      throw new ReplicaAlreadyExistsException("Block " + b +
+      " already exists and thus cannot be created.");
+    }
+    // create a new block
+    meta = memManager.createBlock(b.getBlockPoolId(), b.getBlockId(), b.getGenerationStamp(), mvc);
+    meta.setState(ReplicaState.RBW);
+    return meta;
+  }
+
+  @Override
+  public void invalidate(String bpid, Block[] invalidBlks, VectorClock mvc)
+	throws IOException {
+    final List<String> errors = new ArrayList<String>();
+    for (int i = 0; i < invalidBlks.length; i++) {
+      if(invalidBlks[i].getIntSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)continue; // do not invalid snapshot blocks.
+      final MemVolumeImpl v = volumes.get(0);
+      synchronized (this) {
+        final MemDatasetManager.MemBlockMeta info = memManager.get(bpid, invalidBlks[i].getBlockId());
+        if (info == null) {
+          // It is okay if the block is not found -- it may be deleted earlier.
+          LOG.info("Failed to delete replica " + invalidBlks[i]
+              + ": ReplicaInfo not found.");
+          continue;
+        }
+        if (info.getGenerationStamp() != invalidBlks[i].getGenerationStamp()) {
+          errors.add("Failed to delete replica " + invalidBlks[i]
+              + ": GenerationStamp not matched, info=" + info);
+          continue;
+        }
+	        ReplicaState replicaState = info.getState();
+        if (replicaState == ReplicaState.FINALIZED || 
+            replicaState == ReplicaState.RUR) {
+          v.decDfsUsed(bpid, info.getNumBytes());
+        }
+        memManager.deleteBlock(bpid, invalidBlks[i].getBlockId(), mvc);
+      }
+    }
+    if (!errors.isEmpty()) {
+      StringBuilder b = new StringBuilder("Failed to delete ")
+        .append(errors.size()).append(" (out of ").append(invalidBlks.length)
+        .append(") replica(s):");
+      for(int i = 0; i < errors.size(); i++) {
+        b.append("\n").append(i).append(") ").append(errors.get(i));
+      }
+      throw new IOException(b.toString());
+    }
+ }
 }

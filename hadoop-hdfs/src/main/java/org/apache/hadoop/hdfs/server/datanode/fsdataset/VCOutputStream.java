@@ -20,5 +20,5 @@ abstract public class VCOutputStream extends OutputStream {
 	 * @param len length
 	 * @throws IOException
 	 */
-	abstract void write(VectorClock mvc, byte[] b, int off, int len) throws IOException;
+	public abstract void write(VectorClock mvc, byte[] b, int off, int len) throws IOException;
 }

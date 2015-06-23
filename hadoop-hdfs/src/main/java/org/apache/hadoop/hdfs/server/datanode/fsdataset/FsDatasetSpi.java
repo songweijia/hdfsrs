@@ -316,7 +316,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @param mvc Message Vector Clock, I/O parameter
    * @throws IOException
    */
-  public void invalidate(VectorClock mvc, String bpid, Block invalidBlks[]) throws IOException;
+  public void invalidate(String bpid, Block invalidBlks[], VectorClock mvc) throws IOException;
 
   /**
    * Caches the specified blocks

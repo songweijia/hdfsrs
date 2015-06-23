@@ -17,6 +17,8 @@ public class JNIBlog {
     System.loadLibrary("JNIBlog");
   }
   
+  static public final long CURRENT_SNAPSHOT_ID = -1l;
+  
   private long jniData = 0;
   private VectorClock vc;
   
@@ -55,7 +57,7 @@ public class JNIBlog {
    * @param bufOfst - buffer offset
    * @param length - how many bytes to read
    * @param buf[OUTPUT] - for read data
-   * @return error code, 0 for success.
+   * @return number of bytes read, negative for error code.
    */
   public native int readBlock(long blockId,
       long rtc, int blkOfst, int bufOfst,
@@ -106,6 +108,11 @@ public class JNIBlog {
    * @return
    */
   public native int deleteSnapshot(long rtc);
+  
+  /**
+   * destroy the log.
+   */
+  public native void destroy();
   
   /////////////////////
   // tools
