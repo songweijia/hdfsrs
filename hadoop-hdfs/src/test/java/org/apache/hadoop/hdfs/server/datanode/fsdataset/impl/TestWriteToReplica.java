@@ -36,6 +36,8 @@ import org.apache.hadoop.util.DiskChecker.DiskOutOfSpaceException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /** Test if FSDataset#append, writeToRbw, and writeToTmp */
 public class TestWriteToReplica {
 
@@ -345,6 +347,7 @@ public class TestWriteToReplica {
   }
   
   private void testWriteToRbw(FsDatasetImpl dataSet, ExtendedBlock[] blocks) throws IOException {
+    VectorClock vc = new VectorClock();
     try {
       dataSet.recoverRbw(blocks[FINALIZED],
           blocks[FINALIZED].getGenerationStamp()+1,
@@ -357,7 +360,7 @@ public class TestWriteToReplica {
     }
  
     try {
-      dataSet.createRbw(blocks[FINALIZED]);
+      dataSet.createRbw(blocks[FINALIZED],vc);
       Assert.fail("Should not have created a replica that's already " +
       		"finalized " + blocks[FINALIZED]);
     } catch (ReplicaAlreadyExistsException e) {
@@ -375,7 +378,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.createRbw(blocks[TEMPORARY]);
+      dataSet.createRbw(blocks[TEMPORARY],vc);
       Assert.fail("Should not have created a replica that had created as " +
       		"temporary " + blocks[TEMPORARY]);
     } catch (ReplicaAlreadyExistsException e) {
@@ -385,7 +388,7 @@ public class TestWriteToReplica {
         0L, blocks[RBW].getNumBytes());  // expect to be successful
     
     try {
-      dataSet.createRbw(blocks[RBW]);
+      dataSet.createRbw(blocks[RBW],vc);
       Assert.fail("Should not have created a replica that had created as RBW " +
           blocks[RBW]);
     } catch (ReplicaAlreadyExistsException e) {
@@ -401,7 +404,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.createRbw(blocks[RWR]);
+      dataSet.createRbw(blocks[RWR],vc);
       Assert.fail("Should not have created a replica that was waiting to be " +
       		"recovered " + blocks[RWR]);
     } catch (ReplicaAlreadyExistsException e) {
@@ -417,7 +420,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.createRbw(blocks[RUR]);
+      dataSet.createRbw(blocks[RUR],vc);
       Assert.fail("Should not have created a replica that was under recovery " +
           blocks[RUR]);
     } catch (ReplicaAlreadyExistsException e) {
@@ -434,45 +437,47 @@ public class TestWriteToReplica {
           e.getMessage().contains(ReplicaNotFoundException.NON_EXISTENT_REPLICA));
     }
     
-    dataSet.createRbw(blocks[NON_EXISTENT]);
+    dataSet.createRbw(blocks[NON_EXISTENT],vc);
   }
   
   private void testWriteToTemporary(FsDatasetImpl dataSet, ExtendedBlock[] blocks) throws IOException {
+    VectorClock vc = new VectorClock();
+
     try {
-      dataSet.createTemporary(blocks[FINALIZED]);
+      dataSet.createTemporary(blocks[FINALIZED],vc);
       Assert.fail("Should not have created a temporary replica that was " +
       		"finalized " + blocks[FINALIZED]);
     } catch (ReplicaAlreadyExistsException e) {
     }
  
     try {
-      dataSet.createTemporary(blocks[TEMPORARY]);
+      dataSet.createTemporary(blocks[TEMPORARY],vc);
       Assert.fail("Should not have created a replica that had created as" +
       		"temporary " + blocks[TEMPORARY]);
     } catch (ReplicaAlreadyExistsException e) {
     }
     
     try {
-      dataSet.createTemporary(blocks[RBW]);
+      dataSet.createTemporary(blocks[RBW],vc);
       Assert.fail("Should not have created a replica that had created as RBW " +
           blocks[RBW]);
     } catch (ReplicaAlreadyExistsException e) {
     }
     
     try {
-      dataSet.createTemporary(blocks[RWR]);
+      dataSet.createTemporary(blocks[RWR],vc);
       Assert.fail("Should not have created a replica that was waiting to be " +
       		"recovered " + blocks[RWR]);
     } catch (ReplicaAlreadyExistsException e) {
     }
     
     try {
-      dataSet.createTemporary(blocks[RUR]);
+      dataSet.createTemporary(blocks[RUR],vc);
       Assert.fail("Should not have created a replica that was under recovery " +
           blocks[RUR]);
     } catch (ReplicaAlreadyExistsException e) {
     }
     
-    dataSet.createTemporary(blocks[NON_EXISTENT]);
+    dataSet.createTemporary(blocks[NON_EXISTENT],vc);
   }
 }

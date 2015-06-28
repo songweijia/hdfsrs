@@ -7086,6 +7086,7 @@ public final class HdfsProtos {
    **
    * Contains a list of paths corresponding to corrupt files and a cookie
    * used for iterative calls to NameNode.listCorruptFileBlocks.
+   *
    * </pre>
    */
   public static final class CorruptFileBlocksProto extends
@@ -7442,6 +7443,7 @@ public final class HdfsProtos {
      **
      * Contains a list of paths corresponding to corrupt files and a cookie
      * used for iterative calls to NameNode.listCorruptFileBlocks.
+     *
      * </pre>
      */
     public static final class Builder extends

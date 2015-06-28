@@ -398,7 +398,7 @@ public class Balancer {
       final ExtendedBlock eb = new ExtendedBlock(nnc.blockpoolID, block.getBlock());
       final Token<BlockTokenIdentifier> accessToken = nnc.getAccessToken(eb);
       new Sender(out).replaceBlock(eb, accessToken,
-          source.getStorageID(), proxySource.getDatanode());
+          source.getStorageID(), proxySource.getDatanode(),null/*We dont support balancer vector clock for now*/);
     }
     
     /* Receive a block copy response from the input stream */ 

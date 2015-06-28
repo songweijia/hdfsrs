@@ -33,6 +33,7 @@ import org.apache.hadoop.hdfs.protocol.datatransfer.BlockConstructionStage;
 import org.apache.hadoop.hdfs.protocol.datatransfer.PacketHeader;
 import org.apache.hadoop.hdfs.protocol.datatransfer.PipelineAck;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status;
+import org.apache.hadoop.hdfs.server.datanode.fsdataset.VCOutputStream;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.hadoop.hdfs.util.DataTransferThrottler;
@@ -40,10 +41,12 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.Daemon;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.StringUtils;
-
 import org.apache.hadoop.hdfs.protocol.datatransfer.PacketHeader;
 import org.apache.hadoop.io.IOUtils;
+
 import com.google.common.primitives.Ints;
+
+import edu.cornell.cs.sa.VectorClock;
 import static org.apache.hadoop.util.Time.now;
 
 /** A class that receives a block and writes to its own disk, meanwhile
@@ -60,7 +63,7 @@ class MemBlockReceiver extends BlockReceiver {
       final long newGs, final long minBytesRcvd, final long maxBytesRcvd, 
       final String clientname, final DatanodeInfo srcDataNode,
       final DataNode datanode, DataChecksum requestedChecksum,
-      long offset/*HDFSRS_RWAPI*/) throws IOException {
+      long offset/*HDFSRS_RWAPI*/,VectorClock mvc/*HDFSRS_VC*/) throws IOException {
     
     super(block, in, inAddr, myAddr, stage,clientname, srcDataNode, datanode, requestedChecksum);
   
@@ -68,11 +71,11 @@ class MemBlockReceiver extends BlockReceiver {
     // Open local disk out
     //
     if (isDatanode) { //replication or move
-      replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.createTemporary(block);
+      replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.createTemporary(block,mvc);
     } else {
       switch (stage) {
       case PIPELINE_SETUP_CREATE:
-        replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.createRbw(block);
+        replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.createRbw(block,mvc);
         datanode.notifyNamenodeReceivingBlock(
             block, replicaInfo.getStorageUuid());
         break;
@@ -105,7 +108,7 @@ class MemBlockReceiver extends BlockReceiver {
       case TRANSFER_RBW:
       case TRANSFER_FINALIZED:
         // this is a transfer destination
-        replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.createTemporary(block);
+        replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.createTemporary(block,mvc);
         break;
       default: throw new IOException("Unsupported stage " + stage + 
             " while receiving block " + block + " from " + inAddr);
@@ -274,10 +277,12 @@ class MemBlockReceiver extends BlockReceiver {
     }
     
     // put in queue for pending acks, unless sync was requested
-    if (responder != null && !syncBlock && !shouldVerifyChecksum()) {
-      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
-          lastPacketInBlock, offsetInBlock, Status.SUCCESS);
-    }
+//    if (responder != null && !syncBlock && !shouldVerifyChecksum()) {
+//      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
+//          lastPacketInBlock, offsetInBlock, Status.SUCCESS);
+//    }
+    VectorClock mvc = new VectorClock(header.getMvc());
+    
     
     if (lastPacketInBlock || len == 0) {
       if(LOG.isDebugEnabled()) {
@@ -289,7 +294,6 @@ class MemBlockReceiver extends BlockReceiver {
       }
     } else {
       // by this point, the data in the buffer uses the disk checksum
-      
       try {
         long onDiskLen = replicaInfo.getBytesOnDisk();
         //HDFSRS_RWAPI{
@@ -309,12 +313,15 @@ class MemBlockReceiver extends BlockReceiver {
           int numBytesToDisk = (int)(offsetInBlock-onDiskLen);
           
           // Write data to disk.
-          out.write(dataBuf, startByteToDisk, numBytesToDisk);
+          //out.write(dataBuf, startByteToDisk, numBytesToDisk);
+          VCOutputStream vcout = (VCOutputStream)out;
+          
+          vcout.write(mvc,dataBuf, startByteToDisk, numBytesToDisk);
 
           /// flush entire packet, sync if requested
           flushOrSync(syncBlock);
           
-          replicaInfo.setBytesOnDisk(offsetInBlock);
+          ///HDFSRS_VC: we dont need this: replicaInfo.setBytesOnDisk(offsetInBlock);
 
           datanode.metrics.incrBytesWritten(len);
 
@@ -331,8 +338,9 @@ class MemBlockReceiver extends BlockReceiver {
           flushOrSync(syncBlock);
           
           // dx.8 update replicaInfo as long as the last chunkChecksum changed.
-          if( (onDiskLen - offsetInBlock) < bytesPerChecksum )
-            replicaInfo.setBytesOnDisk(Math.max(offsetInBlock,onDiskLen));
+//
+//HDFSRS_VC          if( (onDiskLen - offsetInBlock) < bytesPerChecksum )
+//HDFSRS_VC          replicaInfo.setBytesOnDisk(Math.max(offsetInBlock,onDiskLen));
 
           datanode.metrics.incrBytesWritten(len);     
         }
@@ -342,11 +350,22 @@ class MemBlockReceiver extends BlockReceiver {
       }
     }
 
+    // put in queue for pending acks, unless sync was requested
+//    if (responder != null && !syncBlock && !shouldVerifyChecksum()) {
+//      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
+//    	    lastPacketInBlock, offsetInBlock, Status.SUCCESS);
+//    }
+  
+
     // if sync was requested, put in queue for pending acks here
     // (after the fsync finished)
-    if (responder != null && (syncBlock || shouldVerifyChecksum())) {
-      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
-          lastPacketInBlock, offsetInBlock, Status.SUCCESS);
+//    if (responder != null && (syncBlock || shouldVerifyChecksum())) {
+//      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
+//          lastPacketInBlock, offsetInBlock, Status.SUCCESS);
+//    }
+    if(responder != null){
+    	((PacketResponder) responder.getRunnable()).enqueue(seqno,
+    			lastPacketInBlock, offsetInBlock, Status.SUCCESS, mvc);
     }
 
     if (throttler != null) { // throttle I/O
@@ -530,9 +549,9 @@ class MemBlockReceiver extends BlockReceiver {
      * @param offsetInBlock
      */
     void enqueue(final long seqno, final boolean lastPacketInBlock,
-        final long offsetInBlock, final Status ackStatus) {
+        final long offsetInBlock, final Status ackStatus, VectorClock mvc/*HDFSRS_VC*/) {
       final Packet p = new Packet(seqno, lastPacketInBlock, offsetInBlock,
-          System.nanoTime(), ackStatus);
+          System.nanoTime(), ackStatus, mvc);
       if(LOG.isDebugEnabled()) {
         LOG.debug(myString + ": enqueue " + p);
       }
@@ -869,10 +888,12 @@ class MemBlockReceiver extends BlockReceiver {
         }
       }
       PipelineAck replyAck = new PipelineAck(seqno, replies,
-          totalAckTimeNanos);
+          totalAckTimeNanos,ack.getMvc()/*HDFSRS_VC*/);
       if (replyAck.isSuccess()
           && offsetInBlock > replicaInfo.getBytesAcked()) {
-        replicaInfo.setBytesAcked(offsetInBlock);
+      	
+        // replicaInfo.setBytesAcked(offsetInBlock);
+      	// we don't need this.
       }
       // send my ack back to upstream datanode
       replyAck.write(upstreamOut);

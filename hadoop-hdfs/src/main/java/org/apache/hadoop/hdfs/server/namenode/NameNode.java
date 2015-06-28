@@ -281,8 +281,8 @@ public class NameNode implements NameNodeStatusMXBean {
   /**
    * HDFSRS_VC: myrank, which is used as key in vector clock
    */
-  int myrank;
-  VectorClock vc;
+  static public int myrank;
+  static public VectorClock vc;
   //HDFSRS_VC
   
   
@@ -588,9 +588,11 @@ public class NameNode implements NameNodeStatusMXBean {
     /**
      * HDFSRS_VC:set vector clock
      */
-    myrank = conf.getInt(DFS_VCPID,0);
-    myrank = (myrank<<2)+1;
-    vc = new VectorClock(myrank);
+    if(vc == null){
+      myrank = conf.getInt(DFS_VCPID,0);
+      myrank = (myrank<<2)+1;
+      vc = new VectorClock(myrank);
+    }
     //HDFSRS_VC
     
     startCommonServices(conf);

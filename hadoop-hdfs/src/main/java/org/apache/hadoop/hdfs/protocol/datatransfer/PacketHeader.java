@@ -25,12 +25,15 @@ import java.nio.ByteBuffer;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.PacketHeaderProto;
+import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 import org.apache.hadoop.hdfs.util.ByteBufferOutputStream;
 
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Shorts;
 import com.google.common.primitives.Ints;
 import com.google.protobuf.InvalidProtocolBufferException;
+
+import edu.cornell.cs.sa.VectorClock;
 
 /**
  * Header data for each packet that goes through the read/write pipelines.
@@ -51,14 +54,21 @@ import com.google.protobuf.InvalidProtocolBufferException;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 public class PacketHeader {
-  private static final int MAX_PROTO_SIZE = 
-    PacketHeaderProto.newBuilder()
-      .setOffsetInBlock(0)
-      .setSeqno(0)
-      .setLastPacketInBlock(false)
-      .setDataLen(0)
-      .setSyncBlock(false)
-      .build().getSerializedSize();
+	private static final int MAX_RANK = 32; // the maximum number nodes
+	static{
+		VectorClock vc = new VectorClock(-1);
+		for(int i=0;i<MAX_RANK;i++)
+			vc.vc.put(i,0l);
+		MAX_PROTO_SIZE = PacketHeaderProto.newBuilder()
+    .setOffsetInBlock(0)
+    .setSeqno(0)
+    .setLastPacketInBlock(false)
+    .setDataLen(0)
+    .setSyncBlock(false)
+    .setMvc(PBHelper.convert(vc))
+    .build().getSerializedSize();
+	}
+  private static final int MAX_PROTO_SIZE;
   public static final int PKT_LENGTHS_LEN =
       Ints.BYTES + Shorts.BYTES;
   public static final int PKT_MAX_HEADER_LEN =
@@ -71,7 +81,8 @@ public class PacketHeader {
   }
 
   public PacketHeader(int packetLen, long offsetInBlock, long seqno,
-                      boolean lastPacketInBlock, int dataLen, boolean syncBlock) {
+                      boolean lastPacketInBlock, int dataLen, boolean syncBlock,
+                      VectorClock mvc/*vector clock*/) {
     this.packetLen = packetLen;
     Preconditions.checkArgument(packetLen >= Ints.BYTES,
         "packet len %s should always be at least 4 bytes",
@@ -82,6 +93,10 @@ public class PacketHeader {
       .setSeqno(seqno)
       .setLastPacketInBlock(lastPacketInBlock)
       .setDataLen(dataLen);
+    
+    if(mvc!=null){
+    	builder.setMvc(PBHelper.convert(mvc));
+    }
       
     if (syncBlock) {
       // Only set syncBlock if it is specified.
@@ -104,6 +119,10 @@ public class PacketHeader {
 
   public long getSeqno() {
     return proto.getSeqno();
+  }
+  
+  public VectorClock getMvc() {
+  	return PBHelper.convert(proto.getMvc());
   }
 
   public long getOffsetInBlock() {

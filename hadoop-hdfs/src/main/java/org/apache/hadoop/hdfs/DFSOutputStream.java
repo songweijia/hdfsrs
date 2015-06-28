@@ -254,8 +254,9 @@ public class DFSOutputStream extends FSOutputSummer
       final int checksumLen = checksumPos - checksumStart;
       final int pktLen = HdfsConstants.BYTES_IN_INTEGER + dataLen + checksumLen;
 
+      // send packet using vector clock
       PacketHeader header = new PacketHeader(
-        pktLen, offsetInBlock, seqno, lastPacketInBlock, dataLen, syncBlock);
+        pktLen, offsetInBlock, seqno, lastPacketInBlock, dataLen, syncBlock, DFSClient.getCopyOfVectorClock()/*HDFSRS_VC*/);
       
       if (checksumPos != dataStart) {
         // Move the checksum to cover the gap. This can happen for the last
@@ -995,6 +996,8 @@ public class DFSOutputStream extends FSOutputSummer
               ackQueue.removeFirst();
               dataQueue.notifyAll();
             }
+            //HDFSRS_VC: Acknowledge vector clock
+            DFSClient.tickOnMessage(ack.getMvc());
           } catch (Exception e) {
             if (!responderClosed) {
               if (e instanceof IOException) {
@@ -1479,7 +1482,8 @@ public class DFSOutputStream extends FSOutputSummer
           new Sender(out).writeBlock(block, accessToken, dfsClient.clientName,
               nodes, null, recoveryFlag? stage.getRecoveryStage() : stage, 
               nodes.length, block.getNumBytes(), bytesSent, newGS, checksum,
-              cachingStrategy.get(),this.blockWriteOffset/*HDFSRS_RWAPI:block write offset*/);
+              cachingStrategy.get(),this.blockWriteOffset/*HDFSRS_RWAPI:block write offset*/,
+              DFSClient.getCopyOfVectorClock()/*HDFSRS_VC:get vector clock*/);
   
           // receive ack for connect
           BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(

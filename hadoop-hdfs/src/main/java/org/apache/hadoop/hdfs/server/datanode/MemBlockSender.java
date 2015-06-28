@@ -35,6 +35,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.net.SocketOutputStream;
 import org.apache.hadoop.util.DataChecksum;
 
+import edu.cornell.cs.sa.VectorClock;
+
 
 /**
  * Reads a block from the disk and sends it to a recipient.
@@ -88,9 +90,9 @@ class MemBlockSender extends BlockSender {
    * @throws IOException
    */
   MemBlockSender(ExtendedBlock block, long startOffset, long length,
-                 DataNode datanode, String clientTraceFmt)
+                 DataNode datanode, String clientTraceFmt, VectorClock myVC)
       throws IOException {
-    super(block, datanode, clientTraceFmt);
+    super(block, datanode, clientTraceFmt, myVC);
     try {
       final Replica replica;
       final long replicaVisibleLength;
@@ -196,7 +198,7 @@ class MemBlockSender extends BlockSender {
     // C = checksums
     // D? = data, if transferTo is false.
     
-    int headerLen = writePacketHeader(pkt, dataLen, packetLen);
+    int headerLen = writePacketHeader(pkt, dataLen, packetLen, this.myVC/*HDFSRS_VC*/);
     
     // Per above, the header doesn't start at the beginning of the
     // buffer

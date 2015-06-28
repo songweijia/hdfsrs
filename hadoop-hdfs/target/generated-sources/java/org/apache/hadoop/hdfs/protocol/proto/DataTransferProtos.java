@@ -5629,6 +5629,35 @@ public final class DataTransferProtos {
      * </pre>
      */
     long getOffset();
+
+    // optional .hadoop.hdfs.VectorClockProto mvc = 12;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+     *
+     * <pre>
+     *}
+     *HDFSRS_VC{
+     * </pre>
+     */
+    boolean hasMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+     *
+     * <pre>
+     *}
+     *HDFSRS_VC{
+     * </pre>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+     *
+     * <pre>
+     *}
+     *HDFSRS_VC{
+     * </pre>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.OpWriteBlockProto}
@@ -5775,6 +5804,19 @@ public final class DataTransferProtos {
             case 88: {
               bitField0_ |= 0x00000200;
               offset_ = input.readUInt64();
+              break;
+            }
+            case 98: {
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000400) == 0x00000400)) {
+                subBuilder = mvc_.toBuilder();
+              }
+              mvc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(mvc_);
+                mvc_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000400;
               break;
             }
           }
@@ -6306,6 +6348,43 @@ public final class DataTransferProtos {
       return offset_;
     }
 
+    // optional .hadoop.hdfs.VectorClockProto mvc = 12;
+    public static final int MVC_FIELD_NUMBER = 12;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+     *
+     * <pre>
+     *}
+     *HDFSRS_VC{
+     * </pre>
+     */
+    public boolean hasMvc() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+     *
+     * <pre>
+     *}
+     *HDFSRS_VC{
+     * </pre>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+      return mvc_;
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+     *
+     * <pre>
+     *}
+     *HDFSRS_VC{
+     * </pre>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+      return mvc_;
+    }
+
     private void initFields() {
       header_ = org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ClientOperationHeaderProto.getDefaultInstance();
       targets_ = java.util.Collections.emptyList();
@@ -6318,6 +6397,7 @@ public final class DataTransferProtos {
       requestedChecksum_ = org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ChecksumProto.getDefaultInstance();
       cachingStrategy_ = org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto.getDefaultInstance();
       offset_ = 0L;
+      mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -6372,6 +6452,12 @@ public final class DataTransferProtos {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (hasMvc()) {
+        if (!getMvc().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -6411,6 +6497,9 @@ public final class DataTransferProtos {
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeUInt64(11, offset_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeMessage(12, mvc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -6464,6 +6553,10 @@ public final class DataTransferProtos {
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(11, offset_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(12, mvc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6540,6 +6633,11 @@ public final class DataTransferProtos {
         result = result && (getOffset()
             == other.getOffset());
       }
+      result = result && (hasMvc() == other.hasMvc());
+      if (hasMvc()) {
+        result = result && getMvc()
+            .equals(other.getMvc());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -6596,6 +6694,10 @@ public final class DataTransferProtos {
       if (hasOffset()) {
         hash = (37 * hash) + OFFSET_FIELD_NUMBER;
         hash = (53 * hash) + hashLong(getOffset());
+      }
+      if (hasMvc()) {
+        hash = (37 * hash) + MVC_FIELD_NUMBER;
+        hash = (53 * hash) + getMvc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -6703,6 +6805,7 @@ public final class DataTransferProtos {
           getSourceFieldBuilder();
           getRequestedChecksumFieldBuilder();
           getCachingStrategyFieldBuilder();
+          getMvcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -6753,6 +6856,12 @@ public final class DataTransferProtos {
         bitField0_ = (bitField0_ & ~0x00000200);
         offset_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000400);
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000800);
         return this;
       }
 
@@ -6846,6 +6955,14 @@ public final class DataTransferProtos {
           to_bitField0_ |= 0x00000200;
         }
         result.offset_ = offset_;
+        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        if (mvcBuilder_ == null) {
+          result.mvc_ = mvc_;
+        } else {
+          result.mvc_ = mvcBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -6918,6 +7035,9 @@ public final class DataTransferProtos {
         if (other.hasOffset()) {
           setOffset(other.getOffset());
         }
+        if (other.hasMvc()) {
+          mergeMvc(other.getMvc());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -6970,6 +7090,12 @@ public final class DataTransferProtos {
         if (!getRequestedChecksum().isInitialized()) {
           
           return false;
+        }
+        if (hasMvc()) {
+          if (!getMvc().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -7961,6 +8087,168 @@ public final class DataTransferProtos {
         offset_ = 0L;
         onChanged();
         return this;
+      }
+
+      // optional .hadoop.hdfs.VectorClockProto mvc = 12;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> mvcBuilder_;
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public boolean hasMvc() {
+        return ((bitField0_ & 0x00000800) == 0x00000800);
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+        if (mvcBuilder_ == null) {
+          return mvc_;
+        } else {
+          return mvcBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public Builder setMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          mvc_ = value;
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public Builder setMvc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
+        if (mvcBuilder_ == null) {
+          mvc_ = builderForValue.build();
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public Builder mergeMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (((bitField0_ & 0x00000800) == 0x00000800) &&
+              mvc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
+            mvc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(mvc_).mergeFrom(value).buildPartial();
+          } else {
+            mvc_ = value;
+          }
+          onChanged();
+        } else {
+          mvcBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public Builder clearMvc() {
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+          onChanged();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000800);
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getMvcBuilder() {
+        bitField0_ |= 0x00000800;
+        onChanged();
+        return getMvcFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+        if (mvcBuilder_ != null) {
+          return mvcBuilder_.getMessageOrBuilder();
+        } else {
+          return mvc_;
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 12;</code>
+       *
+       * <pre>
+       *}
+       *HDFSRS_VC{
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
+          getMvcFieldBuilder() {
+        if (mvcBuilder_ == null) {
+          mvcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
+                  mvc_,
+                  getParentForChildren(),
+                  isClean());
+          mvc_ = null;
+        }
+        return mvcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OpWriteBlockProto)
@@ -8960,6 +9248,32 @@ public final class DataTransferProtos {
      * <code>required .hadoop.hdfs.DatanodeInfoProto source = 3;</code>
      */
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.DatanodeInfoProtoOrBuilder getSourceOrBuilder();
+
+    // optional .hadoop.hdfs.VectorClockProto mvc = 4;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     *
+     * <pre>
+     *HDFSRS_VC{
+     * </pre>
+     */
+    boolean hasMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     *
+     * <pre>
+     *HDFSRS_VC{
+     * </pre>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     *
+     * <pre>
+     *HDFSRS_VC{
+     * </pre>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.OpReplaceBlockProto}
@@ -9041,6 +9355,19 @@ public final class DataTransferProtos {
                 source_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000004;
+              break;
+            }
+            case 34: {
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000008) == 0x00000008)) {
+                subBuilder = mvc_.toBuilder();
+              }
+              mvc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(mvc_);
+                mvc_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000008;
               break;
             }
           }
@@ -9170,10 +9497,45 @@ public final class DataTransferProtos {
       return source_;
     }
 
+    // optional .hadoop.hdfs.VectorClockProto mvc = 4;
+    public static final int MVC_FIELD_NUMBER = 4;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     *
+     * <pre>
+     *HDFSRS_VC{
+     * </pre>
+     */
+    public boolean hasMvc() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     *
+     * <pre>
+     *HDFSRS_VC{
+     * </pre>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+      return mvc_;
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     *
+     * <pre>
+     *HDFSRS_VC{
+     * </pre>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+      return mvc_;
+    }
+
     private void initFields() {
       header_ = org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.BaseHeaderProto.getDefaultInstance();
       delHint_ = "";
       source_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.DatanodeInfoProto.getDefaultInstance();
+      mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -9200,6 +9562,12 @@ public final class DataTransferProtos {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (hasMvc()) {
+        if (!getMvc().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -9215,6 +9583,9 @@ public final class DataTransferProtos {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeMessage(3, source_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeMessage(4, mvc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -9236,6 +9607,10 @@ public final class DataTransferProtos {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, source_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, mvc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9275,6 +9650,11 @@ public final class DataTransferProtos {
         result = result && getSource()
             .equals(other.getSource());
       }
+      result = result && (hasMvc() == other.hasMvc());
+      if (hasMvc()) {
+        result = result && getMvc()
+            .equals(other.getMvc());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -9299,6 +9679,10 @@ public final class DataTransferProtos {
       if (hasSource()) {
         hash = (37 * hash) + SOURCE_FIELD_NUMBER;
         hash = (53 * hash) + getSource().hashCode();
+      }
+      if (hasMvc()) {
+        hash = (37 * hash) + MVC_FIELD_NUMBER;
+        hash = (53 * hash) + getMvc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -9403,6 +9787,7 @@ public final class DataTransferProtos {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getHeaderFieldBuilder();
           getSourceFieldBuilder();
+          getMvcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -9425,6 +9810,12 @@ public final class DataTransferProtos {
           sourceBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -9473,6 +9864,14 @@ public final class DataTransferProtos {
         } else {
           result.source_ = sourceBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        if (mvcBuilder_ == null) {
+          result.mvc_ = mvc_;
+        } else {
+          result.mvc_ = mvcBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9500,6 +9899,9 @@ public final class DataTransferProtos {
         if (other.hasSource()) {
           mergeSource(other.getSource());
         }
+        if (other.hasMvc()) {
+          mergeMvc(other.getMvc());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -9524,6 +9926,12 @@ public final class DataTransferProtos {
         if (!getSource().isInitialized()) {
           
           return false;
+        }
+        if (hasMvc()) {
+          if (!getMvc().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -9853,6 +10261,159 @@ public final class DataTransferProtos {
           source_ = null;
         }
         return sourceBuilder_;
+      }
+
+      // optional .hadoop.hdfs.VectorClockProto mvc = 4;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> mvcBuilder_;
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public boolean hasMvc() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+        if (mvcBuilder_ == null) {
+          return mvc_;
+        } else {
+          return mvcBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public Builder setMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          mvc_ = value;
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public Builder setMvc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
+        if (mvcBuilder_ == null) {
+          mvc_ = builderForValue.build();
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public Builder mergeMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              mvc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
+            mvc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(mvc_).mergeFrom(value).buildPartial();
+          } else {
+            mvc_ = value;
+          }
+          onChanged();
+        } else {
+          mvcBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public Builder clearMvc() {
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+          onChanged();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getMvcBuilder() {
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return getMvcFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+        if (mvcBuilder_ != null) {
+          return mvcBuilder_.getMessageOrBuilder();
+        } else {
+          return mvc_;
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       *
+       * <pre>
+       *HDFSRS_VC{
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
+          getMvcFieldBuilder() {
+        if (mvcBuilder_ == null) {
+          mvcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
+                  mvc_,
+                  getParentForChildren(),
+                  isClean());
+          mvc_ = null;
+        }
+        return mvcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OpReplaceBlockProto)
@@ -15853,6 +16414,20 @@ public final class DataTransferProtos {
      * <code>optional bool syncBlock = 5 [default = false];</code>
      */
     boolean getSyncBlock();
+
+    // optional .hadoop.hdfs.VectorClockProto mvc = 6;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     */
+    boolean hasMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.PacketHeaderProto}
@@ -15928,6 +16503,19 @@ public final class DataTransferProtos {
             case 40: {
               bitField0_ |= 0x00000010;
               syncBlock_ = input.readBool();
+              break;
+            }
+            case 50: {
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000020) == 0x00000020)) {
+                subBuilder = mvc_.toBuilder();
+              }
+              mvc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(mvc_);
+                mvc_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000020;
               break;
             }
           }
@@ -16058,12 +16646,35 @@ public final class DataTransferProtos {
       return syncBlock_;
     }
 
+    // optional .hadoop.hdfs.VectorClockProto mvc = 6;
+    public static final int MVC_FIELD_NUMBER = 6;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     */
+    public boolean hasMvc() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+      return mvc_;
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+      return mvc_;
+    }
+
     private void initFields() {
       offsetInBlock_ = 0L;
       seqno_ = 0L;
       lastPacketInBlock_ = false;
       dataLen_ = 0;
       syncBlock_ = false;
+      mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -16086,6 +16697,12 @@ public final class DataTransferProtos {
         memoizedIsInitialized = 0;
         return false;
       }
+      if (hasMvc()) {
+        if (!getMvc().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -16107,6 +16724,9 @@ public final class DataTransferProtos {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBool(5, syncBlock_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeMessage(6, mvc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -16136,6 +16756,10 @@ public final class DataTransferProtos {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(5, syncBlock_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, mvc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -16185,6 +16809,11 @@ public final class DataTransferProtos {
         result = result && (getSyncBlock()
             == other.getSyncBlock());
       }
+      result = result && (hasMvc() == other.hasMvc());
+      if (hasMvc()) {
+        result = result && getMvc()
+            .equals(other.getMvc());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -16217,6 +16846,10 @@ public final class DataTransferProtos {
       if (hasSyncBlock()) {
         hash = (37 * hash) + SYNCBLOCK_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getSyncBlock());
+      }
+      if (hasMvc()) {
+        hash = (37 * hash) + MVC_FIELD_NUMBER;
+        hash = (53 * hash) + getMvc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -16319,6 +16952,7 @@ public final class DataTransferProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getMvcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -16337,6 +16971,12 @@ public final class DataTransferProtos {
         bitField0_ = (bitField0_ & ~0x00000008);
         syncBlock_ = false;
         bitField0_ = (bitField0_ & ~0x00000010);
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -16385,6 +17025,14 @@ public final class DataTransferProtos {
           to_bitField0_ |= 0x00000010;
         }
         result.syncBlock_ = syncBlock_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        if (mvcBuilder_ == null) {
+          result.mvc_ = mvc_;
+        } else {
+          result.mvc_ = mvcBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -16416,6 +17064,9 @@ public final class DataTransferProtos {
         if (other.hasSyncBlock()) {
           setSyncBlock(other.getSyncBlock());
         }
+        if (other.hasMvc()) {
+          mergeMvc(other.getMvc());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -16436,6 +17087,12 @@ public final class DataTransferProtos {
         if (!hasDataLen()) {
           
           return false;
+        }
+        if (hasMvc()) {
+          if (!getMvc().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -16640,6 +17297,123 @@ public final class DataTransferProtos {
         return this;
       }
 
+      // optional .hadoop.hdfs.VectorClockProto mvc = 6;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> mvcBuilder_;
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      public boolean hasMvc() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+        if (mvcBuilder_ == null) {
+          return mvc_;
+        } else {
+          return mvcBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      public Builder setMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          mvc_ = value;
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      public Builder setMvc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
+        if (mvcBuilder_ == null) {
+          mvc_ = builderForValue.build();
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      public Builder mergeMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
+              mvc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
+            mvc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(mvc_).mergeFrom(value).buildPartial();
+          } else {
+            mvc_ = value;
+          }
+          onChanged();
+        } else {
+          mvcBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      public Builder clearMvc() {
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+          onChanged();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getMvcBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getMvcFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+        if (mvcBuilder_ != null) {
+          return mvcBuilder_.getMessageOrBuilder();
+        } else {
+          return mvc_;
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
+          getMvcFieldBuilder() {
+        if (mvcBuilder_ == null) {
+          mvcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
+                  mvc_,
+                  getParentForChildren(),
+                  isClean());
+          mvc_ = null;
+        }
+        return mvcBuilder_;
+      }
+
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.PacketHeaderProto)
     }
 
@@ -16687,6 +17461,20 @@ public final class DataTransferProtos {
      * <code>optional uint64 downstreamAckTimeNanos = 3 [default = 0];</code>
      */
     long getDownstreamAckTimeNanos();
+
+    // optional .hadoop.hdfs.VectorClockProto mvc = 4;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     */
+    boolean hasMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.PipelineAckProto}
@@ -16780,6 +17568,19 @@ public final class DataTransferProtos {
             case 24: {
               bitField0_ |= 0x00000002;
               downstreamAckTimeNanos_ = input.readUInt64();
+              break;
+            }
+            case 34: {
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                subBuilder = mvc_.toBuilder();
+              }
+              mvc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(mvc_);
+                mvc_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000004;
               break;
             }
           }
@@ -16879,10 +17680,33 @@ public final class DataTransferProtos {
       return downstreamAckTimeNanos_;
     }
 
+    // optional .hadoop.hdfs.VectorClockProto mvc = 4;
+    public static final int MVC_FIELD_NUMBER = 4;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     */
+    public boolean hasMvc() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+      return mvc_;
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+      return mvc_;
+    }
+
     private void initFields() {
       seqno_ = 0L;
       status_ = java.util.Collections.emptyList();
       downstreamAckTimeNanos_ = 0L;
+      mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -16892,6 +17716,12 @@ public final class DataTransferProtos {
       if (!hasSeqno()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      if (hasMvc()) {
+        if (!getMvc().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -16908,6 +17738,9 @@ public final class DataTransferProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeUInt64(3, downstreamAckTimeNanos_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(4, mvc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -16934,6 +17767,10 @@ public final class DataTransferProtos {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(3, downstreamAckTimeNanos_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, mvc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -16970,6 +17807,11 @@ public final class DataTransferProtos {
         result = result && (getDownstreamAckTimeNanos()
             == other.getDownstreamAckTimeNanos());
       }
+      result = result && (hasMvc() == other.hasMvc());
+      if (hasMvc()) {
+        result = result && getMvc()
+            .equals(other.getMvc());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -16994,6 +17836,10 @@ public final class DataTransferProtos {
       if (hasDownstreamAckTimeNanos()) {
         hash = (37 * hash) + DOWNSTREAMACKTIMENANOS_FIELD_NUMBER;
         hash = (53 * hash) + hashLong(getDownstreamAckTimeNanos());
+      }
+      if (hasMvc()) {
+        hash = (37 * hash) + MVC_FIELD_NUMBER;
+        hash = (53 * hash) + getMvc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -17096,6 +17942,7 @@ public final class DataTransferProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getMvcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -17110,6 +17957,12 @@ public final class DataTransferProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         downstreamAckTimeNanos_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -17151,6 +18004,14 @@ public final class DataTransferProtos {
           to_bitField0_ |= 0x00000002;
         }
         result.downstreamAckTimeNanos_ = downstreamAckTimeNanos_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (mvcBuilder_ == null) {
+          result.mvc_ = mvc_;
+        } else {
+          result.mvc_ = mvcBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -17183,6 +18044,9 @@ public final class DataTransferProtos {
         if (other.hasDownstreamAckTimeNanos()) {
           setDownstreamAckTimeNanos(other.getDownstreamAckTimeNanos());
         }
+        if (other.hasMvc()) {
+          mergeMvc(other.getMvc());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -17191,6 +18055,12 @@ public final class DataTransferProtos {
         if (!hasSeqno()) {
           
           return false;
+        }
+        if (hasMvc()) {
+          if (!getMvc().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -17350,6 +18220,123 @@ public final class DataTransferProtos {
         downstreamAckTimeNanos_ = 0L;
         onChanged();
         return this;
+      }
+
+      // optional .hadoop.hdfs.VectorClockProto mvc = 4;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> mvcBuilder_;
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      public boolean hasMvc() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+        if (mvcBuilder_ == null) {
+          return mvc_;
+        } else {
+          return mvcBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      public Builder setMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          mvc_ = value;
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      public Builder setMvc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
+        if (mvcBuilder_ == null) {
+          mvc_ = builderForValue.build();
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      public Builder mergeMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              mvc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
+            mvc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(mvc_).mergeFrom(value).buildPartial();
+          } else {
+            mvc_ = value;
+          }
+          onChanged();
+        } else {
+          mvcBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      public Builder clearMvc() {
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+          onChanged();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getMvcBuilder() {
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return getMvcFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+        if (mvcBuilder_ != null) {
+          return mvcBuilder_.getMessageOrBuilder();
+        } else {
+          return mvc_;
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 4;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
+          getMvcFieldBuilder() {
+        if (mvcBuilder_ == null) {
+          mvcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
+                  mvc_,
+                  getParentForChildren(),
+                  isClean());
+          mvc_ = null;
+        }
+        return mvcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.PipelineAckProto)
@@ -21331,7 +22318,7 @@ public final class DataTransferProtos {
       "\ttimestamp\030\001 \002(\004\022/\n\006blocks\030\002 \003(\0132\037.hadoo" +
       "p.hdfs.ExtendedBlockProto\"W\n\rChecksumPro" +
       "to\022,\n\004type\030\001 \002(\0162\036.hadoop.hdfs.ChecksumT" +
-      "ypeProto\022\030\n\020bytesPerChecksum\030\002 \002(\r\"\231\006\n\021O" +
+      "ypeProto\022\030\n\020bytesPerChecksum\030\002 \002(\r\"\305\006\n\021O" +
       "pWriteBlockProto\0227\n\006header\030\001 \002(\0132\'.hadoo" +
       "p.hdfs.ClientOperationHeaderProto\022/\n\007tar" +
       "gets\030\002 \003(\0132\036.hadoop.hdfs.DatanodeInfoPro" +
@@ -21343,71 +22330,76 @@ public final class DataTransferProtos {
       "rationStamp\030\010 \002(\004\0225\n\021requestedChecksum\030\t" +
       " \002(\0132\032.hadoop.hdfs.ChecksumProto\022:\n\017cach" +
       "ingStrategy\030\n \001(\0132!.hadoop.hdfs.CachingS" +
-      "trategyProto\022\016\n\006offset\030\013 \001(\004\"\277\002\n\026BlockCo" +
-      "nstructionStage\022\031\n\025PIPELINE_SETUP_APPEND" +
-      "\020\000\022\"\n\036PIPELINE_SETUP_APPEND_RECOVERY\020\001\022\022" +
-      "\n\016DATA_STREAMING\020\002\022%\n!PIPELINE_SETUP_STR" +
-      "EAMING_RECOVERY\020\003\022\022\n\016PIPELINE_CLOSE\020\004\022\033\n",
-      "\027PIPELINE_CLOSE_RECOVERY\020\005\022\031\n\025PIPELINE_S" +
-      "ETUP_CREATE\020\006\022\020\n\014TRANSFER_RBW\020\007\022\026\n\022TRANS" +
-      "FER_FINALIZED\020\010\022\034\n\030PIPELINE_SETUP_OVERWR" +
-      "ITE\020\t\022\027\n\023PIPELINE_SETUP_SEEK\020\n\"\200\001\n\024OpTra" +
-      "nsferBlockProto\0227\n\006header\030\001 \002(\0132\'.hadoop" +
-      ".hdfs.ClientOperationHeaderProto\022/\n\007targ" +
-      "ets\030\002 \003(\0132\036.hadoop.hdfs.DatanodeInfoProt" +
-      "o\"\204\001\n\023OpReplaceBlockProto\022,\n\006header\030\001 \002(" +
-      "\0132\034.hadoop.hdfs.BaseHeaderProto\022\017\n\007delHi" +
-      "nt\030\002 \002(\t\022.\n\006source\030\003 \002(\0132\036.hadoop.hdfs.D",
-      "atanodeInfoProto\"@\n\020OpCopyBlockProto\022,\n\006" +
-      "header\030\001 \002(\0132\034.hadoop.hdfs.BaseHeaderPro" +
-      "to\"D\n\024OpBlockChecksumProto\022,\n\006header\030\001 \002" +
-      "(\0132\034.hadoop.hdfs.BaseHeaderProto\"0\n\026Shor" +
-      "tCircuitShmIdProto\022\n\n\002hi\030\001 \002(\003\022\n\n\002lo\030\002 \002" +
-      "(\003\"_\n\030ShortCircuitShmSlotProto\0222\n\005shmId\030" +
-      "\001 \002(\0132#.hadoop.hdfs.ShortCircuitShmIdPro" +
-      "to\022\017\n\007slotIdx\030\002 \002(\005\"\233\001\n OpRequestShortCi" +
-      "rcuitAccessProto\022,\n\006header\030\001 \002(\0132\034.hadoo" +
-      "p.hdfs.BaseHeaderProto\022\022\n\nmaxVersion\030\002 \002",
-      "(\r\0225\n\006slotId\030\003 \001(\0132%.hadoop.hdfs.ShortCi" +
-      "rcuitShmSlotProto\"^\n%ReleaseShortCircuit" +
-      "AccessRequestProto\0225\n\006slotId\030\001 \002(\0132%.had" +
-      "oop.hdfs.ShortCircuitShmSlotProto\"\\\n&Rel" +
-      "easeShortCircuitAccessResponseProto\022#\n\006s" +
-      "tatus\030\001 \002(\0162\023.hadoop.hdfs.Status\022\r\n\005erro" +
-      "r\030\002 \001(\t\"1\n\033ShortCircuitShmRequestProto\022\022" +
-      "\n\nclientName\030\001 \002(\t\"\203\001\n\034ShortCircuitShmRe" +
-      "sponseProto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdf" +
-      "s.Status\022\r\n\005error\030\002 \001(\t\022/\n\002id\030\003 \001(\0132#.ha",
-      "doop.hdfs.ShortCircuitShmIdProto\"\177\n\021Pack" +
-      "etHeaderProto\022\025\n\roffsetInBlock\030\001 \002(\020\022\r\n\005" +
-      "seqno\030\002 \002(\020\022\031\n\021lastPacketInBlock\030\003 \002(\010\022\017" +
-      "\n\007dataLen\030\004 \002(\017\022\030\n\tsyncBlock\030\005 \001(\010:\005fals" +
-      "e\"i\n\020PipelineAckProto\022\r\n\005seqno\030\001 \002(\022\022#\n\006" +
-      "status\030\002 \003(\0162\023.hadoop.hdfs.Status\022!\n\026dow" +
-      "nstreamAckTimeNanos\030\003 \001(\004:\0010\"\\\n\027ReadOpCh" +
-      "ecksumInfoProto\022,\n\010checksum\030\001 \002(\0132\032.hado" +
-      "op.hdfs.ChecksumProto\022\023\n\013chunkOffset\030\002 \002" +
-      "(\004\"\214\002\n\024BlockOpResponseProto\022#\n\006status\030\001 ",
-      "\002(\0162\023.hadoop.hdfs.Status\022\024\n\014firstBadLink" +
-      "\030\002 \001(\t\022C\n\020checksumResponse\030\003 \001(\0132).hadoo" +
-      "p.hdfs.OpBlockChecksumResponseProto\022@\n\022r" +
-      "eadOpChecksumInfo\030\004 \001(\0132$.hadoop.hdfs.Re" +
-      "adOpChecksumInfoProto\022\017\n\007message\030\005 \001(\t\022!" +
-      "\n\031shortCircuitAccessVersion\030\006 \001(\r\"<\n\025Cli" +
-      "entReadStatusProto\022#\n\006status\030\001 \002(\0162\023.had" +
-      "oop.hdfs.Status\"9\n\022DNTransferAckProto\022#\n" +
-      "\006status\030\001 \002(\0162\023.hadoop.hdfs.Status\"\206\001\n\034O" +
-      "pBlockChecksumResponseProto\022\023\n\013bytesPerC",
-      "rc\030\001 \002(\r\022\023\n\013crcPerBlock\030\002 \002(\004\022\013\n\003md5\030\003 \002" +
-      "(\014\022/\n\007crcType\030\004 \001(\0162\036.hadoop.hdfs.Checks" +
-      "umTypeProto*\343\001\n\006Status\022\013\n\007SUCCESS\020\000\022\t\n\005E" +
-      "RROR\020\001\022\022\n\016ERROR_CHECKSUM\020\002\022\021\n\rERROR_INVA" +
-      "LID\020\003\022\020\n\014ERROR_EXISTS\020\004\022\026\n\022ERROR_ACCESS_" +
-      "TOKEN\020\005\022\017\n\013CHECKSUM_OK\020\006\022\025\n\021ERROR_UNSUPP" +
-      "ORTED\020\007\022\017\n\013OOB_RESTART\020\010\022\021\n\rOOB_RESERVED" +
-      "1\020\t\022\021\n\rOOB_RESERVED2\020\n\022\021\n\rOOB_RESERVED3\020" +
-      "\013B>\n%org.apache.hadoop.hdfs.protocol.pro" +
-      "toB\022DataTransferProtos\240\001\001"
+      "trategyProto\022\016\n\006offset\030\013 \001(\004\022*\n\003mvc\030\014 \001(" +
+      "\0132\035.hadoop.hdfs.VectorClockProto\"\277\002\n\026Blo" +
+      "ckConstructionStage\022\031\n\025PIPELINE_SETUP_AP" +
+      "PEND\020\000\022\"\n\036PIPELINE_SETUP_APPEND_RECOVERY" +
+      "\020\001\022\022\n\016DATA_STREAMING\020\002\022%\n!PIPELINE_SETUP",
+      "_STREAMING_RECOVERY\020\003\022\022\n\016PIPELINE_CLOSE\020" +
+      "\004\022\033\n\027PIPELINE_CLOSE_RECOVERY\020\005\022\031\n\025PIPELI" +
+      "NE_SETUP_CREATE\020\006\022\020\n\014TRANSFER_RBW\020\007\022\026\n\022T" +
+      "RANSFER_FINALIZED\020\010\022\034\n\030PIPELINE_SETUP_OV" +
+      "ERWRITE\020\t\022\027\n\023PIPELINE_SETUP_SEEK\020\n\"\200\001\n\024O" +
+      "pTransferBlockProto\0227\n\006header\030\001 \002(\0132\'.ha" +
+      "doop.hdfs.ClientOperationHeaderProto\022/\n\007" +
+      "targets\030\002 \003(\0132\036.hadoop.hdfs.DatanodeInfo" +
+      "Proto\"\260\001\n\023OpReplaceBlockProto\022,\n\006header\030" +
+      "\001 \002(\0132\034.hadoop.hdfs.BaseHeaderProto\022\017\n\007d",
+      "elHint\030\002 \002(\t\022.\n\006source\030\003 \002(\0132\036.hadoop.hd" +
+      "fs.DatanodeInfoProto\022*\n\003mvc\030\004 \001(\0132\035.hado" +
+      "op.hdfs.VectorClockProto\"@\n\020OpCopyBlockP" +
+      "roto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs.BaseH" +
+      "eaderProto\"D\n\024OpBlockChecksumProto\022,\n\006he" +
+      "ader\030\001 \002(\0132\034.hadoop.hdfs.BaseHeaderProto" +
+      "\"0\n\026ShortCircuitShmIdProto\022\n\n\002hi\030\001 \002(\003\022\n" +
+      "\n\002lo\030\002 \002(\003\"_\n\030ShortCircuitShmSlotProto\0222" +
+      "\n\005shmId\030\001 \002(\0132#.hadoop.hdfs.ShortCircuit" +
+      "ShmIdProto\022\017\n\007slotIdx\030\002 \002(\005\"\233\001\n OpReques",
+      "tShortCircuitAccessProto\022,\n\006header\030\001 \002(\013" +
+      "2\034.hadoop.hdfs.BaseHeaderProto\022\022\n\nmaxVer" +
+      "sion\030\002 \002(\r\0225\n\006slotId\030\003 \001(\0132%.hadoop.hdfs" +
+      ".ShortCircuitShmSlotProto\"^\n%ReleaseShor" +
+      "tCircuitAccessRequestProto\0225\n\006slotId\030\001 \002" +
+      "(\0132%.hadoop.hdfs.ShortCircuitShmSlotProt" +
+      "o\"\\\n&ReleaseShortCircuitAccessResponsePr" +
+      "oto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Status" +
+      "\022\r\n\005error\030\002 \001(\t\"1\n\033ShortCircuitShmReques" +
+      "tProto\022\022\n\nclientName\030\001 \002(\t\"\203\001\n\034ShortCirc",
+      "uitShmResponseProto\022#\n\006status\030\001 \002(\0162\023.ha" +
+      "doop.hdfs.Status\022\r\n\005error\030\002 \001(\t\022/\n\002id\030\003 " +
+      "\001(\0132#.hadoop.hdfs.ShortCircuitShmIdProto" +
+      "\"\253\001\n\021PacketHeaderProto\022\025\n\roffsetInBlock\030" +
+      "\001 \002(\020\022\r\n\005seqno\030\002 \002(\020\022\031\n\021lastPacketInBloc" +
+      "k\030\003 \002(\010\022\017\n\007dataLen\030\004 \002(\017\022\030\n\tsyncBlock\030\005 " +
+      "\001(\010:\005false\022*\n\003mvc\030\006 \001(\0132\035.hadoop.hdfs.Ve" +
+      "ctorClockProto\"\225\001\n\020PipelineAckProto\022\r\n\005s" +
+      "eqno\030\001 \002(\022\022#\n\006status\030\002 \003(\0162\023.hadoop.hdfs" +
+      ".Status\022!\n\026downstreamAckTimeNanos\030\003 \001(\004:",
+      "\0010\022*\n\003mvc\030\004 \001(\0132\035.hadoop.hdfs.VectorCloc" +
+      "kProto\"\\\n\027ReadOpChecksumInfoProto\022,\n\010che" +
+      "cksum\030\001 \002(\0132\032.hadoop.hdfs.ChecksumProto\022" +
+      "\023\n\013chunkOffset\030\002 \002(\004\"\214\002\n\024BlockOpResponse" +
+      "Proto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Stat" +
+      "us\022\024\n\014firstBadLink\030\002 \001(\t\022C\n\020checksumResp" +
+      "onse\030\003 \001(\0132).hadoop.hdfs.OpBlockChecksum" +
+      "ResponseProto\022@\n\022readOpChecksumInfo\030\004 \001(" +
+      "\0132$.hadoop.hdfs.ReadOpChecksumInfoProto\022" +
+      "\017\n\007message\030\005 \001(\t\022!\n\031shortCircuitAccessVe",
+      "rsion\030\006 \001(\r\"<\n\025ClientReadStatusProto\022#\n\006" +
+      "status\030\001 \002(\0162\023.hadoop.hdfs.Status\"9\n\022DNT" +
+      "ransferAckProto\022#\n\006status\030\001 \002(\0162\023.hadoop" +
+      ".hdfs.Status\"\206\001\n\034OpBlockChecksumResponse" +
+      "Proto\022\023\n\013bytesPerCrc\030\001 \002(\r\022\023\n\013crcPerBloc" +
+      "k\030\002 \002(\004\022\013\n\003md5\030\003 \002(\014\022/\n\007crcType\030\004 \001(\0162\036." +
+      "hadoop.hdfs.ChecksumTypeProto*\343\001\n\006Status" +
+      "\022\013\n\007SUCCESS\020\000\022\t\n\005ERROR\020\001\022\022\n\016ERROR_CHECKS" +
+      "UM\020\002\022\021\n\rERROR_INVALID\020\003\022\020\n\014ERROR_EXISTS\020" +
+      "\004\022\026\n\022ERROR_ACCESS_TOKEN\020\005\022\017\n\013CHECKSUM_OK",
+      "\020\006\022\025\n\021ERROR_UNSUPPORTED\020\007\022\017\n\013OOB_RESTART" +
+      "\020\010\022\021\n\rOOB_RESERVED1\020\t\022\021\n\rOOB_RESERVED2\020\n" +
+      "\022\021\n\rOOB_RESERVED3\020\013B>\n%org.apache.hadoop" +
+      ".hdfs.protocol.protoB\022DataTransferProtos" +
+      "\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -21461,7 +22453,7 @@ public final class DataTransferProtos {
           internal_static_hadoop_hdfs_OpWriteBlockProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_OpWriteBlockProto_descriptor,
-              new java.lang.String[] { "Header", "Targets", "Source", "Stage", "PipelineSize", "MinBytesRcvd", "MaxBytesRcvd", "LatestGenerationStamp", "RequestedChecksum", "CachingStrategy", "Offset", });
+              new java.lang.String[] { "Header", "Targets", "Source", "Stage", "PipelineSize", "MinBytesRcvd", "MaxBytesRcvd", "LatestGenerationStamp", "RequestedChecksum", "CachingStrategy", "Offset", "Mvc", });
           internal_static_hadoop_hdfs_OpTransferBlockProto_descriptor =
             getDescriptor().getMessageTypes().get(8);
           internal_static_hadoop_hdfs_OpTransferBlockProto_fieldAccessorTable = new
@@ -21473,7 +22465,7 @@ public final class DataTransferProtos {
           internal_static_hadoop_hdfs_OpReplaceBlockProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_OpReplaceBlockProto_descriptor,
-              new java.lang.String[] { "Header", "DelHint", "Source", });
+              new java.lang.String[] { "Header", "DelHint", "Source", "Mvc", });
           internal_static_hadoop_hdfs_OpCopyBlockProto_descriptor =
             getDescriptor().getMessageTypes().get(10);
           internal_static_hadoop_hdfs_OpCopyBlockProto_fieldAccessorTable = new
@@ -21533,13 +22525,13 @@ public final class DataTransferProtos {
           internal_static_hadoop_hdfs_PacketHeaderProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_PacketHeaderProto_descriptor,
-              new java.lang.String[] { "OffsetInBlock", "Seqno", "LastPacketInBlock", "DataLen", "SyncBlock", });
+              new java.lang.String[] { "OffsetInBlock", "Seqno", "LastPacketInBlock", "DataLen", "SyncBlock", "Mvc", });
           internal_static_hadoop_hdfs_PipelineAckProto_descriptor =
             getDescriptor().getMessageTypes().get(20);
           internal_static_hadoop_hdfs_PipelineAckProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_PipelineAckProto_descriptor,
-              new java.lang.String[] { "Seqno", "Status", "DownstreamAckTimeNanos", });
+              new java.lang.String[] { "Seqno", "Status", "DownstreamAckTimeNanos", "Mvc", });
           internal_static_hadoop_hdfs_ReadOpChecksumInfoProto_descriptor =
             getDescriptor().getMessageTypes().get(21);
           internal_static_hadoop_hdfs_ReadOpChecksumInfoProto_fieldAccessorTable = new

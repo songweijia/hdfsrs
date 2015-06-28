@@ -56,6 +56,8 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.Time;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This class tests if block replacement request to data nodes work correctly.
  */
@@ -259,13 +261,14 @@ public class TestBlockReplacement {
   private boolean replaceBlock( ExtendedBlock block, DatanodeInfo source,
       DatanodeInfo sourceProxy, DatanodeInfo destination) throws IOException {
     Socket sock = new Socket();
+    VectorClock vc = new VectorClock();//HDFSRS_VC
     sock.connect(NetUtils.createSocketAddr(
         destination.getXferAddr()), HdfsServerConstants.READ_TIMEOUT); 
     sock.setKeepAlive(true);
     // sendRequest
     DataOutputStream out = new DataOutputStream(sock.getOutputStream());
     new Sender(out).replaceBlock(block, BlockTokenSecretManager.DUMMY_TOKEN,
-        source.getDatanodeUuid(), sourceProxy);
+        source.getDatanodeUuid(), sourceProxy, vc/*HDFSRS_VC*/);
     out.flush();
     // receiveResponse
     DataInputStream reply = new DataInputStream(sock.getInputStream());

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -50,6 +51,7 @@ import org.apache.hadoop.util.DataChecksum;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import edu.cornell.cs.sa.VectorClock;
 
 /**
  * Test that datanodes can correctly handle errors during block read/write.
@@ -126,6 +128,7 @@ public class TestDiskError {
     // create a file of replication factor of 1
     final Path fileName = new Path("/test.txt");
     final int fileLen = 1;
+    VectorClock vc = new VectorClock();
     DFSTestUtil.createFile(fs, fileName, 1, (short)1, 1L);
     DFSTestUtil.waitReplication(fs, fileName, (short)1);
 
@@ -153,7 +156,8 @@ public class TestDiskError {
         BlockTokenSecretManager.DUMMY_TOKEN, "",
         new DatanodeInfo[0], null,
         BlockConstructionStage.PIPELINE_SETUP_CREATE, 1, 0L, 0L, 0L,
-        checksum, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/);
+        checksum, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/,
+        vc);
     out.flush();
 
     // close the connection before sending the content of the block

@@ -995,12 +995,14 @@ public class PBHelper {
     }
 
     int action = DatanodeProtocol.DNA_UNKNOWN;
+    VectorClock mvc = null; /*HDFSRS_VC*/
     switch (blkCmd.getAction()) {
     case TRANSFER:
       action = DatanodeProtocol.DNA_TRANSFER;
       break;
     case INVALIDATE:
       action = DatanodeProtocol.DNA_INVALIDATE;
+      mvc = convert(blkCmd.getMvc());
       break;
     case SHUTDOWN:
       action = DatanodeProtocol.DNA_SHUTDOWN;
@@ -1009,7 +1011,7 @@ public class PBHelper {
       throw new AssertionError("Unknown action type: " + blkCmd.getAction());
     }
     return new BlockCommand(action, blkCmd.getBlockPoolId(), blocks, targets,
-        targetStorageIDs);
+        targetStorageIDs, mvc/*HDFSRS_VC*/);
   }
 
   public static BlockIdCommand convert(BlockIdCommandProto blkIdCmd) {

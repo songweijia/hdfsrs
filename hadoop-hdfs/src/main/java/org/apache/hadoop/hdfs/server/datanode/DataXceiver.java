@@ -86,6 +86,8 @@ import org.apache.hadoop.util.DataChecksum;
 import com.google.common.net.InetAddresses;
 import com.google.protobuf.ByteString;
 
+import edu.cornell.cs.sa.VectorClock;
+
 
 /**
  * Thread for processing incoming/outgoing data stream.
@@ -491,11 +493,11 @@ class DataXceiver extends Receiver implements Runnable {
     try {
       try {
         if (datanode.isInMemoryStorage()) {
-          blockSender = new MemBlockSender(block, blockOffset, length, datanode, clientTraceFmt);
+          blockSender = new MemBlockSender(block, blockOffset, length, datanode, clientTraceFmt,null/*HDFSRS_VC*/);
         } else {
           blockSender = new BlockSender(block, blockOffset, length,
               true, false, sendChecksum, datanode, clientTraceFmt,
-              cachingStrategy);
+              cachingStrategy,null/*HDFSRS_VC*/);
         }
       } catch(IOException e) {
         String msg = "opReadBlock " + block + " received exception " + e; 
@@ -567,8 +569,11 @@ class DataXceiver extends Receiver implements Runnable {
       final long latestGenerationStamp,
       DataChecksum requestedChecksum,
       CachingStrategy cachingStrategy,
-      //HDFSRS_WRAPI{ //TODO: use offset for receiver
-      final long offset
+      //HDFSRS_WRAPI{ 
+      final long offset,
+      //}
+      //HDFSRS_VC{
+      final VectorClock mvc
       //}
       ) throws IOException {
     previousOpClientName = clientname;
@@ -631,14 +636,15 @@ class DataXceiver extends Receiver implements Runnable {
               peer.getRemoteAddressString(),
               peer.getLocalAddressString(),
               stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
-              clientname, srcDataNode, datanode, requestedChecksum, offset/*HDFSRS_RWAPI*/);
+              clientname, srcDataNode, datanode, requestedChecksum,
+              offset/*HDFSRS_RWAPI*/, mvc/*HDFSRS_VC*/);
         } else {
           blockReceiver = new BlockReceiver(block, in, 
               peer.getRemoteAddressString(),
               peer.getLocalAddressString(),
               stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
               clientname, srcDataNode, datanode, requestedChecksum,
-              cachingStrategy,offset/*HDFSRS_RWAPI*/);
+              cachingStrategy,offset/*HDFSRS_RWAPI*/,mvc/*HDFSRS_VC*/);
         }
         storageUuid = blockReceiver.getStorageUuid();
       } else {
@@ -688,7 +694,8 @@ class DataXceiver extends Receiver implements Runnable {
           new Sender(mirrorOut).writeBlock(originalBlock, blockToken,
               clientname, targets, srcDataNode, stage, pipelineSize,
               minBytesRcvd, maxBytesRcvd, latestGenerationStamp, requestedChecksum,
-              cachingStrategy,offset/*HDFSRS_RWAPI:add offset*/); 
+              cachingStrategy,offset/*HDFSRS_RWAPI:add offset*/,
+              mvc/*HDFSRS_VC: we just transfer it to downstream, but we don't have down stream so far. */); 
 
           mirrorOut.flush();
 
@@ -922,10 +929,10 @@ class DataXceiver extends Receiver implements Runnable {
     try {
       // check if the block exists or not
       if (datanode.isInMemoryStorage()) {
-        blockSender = new MemBlockSender(block, 0, -1, datanode, null);
+        blockSender = new MemBlockSender(block, 0, -1, datanode, null, null/*HDFSRS_VC*/);
       } else {
         blockSender = new BlockSender(block, 0, -1, false, false, true, datanode, 
-            null, CachingStrategy.newDropBehind());
+            null, CachingStrategy.newDropBehind(), null/*HDFSRS_VC*/);
       }
       // set up response stream
       OutputStream baseStream = getOutputStream();
@@ -967,7 +974,8 @@ class DataXceiver extends Receiver implements Runnable {
   public void replaceBlock(final ExtendedBlock block,
       final Token<BlockTokenIdentifier> blockToken,
       final String delHint,
-      final DatanodeInfo proxySource) throws IOException {
+      final DatanodeInfo proxySource,
+      final VectorClock mvc/*HDFSRS_VC*/) throws IOException {
     updateCurrentThreadName("Replacing block " + block + " from " + delHint);
 
     /* read header */
@@ -1059,13 +1067,13 @@ class DataXceiver extends Receiver implements Runnable {
         blockReceiver = new MemBlockReceiver(block, proxyReply, 
             proxySock.getRemoteSocketAddress().toString(),
             proxySock.getLocalSocketAddress().toString(),
-            null, 0, 0, 0, "", null, datanode, remoteChecksum, -1/*HDFSRS_RWAPI*/);
+            null, 0, 0, 0, "", null, datanode, remoteChecksum, -1/*HDFSRS_RWAPI*/, null/*HDFSRS_VC*/);
       } else {
         blockReceiver = new BlockReceiver(
             block, proxyReply, proxySock.getRemoteSocketAddress().toString(),
             proxySock.getLocalSocketAddress().toString(),
             null, 0, 0, 0, "", null, datanode, remoteChecksum,
-            CachingStrategy.newDropBehind(),-1/*HDFSRS_RWAPI*/);
+            CachingStrategy.newDropBehind(),-1/*HDFSRS_RWAPI*/,null/*HDFSRS_VC*/);
       }
       // receive a block
       blockReceiver.receiveBlock(null, null, null, null, 

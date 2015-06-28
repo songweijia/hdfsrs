@@ -59,6 +59,8 @@ import org.apache.hadoop.util.Time;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /** A class that receives a block and writes to its own disk, meanwhile
  * may copies it to another site. If a throttler is provided,
  * streaming throttling is also supported.
@@ -121,7 +123,7 @@ class BlockReceiver implements Closeable {
 
   protected boolean syncOnClose;
   protected long restartBudget;
-
+  
   BlockReceiver(final ExtendedBlock block, final DataInputStream in,
       final String inAddr, final String myAddr,
       final BlockConstructionStage stage, 
@@ -166,7 +168,9 @@ class BlockReceiver implements Closeable {
       final long newGs, final long minBytesRcvd, final long maxBytesRcvd, 
       final String clientname, final DatanodeInfo srcDataNode,
       final DataNode datanode, DataChecksum requestedChecksum,
-      CachingStrategy cachingStrategy, long offset/*HDFSRS_RWAPI*/) throws IOException {
+      CachingStrategy cachingStrategy, long offset/*HDFSRS_RWAPI*/,
+      VectorClock mvc/*HDFSRS_VC*/) throws IOException {
+  	
     try{
       this.block = block;
       this.in = in;
@@ -200,11 +204,11 @@ class BlockReceiver implements Closeable {
       // Open local disk out
       //
       if (isDatanode) { //replication or move
-        replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block);
+        replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block,mvc);
       } else {
         switch (stage) {
         case PIPELINE_SETUP_CREATE:
-          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createRbw(block);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createRbw(block,mvc);
           datanode.notifyNamenodeReceivingBlock(
               block, replicaInfo.getStorageUuid());
           break;
@@ -237,7 +241,7 @@ class BlockReceiver implements Closeable {
         case TRANSFER_RBW:
         case TRANSFER_FINALIZED:
           // this is a transfer destination
-          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block,mvc);
           break;
         default: throw new IOException("Unsupported stage " + stage + 
               " while receiving block " + block + " from " + inAddr);
@@ -524,7 +528,7 @@ class BlockReceiver implements Closeable {
     // put in queue for pending acks, unless sync was requested
     if (responder != null && !syncBlock && !shouldVerifyChecksum()) {
       ((PacketResponder) responder.getRunnable()).enqueue(seqno,
-          lastPacketInBlock, offsetInBlock, Status.SUCCESS);
+          lastPacketInBlock, offsetInBlock, Status.SUCCESS, null/*We do not tick for disk based VC*/);
     }
 
     //First write the packet to the mirror:
@@ -567,7 +571,7 @@ class BlockReceiver implements Closeable {
             try {
               ((PacketResponder) responder.getRunnable()).enqueue(seqno,
                   lastPacketInBlock, offsetInBlock,
-                  Status.ERROR_CHECKSUM);
+                  Status.ERROR_CHECKSUM, null/*we do not tick for disk based datanode*/);
               // Wait until the responder sends back the response
               // and interrupt this thread.
               Thread.sleep(3000);
@@ -735,7 +739,7 @@ class BlockReceiver implements Closeable {
     // (after the fsync finished)
     if (responder != null && (syncBlock || shouldVerifyChecksum())) {
       ((PacketResponder) responder.getRunnable()).enqueue(seqno,
-          lastPacketInBlock, offsetInBlock, Status.SUCCESS);
+          lastPacketInBlock, offsetInBlock, Status.SUCCESS, null/*we do not tick for disk based datanode*/);
     }
 
     if (throttler != null) { // throttle I/O
@@ -1076,9 +1080,9 @@ class BlockReceiver implements Closeable {
      * @param offsetInBlock
      */
     void enqueue(final long seqno, final boolean lastPacketInBlock,
-        final long offsetInBlock, final Status ackStatus) {
+        final long offsetInBlock, final Status ackStatus, VectorClock mvc/*HDFRS_VC*/) {
       final Packet p = new Packet(seqno, lastPacketInBlock, offsetInBlock,
-          System.nanoTime(), ackStatus);
+          System.nanoTime(), ackStatus, mvc);
       if(LOG.isDebugEnabled()) {
         LOG.debug(myString + ": enqueue " + p);
       }
@@ -1415,7 +1419,7 @@ class BlockReceiver implements Closeable {
         }
       }
       PipelineAck replyAck = new PipelineAck(seqno, replies,
-          totalAckTimeNanos);
+          totalAckTimeNanos,null/*HDFSRS_VC: for normal block, we don't have vector clock*/);
       if (replyAck.isSuccess()
           && offsetInBlock > replicaInfo.getBytesAcked()) {
         replicaInfo.setBytesAcked(offsetInBlock);
@@ -1458,14 +1462,16 @@ class BlockReceiver implements Closeable {
     final long offsetInBlock;
     final long ackEnqueueNanoTime;
     final Status ackStatus;
+    final VectorClock mvc; // ack's message vector clock.
 
     Packet(long seqno, boolean lastPacketInBlock, long offsetInBlock,
-        long ackEnqueueNanoTime, Status ackStatus) {
+        long ackEnqueueNanoTime, Status ackStatus, VectorClock mvc/*HDFSRS_VC*/) {
       this.seqno = seqno;
       this.lastPacketInBlock = lastPacketInBlock;
       this.offsetInBlock = offsetInBlock;
       this.ackEnqueueNanoTime = ackEnqueueNanoTime;
       this.ackStatus = ackStatus;
+      this.mvc = mvc;
     }
 
     @Override
@@ -1475,6 +1481,7 @@ class BlockReceiver implements Closeable {
         + ", offsetInBlock=" + offsetInBlock
         + ", ackEnqueueNanoTime=" + ackEnqueueNanoTime
         + ", ackStatus=" + ackStatus
+        + ", mvc=" + mvc
         + ")";
     }
   }

@@ -1682,7 +1682,7 @@ public class DataNode extends Configured
             HdfsConstants.SMALL_BUFFER_SIZE));
         in = new DataInputStream(unbufIn);
         blockSender = new BlockSender(b, 0, b.getNumBytes(), 
-            false, false, true, DataNode.this, null, cachingStrategy);
+            false, false, true, DataNode.this, null, cachingStrategy, null/*HDFSRS_VC*/);
         DatanodeInfo srcNode = new DatanodeInfo(bpReg);
 
         //
@@ -1698,7 +1698,8 @@ public class DataNode extends Configured
         //HDFSRS_RWAPI{
         //    stage, 0, 0, 0, 0, blockSender.getChecksum(), cachingStrategy);
         //TODO: ADD offset
-        	    stage, 0, 0, 0, 0, blockSender.getChecksum(), cachingStrategy,-1/*offset*/);
+        	    stage, 0, 0, 0, 0, blockSender.getChecksum(), cachingStrategy,-1/*offset*/,
+        	    null/*HDFSRS_VC:we don't count vc during data transfer*/);
         //}
         
 
