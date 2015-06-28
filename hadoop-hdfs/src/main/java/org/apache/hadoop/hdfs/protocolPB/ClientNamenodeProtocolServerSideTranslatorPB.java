@@ -217,31 +217,33 @@ final private ClientProtocol server;
   static final GetSnapshottableDirListingResponseProto 
       NULL_GET_SNAPSHOTTABLE_DIR_LISTING_RESPONSE = 
       GetSnapshottableDirListingResponseProto.newBuilder().build();
-
+/* HDFSRS_VC: we need vc
   private static final CreateResponseProto VOID_CREATE_RESPONSE = 
   CreateResponseProto.newBuilder().build();
-
+*/
+/* HDFSRS_VC: we need vc
   private static final AppendResponseProto VOID_APPEND_RESPONSE = 
   AppendResponseProto.newBuilder().build();
-
+*/
   private static final SetPermissionResponseProto VOID_SET_PERM_RESPONSE = 
   SetPermissionResponseProto.newBuilder().build();
 
   private static final SetOwnerResponseProto VOID_SET_OWNER_RESPONSE = 
   SetOwnerResponseProto.newBuilder().build();
-
+/* HDFSRS_VC: we need vc
   private static final AbandonBlockResponseProto VOID_ADD_BLOCK_RESPONSE = 
   AbandonBlockResponseProto.newBuilder().build();
-
+*/
   private static final ReportBadBlocksResponseProto VOID_REP_BAD_BLOCK_RESPONSE = 
   ReportBadBlocksResponseProto.newBuilder().build();
-
+/* HDFSRS_VC: we need vc
   private static final ConcatResponseProto VOID_CONCAT_RESPONSE = 
   ConcatResponseProto.newBuilder().build();
-
+*/
+/* HDFSRS_VC: we need vc
   private static final Rename2ResponseProto VOID_RENAME2_RESPONSE = 
   Rename2ResponseProto.newBuilder().build();
-
+*/
   private static final GetListingResponseProto VOID_GETLISTING_RESPONSE = 
   GetListingResponseProto.newBuilder().build();
 
@@ -268,10 +270,10 @@ final private ClientProtocol server;
 
   private static final SetQuotaResponseProto VOID_SETQUOTA_RESPONSE = 
   SetQuotaResponseProto.newBuilder().build();
-
+/* HDFSRS_VC: we need vc
   private static final FsyncResponseProto VOID_FSYNC_RESPONSE = 
   FsyncResponseProto.newBuilder().build();
-
+*/
   private static final SetTimesResponseProto VOID_SETTIMES_RESPONSE = 
   SetTimesResponseProto.newBuilder().build();
 
@@ -415,12 +417,13 @@ final private ClientProtocol server;
     try {
       LocatedBlock result = server.append(req.getSrc(), req.getClientName(),
     		  vc/*HDFSRS_VC*/);
+      AppendResponseProto.Builder builder = AppendResponseProto.newBuilder();
+      builder.setVc(PBHelper.convert(vc));
       if (result != null) {
         return AppendResponseProto.newBuilder()
-            .setBlock(PBHelper.convert(result))
-            .setVc(PBHelper.convert(vc)).build();
+            .setBlock(PBHelper.convert(result)).build();
       }
-      return VOID_APPEND_RESPONSE;
+      return builder.build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
