@@ -1392,8 +1392,9 @@ final private ClientProtocol server;
     }
   }
 //HDFSRS_RWAPI{
-  private static final OverwriteBlockResponseProto VOID_OVERWRITE_RESPONSE = 
-  OverwriteBlockResponseProto.newBuilder().build();
+//  HDFSRS_VC: we need piggyback vc...
+//  private static final OverwriteBlockResponseProto VOID_OVERWRITE_RESPONSE = 
+//  OverwriteBlockResponseProto.newBuilder().build();
 
   @Override
 	public OverwriteBlockResponseProto overwriteBlock(RpcController controller,
@@ -1411,12 +1412,13 @@ final private ClientProtocol server;
 	            req.hasPrevious() ? PBHelper.convert(req.getPrevious()) : null,
 	            req.getBIndex(), req.getFileId(), req.getClientName(),
 	            vc/*HDFSRS_VC*/);
+	        OverwriteBlockResponseProto.Builder builder = 
+	        		OverwriteBlockResponseProto.newBuilder();
+	        builder.setVc(PBHelper.convert(vc));
 	        if (result != null) {
-	          return OverwriteBlockResponseProto.newBuilder()
-	              .setBlock(PBHelper.convert(result))
-	              .setVc(PBHelper.convert(vc)).build();
+	          return builder.setBlock(PBHelper.convert(result)).build();
 	        }
-	        return VOID_OVERWRITE_RESPONSE;
+	        return builder.build();
 	      } catch (IOException e) {
 	        throw new ServiceException(e);
 	      }
