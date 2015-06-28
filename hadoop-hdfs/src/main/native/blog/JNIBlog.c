@@ -803,3 +803,10 @@ JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
 {
   return read_local_rtc();
 }
+
+
+JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
+  (JNIEnv *env, jobject thisObj)
+{
+  //TODO: release all memory data.
+}
