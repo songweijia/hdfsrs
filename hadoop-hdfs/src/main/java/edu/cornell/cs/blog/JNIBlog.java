@@ -15,7 +15,7 @@ import java.nio.charset.*;
  */
 public class JNIBlog {
   static{
-    System.loadLibrary("JNIBlog");
+    System.loadLibrary("edu_cornell_cs_blog_JNIBlog");
   }
 
   static public long CURRENT_SNAPSHOT_ID = -1l;
