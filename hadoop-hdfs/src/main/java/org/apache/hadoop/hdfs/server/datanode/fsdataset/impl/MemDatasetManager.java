@@ -249,8 +249,8 @@ public class MemDatasetManager {
  * @return
  */
 MemBlockMeta get(String bpid, long blockId) {
-	PoolData pd = poolMap.get(bpid);
-    return pd.blockMaps.get(blockId);
+    PoolData pd = poolMap.get(bpid);
+    return (pd==null)?null:pd.blockMaps.get(blockId);
   }
   
   /**
