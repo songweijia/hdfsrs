@@ -392,11 +392,12 @@ final private ClientProtocol server;
           (short) req.getReplication(), req.getBlockSize(),
           vc/*HDFSRS_VC*/);
 
+      CreateResponseProto.Builder builder =  CreateResponseProto.newBuilder();
+      builder.setVc(PBHelper.convert(vc));
       if (result != null) {
-        return CreateResponseProto.newBuilder().setFs(PBHelper.convert(result))
-            .build();
+        builder.setFs(PBHelper.convert(result));
       }
-      return CreateResponseProto.newBuilder().setVc(PBHelper.convert(vc)).build();
+      return builder.build();
       //return VOID_CREATE_RESPONSE;
     } catch (IOException e) {
       throw new ServiceException(e);
