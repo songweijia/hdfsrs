@@ -592,6 +592,9 @@ public class DirectoryScanner implements Runnable {
     /** Compile list {@link ScanInfo} for the blocks in the directory <dir> */
     private LinkedList<ScanInfo> compileReport(FsVolumeSpi vol, File dir,
         LinkedList<ScanInfo> report) {
+    	//HDFSRS_VC: do not scan empty directory.
+    	if(dir==null)return report;
+    	
       File[] files;
       try {
         files = FileUtil.listFiles(dir);
