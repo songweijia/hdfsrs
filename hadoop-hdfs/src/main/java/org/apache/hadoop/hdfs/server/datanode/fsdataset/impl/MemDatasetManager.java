@@ -54,7 +54,12 @@ public class MemDatasetManager {
     
     MemBlockMeta(String bpid, long genStamp, long blockId, ReplicaState state) {
       super(blockId,(int)JNIBlog.CURRENT_SNAPSHOT_ID,0l,genStamp);
-      this.blog = poolMap.get(bpid).blog;
+      PoolData pd = poolMap.get(bpid);
+      if(pd==null){
+      	pd = newPoolData();
+      	poolMap.put(bpid, pd);
+      }
+      this.blog = pd.blog;
       this.blockId = blockId;
       this.state = state;
       this.isDeleted = false;
@@ -253,22 +258,27 @@ MemBlockMeta get(String bpid, long blockId) {
     return (pd==null)?null:pd.blockMaps.get(blockId);
   }
   
+  private PoolData newPoolData(){
+  	PoolData pd;
+  	pd = new PoolData();
+    pd.blockMaps = new HashMap<Long,MemBlockMeta>();
+    pd.blog = new JNIBlog();
+    pd.blog.initialize(myVCRank, (int)blocksize, pagesize);
+    return pd;
+  }
+
   /**
    * create a block
- * @param bpid
- * @param blockId
- * @param genStamp
- * @param mvc message vector clock: input/output
- * @return metadata
- */
+   * @param bpid
+   * @param blockId
+   * @param genStamp
+   * @param mvc message vector clock: input/output
+   * @return metadata
+   */
   MemBlockMeta createBlock(String bpid, long blockId, long genStamp, VectorClock mvc) {
     PoolData pd = poolMap.get(bpid);
-    if(pd == null){
-      pd = new PoolData();
-      pd.blockMaps = new HashMap<Long,MemBlockMeta>();
-      pd.blog = new JNIBlog();
-      pd.blog.initialize(myVCRank, (int)blocksize, pagesize);
-    }
+    if(pd == null)
+    	pd = newPoolData();
     synchronized(pd){
       pd.blog.createBlock(mvc, blockId);
       MemBlockMeta meta = new MemBlockMeta(bpid, genStamp, blockId, ReplicaState.TEMPORARY); 
