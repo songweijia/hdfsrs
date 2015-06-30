@@ -595,7 +595,7 @@ class MemBlockReceiver extends BlockReceiver {
       LOG.info("Sending an out of band ack of type " + ackStatus);
       try {
         sendAckUpstreamUnprotected(null, PipelineAck.UNKOWN_SEQNO, 0L, 0L,
-            ackStatus);
+            ackStatus, null);
       } finally {
         // Let others send ack. Unless there are miltiple OOB send
         // calls, there can be only one waiter, the responder thread.
@@ -678,7 +678,7 @@ class MemBlockReceiver extends BlockReceiver {
               if (oobStatus != null) {
                 LOG.info("Relaying an out of band ack of type " + oobStatus);
                 sendAckUpstream(ack, PipelineAck.UNKOWN_SEQNO, 0L, 0L,
-                    Status.SUCCESS);
+                    Status.SUCCESS, ack.getMvc()/*HDFSRS_VC*/);
                 continue;
               }
               seqno = ack.getSeqno();
@@ -754,7 +754,8 @@ class MemBlockReceiver extends BlockReceiver {
 
           sendAckUpstream(ack, expected, totalAckTimeNanos,
               (pkt != null ? pkt.offsetInBlock : 0), 
-              (pkt != null ? pkt.ackStatus : Status.SUCCESS));
+              (pkt != null ? pkt.ackStatus : Status.SUCCESS),
+              (pkt != null ? pkt.mvc: null));
           if (pkt != null) {
             // remove the packet from the ack queue
             removeAckHead();
@@ -819,10 +820,11 @@ class MemBlockReceiver extends BlockReceiver {
      *          nodes
      * @param offsetInBlock offset in block for the data in packet
      * @param myStatus the local ack status
+     * @param mvc the message vector clock
      */
     private void sendAckUpstream(PipelineAck ack, long seqno,
         long totalAckTimeNanos, long offsetInBlock,
-        Status myStatus) throws IOException {
+        Status myStatus, VectorClock mvc) throws IOException {
       try {
         // Wait for other sender to finish. Unless there is an OOB being sent,
         // the responder won't have to wait.
@@ -836,7 +838,7 @@ class MemBlockReceiver extends BlockReceiver {
         try {
           if (!running) return;
           sendAckUpstreamUnprotected(ack, seqno, totalAckTimeNanos,
-              offsetInBlock, myStatus);
+              offsetInBlock, myStatus, mvc);
         } finally {
           synchronized(this) {
             sending = false;
@@ -857,9 +859,11 @@ class MemBlockReceiver extends BlockReceiver {
      *          nodes
      * @param offsetInBlock offset in block for the data in packet
      * @param myStatus the local ack status
+     * @param mvc message vector clock
      */
     private void sendAckUpstreamUnprotected(PipelineAck ack, long seqno,
-        long totalAckTimeNanos, long offsetInBlock, Status myStatus)
+        long totalAckTimeNanos, long offsetInBlock, Status myStatus,
+        VectorClock mvc)
         throws IOException {
       Status[] replies = null;
       if (ack == null) {
@@ -888,7 +892,7 @@ class MemBlockReceiver extends BlockReceiver {
         }
       }
       PipelineAck replyAck = new PipelineAck(seqno, replies,
-          totalAckTimeNanos,ack.getMvc()/*HDFSRS_VC*/);
+          totalAckTimeNanos,mvc/*HDFSRS_VC*/);
       if (replyAck.isSuccess()
           && offsetInBlock > replicaInfo.getBytesAcked()) {
       	
