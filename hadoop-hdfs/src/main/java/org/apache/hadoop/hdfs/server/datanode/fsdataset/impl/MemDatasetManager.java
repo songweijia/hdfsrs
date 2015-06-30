@@ -54,10 +54,13 @@ public class MemDatasetManager {
     
     MemBlockMeta(String bpid, long genStamp, long blockId, ReplicaState state) {
       super(blockId,(int)JNIBlog.CURRENT_SNAPSHOT_ID,0l,genStamp);
-      PoolData pd = poolMap.get(bpid);
-      if(pd==null){
-      	pd = newPoolData();
-      	poolMap.put(bpid, pd);
+      PoolData pd = null;
+      synchronized(poolMap){
+        pd = poolMap.get(bpid);
+        if(pd==null){
+      	  pd = newPoolData();
+      	  poolMap.put(bpid, pd);
+        }
       }
       this.blog = pd.blog;
       this.blockId = blockId;
@@ -276,9 +279,14 @@ MemBlockMeta get(String bpid, long blockId) {
    * @return metadata
    */
   MemBlockMeta createBlock(String bpid, long blockId, long genStamp, VectorClock mvc) {
-    PoolData pd = poolMap.get(bpid);
-    if(pd == null)
-    	pd = newPoolData();
+  	PoolData pd = null;
+  	synchronized(poolMap){
+  		pd = poolMap.get(bpid);
+      if(pd == null){
+      	pd = newPoolData();
+      	poolMap.put(bpid, pd);
+      }
+  	}
     synchronized(pd){
       pd.blog.createBlock(mvc, blockId);
       MemBlockMeta meta = new MemBlockMeta(bpid, genStamp, blockId, ReplicaState.TEMPORARY); 
