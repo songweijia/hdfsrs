@@ -468,7 +468,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
     return -3;
   }
   
-  print_filesystem(env, filesystem);
+//  print_filesystem(env, filesystem);
   
   // See if the data is partially written.
   if (blkOfst + length <= block->length)

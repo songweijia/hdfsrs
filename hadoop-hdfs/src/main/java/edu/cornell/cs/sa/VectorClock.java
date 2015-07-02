@@ -178,4 +178,12 @@ public class VectorClock implements ILogicalClock,Serializable
 		sb.append("}");
 		return sb.toString();
 	}
+	
+	static public String toString(byte[] byteArray) throws IOException, ClassNotFoundException{
+	  VectorClock vc = new VectorClock(-1);
+	  
+	  vc.fromByteArrayNoPid(byteArray);
+	  return vc.toString();
+	}
 }
+
