@@ -2118,7 +2118,7 @@ public class PBHelper {
   
   ////HDFSRS_VC: helper for vector clock
   public static VectorClock convert(VectorClockProto vcp){
-      VectorClock vc = new VectorClock(0);
+      VectorClock vc = new VectorClock();
       for(VectorClockProto.VectorClockEntry vce : vcp.getEntryList())
     	  vc.vc.put(vce.getRank(),vce.getVc());
       return vc;
