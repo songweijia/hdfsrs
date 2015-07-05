@@ -258,6 +258,14 @@ void tick_vector_clock(JNIEnv *env, jobject thisObj, jobject mvc, log_t* log)
   log->vc_length = (*env)->GetArrayLength(env, jbyteArray);
   log->vc = (char *) malloc(log->vc_length*sizeof(char));
   (*env)->GetByteArrayRegion (env, jbyteArray, 0, log->vc_length, (jbyte *) log->vc);
+  {
+    jfieldID vcm_id = (*env)->GetFieldID(env, vc_class, "vc", "Ljava/util/Map;");
+    jobject vcm = (*env)->GetObjectField(env, vc, vcm_id);
+    jclass mapClass = (*env)->FindClass(env, "java/util/HashMap");
+    jmethodID constructor = (*env)->GetMethodID(env, mapClass,"<init>", "(Ljava/util/Map;)V");
+    jobject cvc = (*env)->NewObject(env, mapClass, constructor, vcm);
+    (*env)->SetObjectField(env,mvc,vcm_id,cvc);
+  }
 }
 
 void set_vector_clock(JNIEnv *env, jobject thisObj, size_t vc_length, char* vc)
