@@ -589,8 +589,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
 
   // Create the new pages.
   buffer_offset = (int) bufOfst;
-  first_page = buffer_offset / filesystem->page_size;
-  page_offset = buffer_offset % filesystem->page_size;
+  //first_page = buffer_offset / filesystem->page_size;
+  first_page = blkOfst / filesystem->page_size;
+  //page_offset = buffer_offset % filesystem->page_size;
+  page_offset = blkOfst % filesystem->page_size;
   if (length < filesystem->page_size - page_offset) {
     last_page = first_page;
   } else {
