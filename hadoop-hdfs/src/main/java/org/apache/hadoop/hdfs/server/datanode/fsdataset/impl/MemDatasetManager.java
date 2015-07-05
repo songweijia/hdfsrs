@@ -129,7 +129,10 @@ public class MemDatasetManager {
 		return getOutputStream((int)getNumBytes());
 	}
 	public BlogOutputStream getOutputStream(int offset){
-		return new BlogOutputStream(blog,blockId,offset);
+		if(offset < 0)
+			return getOutputStream();
+		else
+		  return new BlogOutputStream(blog,blockId,offset);
 	}
 	public BlogInputStream getInputStream(int offset){
 		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID);
@@ -220,14 +223,16 @@ public class MemDatasetManager {
         throw new IOException("Blog allows write with vector clock only.");
     }
 
-	@Override
-	public void write(VectorClock mvc, byte[] b, int off, int len)
+	  @Override
+	  public void write(VectorClock mvc, byte[] b, int off, int len)
 			throws IOException {
-		int ret = blog.writeBlock(mvc, blockId, offset, off, len, b);
-		if(ret < 0)
-			throw new IOException("error in JNIBlog.write("+mvc+","+
+		  int ret = blog.writeBlock(mvc, blockId, offset, off, len, b);
+		  if(ret < 0)
+			  throw new IOException("error in JNIBlog.write("+mvc+","+
 	    			blockId+","+offset+","+off+","+len+",b):"+ret);
-	} 
+		  else
+		  	offset += len;
+	  } 
   }
   
   MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
