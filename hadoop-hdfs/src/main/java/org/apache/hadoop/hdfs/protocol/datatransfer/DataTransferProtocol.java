@@ -31,6 +31,8 @@ import org.apache.hadoop.hdfs.server.datanode.CachingStrategy;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.DataChecksum;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * Transfer data to/from datanode using a streaming protocol.
  */
@@ -96,7 +98,10 @@ public interface DataTransferProtocol {
       final DataChecksum requestedChecksum,
       final CachingStrategy cachingStrategy,
       //HDFSRS_WRAPI{
-      final long offset
+      final long offset,
+      //}
+      //HDFSRS_VC
+      final VectorClock mvc
       //}
       ) throws IOException;
 
@@ -161,7 +166,8 @@ public interface DataTransferProtocol {
   public void replaceBlock(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,
       final String delHint,
-      final DatanodeInfo source) throws IOException;
+      final DatanodeInfo source,
+      final VectorClock mvc/*HDFSRS_VC*/) throws IOException;
 
   /**
    * Copy a block. 

@@ -419,7 +419,7 @@ class BlockPoolSliceScanner {
         adjustThrottler();
         
         blockSender = new BlockSender(block, 0, -1, false, true, true, 
-            datanode, null, CachingStrategy.newDropBehind());
+            datanode, null, CachingStrategy.newDropBehind(),null/*Scanner is not treated as update*/);
 
         DataOutputStream out = 
                 new DataOutputStream(new IOUtils.NullOutputStream());

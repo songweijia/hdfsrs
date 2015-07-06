@@ -26,6 +26,8 @@ import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor.BlockTargetPair;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /****************************************************
  * A BlockCommand is an instruction to a datanode 
  * regarding some blocks under its control.  It tells
@@ -51,13 +53,14 @@ public class BlockCommand extends DatanodeCommand {
   final Block[] blocks;
   final DatanodeInfo[][] targets;
   final String[][] targetStorageIDs;
+  final VectorClock mvc;
 
   /**
    * Create BlockCommand for transferring blocks to another datanode
    * @param blocktargetlist    blocks to be transferred 
    */
   public BlockCommand(int action, String poolId,
-      List<BlockTargetPair> blocktargetlist) {
+      List<BlockTargetPair> blocktargetlist, VectorClock mvc/*HDFSRS_VC*/) {
     super(action);
     this.poolId = poolId;
     blocks = new Block[blocktargetlist.size()]; 
@@ -70,6 +73,9 @@ public class BlockCommand extends DatanodeCommand {
       targets[i] = DatanodeStorageInfo.toDatanodeInfos(p.targets);
       targetStorageIDs[i] = DatanodeStorageInfo.toStorageIDs(p.targets);
     }
+    
+    /*set the message vector clock*/
+    this.mvc = mvc;
   }
 
   private static final DatanodeInfo[][] EMPTY_TARGET_DATANODES = {};
@@ -79,9 +85,9 @@ public class BlockCommand extends DatanodeCommand {
    * Create BlockCommand for the given action
    * @param blocks blocks related to the action
    */
-  public BlockCommand(int action, String poolId, Block blocks[]) {
+  public BlockCommand(int action, String poolId, Block blocks[], VectorClock mvc/*HDFSRS_VC*/) {
     this(action, poolId, blocks, EMPTY_TARGET_DATANODES,
-        EMPTY_TARGET_STORAGEIDS);
+        EMPTY_TARGET_STORAGEIDS, mvc/*HDFSRS_VC*/);
   }
 
   /**
@@ -89,12 +95,14 @@ public class BlockCommand extends DatanodeCommand {
    * @param blocks blocks related to the action
    */
   public BlockCommand(int action, String poolId, Block[] blocks,
-      DatanodeInfo[][] targets, String[][] targetStorageIDs) {
+      DatanodeInfo[][] targets, String[][] targetStorageIDs,
+      VectorClock mvc/*HDFSRS_VC*/) {
     super(action);
     this.poolId = poolId;
     this.blocks = blocks;
     this.targets = targets;
     this.targetStorageIDs = targetStorageIDs;
+    this.mvc = mvc;
   }
   
   public String getBlockPoolId() {
@@ -111,5 +119,9 @@ public class BlockCommand extends DatanodeCommand {
 
   public String[][] getTargetStorageIDs() {
     return targetStorageIDs;
+  }
+  
+  public VectorClock getMvc(){
+  	return mvc;
   }
 }

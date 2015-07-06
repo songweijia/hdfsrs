@@ -49,6 +49,8 @@ import org.apache.hadoop.util.DataChecksum;
 
 import com.google.protobuf.Message;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /** Sender */
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
@@ -124,7 +126,10 @@ public class Sender implements DataTransferProtocol {
       DataChecksum requestedChecksum,
       final CachingStrategy cachingStrategy,
       //HDFSRS_WRAPI{
-      final long offset
+      final long offset,
+      //}
+      //HDFSRS_VC{
+      VectorClock mvc //we are not using it so far.
       //}
       ) throws IOException {
     ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
@@ -144,6 +149,9 @@ public class Sender implements DataTransferProtocol {
       .setRequestedChecksum(checksumProto)
       .setCachingStrategy(getCachingStrategy(cachingStrategy))
       .setOffset(offset); // HDFSRS_WRAPI: sent offset
+    
+    if(mvc != null)
+    	proto.setMvc(PBHelper.convert(mvc));
     
     if (source != null) {
       proto.setSource(PBHelper.convertDatanodeInfo(source));
@@ -215,12 +223,20 @@ public class Sender implements DataTransferProtocol {
   public void replaceBlock(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,
       final String delHint,
-      final DatanodeInfo source) throws IOException {
-    OpReplaceBlockProto proto = OpReplaceBlockProto.newBuilder()
-      .setHeader(DataTransferProtoUtil.buildBaseHeader(blk, blockToken))
-      .setDelHint(delHint)
-      .setSource(PBHelper.convertDatanodeInfo(source))
-      .build();
+      final DatanodeInfo source,
+      //HDFSRS_VC{
+      final VectorClock mvc
+      //}
+      ) throws IOException {
+  	OpReplaceBlockProto.Builder builder = OpReplaceBlockProto.newBuilder()
+        .setHeader(DataTransferProtoUtil.buildBaseHeader(blk, blockToken))
+        .setDelHint(delHint)
+        .setSource(PBHelper.convertDatanodeInfo(source));
+  	if(mvc!=null)
+  		builder.setMvc(PBHelper.convert(mvc));
+  	
+    OpReplaceBlockProto proto = builder.build();
+    
     
     send(out, Op.REPLACE_BLOCK, proto);
   }

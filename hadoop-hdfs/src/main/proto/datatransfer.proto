@@ -118,6 +118,9 @@ message OpWriteBlockProto {
   //HDFSRS_WRAPI{
   optional uint64 offset = 11;
   //}
+  //HDFSRS_VC{
+  optional VectorClockProto mvc = 12;
+  //}
 }
   
 message OpTransferBlockProto {
@@ -129,6 +132,9 @@ message OpReplaceBlockProto {
   required BaseHeaderProto header = 1;
   required string delHint = 2;
   required DatanodeInfoProto source = 3;
+  //HDFSRS_VC{
+  optional VectorClockProto mvc = 4;
+  //}
 }
 
 message OpCopyBlockProto {
@@ -199,6 +205,7 @@ message PacketHeaderProto {
   required bool lastPacketInBlock = 3;
   required sfixed32 dataLen = 4;
   optional bool syncBlock = 5 [default = false];
+  optional VectorClockProto mvc = 6;
 }
 
 enum Status {
@@ -220,6 +227,7 @@ message PipelineAckProto {
   required sint64 seqno = 1;
   repeated Status status = 2;
   optional uint64 downstreamAckTimeNanos = 3 [default = 0];
+  optional VectorClockProto mvc = 4;
 }
 
 /**

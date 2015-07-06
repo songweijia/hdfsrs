@@ -21,6 +21,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import edu.cornell.cs.sa.VectorClock;
+
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.ha.HAServiceProtocol.HAServiceState;
@@ -585,12 +588,13 @@ class BPOfferService {
       // safely garbage-collected.
       //
       Block toDelete[] = bcmd.getBlocks();
+      VectorClock mvc = bcmd.getMvc();
       try {
         if (dn.blockScanner != null) {
           dn.blockScanner.deleteBlocks(bcmd.getBlockPoolId(), toDelete);
         }
         // using global fsdataset
-        dn.getFSDataset().invalidate(bcmd.getBlockPoolId(), toDelete);
+        dn.getFSDataset().invalidate(bcmd.getBlockPoolId(), toDelete, mvc/*HDFSRS_VC*/);
       } catch(IOException e) {
         // Exceptions caught here are not expected to be disk-related.
         throw e;

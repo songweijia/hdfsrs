@@ -2,6 +2,10 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_VCPID;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_MEMBLOCK_PAGESIZE;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_VCPID;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_MEMBLOCK_PAGESIZE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,223 +25,336 @@ import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
 import org.apache.hadoop.hdfs.server.datanode.Replica;
+import org.apache.hadoop.hdfs.server.datanode.fsdataset.VCOutputStream;
 
+import edu.cornell.cs.blog.JNIBlog;
+import edu.cornell.cs.sa.*;
 
 public class MemDatasetManager {
   static final Log LOG = LogFactory.getLog(MemDatasetManager.class);
-   
-  private ByteBuffer memRegions[];
-  private LinkedHashMap<ExtendedBlockId, MemBlockMeta> memMaps; 
-  private HashMap<ExtendedBlockId, String> diskMaps;
-  private MemDatasetImpl dataset;
-  private JNIBuffer jnibuf;
-  private LinkedList<MemAddr> availableAddr;
-  private final long capacity;
-  private final long blocksize; 
-  private final int maxRegionSize;
-  private final int cacheSize;
   
-  class MemAddr {
-    int regionID;
-    int offset;
-    
-    MemAddr(int rid, int offset) {
-      this.regionID = rid;
-      this.offset = offset;
-    }
+  class PoolData{
+    HashMap<Long,MemBlockMeta> blockMaps; // blockId->MemBlockMeta data
+    JNIBlog blog; // blog for the memory
   }
   
+  private HashMap<ExtendedBlockId, String> diskMaps;
+  private MemDatasetImpl dataset;
+  private Map<String, PoolData> poolMap; // where data is stored.
+  private int myVCRank; // vector clock rank
+  private final long capacity;
+  private final long blocksize; 
+  private final int pagesize;
+
+  
   public class MemBlockMeta extends Block implements Replica {
-    MemAddr offset;
-    long bytesAcked;
+    boolean isDeleted;
+    JNIBlog blog;
     ReplicaState state;
     
-    MemBlockMeta(MemAddr offset, long length, long genStamp, long blockId, ReplicaState state) {
-      super(blockId, length, genStamp);
-      this.offset = offset;
+    MemBlockMeta(String bpid, long genStamp, long blockId, ReplicaState state) {
+      super(blockId,(int)JNIBlog.CURRENT_SNAPSHOT_ID,0l,genStamp);
+      PoolData pd = null;
+      synchronized(poolMap){
+        pd = poolMap.get(bpid);
+        if(pd==null){
+      	  pd = newPoolData();
+      	  poolMap.put(bpid, pd);
+        }
+      }
+      this.blog = pd.blog;
+      this.blockId = blockId;
       this.state = state;
-      this.bytesAcked = 0;
+      this.isDeleted = false;
+    }
+    
+    public boolean isDeleted(){
+    	return isDeleted;
+    }
+    
+    public void delete(){
+    	this.isDeleted = true;
     }
 
     public ReplicaState getState() {
       return state;
     }
     
-    public long getBytesOnDisk() {
-      return bytesAcked;
+    public void setState(ReplicaState state){
+    	this.state = state;
     }
 
-    public void setBytesOnDisk(long bytes) {
-      bytesAcked = bytes;
+    @Override
+    public long getBytesOnDisk() {
+    	return getNumBytes();
     }
-    
+    public long getBytesOnDisk(long sid){
+    	return getNumBytes(sid);
+    }
+
+    @Override
     public long getVisibleLength() {
-      return bytesAcked;
+    	return getNumBytes();
+    }
+    public long getVisibleLength(long sid){
+    	return getNumBytes(sid);
     }
 
     public String getStorageUuid() {
       return "0";
     }
     
-    public MemAddr getOffset() {
-      return offset;
-    }
-    
     public long getBytesAcked() {
-      return bytesAcked;
+    	return getNumBytes();
     }
-    
-    public void setBytesAcked(long bytes) {
-      bytesAcked = bytes;
+    public long getBytesAcked(long sid){
+    	return getNumBytes(sid);
     }
-  }
 
-  class ByteBufferInputStream extends InputStream {
-    ByteBuffer buf;
+	@Override
+	public long getBlockId() {
+		return this.blockId;
+	}
+
+	@Override
+	public long getNumBytes() {
+		return getNumBytes(JNIBlog.CURRENT_SNAPSHOT_ID);
+	}
+	
+	public long getNumBytes(long sid){
+		return blog.getNumberOfBytes(blockId,sid);
+	}
+	
+	public BlogOutputStream getOutputStream(){
+		return getOutputStream((int)getNumBytes());
+	}
+	public BlogOutputStream getOutputStream(int offset){
+		if(offset < 0)
+			return getOutputStream();
+		else
+		  return new BlogOutputStream(blog,blockId,offset);
+	}
+	public BlogInputStream getInputStream(int offset){
+		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID);
+	}
+	protected BlogInputStream getInputStream(int offset, long snapshotId){
+		return new BlogInputStream(blog,blockId,offset,snapshotId);
+	}
+  }
+  
+  class BlogInputStream extends InputStream {
+    JNIBlog blog;
+    long blockId;
+    int offset;
+    long snapshotId;
     
-    ByteBufferInputStream(int bufID, int offset) {
-      buf = memRegions[bufID].duplicate();
-      buf.position(offset);
-      buf.limit(Math.min((int)((offset/blocksize + 1) * blocksize), maxRegionSize));
+    /**
+     * @param bpid
+     * @param blockId
+     * @param offset
+     * @param snapshotId
+     */
+    BlogInputStream(String bpid,long blockId, int offset, long snapshotId){
+    	this.blog = poolMap.get(bpid).blog;
+    	this.blockId = blockId;
+    	this.offset = offset;
+    	this.snapshotId = snapshotId;
+    }
+    
+    BlogInputStream(JNIBlog blog,long blockId, int offset, long snapshotId){
+    	this.blog = blog;
+    	this.blockId = blockId;
+    	this.offset = offset;
+    	this.snapshotId = snapshotId;
+    }
+    
+    /**
+     * @param blockId
+     * @param offset
+     */
+    BlogInputStream(String bpid, int blockId, int offset){
+    	this(bpid, blockId,offset,JNIBlog.CURRENT_SNAPSHOT_ID);
     }
     
     public synchronized int read() throws IOException {
-      if (!buf.hasRemaining()) return -1;
-      return buf.get();
+   		byte [] b = new byte[1];
+   		read(b,0,1);
+   		return b[0];
     }
     
+    /* (non-Javadoc)
+     * @see java.io.InputStream#read(byte[], int, int)
+     */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
-      len = Math.min(len, buf.remaining());
-      buf.get(bytes, off, len);
-      return len;
+    	if(offset < blog.getNumberOfBytes(blockId, snapshotId)){
+    		int ret = blog.readBlock(blockId, snapshotId, offset, off, len, bytes);
+    		if(ret > 0){
+    			this.offset+=ret;
+    			return ret;
+    		}else throw new IOException("error in JNIBlog.read("+
+    			blockId+","+snapshotId+","+offset+","+off+","+len+",b):"+ret);
+    	}else
+    		throw new IOException("no more data available");
     }
   }
   
-  class ByteBufferOutputStream extends OutputStream {
-    ByteBuffer buf;
+  class BlogOutputStream extends VCOutputStream {
+    JNIBlog blog;
+    long blockId;
+    int offset;
+
+    BlogOutputStream(String bpid,long blockId, int offset){
+    	this.blog = poolMap.get(bpid).blog;
+    	this.blockId = blockId;
+    	this.offset = offset;
+    }
     
-    ByteBufferOutputStream(int bufID, int offset) {
-      buf = memRegions[bufID].duplicate();
-      buf.position(offset);
-      buf.limit(Math.min((int)((offset/blocksize + 1) * blocksize), maxRegionSize));
+    BlogOutputStream(JNIBlog blog,long blockId, int offset){
+    	this.blog = blog;
+    	this.blockId = blockId;
+    	this.offset = offset;
     }
     
     public synchronized void write(int b) throws IOException {
-      buf.put((byte)b);
+      throw new IOException("Blog allows write with vector clock only.");
     }
 
     public synchronized void write(byte[] bytes, int off, int len) throws IOException {
-      buf.put(bytes, off, len);
-    } 
+        throw new IOException("Blog allows write with vector clock only.");
+    }
+
+	  @Override
+	  public void write(VectorClock mvc, byte[] b, int off, int len)
+			throws IOException {
+		  int ret = blog.writeBlock(mvc, blockId, offset, off, len, b);
+		  if(ret < 0)
+			  throw new IOException("error in JNIBlog.write("+mvc+","+
+	    			blockId+","+offset+","+off+","+len+",b):"+ret);
+		  else
+		  	offset += len;
+	  } 
   }
   
   MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
     this.dataset = dataset;
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
-    this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2);
-    this.maxRegionSize = conf.getInt("dfs.memory.regionsize", 1024 * 1024 * 1024 * 1);
-    
-    this.jnibuf = new JNIBuffer();
-    this.memRegions = new ByteBuffer[(int)((this.capacity + this.maxRegionSize - 1) / this.maxRegionSize)];
-    // TODO: try to replace this buffer to the infiniband registered buffer
-    for (int i = 0; i < this.memRegions.length; i++)
-      //this.memRegions[i] = ByteBuffer.allocate(this.maxRegionSize);
-      this.memRegions[i] = this.jnibuf.createBuffer(this.maxRegionSize);
-    
-    LOG.warn("CQ: MemDatasetManager: blocksize:" + blocksize + " maxregionsize:" + maxRegionSize + " capacity:" + capacity);
-    availableAddr = new LinkedList<MemAddr>();
-    for (int i = 0; i < this.memRegions.length; i++)
-      for (int j = 0; j < this.maxRegionSize; j += this.blocksize)
-        availableAddr.add(new MemAddr(i,j));
-    
-    this.cacheSize = (int)(this.capacity / this.blocksize);
+    this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
+    this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
+    this.myVCRank = conf.getInt(DFS_VCPID, DEFAULT_DFS_VCPID)<<2;
+    this.poolMap = new HashMap<String, PoolData>();
     this.diskMaps = new HashMap<ExtendedBlockId, String>();
-    this.memMaps = new LinkedHashMap<ExtendedBlockId, MemBlockMeta> (this.cacheSize + 1, 1F, true) {
-      private static final long serialVersionUID = 1;
-      
-      protected boolean removeEldestEntry(Map.Entry<ExtendedBlockId, MemBlockMeta> eldest) { 
-        if (size() > cacheSize) {
-          availableAddr.add(eldest.getValue().getOffset());
-          eldest.getValue().offset = null;
-          diskMaps.put(eldest.getKey(), "");
-          return true;
-        }
-        return false;
-      } 
-    };
   }
   
   void shutdown() {
-    this.jnibuf.deleteBuffers();
+    for (Map.Entry<String, PoolData> entry : this.poolMap.entrySet()){
+    	entry.getValue().blog.destroy();
+    }
   }
   
   long getCapacity() {
     return capacity;
   }
   
-  MemBlockMeta get(String bpid, long blockId) {
-    ExtendedBlockId key = new ExtendedBlockId(blockId, bpid);
-    MemBlockMeta meta;
-    synchronized(memMaps) {
-      meta = memMaps.get(key);
-    }
-    return meta;
+  /**
+   * get the metadata
+ * @param bpid bpid
+ * @param blockId blockId
+ * @return
+ */
+MemBlockMeta get(String bpid, long blockId) {
+    PoolData pd = poolMap.get(bpid);
+    return (pd==null)?null:pd.blockMaps.get(blockId);
   }
   
-  MemBlockMeta getNewBlock(String bpid, long blockId, long genStamp) {
-    ExtendedBlockId key = new ExtendedBlockId(blockId, bpid);
-    synchronized (memMaps) {
-      if (availableAddr.size() > 0) {
-        MemBlockMeta meta = new MemBlockMeta(availableAddr.poll(), 0, genStamp, blockId, ReplicaState.TEMPORARY);
-        memMaps.put(key, meta);
-        LOG.warn("CQ: getNewBlock(" + bpid + blockId + "): regionID:" + meta.offset.regionID + " addr:" + meta.offset.offset);
-        return meta;
+  private PoolData newPoolData(){
+  	PoolData pd;
+  	pd = new PoolData();
+    pd.blockMaps = new HashMap<Long,MemBlockMeta>();
+    pd.blog = new JNIBlog();
+    pd.blog.initialize(myVCRank, (int)blocksize, pagesize);
+    return pd;
+  }
+
+  /**
+   * create a block
+   * @param bpid
+   * @param blockId
+   * @param genStamp
+   * @param mvc message vector clock: input/output
+   * @return metadata
+   */
+  MemBlockMeta createBlock(String bpid, long blockId, long genStamp, VectorClock mvc) {
+  	PoolData pd = null;
+  	synchronized(poolMap){
+  		pd = poolMap.get(bpid);
+      if(pd == null){
+      	pd = newPoolData();
+      	poolMap.put(bpid, pd);
       }
-    }
-    return null;
-  }
-  
-  void deleteBlock(String bpid, long blockId) {
-    ExtendedBlockId key = new ExtendedBlockId(blockId, bpid);
-    synchronized (memMaps) {
-      MemBlockMeta meta = memMaps.get(key);
-      if (meta != null) {
-        availableAddr.add(meta.offset);
-        memMaps.remove(key);
-      }
+  	}
+    synchronized(pd){
+      pd.blog.createBlock(mvc, blockId);
+      MemBlockMeta meta = new MemBlockMeta(bpid, genStamp, blockId, ReplicaState.TEMPORARY); 
+      pd.blockMaps.put(blockId, meta);
+      return meta;
     }
   }
   
-  InputStream getInputStream(MemAddr baseOffset, long offset) {
-    if (offset < 0) offset = 0;
-    return new ByteBufferInputStream(baseOffset.regionID, (int)(baseOffset.offset + offset));
+  /**
+   * delete a block:  this is used for invalidation, but keep the
+   * history.
+ * @param bpid
+ * @param blockId
+ * @param mvc message vector clock : input/output
+ */
+  void deleteBlock(String bpid, long blockId, VectorClock mvc) {
+    PoolData pd = poolMap.get(bpid);
+    synchronized(pd){
+      pd.blockMaps.get(blockId).delete();
+      pd.blog.deleteBlock(mvc, blockId);
+    }
   }
   
-  OutputStream getOutputStream(MemAddr baseOffset, long offset) {
-    if (offset < 0) offset = 0;
-    return new ByteBufferOutputStream(baseOffset.regionID, (int)(baseOffset.offset + offset));
+  /**
+   * Just REALLY remove the block for clean up reason.
+ * @param bpid
+ * @param blockId
+ */
+void removeBlock(String bpid, long blockId){
+	  PoolData pd = poolMap.get(bpid);
+	  pd.blockMaps.remove(blockId);
   }
-  
-  List<Block> getBlockMetas(String bpid, ReplicaState state) {
+
+  /**
+   * Only return the latest block.
+ * @param bpid
+ * @param state
+ * @return
+ */
+List<Block> getBlockMetas(String bpid, ReplicaState state) {
     LinkedList<Block> results = new LinkedList<Block>();
-    synchronized (memMaps) {
-      for (Entry<ExtendedBlockId, MemBlockMeta> entry: memMaps.entrySet())
-        if (entry.getKey().getBlockPoolId().startsWith(bpid) && (state == null || entry.getValue().getState() == state))
-          results.add(entry.getValue());
+    PoolData pd = poolMap.get(bpid);
+    if(pd!=null){
+      synchronized(pd){
+        for(Entry<Long,MemBlockMeta> entry:pd.blockMaps.entrySet()){
+          MemBlockMeta mbm = entry.getValue();
+          if(!mbm.isDeleted() && (state == null || mbm.getState() == state)){
+            results.add(mbm);
+          }
+        } 
+      }
     }
     return results;
   }
-  
-  void blockSnapshot(MemBlockMeta src, MemBlockMeta dst) {
-    ByteBuffer srcbuf = memRegions[src.offset.regionID].duplicate();
-    srcbuf.position(src.offset.offset);
-    srcbuf.limit((int)(src.offset.offset + src.getNumBytes()));
-    
-    ByteBuffer dstbuf = memRegions[dst.offset.regionID].duplicate();
-    dstbuf.position(dst.offset.offset);
-    dstbuf.put(srcbuf);
-    
-    dst.setNumBytes(src.getNumBytes());
-    dst.setBytesAcked(src.getBytesAcked());
+
+  /**
+   * create a blog snapshot Id. 
+ * @param bpid
+ * @param snapshotId - rtc
+ * @param eid
+ * @throws IOException
+ */
+  void snapshot(String bpid, long snapshotId, long eid)throws IOException{
+	  poolMap.get(bpid).blog.createSnapshot(snapshotId, eid);
   }
 }

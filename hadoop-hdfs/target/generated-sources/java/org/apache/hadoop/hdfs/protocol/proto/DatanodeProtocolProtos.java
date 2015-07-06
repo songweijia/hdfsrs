@@ -5001,6 +5001,32 @@ public final class DatanodeProtocolProtos {
      */
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.StorageUuidsProtoOrBuilder getTargetStorageUuidsOrBuilder(
         int index);
+
+    // optional .hadoop.hdfs.VectorClockProto mvc = 6;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     *
+     * <pre>
+     * message clock
+     * </pre>
+     */
+    boolean hasMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     *
+     * <pre>
+     * message clock
+     * </pre>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc();
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     *
+     * <pre>
+     * message clock
+     * </pre>
+     */
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.BlockCommandProto}
@@ -5097,6 +5123,19 @@ public final class DatanodeProtocolProtos {
                 mutable_bitField0_ |= 0x00000010;
               }
               targetStorageUuids_.add(input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.StorageUuidsProto.PARSER, extensionRegistry));
+              break;
+            }
+            case 50: {
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                subBuilder = mvc_.toBuilder();
+              }
+              mvc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(mvc_);
+                mvc_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000004;
               break;
             }
           }
@@ -5430,12 +5469,47 @@ public final class DatanodeProtocolProtos {
       return targetStorageUuids_.get(index);
     }
 
+    // optional .hadoop.hdfs.VectorClockProto mvc = 6;
+    public static final int MVC_FIELD_NUMBER = 6;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_;
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     *
+     * <pre>
+     * message clock
+     * </pre>
+     */
+    public boolean hasMvc() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     *
+     * <pre>
+     * message clock
+     * </pre>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+      return mvc_;
+    }
+    /**
+     * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+     *
+     * <pre>
+     * message clock
+     * </pre>
+     */
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+      return mvc_;
+    }
+
     private void initFields() {
       action_ = org.apache.hadoop.hdfs.protocol.proto.DatanodeProtocolProtos.BlockCommandProto.Action.TRANSFER;
       blockPoolId_ = "";
       blocks_ = java.util.Collections.emptyList();
       targets_ = java.util.Collections.emptyList();
       targetStorageUuids_ = java.util.Collections.emptyList();
+      mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -5462,6 +5536,12 @@ public final class DatanodeProtocolProtos {
           return false;
         }
       }
+      if (hasMvc()) {
+        if (!getMvc().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -5483,6 +5563,9 @@ public final class DatanodeProtocolProtos {
       }
       for (int i = 0; i < targetStorageUuids_.size(); i++) {
         output.writeMessage(5, targetStorageUuids_.get(i));
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(6, mvc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -5512,6 +5595,10 @@ public final class DatanodeProtocolProtos {
       for (int i = 0; i < targetStorageUuids_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, targetStorageUuids_.get(i));
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, mvc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -5552,6 +5639,11 @@ public final class DatanodeProtocolProtos {
           .equals(other.getTargetsList());
       result = result && getTargetStorageUuidsList()
           .equals(other.getTargetStorageUuidsList());
+      result = result && (hasMvc() == other.hasMvc());
+      if (hasMvc()) {
+        result = result && getMvc()
+            .equals(other.getMvc());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -5584,6 +5676,10 @@ public final class DatanodeProtocolProtos {
       if (getTargetStorageUuidsCount() > 0) {
         hash = (37 * hash) + TARGETSTORAGEUUIDS_FIELD_NUMBER;
         hash = (53 * hash) + getTargetStorageUuidsList().hashCode();
+      }
+      if (hasMvc()) {
+        hash = (37 * hash) + MVC_FIELD_NUMBER;
+        hash = (53 * hash) + getMvc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -5695,6 +5791,7 @@ public final class DatanodeProtocolProtos {
           getBlocksFieldBuilder();
           getTargetsFieldBuilder();
           getTargetStorageUuidsFieldBuilder();
+          getMvcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -5725,6 +5822,12 @@ public final class DatanodeProtocolProtos {
         } else {
           targetStorageUuidsBuilder_.clear();
         }
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -5787,6 +5890,14 @@ public final class DatanodeProtocolProtos {
           result.targetStorageUuids_ = targetStorageUuids_;
         } else {
           result.targetStorageUuids_ = targetStorageUuidsBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (mvcBuilder_ == null) {
+          result.mvc_ = mvc_;
+        } else {
+          result.mvc_ = mvcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -5890,6 +6001,9 @@ public final class DatanodeProtocolProtos {
             }
           }
         }
+        if (other.hasMvc()) {
+          mergeMvc(other.getMvc());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -5911,6 +6025,12 @@ public final class DatanodeProtocolProtos {
         }
         for (int i = 0; i < getTargetsCount(); i++) {
           if (!getTargets(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasMvc()) {
+          if (!getMvc().isInitialized()) {
             
             return false;
           }
@@ -6765,6 +6885,159 @@ public final class DatanodeProtocolProtos {
           targetStorageUuids_ = null;
         }
         return targetStorageUuidsBuilder_;
+      }
+
+      // optional .hadoop.hdfs.VectorClockProto mvc = 6;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> mvcBuilder_;
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      public boolean hasMvc() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
+        if (mvcBuilder_ == null) {
+          return mvc_;
+        } else {
+          return mvcBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      public Builder setMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          mvc_ = value;
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      public Builder setMvc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
+        if (mvcBuilder_ == null) {
+          mvc_ = builderForValue.build();
+          onChanged();
+        } else {
+          mvcBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      public Builder mergeMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
+        if (mvcBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
+              mvc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
+            mvc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(mvc_).mergeFrom(value).buildPartial();
+          } else {
+            mvc_ = value;
+          }
+          onChanged();
+        } else {
+          mvcBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      public Builder clearMvc() {
+        if (mvcBuilder_ == null) {
+          mvc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+          onChanged();
+        } else {
+          mvcBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getMvcBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getMvcFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
+        if (mvcBuilder_ != null) {
+          return mvcBuilder_.getMessageOrBuilder();
+        } else {
+          return mvc_;
+        }
+      }
+      /**
+       * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
+       *
+       * <pre>
+       * message clock
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
+          getMvcFieldBuilder() {
+        if (mvcBuilder_ == null) {
+          mvcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
+                  mvc_,
+                  getParentForChildren(),
+                  isClean());
+          mvc_ = null;
+        }
+        return mvcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.BlockCommandProto)
@@ -28916,120 +29189,122 @@ public final class DatanodeProtocolProtos {
       "mand\020\004\022\023\n\017RegisterCommand\020\005\022\030\n\024UnusedUpg" +
       "radeCommand\020\006\022\027\n\023NullDatanodeCommand\020\007\022\022" +
       "\n\016BlockIdCommand\020\010\"2\n\035BalancerBandwidthC",
-      "ommandProto\022\021\n\tbandwidth\030\001 \002(\004\"\254\002\n\021Block" +
+      "ommandProto\022\021\n\tbandwidth\030\001 \002(\004\"\330\002\n\021Block" +
       "CommandProto\0225\n\006action\030\001 \002(\0162%.hadoop.hd" +
       "fs.BlockCommandProto.Action\022\023\n\013blockPool" +
       "Id\030\002 \002(\t\022\'\n\006blocks\030\003 \003(\0132\027.hadoop.hdfs.B" +
       "lockProto\0220\n\007targets\030\004 \003(\0132\037.hadoop.hdfs" +
       ".DatanodeInfosProto\022:\n\022targetStorageUuid" +
-      "s\030\005 \003(\0132\036.hadoop.hdfs.StorageUuidsProto\"" +
-      "4\n\006Action\022\014\n\010TRANSFER\020\001\022\016\n\nINVALIDATE\020\002\022" +
-      "\014\n\010SHUTDOWN\020\003\"\233\001\n\023BlockIdCommandProto\0227\n" +
-      "\006action\030\001 \002(\0162\'.hadoop.hdfs.BlockIdComma",
-      "ndProto.Action\022\023\n\013blockPoolId\030\002 \002(\t\022\024\n\010b" +
-      "lockIds\030\003 \003(\004B\002\020\001\" \n\006Action\022\t\n\005CACHE\020\001\022\013" +
-      "\n\007UNCACHE\020\002\"N\n\031BlockRecoveryCommandProto" +
-      "\0221\n\006blocks\030\001 \003(\0132!.hadoop.hdfs.Recoverin" +
-      "gBlockProto\"+\n\024FinalizeCommandProto\022\023\n\013b" +
-      "lockPoolId\030\001 \002(\t\"J\n\025KeyUpdateCommandProt" +
-      "o\0221\n\004keys\030\001 \002(\0132#.hadoop.hdfs.ExportedBl" +
-      "ockKeysProto\"\026\n\024RegisterCommandProto\"\\\n\034" +
-      "RegisterDatanodeRequestProto\022<\n\014registra" +
-      "tion\030\001 \002(\0132&.hadoop.hdfs.DatanodeRegistr",
-      "ationProto\"]\n\035RegisterDatanodeResponsePr" +
-      "oto\022<\n\014registration\030\001 \002(\0132&.hadoop.hdfs." +
-      "DatanodeRegistrationProto\"\206\002\n\025HeartbeatR" +
-      "equestProto\022<\n\014registration\030\001 \002(\0132&.hado" +
-      "op.hdfs.DatanodeRegistrationProto\0220\n\007rep" +
-      "orts\030\002 \003(\0132\037.hadoop.hdfs.StorageReportPr" +
-      "oto\022\032\n\017xmitsInProgress\030\003 \001(\r:\0010\022\027\n\014xceiv" +
-      "erCount\030\004 \001(\r:\0010\022\030\n\rfailedVolumes\030\005 \001(\r:" +
-      "\0010\022\030\n\rcacheCapacity\030\006 \001(\004:\0010\022\024\n\tcacheUse" +
-      "d\030\007 \001(\004:\0010\"\321\001\n\022StorageReportProto\022\027\n\013sto",
-      "rageUuid\030\001 \002(\tB\002\030\001\022\025\n\006failed\030\002 \001(\010:\005fals" +
-      "e\022\023\n\010capacity\030\003 \001(\004:\0010\022\022\n\007dfsUsed\030\004 \001(\004:" +
-      "\0010\022\024\n\tremaining\030\005 \001(\004:\0010\022\030\n\rblockPoolUse" +
-      "d\030\006 \001(\004:\0010\0222\n\007storage\030\007 \001(\0132!.hadoop.hdf" +
-      "s.DatanodeStorageProto\"\206\001\n\030NNHAStatusHea" +
-      "rtbeatProto\022:\n\005state\030\001 \002(\0162+.hadoop.hdfs" +
-      ".NNHAStatusHeartbeatProto.State\022\014\n\004txid\030" +
-      "\002 \002(\004\" \n\005State\022\n\n\006ACTIVE\020\000\022\013\n\007STANDBY\020\001\"" +
-      "\310\001\n\026HeartbeatResponseProto\022/\n\004cmds\030\001 \003(\013" +
-      "2!.hadoop.hdfs.DatanodeCommandProto\0227\n\010h",
-      "aStatus\030\002 \002(\0132%.hadoop.hdfs.NNHAStatusHe" +
-      "artbeatProto\022D\n\024rollingUpgradeStatus\030\003 \001" +
-      "(\0132&.hadoop.hdfs.RollingUpgradeStatusPro" +
-      "to\"\243\001\n\027BlockReportRequestProto\022<\n\014regist" +
-      "ration\030\001 \002(\0132&.hadoop.hdfs.DatanodeRegis" +
-      "trationProto\022\023\n\013blockPoolId\030\002 \002(\t\0225\n\007rep" +
-      "orts\030\003 \003(\0132$.hadoop.hdfs.StorageBlockRep" +
-      "ortProto\"a\n\027StorageBlockReportProto\0222\n\007s" +
-      "torage\030\001 \002(\0132!.hadoop.hdfs.DatanodeStora" +
-      "geProto\022\022\n\006blocks\030\002 \003(\004B\002\020\001\"J\n\030BlockRepo",
-      "rtResponseProto\022.\n\003cmd\030\001 \001(\0132!.hadoop.hd" +
-      "fs.DatanodeCommandProto\"\200\001\n\027CacheReportR" +
-      "equestProto\022<\n\014registration\030\001 \002(\0132&.hado" +
-      "op.hdfs.DatanodeRegistrationProto\022\023\n\013blo" +
-      "ckPoolId\030\002 \002(\t\022\022\n\006blocks\030\003 \003(\004B\002\020\001\"J\n\030Ca" +
-      "cheReportResponseProto\022.\n\003cmd\030\001 \001(\0132!.ha" +
-      "doop.hdfs.DatanodeCommandProto\"\334\001\n\035Recei" +
-      "vedDeletedBlockInfoProto\022&\n\005block\030\001 \002(\0132" +
-      "\027.hadoop.hdfs.BlockProto\022F\n\006status\030\003 \002(\016" +
-      "26.hadoop.hdfs.ReceivedDeletedBlockInfoP",
-      "roto.BlockStatus\022\022\n\ndeleteHint\030\002 \001(\t\"7\n\013" +
-      "BlockStatus\022\r\n\tRECEIVING\020\001\022\014\n\010RECEIVED\020\002" +
-      "\022\013\n\007DELETED\020\003\"\254\001\n!StorageReceivedDeleted" +
-      "BlocksProto\022\027\n\013storageUuid\030\001 \002(\tB\002\030\001\022:\n\006" +
-      "blocks\030\002 \003(\0132*.hadoop.hdfs.ReceivedDelet" +
-      "edBlockInfoProto\0222\n\007storage\030\003 \001(\0132!.hado" +
-      "op.hdfs.DatanodeStorageProto\"\270\001\n#BlockRe" +
-      "ceivedAndDeletedRequestProto\022<\n\014registra" +
-      "tion\030\001 \002(\0132&.hadoop.hdfs.DatanodeRegistr" +
-      "ationProto\022\023\n\013blockPoolId\030\002 \002(\t\022>\n\006block",
-      "s\030\003 \003(\0132..hadoop.hdfs.StorageReceivedDel" +
-      "etedBlocksProto\"&\n$BlockReceivedAndDelet" +
-      "edResponseProto\"\311\001\n\027ErrorReportRequestPr" +
-      "oto\022<\n\014registartion\030\001 \002(\0132&.hadoop.hdfs." +
-      "DatanodeRegistrationProto\022\021\n\terrorCode\030\002" +
-      " \002(\r\022\013\n\003msg\030\003 \002(\t\"P\n\tErrorCode\022\n\n\006NOTIFY" +
-      "\020\000\022\016\n\nDISK_ERROR\020\001\022\021\n\rINVALID_BLOCK\020\002\022\024\n" +
-      "\020FATAL_DISK_ERROR\020\003\"\032\n\030ErrorReportRespon" +
-      "seProto\"M\n\033ReportBadBlocksRequestProto\022." +
-      "\n\006blocks\030\001 \003(\0132\036.hadoop.hdfs.LocatedBloc",
-      "kProto\"\036\n\034ReportBadBlocksResponseProto\"\366" +
-      "\001\n&CommitBlockSynchronizationRequestProt" +
-      "o\022.\n\005block\030\001 \002(\0132\037.hadoop.hdfs.ExtendedB" +
-      "lockProto\022\023\n\013newGenStamp\030\002 \002(\004\022\021\n\tnewLen" +
-      "gth\030\003 \002(\004\022\021\n\tcloseFile\030\004 \002(\010\022\023\n\013deleteBl" +
-      "ock\030\005 \002(\010\0221\n\013newTaragets\030\006 \003(\0132\034.hadoop." +
-      "hdfs.DatanodeIDProto\022\031\n\021newTargetStorage" +
-      "s\030\007 \003(\t\")\n\'CommitBlockSynchronizationRes" +
-      "ponseProto2\273\007\n\027DatanodeProtocolService\022i" +
-      "\n\020registerDatanode\022).hadoop.hdfs.Registe",
-      "rDatanodeRequestProto\032*.hadoop.hdfs.Regi" +
-      "sterDatanodeResponseProto\022X\n\rsendHeartbe" +
-      "at\022\".hadoop.hdfs.HeartbeatRequestProto\032#" +
-      ".hadoop.hdfs.HeartbeatResponseProto\022Z\n\013b" +
-      "lockReport\022$.hadoop.hdfs.BlockReportRequ" +
-      "estProto\032%.hadoop.hdfs.BlockReportRespon" +
-      "seProto\022Z\n\013cacheReport\022$.hadoop.hdfs.Cac" +
-      "heReportRequestProto\032%.hadoop.hdfs.Cache" +
-      "ReportResponseProto\022~\n\027blockReceivedAndD" +
-      "eleted\0220.hadoop.hdfs.BlockReceivedAndDel",
-      "etedRequestProto\0321.hadoop.hdfs.BlockRece" +
-      "ivedAndDeletedResponseProto\022Z\n\013errorRepo" +
-      "rt\022$.hadoop.hdfs.ErrorReportRequestProto" +
-      "\032%.hadoop.hdfs.ErrorReportResponseProto\022" +
-      "U\n\016versionRequest\022 .hadoop.hdfs.VersionR" +
-      "equestProto\032!.hadoop.hdfs.VersionRespons" +
-      "eProto\022f\n\017reportBadBlocks\022(.hadoop.hdfs." +
-      "ReportBadBlocksRequestProto\032).hadoop.hdf" +
-      "s.ReportBadBlocksResponseProto\022\207\001\n\032commi" +
-      "tBlockSynchronization\0223.hadoop.hdfs.Comm",
-      "itBlockSynchronizationRequestProto\0324.had" +
-      "oop.hdfs.CommitBlockSynchronizationRespo" +
-      "nseProtoBE\n%org.apache.hadoop.hdfs.proto" +
-      "col.protoB\026DatanodeProtocolProtos\210\001\001\240\001\001"
+      "s\030\005 \003(\0132\036.hadoop.hdfs.StorageUuidsProto\022" +
+      "*\n\003mvc\030\006 \001(\0132\035.hadoop.hdfs.VectorClockPr" +
+      "oto\"4\n\006Action\022\014\n\010TRANSFER\020\001\022\016\n\nINVALIDAT" +
+      "E\020\002\022\014\n\010SHUTDOWN\020\003\"\233\001\n\023BlockIdCommandProt",
+      "o\0227\n\006action\030\001 \002(\0162\'.hadoop.hdfs.BlockIdC" +
+      "ommandProto.Action\022\023\n\013blockPoolId\030\002 \002(\t\022" +
+      "\024\n\010blockIds\030\003 \003(\004B\002\020\001\" \n\006Action\022\t\n\005CACHE" +
+      "\020\001\022\013\n\007UNCACHE\020\002\"N\n\031BlockRecoveryCommandP" +
+      "roto\0221\n\006blocks\030\001 \003(\0132!.hadoop.hdfs.Recov" +
+      "eringBlockProto\"+\n\024FinalizeCommandProto\022" +
+      "\023\n\013blockPoolId\030\001 \002(\t\"J\n\025KeyUpdateCommand" +
+      "Proto\0221\n\004keys\030\001 \002(\0132#.hadoop.hdfs.Export" +
+      "edBlockKeysProto\"\026\n\024RegisterCommandProto" +
+      "\"\\\n\034RegisterDatanodeRequestProto\022<\n\014regi",
+      "stration\030\001 \002(\0132&.hadoop.hdfs.DatanodeReg" +
+      "istrationProto\"]\n\035RegisterDatanodeRespon" +
+      "seProto\022<\n\014registration\030\001 \002(\0132&.hadoop.h" +
+      "dfs.DatanodeRegistrationProto\"\206\002\n\025Heartb" +
+      "eatRequestProto\022<\n\014registration\030\001 \002(\0132&." +
+      "hadoop.hdfs.DatanodeRegistrationProto\0220\n" +
+      "\007reports\030\002 \003(\0132\037.hadoop.hdfs.StorageRepo" +
+      "rtProto\022\032\n\017xmitsInProgress\030\003 \001(\r:\0010\022\027\n\014x" +
+      "ceiverCount\030\004 \001(\r:\0010\022\030\n\rfailedVolumes\030\005 " +
+      "\001(\r:\0010\022\030\n\rcacheCapacity\030\006 \001(\004:\0010\022\024\n\tcach",
+      "eUsed\030\007 \001(\004:\0010\"\321\001\n\022StorageReportProto\022\027\n" +
+      "\013storageUuid\030\001 \002(\tB\002\030\001\022\025\n\006failed\030\002 \001(\010:\005" +
+      "false\022\023\n\010capacity\030\003 \001(\004:\0010\022\022\n\007dfsUsed\030\004 " +
+      "\001(\004:\0010\022\024\n\tremaining\030\005 \001(\004:\0010\022\030\n\rblockPoo" +
+      "lUsed\030\006 \001(\004:\0010\0222\n\007storage\030\007 \001(\0132!.hadoop" +
+      ".hdfs.DatanodeStorageProto\"\206\001\n\030NNHAStatu" +
+      "sHeartbeatProto\022:\n\005state\030\001 \002(\0162+.hadoop." +
+      "hdfs.NNHAStatusHeartbeatProto.State\022\014\n\004t" +
+      "xid\030\002 \002(\004\" \n\005State\022\n\n\006ACTIVE\020\000\022\013\n\007STANDB" +
+      "Y\020\001\"\310\001\n\026HeartbeatResponseProto\022/\n\004cmds\030\001",
+      " \003(\0132!.hadoop.hdfs.DatanodeCommandProto\022" +
+      "7\n\010haStatus\030\002 \002(\0132%.hadoop.hdfs.NNHAStat" +
+      "usHeartbeatProto\022D\n\024rollingUpgradeStatus" +
+      "\030\003 \001(\0132&.hadoop.hdfs.RollingUpgradeStatu" +
+      "sProto\"\243\001\n\027BlockReportRequestProto\022<\n\014re" +
+      "gistration\030\001 \002(\0132&.hadoop.hdfs.DatanodeR" +
+      "egistrationProto\022\023\n\013blockPoolId\030\002 \002(\t\0225\n" +
+      "\007reports\030\003 \003(\0132$.hadoop.hdfs.StorageBloc" +
+      "kReportProto\"a\n\027StorageBlockReportProto\022" +
+      "2\n\007storage\030\001 \002(\0132!.hadoop.hdfs.DatanodeS",
+      "torageProto\022\022\n\006blocks\030\002 \003(\004B\002\020\001\"J\n\030Block" +
+      "ReportResponseProto\022.\n\003cmd\030\001 \001(\0132!.hadoo" +
+      "p.hdfs.DatanodeCommandProto\"\200\001\n\027CacheRep" +
+      "ortRequestProto\022<\n\014registration\030\001 \002(\0132&." +
+      "hadoop.hdfs.DatanodeRegistrationProto\022\023\n" +
+      "\013blockPoolId\030\002 \002(\t\022\022\n\006blocks\030\003 \003(\004B\002\020\001\"J" +
+      "\n\030CacheReportResponseProto\022.\n\003cmd\030\001 \001(\0132" +
+      "!.hadoop.hdfs.DatanodeCommandProto\"\334\001\n\035R" +
+      "eceivedDeletedBlockInfoProto\022&\n\005block\030\001 " +
+      "\002(\0132\027.hadoop.hdfs.BlockProto\022F\n\006status\030\003",
+      " \002(\01626.hadoop.hdfs.ReceivedDeletedBlockI" +
+      "nfoProto.BlockStatus\022\022\n\ndeleteHint\030\002 \001(\t" +
+      "\"7\n\013BlockStatus\022\r\n\tRECEIVING\020\001\022\014\n\010RECEIV" +
+      "ED\020\002\022\013\n\007DELETED\020\003\"\254\001\n!StorageReceivedDel" +
+      "etedBlocksProto\022\027\n\013storageUuid\030\001 \002(\tB\002\030\001" +
+      "\022:\n\006blocks\030\002 \003(\0132*.hadoop.hdfs.ReceivedD" +
+      "eletedBlockInfoProto\0222\n\007storage\030\003 \001(\0132!." +
+      "hadoop.hdfs.DatanodeStorageProto\"\270\001\n#Blo" +
+      "ckReceivedAndDeletedRequestProto\022<\n\014regi" +
+      "stration\030\001 \002(\0132&.hadoop.hdfs.DatanodeReg",
+      "istrationProto\022\023\n\013blockPoolId\030\002 \002(\t\022>\n\006b" +
+      "locks\030\003 \003(\0132..hadoop.hdfs.StorageReceive" +
+      "dDeletedBlocksProto\"&\n$BlockReceivedAndD" +
+      "eletedResponseProto\"\311\001\n\027ErrorReportReque" +
+      "stProto\022<\n\014registartion\030\001 \002(\0132&.hadoop.h" +
+      "dfs.DatanodeRegistrationProto\022\021\n\terrorCo" +
+      "de\030\002 \002(\r\022\013\n\003msg\030\003 \002(\t\"P\n\tErrorCode\022\n\n\006NO" +
+      "TIFY\020\000\022\016\n\nDISK_ERROR\020\001\022\021\n\rINVALID_BLOCK\020" +
+      "\002\022\024\n\020FATAL_DISK_ERROR\020\003\"\032\n\030ErrorReportRe" +
+      "sponseProto\"M\n\033ReportBadBlocksRequestPro",
+      "to\022.\n\006blocks\030\001 \003(\0132\036.hadoop.hdfs.Located" +
+      "BlockProto\"\036\n\034ReportBadBlocksResponsePro" +
+      "to\"\366\001\n&CommitBlockSynchronizationRequest" +
+      "Proto\022.\n\005block\030\001 \002(\0132\037.hadoop.hdfs.Exten" +
+      "dedBlockProto\022\023\n\013newGenStamp\030\002 \002(\004\022\021\n\tne" +
+      "wLength\030\003 \002(\004\022\021\n\tcloseFile\030\004 \002(\010\022\023\n\013dele" +
+      "teBlock\030\005 \002(\010\0221\n\013newTaragets\030\006 \003(\0132\034.had" +
+      "oop.hdfs.DatanodeIDProto\022\031\n\021newTargetSto" +
+      "rages\030\007 \003(\t\")\n\'CommitBlockSynchronizatio" +
+      "nResponseProto2\273\007\n\027DatanodeProtocolServi",
+      "ce\022i\n\020registerDatanode\022).hadoop.hdfs.Reg" +
+      "isterDatanodeRequestProto\032*.hadoop.hdfs." +
+      "RegisterDatanodeResponseProto\022X\n\rsendHea" +
+      "rtbeat\022\".hadoop.hdfs.HeartbeatRequestPro" +
+      "to\032#.hadoop.hdfs.HeartbeatResponseProto\022" +
+      "Z\n\013blockReport\022$.hadoop.hdfs.BlockReport" +
+      "RequestProto\032%.hadoop.hdfs.BlockReportRe" +
+      "sponseProto\022Z\n\013cacheReport\022$.hadoop.hdfs" +
+      ".CacheReportRequestProto\032%.hadoop.hdfs.C" +
+      "acheReportResponseProto\022~\n\027blockReceived",
+      "AndDeleted\0220.hadoop.hdfs.BlockReceivedAn" +
+      "dDeletedRequestProto\0321.hadoop.hdfs.Block" +
+      "ReceivedAndDeletedResponseProto\022Z\n\013error" +
+      "Report\022$.hadoop.hdfs.ErrorReportRequestP" +
+      "roto\032%.hadoop.hdfs.ErrorReportResponsePr" +
+      "oto\022U\n\016versionRequest\022 .hadoop.hdfs.Vers" +
+      "ionRequestProto\032!.hadoop.hdfs.VersionRes" +
+      "ponseProto\022f\n\017reportBadBlocks\022(.hadoop.h" +
+      "dfs.ReportBadBlocksRequestProto\032).hadoop" +
+      ".hdfs.ReportBadBlocksResponseProto\022\207\001\n\032c",
+      "ommitBlockSynchronization\0223.hadoop.hdfs." +
+      "CommitBlockSynchronizationRequestProto\0324" +
+      ".hadoop.hdfs.CommitBlockSynchronizationR" +
+      "esponseProtoBE\n%org.apache.hadoop.hdfs.p" +
+      "rotocol.protoB\026DatanodeProtocolProtos\210\001\001" +
+      "\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -29065,7 +29340,7 @@ public final class DatanodeProtocolProtos {
           internal_static_hadoop_hdfs_BlockCommandProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_BlockCommandProto_descriptor,
-              new java.lang.String[] { "Action", "BlockPoolId", "Blocks", "Targets", "TargetStorageUuids", });
+              new java.lang.String[] { "Action", "BlockPoolId", "Blocks", "Targets", "TargetStorageUuids", "Mvc", });
           internal_static_hadoop_hdfs_BlockIdCommandProto_descriptor =
             getDescriptor().getMessageTypes().get(5);
           internal_static_hadoop_hdfs_BlockIdCommandProto_fieldAccessorTable = new

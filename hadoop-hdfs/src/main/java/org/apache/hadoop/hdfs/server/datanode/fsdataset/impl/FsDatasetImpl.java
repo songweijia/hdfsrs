@@ -43,6 +43,8 @@ import org.apache.hadoop.util.DiskChecker.DiskOutOfSpaceException;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Time;
 
+import edu.cornell.cs.sa.VectorClock;
+
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
@@ -739,7 +741,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized ReplicaInPipeline createRbw(ExtendedBlock b)
+  public synchronized ReplicaInPipeline createRbw(ExtendedBlock b, VectorClock mvc)// we just do nothing with the vector clock.
       throws IOException {
     ReplicaInfo replicaInfo = volumeMap.get(b.getBlockPoolId(), 
         b.getBlockId());
@@ -877,7 +879,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized ReplicaInPipeline createTemporary(ExtendedBlock b)
+  public synchronized ReplicaInPipeline createTemporary(ExtendedBlock b, VectorClock mvc)
       throws IOException {
     ReplicaInfo replicaInfo = volumeMap.get(b.getBlockPoolId(), b.getBlockId());
     if (replicaInfo != null) {
@@ -1152,7 +1154,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
    * just get rid of it.
    */
   @Override // FsDatasetSpi
-  public void invalidate(String bpid, Block invalidBlks[]) throws IOException {
+  public void invalidate(String bpid, Block invalidBlks[], VectorClock mvc) throws IOException {
     final List<String> errors = new ArrayList<String>();
     for (int i = 0; i < invalidBlks.length; i++) {
       final File f;

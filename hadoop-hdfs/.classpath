@@ -67,6 +67,6 @@
 	<classpathentry kind="var" path="M2_REPO/commons-daemon/commons-daemon/1.0.13/commons-daemon-1.0.13.jar" sourcepath="M2_REPO/commons-daemon/commons-daemon/1.0.13/commons-daemon-1.0.13-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/mockito/mockito-all/1.8.5/mockito-all-1.8.5.jar" sourcepath="M2_REPO/org/mockito/mockito-all/1.8.5/mockito-all-1.8.5-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/io/netty/netty/3.6.2.Final/netty-3.6.2.Final.jar" sourcepath="M2_REPO/io/netty/netty/3.6.2.Final/netty-3.6.2.Final-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_51/lib/tools.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_15/lib/tools.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -82,6 +82,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.cornell.cs.sa.VectorClock;
+
 public class TestRetryCacheWithHA {
   private static final Log LOG = LogFactory.getLog(TestRetryCacheWithHA.class);
   
@@ -89,7 +91,15 @@ public class TestRetryCacheWithHA {
   private static final short DataNodes = 3;
   private static final int CHECKTIMES = 10;
   private static final int ResponseSize = 3;
-  
+
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
+
   private MiniDFSCluster cluster;
   private DistributedFileSystem dfs;
   private final Configuration conf = new HdfsConfiguration();
@@ -391,10 +401,12 @@ public class TestRetryCacheWithHA {
     @Override
     void invoke() throws Exception {
       EnumSet<CreateFlag> createFlag = EnumSet.of(CreateFlag.CREATE);
+      VectorClock mvc;
       this.status = client.getNamenode().create(fileName,
           FsPermission.getFileDefault(), client.getClientName(),
           new EnumSetWritable<CreateFlag>(createFlag), false, DataNodes,
-          BlockSize);
+          BlockSize, mvc=copyVC());
+      tickOn(mvc);
     }
 
     @Override
@@ -434,7 +446,9 @@ public class TestRetryCacheWithHA {
 
     @Override
     void invoke() throws Exception {
-      lbk = client.getNamenode().append(fileName, client.getClientName());
+      VectorClock mvc;
+      lbk = client.getNamenode().append(fileName, client.getClientName(), mvc=copyVC());
+      tickOn(mvc);
     }
     
     // check if the inode of the file is under construction

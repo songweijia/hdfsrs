@@ -57,6 +57,8 @@ import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This class implements a simulated FSDataset.
  * 
@@ -604,7 +606,7 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized void invalidate(String bpid, Block[] invalidBlks)
+  public synchronized void invalidate(String bpid, Block[] invalidBlks, VectorClock mvc/*HDFSRS_VC*/)
       throws IOException {
     boolean error = false;
     if (invalidBlks == null) {
@@ -743,13 +745,13 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized Replica createRbw(ExtendedBlock b) 
+  public synchronized Replica createRbw(ExtendedBlock b, VectorClock mvc/*HDFRS_VC*/) 
   throws IOException {
-    return createTemporary(b);
+    return createTemporary(b,mvc);
   }
 
   @Override // FsDatasetSpi
-  public synchronized Replica createTemporary(ExtendedBlock b)
+  public synchronized Replica createTemporary(ExtendedBlock b, VectorClock mvc/*HDFSRS_VC*/)
       throws IOException {
     if (isValidBlock(b)) {
           throw new ReplicaAlreadyExistsException("Block " + b + 

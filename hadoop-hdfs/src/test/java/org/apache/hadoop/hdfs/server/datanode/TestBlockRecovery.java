@@ -89,6 +89,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This tests if sync all replicas in block recovery works correctly
  */
@@ -525,10 +527,11 @@ public class TestBlockRecovery {
    */
   @Test
   public void testNoReplicaUnderRecovery() throws IOException {
+  	VectorClock vc = new VectorClock();
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
     }
-    dn.data.createRbw(block);
+    dn.data.createRbw(block,vc/*HDFSRS_VC*/);
     try {
       dn.syncBlock(rBlock, initBlockRecords(dn));
       fail("Sync should fail");
@@ -548,10 +551,11 @@ public class TestBlockRecovery {
    */
   @Test
   public void testNotMatchedReplicaID() throws IOException {
+  	VectorClock vc = new VectorClock();
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
     }
-    ReplicaInPipelineInterface replicaInfo = (ReplicaInPipelineInterface)dn.data.createRbw(block);
+    ReplicaInPipelineInterface replicaInfo = (ReplicaInPipelineInterface)dn.data.createRbw(block,vc);
     ReplicaOutputStreams streams = null;
     try {
       streams = replicaInfo.createStreams(true,

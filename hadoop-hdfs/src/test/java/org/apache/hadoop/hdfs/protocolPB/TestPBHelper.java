@@ -551,7 +551,7 @@ public class TestPBHelper {
     dnInfos[1][1] = DFSTestUtil.getLocalDatanodeInfo();
     String[][] storageIDs = {{"s00"}, {"s10", "s11"}};
     BlockCommand bc = new BlockCommand(DatanodeProtocol.DNA_TRANSFER, "bp1",
-        blocks, dnInfos, storageIDs);
+        blocks, dnInfos, storageIDs, null/*HDFSRS_VC*/);
     BlockCommandProto bcProto = PBHelper.convert(bc);
     BlockCommand bc2 = PBHelper.convert(bcProto);
     assertEquals(bc.getAction(), bc2.getAction());

@@ -65,6 +65,8 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import edu.cornell.cs.sa.VectorClock;
+
 public class TestBPOfferService {
 
   private static final String FAKE_BPID = "fake bpid";
@@ -202,10 +204,11 @@ public class TestBPOfferService {
   public void testIgnoreDeletionsFromNonActive() throws Exception {
     BPOfferService bpos = setupBPOSForNNs(mockNN1, mockNN2);
 
+    VectorClock vc = new VectorClock();// HDFSRS_VC
     // Ask to invalidate FAKE_BLOCK when block report hits the
     // standby
     Mockito.doReturn(new BlockCommand(DatanodeProtocol.DNA_INVALIDATE,
-        FAKE_BPID, new Block[] { FAKE_BLOCK.getLocalBlock() }))
+        FAKE_BPID, new Block[] { FAKE_BLOCK.getLocalBlock() }, vc/*HDFSRS_VC*/))
         .when(mockNN2).blockReport(
             Mockito.<DatanodeRegistration>anyObject(),  
             Mockito.eq(FAKE_BPID),
@@ -226,7 +229,7 @@ public class TestBPOfferService {
     // Should ignore the delete command from the standby
     Mockito.verify(mockFSDataset, Mockito.never())
       .invalidate(Mockito.eq(FAKE_BPID),
-          (Block[]) Mockito.anyObject());
+          (Block[]) Mockito.anyObject(),vc);
   }
 
   /**

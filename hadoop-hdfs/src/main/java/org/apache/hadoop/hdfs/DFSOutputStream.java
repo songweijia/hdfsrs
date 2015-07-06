@@ -96,6 +96,8 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
+import edu.cornell.cs.sa.VectorClock;
+
 
 /****************************************************************
  * DFSOutputStream creates files from a stream of bytes.
@@ -252,8 +254,9 @@ public class DFSOutputStream extends FSOutputSummer
       final int checksumLen = checksumPos - checksumStart;
       final int pktLen = HdfsConstants.BYTES_IN_INTEGER + dataLen + checksumLen;
 
+      // send packet using vector clock
       PacketHeader header = new PacketHeader(
-        pktLen, offsetInBlock, seqno, lastPacketInBlock, dataLen, syncBlock);
+        pktLen, offsetInBlock, seqno, lastPacketInBlock, dataLen, syncBlock, DFSClient.getCopyOfVectorClock()/*HDFSRS_VC*/);
       
       if (checksumPos != dataStart) {
         // Move the checksum to cover the gap. This can happen for the last
@@ -648,7 +651,9 @@ public class DFSOutputStream extends FSOutputSummer
             //state in NameNode. The overwriteBlock method will complete that block
             //and open convert the new block specified by blockNumber in to "Under construction"
             //state.
-            LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, block, (int)blockNumber, fileId, dfsClient.clientName);
+            VectorClock mvc = DFSClient.getCopyOfVectorClock(); //HDFSRS_VC
+            LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, block, (int)blockNumber, fileId, dfsClient.clientName, mvc);
+            DFSClient.tickOnMessage(mvc); //HDFSRS_VC
             if(lb==null)throw new IOException("[HDFSRS_RWAPI]overwriteBlock() returns null:blockNumber="+blockNumber);
             accessToken = lb.getBlockToken();
             block = lb.getBlock();
@@ -991,6 +996,8 @@ public class DFSOutputStream extends FSOutputSummer
               ackQueue.removeFirst();
               dataQueue.notifyAll();
             }
+            //HDFSRS_VC: Acknowledge vector clock
+            DFSClient.tickOnMessage(ack.getMvc());
           } catch (Exception e) {
             if (!responderClosed) {
               if (e instanceof IOException) {
@@ -1406,7 +1413,9 @@ public class DFSOutputStream extends FSOutputSummer
 
         if (!success) {
           DFSClient.LOG.info("Abandoning " + block);
-          dfsClient.namenode.abandonBlock(block, src, dfsClient.clientName);
+          VectorClock mvc = DFSClient.getCopyOfVectorClock();//HDFSRS_VC
+          dfsClient.namenode.abandonBlock(block, src, dfsClient.clientName, mvc);
+          DFSClient.tickOnMessage(mvc);//HDFSRS_VC
           block = null;
           DFSClient.LOG.info("Excluding datanode " + nodes[errorIndex]);
           excludedNodes.put(nodes[errorIndex], nodes[errorIndex]);
@@ -1473,7 +1482,8 @@ public class DFSOutputStream extends FSOutputSummer
           new Sender(out).writeBlock(block, accessToken, dfsClient.clientName,
               nodes, null, recoveryFlag? stage.getRecoveryStage() : stage, 
               nodes.length, block.getNumBytes(), bytesSent, newGS, checksum,
-              cachingStrategy.get(),this.blockWriteOffset/*HDFSRS_RWAPI:block write offset*/);
+              cachingStrategy.get(),this.blockWriteOffset/*HDFSRS_RWAPI:block write offset*/,
+              DFSClient.getCopyOfVectorClock()/*HDFSRS_VC:get vector clock*/);
   
           // receive ack for connect
           BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(
@@ -1569,8 +1579,11 @@ public class DFSOutputStream extends FSOutputSummer
         long localstart = Time.now();
         while (true) {
           try {
-            return dfsClient.namenode.addBlock(src, dfsClient.clientName,
-                block, excludedNodes, fileId, favoredNodes);
+        	VectorClock mvc = DFSClient.getCopyOfVectorClock();//set vector clock
+            LocatedBlock lb = dfsClient.namenode.addBlock(src, dfsClient.clientName,
+                block, excludedNodes, fileId, favoredNodes,mvc/*HDFSRS_VC*/);
+            DFSClient.tickOnMessage(mvc);//tick on received Message
+            return lb;
           } catch (RemoteException e) {
             IOException ue = 
               e.unwrapRemoteException(FileNotFoundException.class,
@@ -1732,9 +1745,11 @@ public class DFSOutputStream extends FSOutputSummer
       DataChecksum checksum, String[] favoredNodes) throws IOException {
     final HdfsFileStatus stat;
     try {
+      VectorClock mvc = DFSClient.getCopyOfVectorClock(); //HDFSRS_VC
       stat = dfsClient.namenode.create(src, masked, dfsClient.clientName,
           new EnumSetWritable<CreateFlag>(flag), createParent, replication,
-          blockSize);
+          blockSize,mvc);
+      DFSClient.tickOnMessage(mvc);//HDFSRS_VC
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      DSQuotaExceededException.class,
@@ -2083,7 +2098,9 @@ public class DFSOutputStream extends FSOutputSummer
       // namenode.
       if (persistBlocks.getAndSet(false) || updateLength) {
         try {
-          dfsClient.namenode.fsync(src, dfsClient.clientName, lastBlockLength);
+          VectorClock mvc = DFSClient.getCopyOfVectorClock(); // HDFSRS_VC
+          dfsClient.namenode.fsync(src, dfsClient.clientName, lastBlockLength, mvc);
+          DFSClient.tickOnMessage(mvc); // HDFSRS_VC
         } catch (IOException ioe) {
           DFSClient.LOG.warn("Unable to persist blocks in hflush for " + src, ioe);
           // If we got an error here, it might be because some other thread called
@@ -2273,8 +2290,10 @@ public class DFSOutputStream extends FSOutputSummer
     boolean fileComplete = false;
     int retries = dfsClient.getConf().nBlockWriteLocateFollowingRetry;
     while (!fileComplete) {
+      VectorClock mvc = DFSClient.getCopyOfVectorClock();//HDFSRS_VC
       fileComplete =
-          dfsClient.namenode.complete(src, dfsClient.clientName, last, fileId);
+          dfsClient.namenode.complete(src, dfsClient.clientName, last, fileId, mvc);
+      DFSClient.tickOnMessage(mvc);//HDFSRS_VC
       if (!fileComplete) {
         final int hdfsTimeout = dfsClient.getHdfsTimeout();
         if (!dfsClient.clientRunning ||

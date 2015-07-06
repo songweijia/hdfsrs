@@ -67,6 +67,8 @@ import org.apache.hadoop.util.VersionInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * Main class for a series of name-node benchmarks.
  * 
@@ -111,6 +113,14 @@ public class NNThroughputBenchmark implements Tool {
   static Configuration config;
   static NameNode nameNode;
   static NamenodeProtocols nameNodeProto;
+  /*HDFSRS_VC:vector clock*/
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static VectorClock tickOnMessage(VectorClock mvc){
+	  return (VectorClock)vc.tickOnRecv(mvc);
+  }
 
   NNThroughputBenchmark(Configuration conf) throws IOException {
     config = conf;
@@ -281,8 +291,11 @@ public class NNThroughputBenchmark implements Tool {
     void cleanUp() throws IOException {
       nameNodeProto.setSafeMode(HdfsConstants.SafeModeAction.SAFEMODE_LEAVE,
           false);
-      if(!keepResults)
-        nameNodeProto.delete(getBaseDir(), true);
+      if(!keepResults){
+        VectorClock mvc = copyVC(); // HDFSRS_VC
+        nameNodeProto.delete(getBaseDir(), true, mvc);
+        tickOnMessage(mvc);
+      }
     }
 
     int getNumOpsExecuted() {
@@ -484,7 +497,9 @@ public class NNThroughputBenchmark implements Tool {
       nameNodeProto.setSafeMode(HdfsConstants.SafeModeAction.SAFEMODE_LEAVE,
           false);
       long start = Time.now();
-      nameNodeProto.delete(BASE_DIR_NAME, true);
+      VectorClock mvc = copyVC();
+      nameNodeProto.delete(BASE_DIR_NAME, true, mvc);//HDFSRS_VC
+      tickOnMessage(mvc);
       long end = Time.now();
       return end-start;
     }
@@ -585,13 +600,18 @@ public class NNThroughputBenchmark implements Tool {
     throws IOException {
       long start = Time.now();
       // dummyActionNoSynch(fileIdx);
+      VectorClock mvc = copyVC();
       nameNodeProto.create(fileNames[daemonId][inputIdx], FsPermission.getDefault(),
                       clientName, new EnumSetWritable<CreateFlag>(EnumSet
-              .of(CreateFlag.CREATE, CreateFlag.OVERWRITE)), true, replication, BLOCK_SIZE);
+              .of(CreateFlag.CREATE, CreateFlag.OVERWRITE)), true, replication, BLOCK_SIZE, mvc);
+      tickOnMessage(mvc);
       long end = Time.now();
-      for(boolean written = !closeUponCreate; !written; 
+      for(boolean written = !closeUponCreate; !written;) {
+        mvc = copyVC();
         written = nameNodeProto.complete(fileNames[daemonId][inputIdx],
-                                    clientName, null, INodeId.GRANDFATHER_INODE_ID));
+                                    clientName, null, INodeId.GRANDFATHER_INODE_ID, mvc);
+        tickOnMessage(mvc);
+      }
       return end-start;
     }
 
@@ -681,8 +701,10 @@ public class NNThroughputBenchmark implements Tool {
     long executeOp(int daemonId, int inputIdx, String clientName)
         throws IOException {
       long start = Time.now();
+      VectorClock mvc = copyVC();
       nameNodeProto.mkdirs(dirPaths[daemonId][inputIdx],
-          FsPermission.getDefault(), true);
+          FsPermission.getDefault(), true, mvc);
+      tickOnMessage(mvc);
       long end = Time.now();
       return end-start;
     }
@@ -755,7 +777,9 @@ public class NNThroughputBenchmark implements Tool {
       super.generateInputs(opsPerThread);
       if(nameNodeProto.getFileInfo(opCreate.getBaseDir()) != null
           && nameNodeProto.getFileInfo(getBaseDir()) == null) {
-        nameNodeProto.rename(opCreate.getBaseDir(), getBaseDir());
+        VectorClock mvc = copyVC();
+        nameNodeProto.rename(opCreate.getBaseDir(), getBaseDir(),mvc);
+        tickOnMessage(mvc);
       }
       if(nameNodeProto.getFileInfo(getBaseDir()) == null) {
         throw new IOException(getBaseDir() + " does not exist.");
@@ -799,7 +823,9 @@ public class NNThroughputBenchmark implements Tool {
     long executeOp(int daemonId, int inputIdx, String ignore) 
     throws IOException {
       long start = Time.now();
-      nameNodeProto.delete(fileNames[daemonId][inputIdx], false);
+      VectorClock mvc = copyVC();
+      nameNodeProto.delete(fileNames[daemonId][inputIdx], false, mvc);
+      tickOnMessage(mvc);
       long end = Time.now();
       return end-start;
     }
@@ -873,8 +899,10 @@ public class NNThroughputBenchmark implements Tool {
     long executeOp(int daemonId, int inputIdx, String ignore) 
     throws IOException {
       long start = Time.now();
+      VectorClock mvc = copyVC();
       nameNodeProto.rename(fileNames[daemonId][inputIdx],
-                      destNames[daemonId][inputIdx]);
+                      destNames[daemonId][inputIdx],mvc);
+      tickOnMessage(mvc);
       long end = Time.now();
       return end-start;
     }
@@ -1138,11 +1166,15 @@ public class NNThroughputBenchmark implements Tool {
           false);
       for(int idx=0; idx < nrFiles; idx++) {
         String fileName = nameGenerator.getNextFileName("ThroughputBench");
+        VectorClock mvc = copyVC();
         nameNodeProto.create(fileName, FsPermission.getDefault(), clientName,
             new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE, CreateFlag.OVERWRITE)), true, replication,
-            BLOCK_SIZE);
+            BLOCK_SIZE, mvc);
+        tickOnMessage(mvc);
         ExtendedBlock lastBlock = addBlocks(fileName, clientName);
-        nameNodeProto.complete(fileName, clientName, lastBlock, INodeId.GRANDFATHER_INODE_ID);
+        mvc = copyVC();
+        nameNodeProto.complete(fileName, clientName, lastBlock, INodeId.GRANDFATHER_INODE_ID, mvc);
+        tickOnMessage(mvc);
       }
       // prepare block reports
       for(int idx=0; idx < nrDatanodes; idx++) {
@@ -1155,7 +1187,7 @@ public class NNThroughputBenchmark implements Tool {
       ExtendedBlock prevBlock = null;
       for(int jdx = 0; jdx < blocksPerFile; jdx++) {
         LocatedBlock loc = nameNodeProto.addBlock(fileName, clientName,
-            prevBlock, null, INodeId.GRANDFATHER_INODE_ID, null);
+            prevBlock, null, INodeId.GRANDFATHER_INODE_ID, null, null/*HDFSRS_VC*/);
         prevBlock = loc.getBlock();
         for(DatanodeInfo dnInfo : loc.getLocations()) {
           int dnIdx = Arrays.binarySearch(datanodes, dnInfo.getXferAddr());

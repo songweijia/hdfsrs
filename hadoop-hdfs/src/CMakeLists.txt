@@ -117,6 +117,11 @@ add_library(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer SHAR
 )
 output_directory(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer target/usr/local/lib)
 
+add_library(edu_cornell_cs_blog_JNIBlog SHARED
+    main/native/blog/JNIBlog.c
+)
+output_directory(edu_cornell_cs_blog_JNIBlog target/usr/local/lib)
+
 add_executable(test_libhdfs_ops
     main/native/libhdfs/test/test_libhdfs_ops.c
 )

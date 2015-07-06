@@ -71,6 +71,8 @@ import org.apache.hadoop.util.Time;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This class provides rudimentary checking of DFS volumes for errors and
  * sub-optimal conditions.
@@ -475,7 +477,8 @@ public class NamenodeFsck {
 
   private void deleteCorruptedFile(String path) {
     try {
-      namenode.getRpcServer().delete(path, true);
+      VectorClock mvc = new VectorClock(-1); // HDFSRS_VC: NamenodeFsck does not use it.
+      namenode.getRpcServer().delete(path, true, mvc);
       LOG.info("Fsck: deleted corrupt file " + path);
     } catch (Exception e) {
       LOG.error("Fsck: error deleting corrupted file " + path, e);
@@ -511,8 +514,9 @@ public class NamenodeFsck {
           "lost+found, because " + target + " already exists.");
         return;
       }
+      VectorClock mvc = new VectorClock(); // actually we don't need it
       if (!namenode.getRpcServer().mkdirs(
-          target, file.getPermission(), true)) {
+          target, file.getPermission(), true, mvc/*HDFSRS_VC*/)) {
         throw new IOException("failed to create directory " + target);
       }
       // create chains

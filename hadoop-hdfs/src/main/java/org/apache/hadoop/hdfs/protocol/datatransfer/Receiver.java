@@ -141,7 +141,10 @@ public abstract class Receiver implements DataTransferProtocol {
           CachingStrategy.newDefaultStrategy()),
         //HDFSRS_WRAPI{
         (proto.hasOffset() ?
-        	proto.getOffset():-1)
+        	proto.getOffset():-1),
+        //}
+        //HDFSRS_VC{
+        (proto.hasMvc()?PBHelper.convert(proto.getMvc()):null)
         //}
         );
   }
@@ -194,7 +197,8 @@ public abstract class Receiver implements DataTransferProtocol {
     replaceBlock(PBHelper.convert(proto.getHeader().getBlock()),
         PBHelper.convert(proto.getHeader().getToken()),
         proto.getDelHint(),
-        PBHelper.convert(proto.getSource()));
+        PBHelper.convert(proto.getSource()),
+        proto.hasMvc()?PBHelper.convert(proto.getMvc()):null/*HDFSRS_VC*/);
   }
 
   /** Receive OP_COPY_BLOCK */

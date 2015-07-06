@@ -22,6 +22,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import edu.cornell.cs.sa.VectorClock;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.HadoopIllegalArgumentException;
@@ -275,6 +277,14 @@ public class NameNode implements NameNodeStatusMXBean {
    * will be the logical address.
    */
   private String clientNamenodeAddress;
+  
+  /**
+   * HDFSRS_VC: myrank, which is used as key in vector clock
+   */
+  static public int myrank;
+  static public VectorClock vc;
+  //HDFSRS_VC
+  
   
   /** Format a new filesystem.  Destroys any filesystem that may already
    * exist at this location.  **/
@@ -575,6 +585,16 @@ public class NameNode implements NameNodeStatusMXBean {
     pauseMonitor = new JvmPauseMonitor(conf);
     pauseMonitor.start();
 
+    /**
+     * HDFSRS_VC:set vector clock
+     */
+    if(vc == null){
+      myrank = conf.getInt(DFS_VCPID,0);
+      myrank = (myrank<<2)+1;
+      vc = new VectorClock(myrank);
+    }
+    //HDFSRS_VC
+    
     startCommonServices(conf);
   }
   

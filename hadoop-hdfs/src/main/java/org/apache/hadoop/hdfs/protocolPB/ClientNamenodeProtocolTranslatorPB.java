@@ -18,7 +18,6 @@
 package org.apache.hadoop.hdfs.protocolPB;
 
 import java.io.Closeable;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -69,7 +68,9 @@ import org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveAclRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.AclProtos.RemoveDefaultAclRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.AclProtos.SetAclRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddBlockResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCacheDirectiveRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AddCachePoolRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AllowSnapshotRequestProto;
@@ -77,16 +78,20 @@ import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Append
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AppendResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CachePoolEntryProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CompleteResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSnapshotRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.CreateSymlinkRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DeleteSnapshotRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.DisallowSnapshotRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FinalizeUpgradeRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetAdditionalDatanodeRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.GetBlockLocationsResponseProto;
@@ -117,6 +122,7 @@ import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCa
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ListCorruptFileBlocksRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MetaSaveRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.MkdirsResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCacheDirectiveRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ModifyCachePoolRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto.Builder;
@@ -125,7 +131,9 @@ import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Refres
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCacheDirectiveRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RemoveCachePoolRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2RequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameRequestProto;
+import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenameSnapshotRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.RenewLeaseRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ReportBadBlocksRequestProto;
@@ -164,6 +172,27 @@ import org.apache.hadoop.security.token.Token;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import edu.cornell.cs.sa.VectorClock;
+
+
+
+
+
+
 
 
 
@@ -250,7 +279,8 @@ public class ClientNamenodeProtocolTranslatorPB implements
   @Override
   public HdfsFileStatus create(String src, FsPermission masked,
       String clientName, EnumSetWritable<CreateFlag> flag,
-      boolean createParent, short replication, long blockSize)
+      boolean createParent, short replication, long blockSize,
+      VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, AlreadyBeingCreatedException,
       DSQuotaExceededException, FileAlreadyExistsException,
       FileNotFoundException, NSQuotaExceededException,
@@ -264,9 +294,11 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setCreateParent(createParent)
         .setReplication(replication)
         .setBlockSize(blockSize)
+        .setVc(PBHelper.convert(mvc)) // HDFSRS_VC
         .build();
     try {
       CreateResponseProto res = rpcProxy.create(null, req);
+      mvc.vc=PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
       return res.hasFs() ? PBHelper.convert(res.getFs()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -275,16 +307,19 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
 
   @Override
-  public LocatedBlock append(String src, String clientName)
+  public LocatedBlock append(String src, String clientName, 
+		  VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       IOException {
     AppendRequestProto req = AppendRequestProto.newBuilder()
         .setSrc(src)
         .setClientName(clientName)
+        .setVc(PBHelper.convert(mvc))
         .build();
     try {
       AppendResponseProto res = rpcProxy.append(null, req);
+      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
       return res.hasBlock() ? PBHelper.convert(res.getBlock()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -293,7 +328,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
   //HDFSRS_RWAPI{
   @Override
   public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
-      int bIndex, long fileId, String clientName)
+      int bIndex, long fileId, String clientName, VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException {
@@ -301,7 +336,8 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setSrc(src)
         .setBIndex(bIndex)
         .setFileId(fileId)
-        .setClientName(clientName);
+        .setClientName(clientName)
+        .setVc(PBHelper.convert(mvc));/*HDFSRS_VC*/
     if(previous!=null)
       bldr = bldr.setPrevious(PBHelper.convert(previous));
 
@@ -309,6 +345,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
     try {
       OverwriteBlockResponseProto res = rpcProxy.overwriteBlock(null, req);
+      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
       return res.hasBlock() ? PBHelper.convert(res.getBlock()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -364,22 +401,25 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
 
   @Override
-  public void abandonBlock(ExtendedBlock b, String src, String holder)
+  public void abandonBlock(ExtendedBlock b, String src, String holder,
+		  VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException,
       UnresolvedLinkException, IOException {
     AbandonBlockRequestProto req = AbandonBlockRequestProto.newBuilder()
-        .setB(PBHelper.convert(b)).setSrc(src).setHolder(holder).build();
+        .setB(PBHelper.convert(b)).setSrc(src).setHolder(holder)
+        .setVc(PBHelper.convert(mvc)).build();
     try {
-      rpcProxy.abandonBlock(null, req);
+      AbandonBlockResponseProto res = rpcProxy.abandonBlock(null, req);
+      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
   }
-  
+
   @Override
   public LocatedBlock addBlock(String src, String clientName,
       ExtendedBlock previous, DatanodeInfo[] excludeNodes, long fileId,
-      String[] favoredNodes)
+      String[] favoredNodes, VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException,
       NotReplicatedYetException, SafeModeException, UnresolvedLinkException,
       IOException {
@@ -392,8 +432,14 @@ public class ClientNamenodeProtocolTranslatorPB implements
     if (favoredNodes != null) {
       req.addAllFavoredNodes(Arrays.asList(favoredNodes));
     }
+    req.setVc(PBHelper.convert(mvc));/*HDFSRS_VC:vector clock*/
     try {
-      return PBHelper.convert(rpcProxy.addBlock(null, req.build()).getBlock());
+    	/* HDFSRS_VC:return mvc throught mvc parameter.
+    	 */
+      AddBlockResponseProto abrp = rpcProxy.addBlock(null, req.build());
+      if(mvc!=null)
+    	  mvc.vc = PBHelper.convert(abrp.getVc()).vc;
+      return PBHelper.convert(abrp.getBlock());
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -426,17 +472,21 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
   @Override
   public boolean complete(String src, String clientName,
-                          ExtendedBlock last, long fileId)
+                          ExtendedBlock last, long fileId,
+                          VectorClock mvc)
       throws AccessControlException, FileNotFoundException, SafeModeException,
       UnresolvedLinkException, IOException {
     CompleteRequestProto.Builder req = CompleteRequestProto.newBuilder()
         .setSrc(src)
         .setClientName(clientName)
-        .setFileId(fileId);
+        .setFileId(fileId)
+        .setVc(PBHelper.convert(mvc));//HDFSRS_VC
     if (last != null)
       req.setLast(PBHelper.convert(last));
     try {
-      return rpcProxy.complete(null, req.build()).getResult();
+      CompleteResponseProto res = rpcProxy.complete(null, req.build()); //HDFSRS_VC
+      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      return res.getResult();
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -455,13 +505,16 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
 
   @Override
-  public boolean rename(String src, String dst) throws UnresolvedLinkException,
+  public boolean rename(String src, String dst, VectorClock mvc/*HDFSRS_VC*/) throws UnresolvedLinkException,
       IOException {
     RenameRequestProto req = RenameRequestProto.newBuilder()
         .setSrc(src)
-        .setDst(dst).build();
+        .setDst(dst)
+        .setVc(PBHelper.convert(mvc)).build();
     try {
-      return rpcProxy.rename(null, req).getResult();
+      RenameResponseProto res = rpcProxy.rename(null, req);
+      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      return res.getResult();
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -469,7 +522,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
   
 
   @Override
-  public void rename2(String src, String dst, Rename... options)
+  public void rename2(String src, String dst, VectorClock mvc/*HDFSRS_VC*/, Rename... options)
       throws AccessControlException, DSQuotaExceededException,
       FileAlreadyExistsException, FileNotFoundException,
       NSQuotaExceededException, ParentNotDirectoryException, SafeModeException,
@@ -485,9 +538,11 @@ public class ClientNamenodeProtocolTranslatorPB implements
     Rename2RequestProto req = Rename2RequestProto.newBuilder().
         setSrc(src).
         setDst(dst).setOverwriteDest(overwrite).
+        setVc(PBHelper.convert(mvc)). //HDFSRS_VC
         build();
     try {
-      rpcProxy.rename2(null, req);
+      Rename2ResponseProto res = rpcProxy.rename2(null, req);
+      mvc.vc = PBHelper.convert(res.getVc()).vc;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -495,13 +550,14 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
 
   @Override
-  public void concat(String trg, String[] srcs) throws IOException,
+  public void concat(String trg, String[] srcs, VectorClock mvc) throws IOException,
       UnresolvedLinkException {
     ConcatRequestProto req = ConcatRequestProto.newBuilder().
-        setTrg(trg).
+        setTrg(trg).setVc(PBHelper.convert(mvc)).//HDFSRS_VC
         addAllSrcs(Arrays.asList(srcs)).build();
     try {
-      rpcProxy.concat(null, req);
+      ConcatResponseProto res = rpcProxy.concat(null, req);
+      mvc.vc = PBHelper.convert(res.getVc()).vc; //HDFSRS_VC
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -509,19 +565,24 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
 
   @Override
-  public boolean delete(String src, boolean recursive)
+  public boolean delete(String src, boolean recursive, VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException, SafeModeException,
       UnresolvedLinkException, IOException {
-    DeleteRequestProto req = DeleteRequestProto.newBuilder().setSrc(src).setRecursive(recursive).build();
+    DeleteRequestProto req = DeleteRequestProto.newBuilder().setSrc(src).setRecursive(recursive)
+    		.setVc(PBHelper.convert(mvc)).build();//HDFSRS_VC
     try {
-      return rpcProxy.delete(null, req).getResult();
+      DeleteResponseProto res = rpcProxy.delete(null, req);
+      boolean bRet = res.getResult();
+      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      return bRet;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
   }
 
   @Override
-  public boolean mkdirs(String src, FsPermission masked, boolean createParent)
+  public boolean mkdirs(String src, FsPermission masked, boolean createParent,
+		  VectorClock mvc)
       throws AccessControlException, FileAlreadyExistsException,
       FileNotFoundException, NSQuotaExceededException,
       ParentNotDirectoryException, SafeModeException, UnresolvedLinkException,
@@ -529,10 +590,14 @@ public class ClientNamenodeProtocolTranslatorPB implements
     MkdirsRequestProto req = MkdirsRequestProto.newBuilder()
         .setSrc(src)
         .setMasked(PBHelper.convert(masked))
-        .setCreateParent(createParent).build();
+        .setCreateParent(createParent)
+        .setVc(PBHelper.convert(mvc)).build();//HDFSRS_VC
 
     try {
-      return rpcProxy.mkdirs(null, req).getResult();
+      MkdirsResponseProto res = rpcProxy.mkdirs(null, req);
+      boolean bRet = res.getResult();
+      mvc.vc = PBHelper.convert(res.getVc()).vc;//HFDSRS_VC
+      return bRet;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -785,13 +850,16 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
 
   @Override
-  public void fsync(String src, String client, long lastBlockLength)
+  public void fsync(String src, String client, long lastBlockLength,
+		  VectorClock mvc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException,
       UnresolvedLinkException, IOException {
     FsyncRequestProto req = FsyncRequestProto.newBuilder().setSrc(src)
-        .setClient(client).setLastBlockLength(lastBlockLength).build();
+        .setClient(client).setLastBlockLength(lastBlockLength)
+        .setVc(PBHelper.convert(mvc)).build();//HDFSRS_VC
     try {
-      rpcProxy.fsync(null, req);
+      FsyncResponseProto res = rpcProxy.fsync(null, req);
+      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }

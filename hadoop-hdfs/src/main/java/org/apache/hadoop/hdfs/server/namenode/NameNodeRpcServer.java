@@ -157,6 +157,8 @@ import org.apache.hadoop.util.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.BlockingService;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This class is responsible for handling all of the RPC calls to the NameNode.
  * It is created, started, and stopped by {@link NameNode}.
@@ -522,7 +524,8 @@ class NameNodeRpcServer implements NamenodeProtocols {
   @Override // ClientProtocol
   public HdfsFileStatus create(String src, FsPermission masked,
       String clientName, EnumSetWritable<CreateFlag> flag,
-      boolean createParent, short replication, long blockSize)
+      boolean createParent, short replication, long blockSize,
+      VectorClock mvc)
       throws IOException {
     String clientMachine = getClientMachine();
     if (stateChangeLog.isDebugEnabled()) {
@@ -539,11 +542,16 @@ class NameNodeRpcServer implements NamenodeProtocols {
         blockSize);
     metrics.incrFilesCreated();
     metrics.incrCreateFileOps();
+    
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
+
     return fileStatus;
   }
 
   @Override // ClientProtocol
-  public LocatedBlock append(String src, String clientName) 
+  public LocatedBlock append(String src, String clientName, VectorClock mvc) 
       throws IOException {
     String clientMachine = getClientMachine();
     if (stateChangeLog.isDebugEnabled()) {
@@ -552,6 +560,9 @@ class NameNodeRpcServer implements NamenodeProtocols {
     }
     LocatedBlock info = namesystem.appendFile(src, clientName, clientMachine);
     metrics.incrFilesAppended();
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC    
     return info;
   }
 
@@ -582,8 +593,9 @@ class NameNodeRpcServer implements NamenodeProtocols {
   @Override
   public LocatedBlock addBlock(String src, String clientName,
       ExtendedBlock previous, DatanodeInfo[] excludedNodes, long fileId,
-      String[] favoredNodes)
+      String[] favoredNodes, VectorClock mvc/*HDFSRS_VC*/)
       throws IOException {
+
     if (stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*BLOCK* NameNode.addBlock: file " + src
           + " fileId=" + fileId + " for " + clientName);
@@ -601,6 +613,9 @@ class NameNodeRpcServer implements NamenodeProtocols {
         clientName, previous, excludedNodesSet, favoredNodesList);
     if (locatedBlock != null)
       metrics.incrAddBlockOps();
+    //HDFSRS_VC:return mvc
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
     return locatedBlock;
   }
 
@@ -635,7 +650,8 @@ class NameNodeRpcServer implements NamenodeProtocols {
    * The client needs to give up on the block.
    */
   @Override // ClientProtocol
-  public void abandonBlock(ExtendedBlock b, String src, String holder)
+  public void abandonBlock(ExtendedBlock b, String src, String holder,
+          VectorClock mvc/*message vector clock*/)
       throws IOException {
     if(stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*BLOCK* NameNode.abandonBlock: "
@@ -644,18 +660,25 @@ class NameNodeRpcServer implements NamenodeProtocols {
     if (!namesystem.abandonBlock(b, src, holder)) {
       throw new IOException("Cannot abandon block during write to " + src);
     }
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
   }
 
   @Override // ClientProtocol
   //HDFSRS_RWAPI:Now the last block can be any block in the middle of the file
   public boolean complete(String src, String clientName,
-                          ExtendedBlock last,  long fileId)
+                          ExtendedBlock last,  long fileId, VectorClock mvc)
       throws IOException {
     if(stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*DIR* NameNode.complete: "
           + src + " fileId=" + fileId +" for " + clientName);
     }
-    return namesystem.completeFile(src, clientName, last, fileId);
+    boolean bRet = namesystem.completeFile(src, clientName, last, fileId);
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
+    return bRet;
   }
 
   /**
@@ -701,7 +724,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     
   @Deprecated
   @Override // ClientProtocol
-  public boolean rename(String src, String dst) throws IOException {
+  public boolean rename(String src, String dst, VectorClock mvc) throws IOException {
     if(stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*DIR* NameNode.rename: " + src + " to " + dst);
     }
@@ -713,16 +736,22 @@ class NameNodeRpcServer implements NamenodeProtocols {
     if (ret) {
       metrics.incrFilesRenamed();
     }
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
     return ret;
   }
   
   @Override // ClientProtocol
-  public void concat(String trg, String[] src) throws IOException {
+  public void concat(String trg, String[] src, VectorClock mvc) throws IOException {
     namesystem.concat(trg, src);
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
   }
   
   @Override // ClientProtocol
-  public void rename2(String src, String dst, Options.Rename... options)
+  public void rename2(String src, String dst, VectorClock mvc, Options.Rename... options)
       throws IOException {
     if(stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*DIR* NameNode.rename: " + src + " to " + dst);
@@ -733,10 +762,13 @@ class NameNodeRpcServer implements NamenodeProtocols {
     }
     namesystem.renameTo(src, dst, options);
     metrics.incrFilesRenamed();
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
   }
 
   @Override // ClientProtocol
-  public boolean delete(String src, boolean recursive) throws IOException {
+  public boolean delete(String src, boolean recursive, VectorClock mvc) throws IOException {
     if (stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*DIR* Namenode.delete: src=" + src
           + ", recursive=" + recursive);
@@ -744,6 +776,9 @@ class NameNodeRpcServer implements NamenodeProtocols {
     boolean ret = namesystem.delete(src, recursive);
     if (ret) 
       metrics.incrDeleteFileOps();
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
     return ret;
   }
 
@@ -759,7 +794,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
   }
     
   @Override // ClientProtocol
-  public boolean mkdirs(String src, FsPermission masked, boolean createParent)
+  public boolean mkdirs(String src, FsPermission masked, boolean createParent, VectorClock mvc)
       throws IOException {
     if(stateChangeLog.isDebugEnabled()) {
       stateChangeLog.debug("*DIR* NameNode.mkdirs: " + src);
@@ -768,9 +803,13 @@ class NameNodeRpcServer implements NamenodeProtocols {
       throw new IOException("mkdirs: Pathname too long.  Limit " 
                             + MAX_PATH_LENGTH + " characters, " + MAX_PATH_DEPTH + " levels.");
     }
-    return namesystem.mkdirs(src,
+    boolean bRet = namesystem.mkdirs(src,
         new PermissionStatus(getRemoteUser().getShortUserName(),
             null, masked), createParent);
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
+    return bRet;
   }
 
   @Override // ClientProtocol
@@ -950,9 +989,12 @@ class NameNodeRpcServer implements NamenodeProtocols {
   }
   
   @Override // ClientProtocol
-  public void fsync(String src, String clientName, long lastBlockLength)
+  public void fsync(String src, String clientName, long lastBlockLength, VectorClock mvc)
       throws IOException {
     namesystem.fsync(src, clientName, lastBlockLength);
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
   }
 
   @Override // ClientProtocol
@@ -1390,7 +1432,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
   //HDFSRS{
   @Override
   public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
-      int bIndex, long fileId, String clientName)
+      int bIndex, long fileId, String clientName, VectorClock mvc)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException{
@@ -1402,6 +1444,9 @@ class NameNodeRpcServer implements NamenodeProtocols {
           + " for " + clientName);
     }
     LocatedBlock locatedBlock = namesystem.overwriteBlock(src, previous, bIndex, fileId, clientName);
+    //HDFSRS_VC: tick on recv.
+    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    //HDFSRS_VC
     return locatedBlock;
   }
 

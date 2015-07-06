@@ -48,6 +48,8 @@ import org.apache.hadoop.hdfs.server.protocol.StorageReport;
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * This is a service provider interface for the underlying storage that
  * stores replicas for a data node.
@@ -181,20 +183,22 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * Creates a temporary replica and returns the meta information of the replica
    * 
    * @param b block
+   * @param mvc Message VectorClock
    * @return the meta info of the replica which is being written to
    * @throws IOException if an error occurs
    */
-  public Replica createTemporary(ExtendedBlock b
+  public Replica createTemporary(ExtendedBlock b, VectorClock mvc
       ) throws IOException;
 
   /**
    * Creates a RBW replica and returns the meta info of the replica
    * 
    * @param b block
+   * @param mvc messge vector clock, in/out parameter.
    * @return the meta info of the replica which is being written to
    * @throws IOException if an error occurs
    */
-  public Replica createRbw(ExtendedBlock b
+  public Replica createRbw(ExtendedBlock b, VectorClock mvc/*HDFSRS_VC*/
       ) throws IOException;
 
   /**
@@ -309,9 +313,10 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * Invalidates the specified blocks
    * @param bpid Block pool Id
    * @param invalidBlks - the blocks to be invalidated
+   * @param mvc Message Vector Clock, I/O parameter
    * @throws IOException
    */
-  public void invalidate(String bpid, Block invalidBlks[]) throws IOException;
+  public void invalidate(String bpid, Block invalidBlks[], VectorClock mvc) throws IOException;
 
   /**
    * Caches the specified blocks
@@ -388,6 +393,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * add new block pool ID
    * @param bpid Block pool Id
    * @param conf Configuration
+   * We get rank of the process from conf.get("dfs.vcpid")
    */
   public void addBlockPool(String bpid, Configuration conf) throws IOException;
   

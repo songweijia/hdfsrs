@@ -27,12 +27,19 @@ import java.util.Arrays;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
+
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_OOB_TIMEOUT_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_OOB_TIMEOUT_DEFAULT;
+
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.PipelineAckProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.PipelineAckProto.Builder;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status;
+import org.apache.hadoop.hdfs.protocolPB.PBHelper;
+
 import com.google.protobuf.TextFormat;
+
+import edu.cornell.cs.sa.VectorClock;
 
 /** Pipeline Acknowledgment **/
 @InterfaceAudience.Private
@@ -66,7 +73,7 @@ public class PipelineAck {
    * @param replies an array of replies
    */
   public PipelineAck(long seqno, Status[] replies) {
-    this(seqno, replies, 0L);
+    this(seqno, replies, 0L, null/*HDFSRS_VC*/);
   }
 
   /**
@@ -75,12 +82,15 @@ public class PipelineAck {
    * @param replies an array of replies
    * @param downstreamAckTimeNanos ack RTT in nanoseconds, 0 if no next DN in pipeline
    */
-  public PipelineAck(long seqno, Status[] replies, long downstreamAckTimeNanos) {
-    proto = PipelineAckProto.newBuilder()
+  public PipelineAck(long seqno, Status[] replies, 
+  		long downstreamAckTimeNanos, VectorClock mvc/*HDFSRS_VC*/) {
+    Builder builder = PipelineAckProto.newBuilder()
       .setSeqno(seqno)
       .addAllStatus(Arrays.asList(replies))
-      .setDownstreamAckTimeNanos(downstreamAckTimeNanos)
-      .build();
+      .setDownstreamAckTimeNanos(downstreamAckTimeNanos);
+    if(mvc!=null)
+    	builder.setMvc(PBHelper.convert(mvc));
+    proto = builder.build();
   }
   
   /**
@@ -113,6 +123,16 @@ public class PipelineAck {
    */
   public long getDownstreamAckTimeNanos() {
     return proto.getDownstreamAckTimeNanos();
+  }
+  
+  /**
+   * Get the message vector clock. 
+   * @return
+   */
+  public VectorClock getMvc(){
+  	if(proto.hasMvc())
+  		return PBHelper.convert(proto.getMvc());
+  	else return null;
   }
 
   /**

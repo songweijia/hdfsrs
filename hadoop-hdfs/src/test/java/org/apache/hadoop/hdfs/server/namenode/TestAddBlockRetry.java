@@ -50,6 +50,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import edu.cornell.cs.sa.VectorClock;
+
 /**
  * Race between two threads simultaneously calling
  * FSNamesystem.getAdditionalBlock().
@@ -59,6 +61,15 @@ public class TestAddBlockRetry {
 
   private static final short REPLICATION = 3;
 
+  static VectorClock vc = new VectorClock();
+  static VectorClock copyVC(){
+	  return new VectorClock(vc);
+  }
+  static void tickOn(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
+  }
+
+  
   private Configuration conf;
   private MiniDFSCluster cluster;
 
@@ -111,7 +122,7 @@ public class TestAddBlockRetry {
         if(count == 1) { // run second addBlock()
           LOG.info("Starting second addBlock for " + src);
           nn.addBlock(src, "clientName", null, null,
-              INodeId.GRANDFATHER_INODE_ID, null);
+              INodeId.GRANDFATHER_INODE_ID, null,null/*HDFSRS_VC*/);
           LocatedBlocks lbs = nn.getBlockLocations(src, 0, Long.MAX_VALUE);
           assertEquals("Must be one block", 1, lbs.getLocatedBlocks().size());
           lb2 = lbs.get(0);
@@ -125,14 +136,16 @@ public class TestAddBlockRetry {
         Mockito.anyLong(), Mockito.<List<String>>any());
 
     // create file
+    VectorClock mvc;
     nn.create(src, FsPermission.getFileDefault(),
         "clientName",
         new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE)),
-        true, (short)3, 1024);
+        true, (short)3, 1024, mvc=copyVC());
+    tickOn(mvc);
 
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
-    nn.addBlock(src, "clientName", null, null, INodeId.GRANDFATHER_INODE_ID, null);
+    nn.addBlock(src, "clientName", null, null, INodeId.GRANDFATHER_INODE_ID, null,null/*HDFSRS_VC*/);
 
     // check locations
     LocatedBlocks lbs = nn.getBlockLocations(src, 0, Long.MAX_VALUE);
@@ -153,20 +166,22 @@ public class TestAddBlockRetry {
     final String src = "/testAddBlockRetryShouldReturnBlockWithLocations";
     NamenodeProtocols nameNodeRpc = cluster.getNameNodeRpc();
     // create file
+    VectorClock mvc;
     nameNodeRpc.create(src, FsPermission.getFileDefault(), "clientName",
         new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE)), true,
-        (short) 3, 1024);
+        (short) 3, 1024, mvc=copyVC());
+    tickOn(mvc);
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
     LocatedBlock lb1 = nameNodeRpc.addBlock(src, "clientName", null, null,
-        INodeId.GRANDFATHER_INODE_ID, null);
+        INodeId.GRANDFATHER_INODE_ID, null,null/*HDFSRS_VC*/);
     assertTrue("Block locations should be present",
         lb1.getLocations().length > 0);
 
     cluster.restartNameNode();
     nameNodeRpc = cluster.getNameNodeRpc();
     LocatedBlock lb2 = nameNodeRpc.addBlock(src, "clientName", null, null,
-        INodeId.GRANDFATHER_INODE_ID, null);
+        INodeId.GRANDFATHER_INODE_ID, null,null/*HDFSRS_VC*/);
     assertEquals("Blocks are not equal", lb1.getBlock(), lb2.getBlock());
     assertTrue("Wrong locations with retry", lb2.getLocations().length > 0);
   }

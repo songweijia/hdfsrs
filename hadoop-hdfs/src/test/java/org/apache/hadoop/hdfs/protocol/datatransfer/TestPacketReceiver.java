@@ -27,6 +27,7 @@ import org.apache.hadoop.hdfs.AppendTestUtil;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import edu.cornell.cs.sa.VectorClock;
 import static org.junit.Assert.*;
 
 public class TestPacketReceiver {
@@ -37,10 +38,11 @@ public class TestPacketReceiver {
   private byte[] prepareFakePacket(byte[] data, byte[] sums) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
+    VectorClock vc = new VectorClock();
     
     int packetLen = data.length + sums.length + 4;
     PacketHeader header = new PacketHeader(
-        packetLen, OFFSET_IN_BLOCK, SEQNO, false, data.length, false);
+        packetLen, OFFSET_IN_BLOCK, SEQNO, false, data.length, false, vc/*VectorClock*/);
     header.write(dos);
     
     dos.write(sums);
