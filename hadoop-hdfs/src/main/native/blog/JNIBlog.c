@@ -212,7 +212,7 @@ block_t *find_or_create_snapshot_block(filesystem_t *filesystem, snapshot_t *sna
 void check_and_increase_log_length(filesystem_t *filesystem)
 {
   if (filesystem->log_length == filesystem->log_cap) {
-    filesystem->log = (log_t *) realloc(filesystem, filesystem->log_cap*2);
+    filesystem->log = (log_t *) realloc(filesystem->log, filesystem->log_cap*2*sizeof(log_t));
     if (filesystem->log == NULL) {
       perror("Error: ");
       exit(1);
