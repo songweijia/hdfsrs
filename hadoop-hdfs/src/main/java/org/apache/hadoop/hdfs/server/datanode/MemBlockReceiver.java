@@ -332,7 +332,8 @@ class MemBlockReceiver extends BlockReceiver {
           
           //dx.2 write data to disk.
           int startByteToDisk = 0;
-          out.write(dataBuf, startByteToDisk, len);//packet len
+          VCOutputStream vcout = (VCOutputStream)out;
+          vcout.write(mvc,dataBuf, startByteToDisk, len);//packet len
           
           /// dx.7 flush entire packet, sync if requested
           flushOrSync(syncBlock);
