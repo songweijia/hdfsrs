@@ -1,5 +1,4 @@
 #include <jni.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -54,7 +53,7 @@ void print_block(block_t *block, log_t *log, int page_size)
   printf("ID: %ld\n", block->id);
   printf("Length: %d\n", block->length);
   printf("Capacity: %d\n", block->cap);
-  for (i = 0; i < (int) ceil(((double) block->length)/((double) page_size)); i++) {
+  for (i = 0; i <= (block->length - 1) / page_size; i++) {
     printf("Page %d\n", i);
     print_page(block->pages[i]);
   }
@@ -120,7 +119,7 @@ void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
 }
 
 
-block_t *create_block(block_t **block_map, int64_t block_id)
+block_t *allocate_block(block_t **block_map, int64_t block_id)
 {
   block_t *last_block = NULL;
   int block_pos = block_id % BLOCK_MAP_SIZE;
@@ -165,7 +164,7 @@ snapshot_t *find_snapshot(snapshot_t **snapshot_map, int64_t snapshot_id)
   return snapshot;
 }
 
-block_t *find_or_create_snapshot_block(filesystem_t *filesystem, snapshot_t *snapshot, int64_t block_id)
+block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *snapshot, int64_t block_id)
 {
   log_t *log = filesystem->log;
   log_t *cur_log;
@@ -173,7 +172,7 @@ block_t *find_or_create_snapshot_block(filesystem_t *filesystem, snapshot_t *sna
   block_t *block = find_block(snapshot->block_map, block_id);
 
   if (block == NULL) {
-    block = create_block(snapshot->block_map, block_id);
+    block = allocate_block(snapshot->block_map, block_id);
     log_id = snapshot->last_entry;
     while ((log_id >= 0) && (log[log_id].block_id != block_id))
       log_id--;
@@ -189,7 +188,7 @@ block_t *find_or_create_snapshot_block(filesystem_t *filesystem, snapshot_t *sna
       block->last_entry = NULL;
     } else {
       block->length = log[log_id].block_length;
-      block->cap = (int) ceil(((double) block->length) / ((double) filesystem->page_size));
+      block->cap = (block->length - 1) / filesystem->page_size + 1;
       block->pages = (page_t**) malloc(block->cap*sizeof(page_t*));
       for (i = 0; i < block->cap; i++)
         block->pages[i] = NULL;
@@ -212,7 +211,7 @@ block_t *find_or_create_snapshot_block(filesystem_t *filesystem, snapshot_t *sna
 void check_and_increase_log_length(filesystem_t *filesystem)
 {
   if (filesystem->log_length == filesystem->log_cap) {
-    filesystem->log = (log_t *) realloc(filesystem->log, filesystem->log_cap*2*sizeof(log_t));
+    filesystem->log = (log_t *) realloc(filesystem, filesystem->log_cap*2*sizeof(log_t));
     if (filesystem->log == NULL) {
       perror("Error: ");
       exit(1);
@@ -345,7 +344,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   
   // Create a new block.;
   filesystem = get_filesystem(env, thisObj);
-  new_block = create_block(filesystem->block_map, (int64_t) blockId);
+  new_block = allocate_block(filesystem->block_map, (int64_t) blockId);
   if (new_block == NULL) {
     fprintf(stderr, "Filesystem already contains block %ld.\n", blockId);
     return -1;
@@ -462,7 +461,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
       fprintf(stderr, "Snapshot with id %ld is not present.\n", snapshotId);
       return -2;
     }
-    block = find_or_create_snapshot_block(filesystem, snapshot, blockId);
+    block = find_or_allocate_snapshot_block(filesystem, snapshot, blockId);
     // If block did not exist at this point.
     if (block->cap == -1) {
       fprintf(stderr, "Block with id %ld is not present at snapshot with rtc %ld.\n", blockId, snapshotId);
@@ -538,7 +537,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes
       fprintf(stderr, "Snapshot with id %ld is not present.\n", snapshotId);
       return -2;
     }
-    block = find_or_create_snapshot_block(filesystem, snapshot, blockId);
+    block = find_or_allocate_snapshot_block(filesystem, snapshot, blockId);
     // If block did not exist at this point.
     if (block->cap == -1) {
       fprintf(stderr, "Block with id %ld is not present at snapshot with rtc %ld.\n", blockId, snapshotId);
@@ -564,7 +563,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   int first_page, last_page, new_pages_length, new_pages_capacity, page_offset, buffer_offset, write_length;
   int last_page_length, i;
   int64_t log_pos;
-  // char *data,
   char *pdata;
   
   // Find the corresponding block.
@@ -582,22 +580,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     return -3;
   }
   
-  // Take data to write.
-  // data = (char *) malloc(length*sizeof(char));
-  // (*env)->GetByteArrayRegion (env, buf, bufOfst, length, (jbyte *) data);
-  // cur_data = data;
 
   // Create the new pages.
   buffer_offset = (int) bufOfst;
-  //first_page = buffer_offset / filesystem->page_size;
   first_page = blkOfst / filesystem->page_size;
-  //page_offset = buffer_offset % filesystem->page_size;
+  last_page = (blkOfst + length - 1) / filesystem->page_size;
   page_offset = blkOfst % filesystem->page_size;
-  if (length < filesystem->page_size - page_offset) {
-    last_page = first_page;
-  } else {
-    last_page = first_page + ceil(((double) (length-page_offset)) / ((double) filesystem->page_size));
-  }
   new_pages_length = last_page - first_page + 1;
   new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
   new_pages[0].data = (char *) malloc(filesystem->page_size*sizeof(char));
@@ -641,7 +629,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     new_pages_capacity = 1;
   else
     new_pages_capacity = block->cap;
-  while (ceil(((double) (block->length)) / ((double) filesystem->page_size)) > new_pages_capacity)
+  while ((block->length - 1) / filesystem->page_size >= new_pages_capacity)
     new_pages_capacity *= 2;
   if (new_pages_capacity > block->cap) {
     block->cap = new_pages_capacity;

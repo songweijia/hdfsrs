@@ -224,14 +224,14 @@ public class MemDatasetManager {
     }
 
 	  @Override
-	  public void write(VectorClock mvc, byte[] b, int off, int len)
-			throws IOException {
-		  int ret = blog.writeBlock(mvc, blockId, offset, off, len, b);
-		  if(ret < 0)
-			  throw new IOException("error in JNIBlog.write("+mvc+","+
-	    			blockId+","+offset+","+off+","+len+",b):"+ret);
-		  else
-		  	offset += len;
+    public void write(VectorClock mvc, byte[] b, int off, int len)
+    throws IOException {
+      int ret = blog.writeBlock(mvc, blockId, offset, off, len, b);
+      if(ret < 0)
+        throw new IOException("error in JNIBlog.write("+mvc+","+
+          blockId+","+offset+","+off+","+len+",b):"+ret);
+      else
+        offset += len;
 	  } 
   }
   
