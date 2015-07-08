@@ -94,11 +94,12 @@ public class TestDFSIO implements Tool {
   private static final long MEGA = ByteMultiple.MB.value();
   private static final int DEFAULT_NR_BYTES = 1;
   private static final int DEFAULT_NR_FILES = 4;
+  private static final int DEFAULT_RW_BYTES = 256;
   private static final String USAGE =
                     "Usage: " + TestDFSIO.class.getSimpleName() +
                     " [genericOptions]" +
                     " -read [-random | -backward | -skip [-skipSize Size]] |" +
-                    " -write | -append | -clean" +
+                    " -write | -randomwrite | -append | -clean" +
                     " [-compression codecClassName]" +
                     " [-nrFiles N]" +
                     " [-size Size[B|KB|MB|GB|TB]]" +
@@ -117,6 +118,7 @@ public class TestDFSIO implements Tool {
   private static enum TestType {
     TEST_TYPE_READ("read"),
     TEST_TYPE_WRITE("write"),
+    TEST_TYPE_WRITE_RANDOM("random write"),
     TEST_TYPE_CLEANUP("cleanup"),
     TEST_TYPE_APPEND("append"),
     TEST_TYPE_READ_RANDOM("random read"),
@@ -377,6 +379,40 @@ public class TestDFSIO implements Tool {
     }
   }
 
+  public static class RandomWriteMapper extends WriteMapper{
+  	
+  	Random randOffset = new Random(System.nanoTime());
+  	long fileSize;
+  	
+  	@Override //WriteMapper
+  	public Closeable getIOStream(String name) throws IOException{
+  		Path filePath = new Path(getDataDir(getConf()),name);
+  		OutputStream out = fs.append(filePath);
+  		this.fileSize = fs.getFileStatus(filePath).getLen();
+  		if(compressionCodec != null)
+  			out = compressionCodec.createOutputStream(out);
+  		LOG.info("out = "+out.getClass().getName());
+  		return out;
+  	}
+  	
+  	public Long doIO(Reporter reporter,
+  			String name, long totalSize)throws IOException {
+  		FSDataOutputStream out = (FSDataOutputStream)this.stream;
+  		
+      long nrRemaining;
+      for (nrRemaining = totalSize; nrRemaining > 0; nrRemaining -= bufferSize) {
+        int curSize = (bufferSize < nrRemaining) ? bufferSize : (int)nrRemaining;
+        long pos = (long)randOffset.nextInt(Math.max(0,(int)this.fileSize - bufferSize));
+        out.seek(pos);
+        out.write(buffer, 0, curSize);
+        reporter.setStatus("randomly writing " + name + "@" + 
+                           (totalSize - nrRemaining) + "/" + totalSize 
+                           + " ::host = " + hostName);
+      }
+      return Long.valueOf(totalSize);
+  	}
+  }
+  
   /**
    * Write mapper class.
    */
@@ -423,6 +459,11 @@ public class TestDFSIO implements Tool {
     fs.delete(writeDir, true);
     
     runIOTest(WriteMapper.class, writeDir);
+  }
+  
+  private void randomwriteTest(FileSystem fs) throws IOException{
+  	Path writeDir = getWriteDir(config);
+  	runIOTest(RandomWriteMapper.class, writeDir);
   }
   
   private void runIOTest(
@@ -680,6 +721,8 @@ public class TestDFSIO implements Tool {
         testType = TestType.TEST_TYPE_READ;
       } else if (args[i].equals("-write")) {
         testType = TestType.TEST_TYPE_WRITE;
+      } else if (args[i].equals("-randomwrite")){
+      	testType = TestType.TEST_TYPE_WRITE_RANDOM;
       } else if (args[i].equals("-append")) {
         testType = TestType.TEST_TYPE_APPEND;
       } else if (args[i].equals("-random")) {
@@ -754,6 +797,9 @@ public class TestDFSIO implements Tool {
     case TEST_TYPE_WRITE:
       writeTest(fs);
       break;
+    case TEST_TYPE_WRITE_RANDOM:
+    	randomwriteTest(fs);
+    	break;
     case TEST_TYPE_READ:
       readTest(fs);
       break;
