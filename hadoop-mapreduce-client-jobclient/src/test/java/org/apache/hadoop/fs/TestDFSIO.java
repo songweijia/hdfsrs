@@ -57,6 +57,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.apache.hadoop.fs.FSDataOutputStream;
 
 /**
  * Distributed i/o benchmark.
@@ -184,6 +185,9 @@ public class TestDFSIO implements Tool {
   }
   private static Path getWriteDir(Configuration conf) {
     return new Path(getBaseDir(conf), "io_write");
+  }
+  private static Path getRandomWriteDir(Configuration conf) {
+    return new Path(getBaseDir(conf), "io_random_write");
   }
   private static Path getReadDir(Configuration conf) {
     return new Path(getBaseDir(conf), "io_read");
@@ -462,8 +466,8 @@ public class TestDFSIO implements Tool {
   }
   
   private void randomwriteTest(FileSystem fs) throws IOException{
-  	Path writeDir = getWriteDir(config);
-  	runIOTest(RandomWriteMapper.class, writeDir);
+    Path writeDir = getRandomWriteDir(config);
+    runIOTest(RandomWriteMapper.class, writeDir);
   }
   
   private void runIOTest(
@@ -910,6 +914,8 @@ public class TestDFSIO implements Tool {
     switch(testType) {
     case TEST_TYPE_WRITE:
       return new Path(getWriteDir(config), "part-00000");
+    case TEST_TYPE_WRITE_RANDOM:
+      return new Path(getRandomWriteDir(config), "part-00000");
     case TEST_TYPE_APPEND:
       return new Path(getAppendDir(config), "part-00000");
     case TEST_TYPE_READ:
