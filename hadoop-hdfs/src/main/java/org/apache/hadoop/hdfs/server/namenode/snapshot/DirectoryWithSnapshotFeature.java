@@ -194,7 +194,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
     private final ChildrenDiff diff;
     private boolean isSnapshotRoot = false;
     
-    private DirectoryDiff(int snapshotId, INodeDirectory dir) {
+    private DirectoryDiff(long snapshotId, INodeDirectory dir) {
       super(snapshotId, null, null);
 
       this.childrenSize = dir.getChildrenList(Snapshot.CURRENT_STATE_ID).size();
@@ -202,7 +202,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
     }
 
     /** Constructor used by FSImage loading */
-    DirectoryDiff(int snapshotId, INodeDirectoryAttributes snapshotINode,
+    DirectoryDiff(long snapshotId, INodeDirectoryAttributes snapshotINode,
         DirectoryDiff posteriorDiff, int childrenSize, List<INode> createdList,
         List<INode> deletedList, boolean isSnapshotRoot) {
       super(snapshotId, snapshotINode, posteriorDiff);
@@ -329,7 +329,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
       extends AbstractINodeDiffList<INodeDirectory, INodeDirectoryAttributes, DirectoryDiff> {
 
     @Override
-    DirectoryDiff createDiff(int snapshot, INodeDirectory currentDir) {
+    DirectoryDiff createDiff(long snapshot, INodeDirectory currentDir) {
       return new DirectoryDiff(snapshot, currentDir);
     }
 
@@ -380,8 +380,8 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
   /**
    * Destroy a subtree under a DstReference node.
    */
-  public static void destroyDstSubtree(INode inode, final int snapshot,
-      final int prior, final BlocksMapUpdateInfo collectedBlocks,
+  public static void destroyDstSubtree(INode inode, final long snapshot,
+      final long prior, final BlocksMapUpdateInfo collectedBlocks,
       final List<INode> removedINodes) throws QuotaExceededException {
     Preconditions.checkArgument(prior != Snapshot.NO_SNAPSHOT_ID);
     if (inode.isReference()) {
@@ -440,7 +440,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
    * @return Quota usage update.
    */
   private static Quota.Counts cleanDeletedINode(INode inode,
-      final int post, final int prior,
+      final long post, final long prior,
       final BlocksMapUpdateInfo collectedBlocks,
       final List<INode> removedINodes, final boolean countDiffChange)
       throws QuotaExceededException {
@@ -497,7 +497,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
   }
 
   /** @return the last snapshot. */
-  public int getLastSnapshotId() {
+  public long getLastSnapshotId() {
     return diffs.getLastSnapshotId();
   }
 
@@ -522,7 +522,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
    * to make sure that parent is in the given snapshot "latest".
    */
   public boolean addChild(INodeDirectory parent, INode inode,
-      boolean setModTime, int latestSnapshotId) throws QuotaExceededException {
+      boolean setModTime, long latestSnapshotId) throws QuotaExceededException {
     ChildrenDiff diff = diffs.checkAndAddLatestSnapshotDiff(latestSnapshotId,
         parent).diff;
     int undoInfo = diff.create(inode);
@@ -540,7 +540,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
    * needs to make sure that parent is in the given snapshot "latest".
    */
   public boolean removeChild(INodeDirectory parent, INode child,
-      int latestSnapshotId) throws QuotaExceededException {
+      long latestSnapshotId) throws QuotaExceededException {
     // For a directory that is not a renamed node, if isInLatestSnapshot returns
     // false, the directory is not in the latest snapshot, thus we do not need
     // to record the removed child in any snapshot.
@@ -571,14 +571,14 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
    *         for the snapshot and return it. 
    */
   public ReadOnlyList<INode> getChildrenList(INodeDirectory currentINode,
-      final int snapshotId) {
+      final long snapshotId) {
     final DirectoryDiff diff = diffs.getDiffById(snapshotId);
     return diff != null ? diff.getChildrenList(currentINode) : currentINode
         .getChildrenList(Snapshot.CURRENT_STATE_ID);
   }
   
   public INode getChild(INodeDirectory currentINode, byte[] name,
-      int snapshotId) {
+      long snapshotId) {
     final DirectoryDiff diff = diffs.getDiffById(snapshotId);
     return diff != null ? diff.getChild(name, true, currentINode)
         : currentINode.getChild(name, Snapshot.CURRENT_STATE_ID);
@@ -586,7 +586,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
   
   /** Used to record the modification of a symlink node */
   public INode saveChild2Snapshot(INodeDirectory currentINode,
-      final INode child, final int latestSnapshotId, final INode snapshotCopy)
+      final INode child, final long latestSnapshotId, final INode snapshotCopy)
       throws QuotaExceededException {
     Preconditions.checkArgument(!child.isDirectory(),
         "child is a directory, child=%s", child);
@@ -704,7 +704,7 @@ public class DirectoryWithSnapshotFeature implements INode.Feature {
   }
 
   public Quota.Counts cleanDirectory(final INodeDirectory currentINode,
-      final int snapshot, int prior,
+      final long snapshot, long prior,
       final BlocksMapUpdateInfo collectedBlocks,
       final List<INode> removedINodes, final boolean countDiffChange)
       throws QuotaExceededException {

@@ -157,7 +157,7 @@ public class FSImageFormat {
     /** The MD5 sum of the loaded file */
     private MD5Hash imgDigest;
     
-    private Map<Integer, Snapshot> snapshotMap = null;
+    private Map<Long, Snapshot> snapshotMap = null;
     private final ReferenceMap referenceMap = new ReferenceMap();
 
     Loader(Configuration conf, FSNamesystem namesystem) {

@@ -34,13 +34,13 @@ public class FileDiff extends
   /** The file size at snapshot creation time. */
   private final long fileSize;
 
-  FileDiff(int snapshotId, INodeFile file) {
+  FileDiff(long snapshotId, INodeFile file) {
     super(snapshotId, null, null);
     fileSize = file.computeFileSize();
   }
 
   /** Constructor used by FSImage loading */
-  FileDiff(int snapshotId, INodeFileAttributes snapshotINode,
+  FileDiff(long snapshotId, INodeFileAttributes snapshotINode,
       FileDiff posteriorDiff, long fileSize) {
     super(snapshotId, snapshotINode, posteriorDiff);
     this.fileSize = fileSize;

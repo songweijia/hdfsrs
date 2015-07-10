@@ -79,12 +79,12 @@ public class FSImageFormatPBSnapshot {
     private final FSNamesystem fsn;
     private final FSDirectory fsDir;
     private final FSImageFormatProtobuf.Loader parent;
-    private final Map<Integer, Snapshot> snapshotMap;
+    private final Map<Long, Snapshot> snapshotMap;
 
     public Loader(FSNamesystem fsn, FSImageFormatProtobuf.Loader parent) {
       this.fsn = fsn;
       this.fsDir = fsn.getFSDirectory();
-      this.snapshotMap = new HashMap<Integer, Snapshot>();
+      this.snapshotMap = new HashMap<Long, Snapshot>();
       this.parent = parent;
     }
 
@@ -158,7 +158,7 @@ public class FSImageFormatPBSnapshot {
             .parseDelimitedFrom(in);
         INodeDirectory root = loadINodeDirectory(pbs.getRoot(),
             parent.getLoaderContext());
-        int sid = pbs.getSnapshotId();
+        long sid = pbs.getSnapshotId();
         INodeDirectorySnapshottable parent = (INodeDirectorySnapshottable) fsDir
             .getInode(root.getId()).asDirectory();
         Snapshot snapshot = new Snapshot(sid, root, parent);
@@ -293,7 +293,7 @@ public class FSImageFormatPBSnapshot {
         // load a directory diff
         SnapshotDiffSection.DirectoryDiff diffInPb = SnapshotDiffSection.
             DirectoryDiff.parseDelimitedFrom(in);
-        final int snapshotId = diffInPb.getSnapshotId();
+        final long snapshotId = diffInPb.getSnapshotId();
         final Snapshot snapshot = snapshotMap.get(snapshotId);
         int childrenSize = diffInPb.getChildrenSize();
         boolean useRoot = diffInPb.getIsSnapshotRoot();

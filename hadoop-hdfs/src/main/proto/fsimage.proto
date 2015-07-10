@@ -194,9 +194,9 @@ message INodeReferenceSection {
     // local name recorded in WithName
     optional bytes name = 2;
     // recorded in DstReference
-    optional uint32 dstSnapshotId = 3;
+    optional uint64 dstSnapshotId = 3;
     // recorded in WithName
-    optional uint32 lastSnapshotId = 4;
+    optional uint64 lastSnapshotId = 4;
   }
   // repeated INodeReference...
 }
@@ -207,7 +207,7 @@ message INodeReferenceSection {
  */
 message SnapshotSection {
   message Snapshot {
-    optional uint32 snapshotId = 1;
+    optional uint64 snapshotId = 1;
     // Snapshot root
     optional INodeSection.INode root = 2;
   }
@@ -229,7 +229,7 @@ message SnapshotDiffSection {
   }
 
   message DirectoryDiff {
-    optional uint32 snapshotId = 1;
+    optional uint64 snapshotId = 1;
     optional uint32 childrenSize = 2;
     optional bool isSnapshotRoot = 3;
     optional bytes name = 4;
@@ -242,7 +242,7 @@ message SnapshotDiffSection {
   }
 
   message FileDiff {
-    optional uint32 snapshotId = 1;
+    optional uint64 snapshotId = 1;
     optional uint64 fileSize = 2;
     optional bytes name = 3;
     optional INodeSection.INodeFile snapshotCopy = 4;

@@ -78,8 +78,8 @@ public class FileWithSnapshotFeature implements INode.Feature {
     return (isCurrentFileDeleted()? "(DELETED), ": ", ") + diffs;
   }
   
-  public Quota.Counts cleanFile(final INodeFile file, final int snapshotId,
-      int priorSnapshotId, final BlocksMapUpdateInfo collectedBlocks,
+  public Quota.Counts cleanFile(final INodeFile file, final long snapshotId,
+      long priorSnapshotId, final BlocksMapUpdateInfo collectedBlocks,
       final List<INode> removedINodes, final boolean countDiffChange)
       throws QuotaExceededException {
     if (snapshotId == Snapshot.CURRENT_STATE_ID) {

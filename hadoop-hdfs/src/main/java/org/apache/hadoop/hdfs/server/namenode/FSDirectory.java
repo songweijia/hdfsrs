@@ -665,7 +665,7 @@ public class FSDirectory implements Closeable {
     // check srcChild for reference
     final INodeReference.WithCount withCount;
     Quota.Counts oldSrcCounts = Quota.Counts.newInstance();
-    int srcRefDstSnapshot = srcChildIsReference ? srcChild.asReference()
+    long srcRefDstSnapshot = srcChildIsReference ? srcChild.asReference()
         .getDstSnapshotId() : Snapshot.CURRENT_STATE_ID;
     if (isSrcInSnapshot) {
       final INodeReference.WithName withName = 
@@ -711,7 +711,7 @@ public class FSDirectory implements Closeable {
         toDst = srcChild;
       } else {
         withCount.getReferredINode().setLocalName(dstChildName);
-        int dstSnapshotId = dstIIP.getLatestSnapshotId();
+        long dstSnapshotId = dstIIP.getLatestSnapshotId();
         final INodeReference.DstReference ref = new INodeReference.DstReference(
             dstParent.asDirectory(), withCount, dstSnapshotId);
         toDst = ref;
@@ -915,7 +915,7 @@ public class FSDirectory implements Closeable {
     
     // check srcChild for reference
     final INodeReference.WithCount withCount;
-    int srcRefDstSnapshot = srcChildIsReference ? srcChild.asReference()
+    long srcRefDstSnapshot = srcChildIsReference ? srcChild.asReference()
         .getDstSnapshotId() : Snapshot.CURRENT_STATE_ID;
     Quota.Counts oldSrcCounts = Quota.Counts.newInstance();    
     if (isSrcInSnapshot) {
@@ -969,7 +969,7 @@ public class FSDirectory implements Closeable {
         toDst = srcChild;
       } else {
         withCount.getReferredINode().setLocalName(dstChildName);
-        int dstSnapshotId = dstIIP.getLatestSnapshotId();
+        long dstSnapshotId = dstIIP.getLatestSnapshotId();
         final INodeReference.DstReference ref = new INodeReference.DstReference(
             dstIIP.getINode(-2).asDirectory(), withCount, dstSnapshotId);
         toDst = ref;
@@ -1187,7 +1187,7 @@ public class FSDirectory implements Closeable {
     if (inode == null) {
       throw new FileNotFoundException("File does not exist: " + src);
     }
-    int snapshotId = inodesInPath.getLatestSnapshotId();
+    long snapshotId = inodesInPath.getLatestSnapshotId();
     inode.setPermission(permissions, snapshotId);
   }
 
@@ -1258,12 +1258,12 @@ public class FSDirectory implements Closeable {
     final INode[] trgINodes = trgIIP.getINodes();
     final INodeFile trgInode = trgIIP.getLastINode().asFile();
     INodeDirectory trgParent = trgINodes[trgINodes.length-2].asDirectory();
-    final int trgLatestSnapshot = trgIIP.getLatestSnapshotId();
+    final long trgLatestSnapshot = trgIIP.getLatestSnapshotId();
     
     final INodeFile [] allSrcInodes = new INodeFile[srcs.length];
     for(int i = 0; i < srcs.length; i++) {
       final INodesInPath iip = getINodesInPath4Write(srcs[i]);
-      final int latest = iip.getLatestSnapshotId();
+      final long latest = iip.getLatestSnapshotId();
       final INode inode = iip.getLastINode();
 
       // check if the file in the latest snapshot
@@ -1379,7 +1379,7 @@ public class FSDirectory implements Closeable {
         //not found or not a directory
         return false;
       }
-      final int s = inodesInPath.getPathSnapshotId();
+      final long s = inodesInPath.getPathSnapshotId();
       return !inode.asDirectory().getChildrenList(s).isEmpty();
     } finally {
       readUnlock();
@@ -1440,7 +1440,7 @@ public class FSDirectory implements Closeable {
     }
 
     // record modification
-    final int latestSnapshot = iip.getLatestSnapshotId();
+    final long latestSnapshot = iip.getLatestSnapshotId();
     targetNode = targetNode.recordModification(latestSnapshot);
     iip.setLastINode(targetNode);
 
@@ -1528,7 +1528,7 @@ public class FSDirectory implements Closeable {
         return getSnapshotsListing(srcs, startAfter);
       }
       final INodesInPath inodesInPath = rootDir.getLastINodeInPath(srcs, true);
-      final int snapshot = inodesInPath.getPathSnapshotId();
+      final long snapshot = inodesInPath.getPathSnapshotId();
       final INode targetNode = inodesInPath.getINode(0);
       if (targetNode == null)
         return null;
@@ -2324,7 +2324,7 @@ public class FSDirectory implements Closeable {
    */
   private long removeLastINode(final INodesInPath iip)
       throws QuotaExceededException {
-    final int latestSnapshot = iip.getLatestSnapshotId();
+    final long latestSnapshot = iip.getLatestSnapshotId();
     final INode last = iip.getLastINode();
     final INodeDirectory parent = iip.getINode(-2).asDirectory();
     if (!parent.removeChild(last, latestSnapshot)) {
@@ -2479,7 +2479,7 @@ public class FSDirectory implements Closeable {
         return null;
       }
 
-      final int latest = iip.getLatestSnapshotId();
+      final long latest = iip.getLatestSnapshotId();
       dirNode = dirNode.recordModification(latest);
       dirNode.setQuota(nsQuota, dsQuota);
       return dirNode;
@@ -2522,7 +2522,7 @@ public class FSDirectory implements Closeable {
    * Sets the access time on the file/directory. Logs it in the transaction log.
    */
   void setTimes(String src, INode inode, long mtime, long atime, boolean force,
-      int latestSnapshotId) throws QuotaExceededException {
+      long latestSnapshotId) throws QuotaExceededException {
     boolean status = false;
     writeLock();
     try {
@@ -2544,7 +2544,7 @@ public class FSDirectory implements Closeable {
   }
 
   private boolean unprotectedSetTimes(INode inode, long mtime,
-      long atime, boolean force, int latest) throws QuotaExceededException {
+      long atime, boolean force, long latest) throws QuotaExceededException {
     assert hasWriteLock();
     boolean status = false;
     if (mtime != -1) {
@@ -2592,7 +2592,7 @@ public class FSDirectory implements Closeable {
    * @throws IOException if any error occurs
    */
   private HdfsFileStatus createFileStatus(byte[] path, INode node,
-      boolean needLocation, int snapshot) throws IOException {
+      boolean needLocation, long snapshot) throws IOException {
     if (needLocation) {
       return createLocatedFileStatus(path, node, snapshot);
     } else {
@@ -2603,7 +2603,7 @@ public class FSDirectory implements Closeable {
    * Create FileStatus by file INode 
    */
    HdfsFileStatus createFileStatus(byte[] path, INode node,
-       int snapshot) {
+       long snapshot) {
      long size = 0;     // length is zero for directories
      short replication = 0;
      long blocksize = 0;
@@ -2636,7 +2636,7 @@ public class FSDirectory implements Closeable {
    * Create FileStatus with location info by file INode
    */
   private HdfsLocatedFileStatus createLocatedFileStatus(byte[] path,
-      INode node, int snapshot) throws IOException {
+      INode node, long snapshot) throws IOException {
     assert hasReadLock();
     long size = 0; // length is zero for directories
     short replication = 0;
@@ -2689,7 +2689,7 @@ public class FSDirectory implements Closeable {
    * @return FsPermission from inode, with ACL bit on if the inode has an ACL
    */
   private static FsPermission getPermissionForFileStatus(INode node,
-      int snapshot) {
+      long snapshot) {
     FsPermission perm = node.getFsPermission(snapshot);
     if (node.getAclFeature(snapshot) != null) {
       perm = new FsAclPermission(perm);
@@ -2763,7 +2763,7 @@ public class FSDirectory implements Closeable {
     assert hasWriteLock();
     INodesInPath iip = rootDir.getINodesInPath4Write(normalizePath(src), true);
     INode inode = resolveLastINode(src, iip);
-    int snapshotId = iip.getLatestSnapshotId();
+    long snapshotId = iip.getLatestSnapshotId();
     List<AclEntry> existingAcl = AclStorage.readINodeLogicalAcl(inode);
     List<AclEntry> newAcl = AclTransformation.mergeAclEntries(existingAcl,
       aclSpec);
@@ -2786,7 +2786,7 @@ public class FSDirectory implements Closeable {
     assert hasWriteLock();
     INodesInPath iip = rootDir.getINodesInPath4Write(normalizePath(src), true);
     INode inode = resolveLastINode(src, iip);
-    int snapshotId = iip.getLatestSnapshotId();
+    long snapshotId = iip.getLatestSnapshotId();
     List<AclEntry> existingAcl = AclStorage.readINodeLogicalAcl(inode);
     List<AclEntry> newAcl = AclTransformation.filterAclEntriesByAclSpec(
       existingAcl, aclSpec);
@@ -2809,7 +2809,7 @@ public class FSDirectory implements Closeable {
     assert hasWriteLock();
     INodesInPath iip = rootDir.getINodesInPath4Write(normalizePath(src), true);
     INode inode = resolveLastINode(src, iip);
-    int snapshotId = iip.getLatestSnapshotId();
+    long snapshotId = iip.getLatestSnapshotId();
     List<AclEntry> existingAcl = AclStorage.readINodeLogicalAcl(inode);
     List<AclEntry> newAcl = AclTransformation.filterDefaultAclEntries(
       existingAcl);
@@ -2831,7 +2831,7 @@ public class FSDirectory implements Closeable {
     assert hasWriteLock();
     INodesInPath iip = rootDir.getINodesInPath4Write(normalizePath(src), true);
     INode inode = resolveLastINode(src, iip);
-    int snapshotId = iip.getLatestSnapshotId();
+    long snapshotId = iip.getLatestSnapshotId();
     AclStorage.removeINodeAcl(inode, snapshotId);
   }
 
@@ -2856,7 +2856,7 @@ public class FSDirectory implements Closeable {
     assert hasWriteLock();
     INodesInPath iip = rootDir.getINodesInPath4Write(normalizePath(src), true);
     INode inode = resolveLastINode(src, iip);
-    int snapshotId = iip.getLatestSnapshotId();
+    long snapshotId = iip.getLatestSnapshotId();
     List<AclEntry> existingAcl = AclStorage.readINodeLogicalAcl(inode);
     List<AclEntry> newAcl = AclTransformation.replaceAclEntries(existingAcl,
       aclSpec);
@@ -2876,7 +2876,7 @@ public class FSDirectory implements Closeable {
       }
       INodesInPath iip = rootDir.getLastINodeInPath(srcs, true);
       INode inode = resolveLastINode(src, iip);
-      int snapshotId = iip.getPathSnapshotId();
+      long snapshotId = iip.getPathSnapshotId();
       List<AclEntry> acl = AclStorage.readINodeAcl(inode, snapshotId);
       return new AclStatus.Builder()
           .owner(inode.getUserName()).group(inode.getGroupName())

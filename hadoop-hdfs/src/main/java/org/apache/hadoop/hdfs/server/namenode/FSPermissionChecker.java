@@ -47,13 +47,13 @@ class FSPermissionChecker {
   static final Log LOG = LogFactory.getLog(UserGroupInformation.class);
 
   /** @return a string for throwing {@link AccessControlException} */
-  private String toAccessControlString(INode inode, int snapshotId,
+  private String toAccessControlString(INode inode, long snapshotId,
       FsAction access, FsPermission mode) {
     return toAccessControlString(inode, snapshotId, access, mode, null);
   }
 
   /** @return a string for throwing {@link AccessControlException} */
-  private String toAccessControlString(INode inode, int snapshotId,
+  private String toAccessControlString(INode inode, long snapshotId,
       FsAction access, FsPermission mode, List<AclEntry> featureEntries) {
     StringBuilder sb = new StringBuilder("Permission denied: ")
       .append("user=").append(user).append(", ")
@@ -160,7 +160,7 @@ class FSPermissionChecker {
     // check if (parentAccess != null) && file exists, then check sb
     // If resolveLink, the check is performed on the link target.
     final INodesInPath inodesInPath = root.getINodesInPath(path, resolveLink);
-    final int snapshotId = inodesInPath.getPathSnapshotId();
+    final long snapshotId = inodesInPath.getPathSnapshotId();
     final INode[] inodes = inodesInPath.getINodes();
     int ancestorIndex = inodes.length - 2;
     for(; ancestorIndex >= 0 && inodes[ancestorIndex] == null;
@@ -190,7 +190,7 @@ class FSPermissionChecker {
   }
 
   /** Guarded by {@link FSNamesystem#readLock()} */
-  private void checkOwner(INode inode, int snapshotId
+  private void checkOwner(INode inode, long snapshotId
       ) throws AccessControlException {
     if (inode != null && user.equals(inode.getUserName(snapshotId))) {
       return;
@@ -199,7 +199,7 @@ class FSPermissionChecker {
   }
 
   /** Guarded by {@link FSNamesystem#readLock()} */
-  private void checkTraverse(INode[] inodes, int last, int snapshotId
+  private void checkTraverse(INode[] inodes, int last, long snapshotId
       ) throws AccessControlException {
     for(int j = 0; j <= last; j++) {
       check(inodes[j], snapshotId, FsAction.EXECUTE);
@@ -207,7 +207,7 @@ class FSPermissionChecker {
   }
 
   /** Guarded by {@link FSNamesystem#readLock()} */
-  private void checkSubAccess(INode inode, int snapshotId, FsAction access
+  private void checkSubAccess(INode inode, long snapshotId, FsAction access
       ) throws AccessControlException {
     if (inode == null || !inode.isDirectory()) {
       return;
@@ -227,13 +227,13 @@ class FSPermissionChecker {
   }
 
   /** Guarded by {@link FSNamesystem#readLock()} */
-  private void check(INode[] inodes, int i, int snapshotId, FsAction access
+  private void check(INode[] inodes, int i, long snapshotId, FsAction access
       ) throws AccessControlException {
     check(i >= 0? inodes[i]: null, snapshotId, access);
   }
 
   /** Guarded by {@link FSNamesystem#readLock()} */
-  private void check(INode inode, int snapshotId, FsAction access
+  private void check(INode inode, long snapshotId, FsAction access
       ) throws AccessControlException {
     if (inode == null) {
       return;
@@ -251,7 +251,7 @@ class FSPermissionChecker {
     checkFsPermission(inode, snapshotId, access, mode);
   }
 
-  private void checkFsPermission(INode inode, int snapshotId, FsAction access,
+  private void checkFsPermission(INode inode, long snapshotId, FsAction access,
       FsPermission mode) throws AccessControlException {
     if (user.equals(inode.getUserName(snapshotId))) { //user class
       if (mode.getUserAction().implies(access)) { return; }
@@ -289,7 +289,7 @@ class FSPermissionChecker {
    * @param featureEntries List<AclEntry> ACL entries from AclFeature of inode
    * @throws AccessControlException if the ACL denies permission
    */
-  private void checkAccessAcl(INode inode, int snapshotId, FsAction access,
+  private void checkAccessAcl(INode inode, long snapshotId, FsAction access,
       FsPermission mode, List<AclEntry> featureEntries)
       throws AccessControlException {
     boolean foundMatch = false;
@@ -347,7 +347,7 @@ class FSPermissionChecker {
   }
 
   /** Guarded by {@link FSNamesystem#readLock()} */
-  private void checkStickyBit(INode parent, INode inode, int snapshotId
+  private void checkStickyBit(INode parent, INode inode, long snapshotId
       ) throws AccessControlException {
     if(!parent.getFsPermission(snapshotId).getStickyBit()) {
       return;

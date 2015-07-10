@@ -93,7 +93,7 @@ public class INodeMap {
         "", "", new FsPermission((short) 0)), 0, 0) {
       
       @Override
-      INode recordModification(int latestSnapshotId)
+      INode recordModification(long latestSnapshotId)
           throws QuotaExceededException {
         return null;
       }
@@ -106,7 +106,7 @@ public class INodeMap {
       
       @Override
       public Counts computeQuotaUsage(Counts counts, boolean useCache,
-          int lastSnapshotId) {
+          long lastSnapshotId) {
         return null;
       }
       
@@ -117,7 +117,7 @@ public class INodeMap {
       }
       
       @Override
-      public Counts cleanSubtree(int snapshotId, int priorSnapshotId,
+      public Counts cleanSubtree(long snapshotId, long priorSnapshotId,
           BlocksMapUpdateInfo collectedBlocks, List<INode> removedINodes,
           boolean countDiffChange) throws QuotaExceededException {
         return null;

@@ -46,10 +46,10 @@ import java.util.List;
 abstract class AbstractINodeDiff<N extends INode,
                                  A extends INodeAttributes,
                                  D extends AbstractINodeDiff<N, A, D>>
-    implements Comparable<Integer> {
+    implements Comparable<Long> {
 
   /** The id of the corresponding snapshot. */
-  private int snapshotId;
+  private long snapshotId;
   /** The snapshot inode data.  It is null when there is no change. */
   A snapshotINode;
   /**
@@ -60,7 +60,7 @@ abstract class AbstractINodeDiff<N extends INode,
    */
   private D posteriorDiff;
 
-  AbstractINodeDiff(int snapshotId, A snapshotINode, D posteriorDiff) {
+  AbstractINodeDiff(long snapshotId, A snapshotINode, D posteriorDiff) {
     this.snapshotId = snapshotId;
     this.snapshotINode = snapshotINode;
     this.posteriorDiff = posteriorDiff;
@@ -68,16 +68,16 @@ abstract class AbstractINodeDiff<N extends INode,
 
   /** Compare diffs with snapshot ID. */
   @Override
-  public final int compareTo(final Integer that) {
-    return Snapshot.ID_INTEGER_COMPARATOR.compare(this.snapshotId, that);
+  public final int compareTo(final Long that) {
+    return Snapshot.ID_LONG_COMPARATOR.compare(this.snapshotId, that);
   }
 
   /** @return the snapshot object of this diff. */
-  public final int getSnapshotId() {
+  public final long getSnapshotId() {
     return snapshotId;
   }
   
-  final void setSnapshotId(int snapshot) {
+  final void setSnapshotId(long snapshot) {
     this.snapshotId = snapshot;
   }
 

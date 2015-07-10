@@ -289,13 +289,13 @@ public class SnapshotManager implements SnapshotStats {
    * Read values of {@link #snapshotCounter}, {@link #numSnapshots}, and
    * all snapshots from the DataInput
    */
-  public Map<Integer, Snapshot> read(DataInput in, FSImageFormat.Loader loader
+  public Map<Long, Snapshot> read(DataInput in, FSImageFormat.Loader loader
       ) throws IOException {
     snapshotCounter = in.readInt();
     numSnapshots.set(in.readInt());
     
     // read snapshots
-    final Map<Integer, Snapshot> snapshotMap = new HashMap<Integer, Snapshot>();
+    final Map<Long, Snapshot> snapshotMap = new HashMap<Long, Snapshot>();
     for(int i = 0; i < numSnapshots.get(); i++) {
       final Snapshot s = Snapshot.read(in, loader);
       snapshotMap.put(s.getId(), s);

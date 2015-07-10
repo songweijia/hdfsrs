@@ -10899,9 +10899,9 @@ public final class FsImageProto {
        */
       com.google.protobuf.ByteString getName();
 
-      // optional uint32 dstSnapshotId = 3;
+      // optional uint64 dstSnapshotId = 3;
       /**
-       * <code>optional uint32 dstSnapshotId = 3;</code>
+       * <code>optional uint64 dstSnapshotId = 3;</code>
        *
        * <pre>
        * recorded in DstReference
@@ -10909,17 +10909,17 @@ public final class FsImageProto {
        */
       boolean hasDstSnapshotId();
       /**
-       * <code>optional uint32 dstSnapshotId = 3;</code>
+       * <code>optional uint64 dstSnapshotId = 3;</code>
        *
        * <pre>
        * recorded in DstReference
        * </pre>
        */
-      int getDstSnapshotId();
+      long getDstSnapshotId();
 
-      // optional uint32 lastSnapshotId = 4;
+      // optional uint64 lastSnapshotId = 4;
       /**
-       * <code>optional uint32 lastSnapshotId = 4;</code>
+       * <code>optional uint64 lastSnapshotId = 4;</code>
        *
        * <pre>
        * recorded in WithName
@@ -10927,13 +10927,13 @@ public final class FsImageProto {
        */
       boolean hasLastSnapshotId();
       /**
-       * <code>optional uint32 lastSnapshotId = 4;</code>
+       * <code>optional uint64 lastSnapshotId = 4;</code>
        *
        * <pre>
        * recorded in WithName
        * </pre>
        */
-      int getLastSnapshotId();
+      long getLastSnapshotId();
     }
     /**
      * Protobuf type {@code hadoop.hdfs.fsimage.INodeReferenceSection.INodeReference}
@@ -10998,12 +10998,12 @@ public final class FsImageProto {
               }
               case 24: {
                 bitField0_ |= 0x00000004;
-                dstSnapshotId_ = input.readUInt32();
+                dstSnapshotId_ = input.readUInt64();
                 break;
               }
               case 32: {
                 bitField0_ |= 0x00000008;
-                lastSnapshotId_ = input.readUInt32();
+                lastSnapshotId_ = input.readUInt64();
                 break;
               }
             }
@@ -11094,11 +11094,11 @@ public final class FsImageProto {
         return name_;
       }
 
-      // optional uint32 dstSnapshotId = 3;
+      // optional uint64 dstSnapshotId = 3;
       public static final int DSTSNAPSHOTID_FIELD_NUMBER = 3;
-      private int dstSnapshotId_;
+      private long dstSnapshotId_;
       /**
-       * <code>optional uint32 dstSnapshotId = 3;</code>
+       * <code>optional uint64 dstSnapshotId = 3;</code>
        *
        * <pre>
        * recorded in DstReference
@@ -11108,21 +11108,21 @@ public final class FsImageProto {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional uint32 dstSnapshotId = 3;</code>
+       * <code>optional uint64 dstSnapshotId = 3;</code>
        *
        * <pre>
        * recorded in DstReference
        * </pre>
        */
-      public int getDstSnapshotId() {
+      public long getDstSnapshotId() {
         return dstSnapshotId_;
       }
 
-      // optional uint32 lastSnapshotId = 4;
+      // optional uint64 lastSnapshotId = 4;
       public static final int LASTSNAPSHOTID_FIELD_NUMBER = 4;
-      private int lastSnapshotId_;
+      private long lastSnapshotId_;
       /**
-       * <code>optional uint32 lastSnapshotId = 4;</code>
+       * <code>optional uint64 lastSnapshotId = 4;</code>
        *
        * <pre>
        * recorded in WithName
@@ -11132,21 +11132,21 @@ public final class FsImageProto {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional uint32 lastSnapshotId = 4;</code>
+       * <code>optional uint64 lastSnapshotId = 4;</code>
        *
        * <pre>
        * recorded in WithName
        * </pre>
        */
-      public int getLastSnapshotId() {
+      public long getLastSnapshotId() {
         return lastSnapshotId_;
       }
 
       private void initFields() {
         referredId_ = 0L;
         name_ = com.google.protobuf.ByteString.EMPTY;
-        dstSnapshotId_ = 0;
-        lastSnapshotId_ = 0;
+        dstSnapshotId_ = 0L;
+        lastSnapshotId_ = 0L;
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -11167,10 +11167,10 @@ public final class FsImageProto {
           output.writeBytes(2, name_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          output.writeUInt32(3, dstSnapshotId_);
+          output.writeUInt64(3, dstSnapshotId_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          output.writeUInt32(4, lastSnapshotId_);
+          output.writeUInt64(4, lastSnapshotId_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -11191,11 +11191,11 @@ public final class FsImageProto {
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(3, dstSnapshotId_);
+            .computeUInt64Size(3, dstSnapshotId_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(4, lastSnapshotId_);
+            .computeUInt64Size(4, lastSnapshotId_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -11317,9 +11317,9 @@ public final class FsImageProto {
           bitField0_ = (bitField0_ & ~0x00000001);
           name_ = com.google.protobuf.ByteString.EMPTY;
           bitField0_ = (bitField0_ & ~0x00000002);
-          dstSnapshotId_ = 0;
+          dstSnapshotId_ = 0L;
           bitField0_ = (bitField0_ & ~0x00000004);
-          lastSnapshotId_ = 0;
+          lastSnapshotId_ = 0L;
           bitField0_ = (bitField0_ & ~0x00000008);
           return this;
         }
@@ -11521,10 +11521,10 @@ public final class FsImageProto {
           return this;
         }
 
-        // optional uint32 dstSnapshotId = 3;
-        private int dstSnapshotId_ ;
+        // optional uint64 dstSnapshotId = 3;
+        private long dstSnapshotId_ ;
         /**
-         * <code>optional uint32 dstSnapshotId = 3;</code>
+         * <code>optional uint64 dstSnapshotId = 3;</code>
          *
          * <pre>
          * recorded in DstReference
@@ -11534,30 +11534,30 @@ public final class FsImageProto {
           return ((bitField0_ & 0x00000004) == 0x00000004);
         }
         /**
-         * <code>optional uint32 dstSnapshotId = 3;</code>
+         * <code>optional uint64 dstSnapshotId = 3;</code>
          *
          * <pre>
          * recorded in DstReference
          * </pre>
          */
-        public int getDstSnapshotId() {
+        public long getDstSnapshotId() {
           return dstSnapshotId_;
         }
         /**
-         * <code>optional uint32 dstSnapshotId = 3;</code>
+         * <code>optional uint64 dstSnapshotId = 3;</code>
          *
          * <pre>
          * recorded in DstReference
          * </pre>
          */
-        public Builder setDstSnapshotId(int value) {
+        public Builder setDstSnapshotId(long value) {
           bitField0_ |= 0x00000004;
           dstSnapshotId_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional uint32 dstSnapshotId = 3;</code>
+         * <code>optional uint64 dstSnapshotId = 3;</code>
          *
          * <pre>
          * recorded in DstReference
@@ -11565,15 +11565,15 @@ public final class FsImageProto {
          */
         public Builder clearDstSnapshotId() {
           bitField0_ = (bitField0_ & ~0x00000004);
-          dstSnapshotId_ = 0;
+          dstSnapshotId_ = 0L;
           onChanged();
           return this;
         }
 
-        // optional uint32 lastSnapshotId = 4;
-        private int lastSnapshotId_ ;
+        // optional uint64 lastSnapshotId = 4;
+        private long lastSnapshotId_ ;
         /**
-         * <code>optional uint32 lastSnapshotId = 4;</code>
+         * <code>optional uint64 lastSnapshotId = 4;</code>
          *
          * <pre>
          * recorded in WithName
@@ -11583,30 +11583,30 @@ public final class FsImageProto {
           return ((bitField0_ & 0x00000008) == 0x00000008);
         }
         /**
-         * <code>optional uint32 lastSnapshotId = 4;</code>
+         * <code>optional uint64 lastSnapshotId = 4;</code>
          *
          * <pre>
          * recorded in WithName
          * </pre>
          */
-        public int getLastSnapshotId() {
+        public long getLastSnapshotId() {
           return lastSnapshotId_;
         }
         /**
-         * <code>optional uint32 lastSnapshotId = 4;</code>
+         * <code>optional uint64 lastSnapshotId = 4;</code>
          *
          * <pre>
          * recorded in WithName
          * </pre>
          */
-        public Builder setLastSnapshotId(int value) {
+        public Builder setLastSnapshotId(long value) {
           bitField0_ |= 0x00000008;
           lastSnapshotId_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional uint32 lastSnapshotId = 4;</code>
+         * <code>optional uint64 lastSnapshotId = 4;</code>
          *
          * <pre>
          * recorded in WithName
@@ -11614,7 +11614,7 @@ public final class FsImageProto {
          */
         public Builder clearLastSnapshotId() {
           bitField0_ = (bitField0_ & ~0x00000008);
-          lastSnapshotId_ = 0;
+          lastSnapshotId_ = 0L;
           onChanged();
           return this;
         }
@@ -12025,15 +12025,15 @@ public final class FsImageProto {
     public interface SnapshotOrBuilder
         extends com.google.protobuf.MessageOrBuilder {
 
-      // optional uint32 snapshotId = 1;
+      // optional uint64 snapshotId = 1;
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
       boolean hasSnapshotId();
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
-      int getSnapshotId();
+      long getSnapshotId();
 
       // optional .hadoop.hdfs.fsimage.INodeSection.INode root = 2;
       /**
@@ -12114,7 +12114,7 @@ public final class FsImageProto {
               }
               case 8: {
                 bitField0_ |= 0x00000001;
-                snapshotId_ = input.readUInt32();
+                snapshotId_ = input.readUInt64();
                 break;
               }
               case 18: {
@@ -12170,19 +12170,19 @@ public final class FsImageProto {
       }
 
       private int bitField0_;
-      // optional uint32 snapshotId = 1;
+      // optional uint64 snapshotId = 1;
       public static final int SNAPSHOTID_FIELD_NUMBER = 1;
-      private int snapshotId_;
+      private long snapshotId_;
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
       public boolean hasSnapshotId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
-      public int getSnapshotId() {
+      public long getSnapshotId() {
         return snapshotId_;
       }
 
@@ -12221,7 +12221,7 @@ public final class FsImageProto {
       }
 
       private void initFields() {
-        snapshotId_ = 0;
+        snapshotId_ = 0L;
         root_ = org.apache.hadoop.hdfs.server.namenode.FsImageProto.INodeSection.INode.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
@@ -12243,7 +12243,7 @@ public final class FsImageProto {
                           throws java.io.IOException {
         getSerializedSize();
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeUInt32(1, snapshotId_);
+          output.writeUInt64(1, snapshotId_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           output.writeMessage(2, root_);
@@ -12259,7 +12259,7 @@ public final class FsImageProto {
         size = 0;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(1, snapshotId_);
+            .computeUInt64Size(1, snapshotId_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
@@ -12382,7 +12382,7 @@ public final class FsImageProto {
 
         public Builder clear() {
           super.clear();
-          snapshotId_ = 0;
+          snapshotId_ = 0L;
           bitField0_ = (bitField0_ & ~0x00000001);
           if (rootBuilder_ == null) {
             root_ = org.apache.hadoop.hdfs.server.namenode.FsImageProto.INodeSection.INode.getDefaultInstance();
@@ -12485,35 +12485,35 @@ public final class FsImageProto {
         }
         private int bitField0_;
 
-        // optional uint32 snapshotId = 1;
-        private int snapshotId_ ;
+        // optional uint64 snapshotId = 1;
+        private long snapshotId_ ;
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
         public boolean hasSnapshotId() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
-        public int getSnapshotId() {
+        public long getSnapshotId() {
           return snapshotId_;
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
-        public Builder setSnapshotId(int value) {
+        public Builder setSnapshotId(long value) {
           bitField0_ |= 0x00000001;
           snapshotId_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
         public Builder clearSnapshotId() {
           bitField0_ = (bitField0_ & ~0x00000001);
-          snapshotId_ = 0;
+          snapshotId_ = 0L;
           onChanged();
           return this;
         }
@@ -13695,15 +13695,15 @@ public final class FsImageProto {
     public interface DirectoryDiffOrBuilder
         extends com.google.protobuf.MessageOrBuilder {
 
-      // optional uint32 snapshotId = 1;
+      // optional uint64 snapshotId = 1;
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
       boolean hasSnapshotId();
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
-      int getSnapshotId();
+      long getSnapshotId();
 
       // optional uint32 childrenSize = 2;
       /**
@@ -13864,7 +13864,7 @@ public final class FsImageProto {
               }
               case 8: {
                 bitField0_ |= 0x00000001;
-                snapshotId_ = input.readUInt32();
+                snapshotId_ = input.readUInt64();
                 break;
               }
               case 16: {
@@ -13988,19 +13988,19 @@ public final class FsImageProto {
       }
 
       private int bitField0_;
-      // optional uint32 snapshotId = 1;
+      // optional uint64 snapshotId = 1;
       public static final int SNAPSHOTID_FIELD_NUMBER = 1;
-      private int snapshotId_;
+      private long snapshotId_;
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
       public boolean hasSnapshotId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
-      public int getSnapshotId() {
+      public long getSnapshotId() {
         return snapshotId_;
       }
 
@@ -14163,7 +14163,7 @@ public final class FsImageProto {
       private int deletedINodeRefMemoizedSerializedSize = -1;
 
       private void initFields() {
-        snapshotId_ = 0;
+        snapshotId_ = 0L;
         childrenSize_ = 0;
         isSnapshotRoot_ = false;
         name_ = com.google.protobuf.ByteString.EMPTY;
@@ -14185,7 +14185,7 @@ public final class FsImageProto {
                           throws java.io.IOException {
         getSerializedSize();
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeUInt32(1, snapshotId_);
+          output.writeUInt64(1, snapshotId_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           output.writeUInt32(2, childrenSize_);
@@ -14227,7 +14227,7 @@ public final class FsImageProto {
         size = 0;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(1, snapshotId_);
+            .computeUInt64Size(1, snapshotId_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
@@ -14394,7 +14394,7 @@ public final class FsImageProto {
 
         public Builder clear() {
           super.clear();
-          snapshotId_ = 0;
+          snapshotId_ = 0L;
           bitField0_ = (bitField0_ & ~0x00000001);
           childrenSize_ = 0;
           bitField0_ = (bitField0_ & ~0x00000002);
@@ -14561,35 +14561,35 @@ public final class FsImageProto {
         }
         private int bitField0_;
 
-        // optional uint32 snapshotId = 1;
-        private int snapshotId_ ;
+        // optional uint64 snapshotId = 1;
+        private long snapshotId_ ;
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
         public boolean hasSnapshotId() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
-        public int getSnapshotId() {
+        public long getSnapshotId() {
           return snapshotId_;
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
-        public Builder setSnapshotId(int value) {
+        public Builder setSnapshotId(long value) {
           bitField0_ |= 0x00000001;
           snapshotId_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
         public Builder clearSnapshotId() {
           bitField0_ = (bitField0_ & ~0x00000001);
-          snapshotId_ = 0;
+          snapshotId_ = 0L;
           onChanged();
           return this;
         }
@@ -15048,15 +15048,15 @@ public final class FsImageProto {
     public interface FileDiffOrBuilder
         extends com.google.protobuf.MessageOrBuilder {
 
-      // optional uint32 snapshotId = 1;
+      // optional uint64 snapshotId = 1;
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
       boolean hasSnapshotId();
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
-      int getSnapshotId();
+      long getSnapshotId();
 
       // optional uint64 fileSize = 2;
       /**
@@ -15145,7 +15145,7 @@ public final class FsImageProto {
               }
               case 8: {
                 bitField0_ |= 0x00000001;
-                snapshotId_ = input.readUInt32();
+                snapshotId_ = input.readUInt64();
                 break;
               }
               case 16: {
@@ -15211,19 +15211,19 @@ public final class FsImageProto {
       }
 
       private int bitField0_;
-      // optional uint32 snapshotId = 1;
+      // optional uint64 snapshotId = 1;
       public static final int SNAPSHOTID_FIELD_NUMBER = 1;
-      private int snapshotId_;
+      private long snapshotId_;
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
       public boolean hasSnapshotId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional uint32 snapshotId = 1;</code>
+       * <code>optional uint64 snapshotId = 1;</code>
        */
-      public int getSnapshotId() {
+      public long getSnapshotId() {
         return snapshotId_;
       }
 
@@ -15282,7 +15282,7 @@ public final class FsImageProto {
       }
 
       private void initFields() {
-        snapshotId_ = 0;
+        snapshotId_ = 0L;
         fileSize_ = 0L;
         name_ = com.google.protobuf.ByteString.EMPTY;
         snapshotCopy_ = org.apache.hadoop.hdfs.server.namenode.FsImageProto.INodeSection.INodeFile.getDefaultInstance();
@@ -15306,7 +15306,7 @@ public final class FsImageProto {
                           throws java.io.IOException {
         getSerializedSize();
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeUInt32(1, snapshotId_);
+          output.writeUInt64(1, snapshotId_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           output.writeUInt64(2, fileSize_);
@@ -15328,7 +15328,7 @@ public final class FsImageProto {
         size = 0;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeUInt32Size(1, snapshotId_);
+            .computeUInt64Size(1, snapshotId_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
@@ -15459,7 +15459,7 @@ public final class FsImageProto {
 
         public Builder clear() {
           super.clear();
-          snapshotId_ = 0;
+          snapshotId_ = 0L;
           bitField0_ = (bitField0_ & ~0x00000001);
           fileSize_ = 0L;
           bitField0_ = (bitField0_ & ~0x00000002);
@@ -15580,35 +15580,35 @@ public final class FsImageProto {
         }
         private int bitField0_;
 
-        // optional uint32 snapshotId = 1;
-        private int snapshotId_ ;
+        // optional uint64 snapshotId = 1;
+        private long snapshotId_ ;
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
         public boolean hasSnapshotId() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
-        public int getSnapshotId() {
+        public long getSnapshotId() {
           return snapshotId_;
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
-        public Builder setSnapshotId(int value) {
+        public Builder setSnapshotId(long value) {
           bitField0_ |= 0x00000001;
           snapshotId_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional uint32 snapshotId = 1;</code>
+         * <code>optional uint64 snapshotId = 1;</code>
          */
         public Builder clearSnapshotId() {
           bitField0_ = (bitField0_ & ~0x00000001);
-          snapshotId_ = 0;
+          snapshotId_ = 0L;
           onChanged();
           return this;
         }
@@ -21012,21 +21012,21 @@ public final class FsImageProto {
       "\022\024\n\010children\030\002 \003(\004B\002\020\001\022\027\n\013refChildren\030\003 " +
       "\003(\rB\002\020\001\"z\n\025INodeReferenceSection\032a\n\016INod" +
       "eReference\022\022\n\nreferredId\030\001 \001(\004\022\014\n\004name\030\002" +
-      " \001(\014\022\025\n\rdstSnapshotId\030\003 \001(\r\022\026\n\016lastSnaps" +
-      "hotId\030\004 \001(\r\"\265\001\n\017SnapshotSection\022\027\n\017snaps" +
+      " \001(\014\022\025\n\rdstSnapshotId\030\003 \001(\004\022\026\n\016lastSnaps" +
+      "hotId\030\004 \001(\004\"\265\001\n\017SnapshotSection\022\027\n\017snaps" +
       "hotCounter\030\001 \001(\r\022\034\n\020snapshottableDir\030\002 \003" +
       "(\004B\002\020\001\022\024\n\014numSnapshots\030\003 \001(\r\032U\n\010Snapshot" +
-      "\022\022\n\nsnapshotId\030\001 \001(\r\0225\n\004root\030\002 \001(\0132\'.had",
+      "\022\022\n\nsnapshotId\030\001 \001(\004\0225\n\004root\030\002 \001(\0132\'.had",
       "oop.hdfs.fsimage.INodeSection.INode\"\327\004\n\023" +
       "SnapshotDiffSection\032 \n\020CreatedListEntry\022" +
       "\014\n\004name\030\001 \001(\014\032\367\001\n\rDirectoryDiff\022\022\n\nsnaps" +
-      "hotId\030\001 \001(\r\022\024\n\014childrenSize\030\002 \001(\r\022\026\n\016isS" +
+      "hotId\030\001 \001(\004\022\024\n\014childrenSize\030\002 \001(\r\022\026\n\016isS" +
       "napshotRoot\030\003 \001(\010\022\014\n\004name\030\004 \001(\014\022F\n\014snaps" +
       "hotCopy\030\005 \001(\01320.hadoop.hdfs.fsimage.INod" +
       "eSection.INodeDirectory\022\027\n\017createdListSi" +
       "ze\030\006 \001(\r\022\030\n\014deletedINode\030\007 \003(\004B\002\020\001\022\033\n\017de" +
       "letedINodeRef\030\010 \003(\rB\002\020\001\032\201\001\n\010FileDiff\022\022\n\n" +
-      "snapshotId\030\001 \001(\r\022\020\n\010fileSize\030\002 \001(\004\022\014\n\004na",
+      "snapshotId\030\001 \001(\004\022\020\n\010fileSize\030\002 \001(\004\022\014\n\004na",
       "me\030\003 \001(\014\022A\n\014snapshotCopy\030\004 \001(\0132+.hadoop." +
       "hdfs.fsimage.INodeSection.INodeFile\032\237\001\n\t" +
       "DiffEntry\022E\n\004type\030\001 \002(\01627.hadoop.hdfs.fs" +

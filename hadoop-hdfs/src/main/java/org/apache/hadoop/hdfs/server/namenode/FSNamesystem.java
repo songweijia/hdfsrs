@@ -2454,7 +2454,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    */
   LocatedBlock prepareFileForWrite(String src, INodeFile file,
       String leaseHolder, String clientMachine, DatanodeDescriptor clientNode,
-      boolean writeToEditLog, int latestSnapshot, boolean logRetryCache)
+      boolean writeToEditLog, long latestSnapshot, boolean logRetryCache)
       throws IOException {
     //file = file.recordModification(latestSnapshot);
     final INodeFile cons = file.toUnderConstruction(leaseHolder, clientMachine,
@@ -4042,7 +4042,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   //}HDFSRS_RWAPI
 
   private void finalizeINodeFileUnderConstruction(String src,
-      INodeFile pendingFile, int latestSnapshot) throws IOException,
+      INodeFile pendingFile, long latestSnapshot) throws IOException,
       UnresolvedLinkException {
     assert hasWriteLock();
     FileUnderConstructionFeature uc = pendingFile.getFileUnderConstructionFeature();

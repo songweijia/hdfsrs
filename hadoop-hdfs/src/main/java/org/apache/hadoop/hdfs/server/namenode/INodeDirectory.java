@@ -92,7 +92,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
     this.features = featuresToCopy;
   }
 
-  public INodeDirectory(INodeDirectory other, int sid) {
+  public INodeDirectory(INodeDirectory other, long sid) {
     super(other);
     if (other.children != null) {
       this.children = new ArrayList<INode> (other.children.size());
@@ -213,7 +213,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   }
   
   @Override
-  public INodeDirectoryAttributes getSnapshotINode(int snapshotId) {
+  public INodeDirectoryAttributes getSnapshotINode(long snapshotId) {
     DirectoryWithSnapshotFeature sf = getDirectoryWithSnapshotFeature();
     return sf == null ? this : sf.getDiffs().getSnapshotINode(snapshotId, this);
   }
@@ -226,7 +226,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
 
   /** Replace itself with an {@link INodeDirectorySnapshottable}. */
   public INodeDirectorySnapshottable replaceSelf4INodeDirectorySnapshottable(
-      int latestSnapshotId, final INodeMap inodeMap)
+      long latestSnapshotId, final INodeMap inodeMap)
       throws QuotaExceededException {
     Preconditions.checkState(!(this instanceof INodeDirectorySnapshottable),
         "this is already an INodeDirectorySnapshottable, this=%s", this);
@@ -300,7 +300,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   }
 
   INodeReference.WithName replaceChild4ReferenceWithName(INode oldChild,
-      int latestSnapshotId) {
+      long latestSnapshotId) {
     Preconditions.checkArgument(latestSnapshotId != Snapshot.CURRENT_STATE_ID);
     if (oldChild instanceof INodeReference.WithName) {
       return (INodeReference.WithName)oldChild;
@@ -321,7 +321,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   }
 
   @Override
-  public INodeDirectory recordModification(int latestSnapshotId) 
+  public INodeDirectory recordModification(long latestSnapshotId) 
       throws QuotaExceededException {
     if (isInLatestSnapshot(latestSnapshotId)
         && !shouldRecordInSrcSnapshot(latestSnapshotId)) {
@@ -341,7 +341,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
    * 
    * @return the child inode, which may be replaced.
    */
-  public INode saveChild2Snapshot(final INode child, final int latestSnapshotId,
+  public INode saveChild2Snapshot(final INode child, final long latestSnapshotId,
       final INode snapshotCopy) throws QuotaExceededException {
     if (latestSnapshotId == Snapshot.CURRENT_STATE_ID) {
       return child;
@@ -363,7 +363,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
    *          the current directory.
    * @return the child inode.
    */
-  public INode getChild(byte[] name, int snapshotId) {
+  public INode getChild(byte[] name, long snapshotId) {
     DirectoryWithSnapshotFeature sf;
     if (snapshotId == Snapshot.CURRENT_STATE_ID || 
         (sf = getDirectoryWithSnapshotFeature()) == null) {
@@ -384,7 +384,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
    *         otherwise, return the children list corresponding to the snapshot.
    *         Note that the returned list is never null.
    */
-  public ReadOnlyList<INode> getChildrenList(final int snapshotId) {
+  public ReadOnlyList<INode> getChildrenList(final long snapshotId) {
     DirectoryWithSnapshotFeature sf;
     if (snapshotId == Snapshot.CURRENT_STATE_ID
         || (sf = this.getDirectoryWithSnapshotFeature()) == null) {
@@ -465,7 +465,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   /**
    * Remove the specified child from this directory.
    */
-  public boolean removeChild(INode child, int latestSnapshotId)
+  public boolean removeChild(INode child, long latestSnapshotId)
       throws QuotaExceededException {
     if (isInLatestSnapshot(latestSnapshotId)) {
       // create snapshot feature if necessary
@@ -508,7 +508,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
    *         otherwise, return true;
    */
   public boolean addChild(INode node, final boolean setModTime,
-      final int latestSnapshotId) throws QuotaExceededException {
+      final long latestSnapshotId) throws QuotaExceededException {
     final int low = searchChildren(node.getLocalNameBytes());
     if (low >= 0) {
       return false;
@@ -557,7 +557,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
 
   @Override
   public Quota.Counts computeQuotaUsage(Quota.Counts counts, boolean useCache,
-      int lastSnapshotId) {
+      long lastSnapshotId) {
     final DirectoryWithSnapshotFeature sf = getDirectoryWithSnapshotFeature();
     
     // we are computing the quota usage for a specific snapshot here, i.e., the
@@ -584,7 +584,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   }
 
   private Quota.Counts computeDirectoryQuotaUsage(Quota.Counts counts,
-      boolean useCache, int lastSnapshotId) {
+      boolean useCache, long lastSnapshotId) {
     if (children != null) {
       for (INode child : children) {
         child.computeQuotaUsage(counts, useCache, lastSnapshotId);
@@ -700,13 +700,13 @@ public class INodeDirectory extends INodeWithAdditionalFields
    * and delete possible record in the deleted list.  
    */
   public void undoRename4DstParent(final INode deletedChild,
-      int latestSnapshotId) throws QuotaExceededException {
+      long latestSnapshotId) throws QuotaExceededException {
     DirectoryWithSnapshotFeature sf = getDirectoryWithSnapshotFeature();
     Preconditions.checkState(sf != null,
         "Directory does not have snapshot feature");
     boolean removeDeletedChild = sf.getDiffs().removeChild(ListType.DELETED,
         deletedChild);
-    int sid = removeDeletedChild ? Snapshot.CURRENT_STATE_ID : latestSnapshotId;
+    long sid = removeDeletedChild ? Snapshot.CURRENT_STATE_ID : latestSnapshotId;
     final boolean added = addChild(deletedChild, true, sid);
     // update quota usage if adding is successfully and the old child has not
     // been stored in deleted list before
@@ -729,8 +729,8 @@ public class INodeDirectory extends INodeWithAdditionalFields
   }
 
   /** Call cleanSubtree(..) recursively down the subtree. */
-  public Quota.Counts cleanSubtreeRecursively(final int snapshot,
-      int prior, final BlocksMapUpdateInfo collectedBlocks,
+  public Quota.Counts cleanSubtreeRecursively(final long snapshot,
+      long prior, final BlocksMapUpdateInfo collectedBlocks,
       final List<INode> removedINodes, final Map<INode, INode> excludedNodes, 
       final boolean countDiffChange) throws QuotaExceededException {
     Quota.Counts counts = Quota.Counts.newInstance();
@@ -739,7 +739,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
     // to its latest previous snapshot. (besides, we also need to consider nodes
     // created after prior but before snapshot. this will be done in 
     // DirectoryWithSnapshotFeature)
-    int s = snapshot != Snapshot.CURRENT_STATE_ID
+    long s = snapshot != Snapshot.CURRENT_STATE_ID
         && prior != Snapshot.NO_SNAPSHOT_ID ? prior : snapshot;
     for (INode child : getChildrenList(s)) {
       if (snapshot != Snapshot.CURRENT_STATE_ID && excludedNodes != null
@@ -769,7 +769,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   }
   
   @Override
-  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,
+  public Quota.Counts cleanSubtree(final long snapshotId, long priorSnapshotId,
       final BlocksMapUpdateInfo collectedBlocks,
       final List<INode> removedINodes, final boolean countDiffChange)
       throws QuotaExceededException {
@@ -825,7 +825,7 @@ public class INodeDirectory extends INodeWithAdditionalFields
   @VisibleForTesting
   @Override
   public void dumpTreeRecursively(PrintWriter out, StringBuilder prefix,
-      final int snapshot) {
+      final long snapshot) {
     super.dumpTreeRecursively(out, prefix, snapshot);
     out.print(", childrenSize=" + getChildrenList(snapshot).size());
     final DirectoryWithQuotaFeature q = getDirectoryWithQuotaFeature();
@@ -886,16 +886,16 @@ public class INodeDirectory extends INodeWithAdditionalFields
 
   /** A pair of Snapshot and INode objects. */
   protected static class SnapshotAndINode {
-    public final int snapshotId;
+    public final long snapshotId;
     public final INode inode;
 
-    public SnapshotAndINode(int snapshot, INode inode) {
+    public SnapshotAndINode(long snapshot, INode inode) {
       this.snapshotId = snapshot;
       this.inode = inode;
     }
   }
 
-  public final int getChildrenNum(final int snapshotId) {
+  public final int getChildrenNum(final long snapshotId) {
     return getChildrenList(snapshotId).size();
   }
 }

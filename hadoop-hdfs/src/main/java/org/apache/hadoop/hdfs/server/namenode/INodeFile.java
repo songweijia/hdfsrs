@@ -126,7 +126,7 @@ public class INodeFile extends INodeWithAdditionalFields
     this.features = that.features;
   }
   
-  public INodeFile(INodeFile that, int sid) {
+  public INodeFile(INodeFile that, long sid) {
     super(that);
     this.header = that.header;
     this.features = that.features;
@@ -310,7 +310,7 @@ public class INodeFile extends INodeWithAdditionalFields
   }
 
   @Override
-  public INodeFileAttributes getSnapshotINode(final int snapshotId) {
+  public INodeFileAttributes getSnapshotINode(final long snapshotId) {
     FileWithSnapshotFeature sf = this.getFileWithSnapshotFeature();
     if (sf != null) {
       return sf.getDiffs().getSnapshotINode(snapshotId, this);
@@ -320,7 +320,7 @@ public class INodeFile extends INodeWithAdditionalFields
   }
 
   @Override
-  public INodeFile recordModification(final int latestSnapshotId) 
+  public INodeFile recordModification(final long latestSnapshotId) 
       throws QuotaExceededException {
     if (isInLatestSnapshot(latestSnapshotId)
         && !shouldRecordInSrcSnapshot(latestSnapshotId)) {
@@ -346,7 +346,7 @@ public class INodeFile extends INodeWithAdditionalFields
   /* End of Snapshot Feature */
 
   /** @return the replication factor of the file. */
-  public final short getFileReplication(int snapshot) {
+  public final short getFileReplication(long snapshot) {
     if (snapshot != CURRENT_STATE_ID) {
       return getSnapshotINode(snapshot).getFileReplication();
     }
@@ -380,7 +380,7 @@ public class INodeFile extends INodeWithAdditionalFields
 
   /** Set the replication factor of this file. */
   public final INodeFile setFileReplication(short replication,
-      int latestSnapshotId, final INodeMap inodeMap)
+      long latestSnapshotId, final INodeMap inodeMap)
       throws QuotaExceededException {
     final INodeFile nodeToUpdate = recordModification(latestSnapshotId);
     nodeToUpdate.setFileReplication(replication);
@@ -460,7 +460,7 @@ public class INodeFile extends INodeWithAdditionalFields
   }
 
   @Override
-  public Quota.Counts cleanSubtree(final int snapshot, int priorSnapshotId,
+  public Quota.Counts cleanSubtree(final long snapshot, long priorSnapshotId,
       final BlocksMapUpdateInfo collectedBlocks,
       final List<INode> removedINodes, final boolean countDiffChange)
       throws QuotaExceededException {
@@ -513,13 +513,13 @@ public class INodeFile extends INodeWithAdditionalFields
 
   @Override
   public final Quota.Counts computeQuotaUsage(Quota.Counts counts,
-      boolean useCache, int lastSnapshotId) {
+      boolean useCache, long lastSnapshotId) {
     long nsDelta = 1;
     final long dsDelta;
     FileWithSnapshotFeature sf = getFileWithSnapshotFeature();
     if (sf != null) {
       FileDiffList fileDiffList = sf.getDiffs();
-      int last = fileDiffList.getLastSnapshotId();
+      long last = fileDiffList.getLastSnapshotId();
       List<FileDiff> diffs = fileDiffList.asList();
 
       if (lastSnapshotId == Snapshot.CURRENT_STATE_ID
@@ -529,7 +529,7 @@ public class INodeFile extends INodeWithAdditionalFields
       } else if (last < lastSnapshotId) {
         dsDelta = computeFileSize(true, false) * getFileReplication();
       } else {      
-        int sid = fileDiffList.getSnapshotById(lastSnapshotId);
+        long sid = fileDiffList.getSnapshotById(lastSnapshotId);
         dsDelta = diskspaceConsumed(sid);
       }
     } else {
@@ -587,7 +587,7 @@ public class INodeFile extends INodeWithAdditionalFields
    * Compute file size of the current file if the given snapshot is null;
    * otherwise, get the file size from the given snapshot.
    */
-  public final long computeFileSize(int snapshotId) {
+  public final long computeFileSize(long snapshotId) {
     FileWithSnapshotFeature sf = this.getFileWithSnapshotFeature();
     if (snapshotId != CURRENT_STATE_ID && sf != null) {
       final FileDiff d = sf.getDiffs().getDiffById(snapshotId);
@@ -645,7 +645,7 @@ public class INodeFile extends INodeWithAdditionalFields
     return computeFileSize(true, true) * getBlockReplication();
   }
 
-  public final long diskspaceConsumed(int lastSnapshotId) {
+  public final long diskspaceConsumed(long lastSnapshotId) {
     if (lastSnapshotId != CURRENT_STATE_ID) {
       return computeFileSize(lastSnapshotId)
           * getFileReplication(lastSnapshotId);
@@ -677,7 +677,7 @@ public class INodeFile extends INodeWithAdditionalFields
   @VisibleForTesting
   @Override
   public void dumpTreeRecursively(PrintWriter out, StringBuilder prefix,
-      final int snapshotId) {
+      final long snapshotId) {
     super.dumpTreeRecursively(out, prefix, snapshotId);
     out.print(", fileSize=" + computeFileSize(snapshotId));
     // only compare the first block

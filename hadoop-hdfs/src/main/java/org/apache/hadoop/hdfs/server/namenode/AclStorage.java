@@ -149,7 +149,7 @@ final class AclStorage {
    * @param snapshotId int ID of snapshot to read
    * @return List<AclEntry> containing extended inode ACL entries
    */
-  public static List<AclEntry> readINodeAcl(INode inode, int snapshotId) {
+  public static List<AclEntry> readINodeAcl(INode inode, long snapshotId) {
     AclFeature f = inode.getAclFeature(snapshotId);
     return f == null ? ImmutableList.<AclEntry> of() : f.getEntries();
   }
@@ -225,7 +225,7 @@ final class AclStorage {
    * @param snapshotId int latest snapshot ID of inode
    * @throws QuotaExceededException if quota limit is exceeded
    */
-  public static void removeINodeAcl(INode inode, int snapshotId)
+  public static void removeINodeAcl(INode inode, long snapshotId)
       throws QuotaExceededException {
     AclFeature f = inode.getAclFeature();
     if (f == null) {
@@ -263,7 +263,7 @@ final class AclStorage {
    * @throws QuotaExceededException if quota limit is exceeded
    */
   public static void updateINodeAcl(INode inode, List<AclEntry> newAcl,
-      int snapshotId) throws AclException, QuotaExceededException {
+      long snapshotId) throws AclException, QuotaExceededException {
     assert newAcl.size() >= 3;
     FsPermission perm = inode.getFsPermission();
     final FsPermission newPerm;

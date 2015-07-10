@@ -43,8 +43,9 @@ public class Snapshot implements Comparable<byte[]> {
   /**
    * This id is used to indicate the current state (vs. snapshots)
    */
-  public static final int CURRENT_STATE_ID = Integer.MAX_VALUE - 1;
-  public static final int NO_SNAPSHOT_ID = -1;
+//  public static final int CURRENT_STATE_ID = Integer.MAX_VALUE - 1;
+  public static final long CURRENT_STATE_ID = Long.MAX_VALUE - 1;
+  public static final long NO_SNAPSHOT_ID = -1;
   
   /**
    * The pattern for generating the default snapshot name.
@@ -77,7 +78,7 @@ public class Snapshot implements Comparable<byte[]> {
     return s != null ? s.getRoot().getLocalName() : "";
   }
   
-  public static int getSnapshotId(Snapshot s) {
+  public static long getSnapshotId(Snapshot s) {
     return s == null ? CURRENT_STATE_ID : s.getId();
   }
 
@@ -89,7 +90,7 @@ public class Snapshot implements Comparable<byte[]> {
       = new Comparator<Snapshot>() {
     @Override
     public int compare(Snapshot left, Snapshot right) {
-      return ID_INTEGER_COMPARATOR.compare(Snapshot.getSnapshotId(left),
+      return ID_LONG_COMPARATOR.compare(Snapshot.getSnapshotId(left),
           Snapshot.getSnapshotId(right));
     }
   };
@@ -107,6 +108,17 @@ public class Snapshot implements Comparable<byte[]> {
       return left - right;
     }
   };
+  
+  public static final Comparator<Long> ID_LONG_COMPARATOR
+     = new Comparator<Long>(){
+    @Override
+    public int compare(Long left, Long right) {
+      // Snapshot.CURRENT_STATE_ID means the current state, thus should be the 
+      // largest
+      return left - right > 0?1:
+      	left -right < 0?-1:0;
+    }
+  };
 
   /**
    * Find the latest snapshot that 1) covers the given inode (which means the
@@ -119,8 +131,8 @@ public class Snapshot implements Comparable<byte[]> {
    * @return id of the latest snapshot that covers the given inode and was taken 
    *         before the the given snapshot (if it is not null).
    */
-  public static int findLatestSnapshot(INode inode, final int anchor) {
-    int latest = NO_SNAPSHOT_ID;
+  public static long findLatestSnapshot(INode inode, final long anchor) {
+    long latest = NO_SNAPSHOT_ID;
     for(; inode != null; inode = inode.getParent()) {
       if (inode.isDirectory()) {
         final INodeDirectory dir = inode.asDirectory();
@@ -141,7 +153,7 @@ public class Snapshot implements Comparable<byte[]> {
 
   /** The root directory of the snapshot. */
   static public class Root extends INodeDirectory {
-    Root(INodeDirectory other, int sid) {
+    Root(INodeDirectory other, long sid) {
       // Always preserve ACL.
       super(other, sid);
       //super(other, false, Lists.newArrayList(
@@ -150,13 +162,13 @@ public class Snapshot implements Comparable<byte[]> {
     }
 
     @Override
-    public ReadOnlyList<INode> getChildrenList(int snapshotId) {
+    public ReadOnlyList<INode> getChildrenList(long snapshotId) {
       //return getParent().getChildrenList(snapshotId);
       return getCurrentChildrenList();
     }
 
     @Override
-    public INode getChild(byte[] name, int snapshotId) {
+    public INode getChild(byte[] name, long snapshotId) {
       //return getParent().getChild(name, snapshotId);
       ReadOnlyList<INode> c = getCurrentChildrenList();
       final int i = ReadOnlyList.Util.binarySearch(c, name);
@@ -170,22 +182,22 @@ public class Snapshot implements Comparable<byte[]> {
   }
 
   /** Snapshot ID. */
-  private final int id;
+  private final long id;
   /** The root directory of the snapshot. */
   private final Root root;
 
-  Snapshot(int id, String name, INodeDirectorySnapshottable dir) {
+  Snapshot(long id, String name, INodeDirectorySnapshottable dir) {
     this(id, dir, dir);
     this.root.setLocalName(DFSUtil.string2Bytes(name));
   }
 
-  Snapshot(int id, INodeDirectory dir, INodeDirectorySnapshottable parent) {
+  Snapshot(long id, INodeDirectory dir, INodeDirectorySnapshottable parent) {
     this.id = id;
     this.root = new Root(dir, id);
     this.root.setParent(parent);
   }
   
-  public int getId() {
+  public long getId() {
     return id;
   }
 
@@ -211,7 +223,7 @@ public class Snapshot implements Comparable<byte[]> {
   
   @Override
   public int hashCode() {
-    return id;
+    return new Long(id).hashCode();
   }
   
   @Override

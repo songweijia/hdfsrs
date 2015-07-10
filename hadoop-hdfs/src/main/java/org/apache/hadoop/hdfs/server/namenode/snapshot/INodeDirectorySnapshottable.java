@@ -206,7 +206,7 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
     return i < 0? null: snapshotsByNames.get(i);
   }
   
-  Snapshot getSnapshotById(int sid) {
+  Snapshot getSnapshotById(long sid) {
     for (Snapshot s : snapshotsByNames) {
       if (s.getId() == sid) {
         return s;
@@ -289,7 +289,7 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
   }
 
   /** Add a snapshot. */
-  Snapshot addSnapshot(int id, String name) throws SnapshotException,
+  Snapshot addSnapshot(long id, String name) throws SnapshotException,
       QuotaExceededException {
     //check snapshot quota
     final int n = getNumSnapshots();
@@ -336,7 +336,7 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
           + ": the snapshot does not exist.");
     } else {
       final Snapshot snapshot = snapshotsByNames.get(i);
-      int prior = Snapshot.findLatestSnapshot(this, snapshot.getId());
+      long prior = Snapshot.findLatestSnapshot(this, snapshot.getId());
       try {
         Quota.Counts counts = cleanSubtree(snapshot.getId(), prior,
             collectedBlocks, removedINodes, true);
@@ -465,7 +465,7 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
    * Replace itself with {@link INodeDirectoryWithSnapshot} or
    * {@link INodeDirectory} depending on the latest snapshot.
    */
-  INodeDirectory replaceSelf(final int latestSnapshotId, final INodeMap inodeMap)
+  INodeDirectory replaceSelf(final long latestSnapshotId, final INodeMap inodeMap)
       throws QuotaExceededException {
     if (latestSnapshotId == Snapshot.CURRENT_STATE_ID) {
       Preconditions.checkState(getDirectoryWithSnapshotFeature()
@@ -485,7 +485,7 @@ public class INodeDirectorySnapshottable extends INodeDirectory {
 
   @Override
   public void dumpTreeRecursively(PrintWriter out, StringBuilder prefix,
-      int snapshot) {
+      long snapshot) {
     super.dumpTreeRecursively(out, prefix, snapshot);
 
     if (snapshot == Snapshot.CURRENT_STATE_ID) {

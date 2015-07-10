@@ -150,12 +150,12 @@ public class INodesInPath {
         // a modification operation, we do a similar check in corresponding 
         // recordModification method.
         if (!existing.isSnapshot()) {
-          int dstSnapshotId = curNode.asReference().getDstSnapshotId();
-          int latest = existing.getLatestSnapshotId();
+          long dstSnapshotId = curNode.asReference().getDstSnapshotId();
+          long latest = existing.getLatestSnapshotId();
           if (latest == Snapshot.CURRENT_STATE_ID || // no snapshot in dst tree of rename
               (dstSnapshotId != Snapshot.CURRENT_STATE_ID && 
                 dstSnapshotId >= latest)) { // the above scenario 
-            int lastSnapshot = Snapshot.CURRENT_STATE_ID;
+            long lastSnapshot = Snapshot.CURRENT_STATE_ID;
             DirectoryWithSnapshotFeature sf = null;
             if (curNode.isDirectory() && 
                 (sf = curNode.asDirectory().getDirectoryWithSnapshotFeature()) != null) {
@@ -251,7 +251,7 @@ public class INodesInPath {
    * non-snapshot paths, it is the id of the latest snapshot found in the path;
    * or {@link Snapshot#CURRENT_STATE_ID} if no snapshot is found.
    */
-  private int snapshotId = Snapshot.CURRENT_STATE_ID; 
+  private long snapshotId = Snapshot.CURRENT_STATE_ID; 
 
   private INodesInPath(byte[][] path, int number) {
     this.path = path;
@@ -266,7 +266,7 @@ public class INodesInPath {
   /**
    * For non-snapshot paths, return the latest snapshot id found in the path.
    */
-  public int getLatestSnapshotId() {
+  public long getLatestSnapshotId() {
     Preconditions.checkState(!isSnapshot);
     return snapshotId;
   }
@@ -275,17 +275,17 @@ public class INodesInPath {
    * For snapshot paths, return the id of the snapshot specified in the path.
    * For non-snapshot paths, return {@link Snapshot#CURRENT_STATE_ID}.
    */
-  public int getPathSnapshotId() {
+  public long getPathSnapshotId() {
     return isSnapshot ? snapshotId : Snapshot.CURRENT_STATE_ID;
   }
 
-  private void setSnapshotId(int sid) {
+  private void setSnapshotId(long sid) {
     snapshotId = sid;
   }
   
-  private void updateLatestSnapshotId(int sid) {
+  private void updateLatestSnapshotId(long sid) {
     if (snapshotId == Snapshot.CURRENT_STATE_ID
-        || (sid != Snapshot.CURRENT_STATE_ID && Snapshot.ID_INTEGER_COMPARATOR
+        || (sid != Snapshot.CURRENT_STATE_ID && Snapshot.ID_LONG_COMPARATOR
             .compare(snapshotId, sid) < 0)) {
       snapshotId = sid;
     }

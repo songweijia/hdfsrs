@@ -179,7 +179,7 @@ public class Block implements Writable, Comparable<Block> {
     return sid;
   }
   
-  public void setSid(int id) {
+  public void setSid(long id) {
     sid = id;
   }
 
