@@ -119,7 +119,7 @@ public class JNIBlog {
    * from here.
    * @return microseconds from the Epoch(1970-01-01 00:00:00 +0000(UTC))
    */
-  public native long readLocalRTC();
+  public static native long readLocalRTC();
   /////////////////////
   
   public void testBlockCreation(VectorClock mvc)

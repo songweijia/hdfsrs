@@ -797,7 +797,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteSnapshot
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
-  (JNIEnv *env, jobject thisObj)
+  (JNIEnv *env, jclass thisCls)
 {
   return read_local_rtc();
 }
