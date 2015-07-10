@@ -83,7 +83,7 @@ public class Block implements Writable, Comparable<Block> {
   }
 
   protected long blockId;
-  protected int sid;
+  protected long sid; // sid = rtc clock
   protected long numBytes;
   protected long generationStamp;
 
@@ -97,7 +97,7 @@ public class Block implements Writable, Comparable<Block> {
     this(blkid, -1, 0, GenerationStamp.GRANDFATHER_GENERATION_STAMP);
   }
 
-  public Block(final long blkid, final int sid, final long len, final long generationStamp) {
+  public Block(final long blkid, final long sid, final long len, final long generationStamp) {
     this.blockId = blkid;
     this.sid = sid;
     this.numBytes = len;
@@ -175,7 +175,7 @@ public class Block implements Writable, Comparable<Block> {
     return "[-1]";
   }
   
-  public int getIntSid() {
+  public long getLongSid() {
     return sid;
   }
   
@@ -200,7 +200,7 @@ public class Block implements Writable, Comparable<Block> {
     out.writeLong(blockId);
     out.writeLong(numBytes);
     out.writeLong(generationStamp);
-    out.writeInt(sid);
+    out.writeLong(sid);
   }
   
   final void readHelper(DataInput in) throws IOException {
@@ -216,7 +216,7 @@ public class Block implements Writable, Comparable<Block> {
   // write only the identifier part of the block
   public void writeId(DataOutput out) throws IOException {
     out.writeLong(blockId);
-    out.writeInt(sid);
+    out.writeLong(sid);
     out.writeLong(generationStamp);
   }
 
@@ -230,7 +230,9 @@ public class Block implements Writable, Comparable<Block> {
   @Override // Comparable
   public int compareTo(Block b) {
     return blockId < b.blockId ? -1 :
-           blockId > b.blockId ? 1 : sid - b.sid;
+           blockId > b.blockId ? 1 : 
+           sid > b.sid? 1:
+           sid < b.sid? -1:0;
   }
 
   @Override // Object

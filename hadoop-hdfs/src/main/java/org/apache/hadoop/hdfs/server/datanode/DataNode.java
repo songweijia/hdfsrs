@@ -2274,7 +2274,7 @@ public class DataNode extends Configured
     // and the new block size
     List<BlockRecord> participatingList = new ArrayList<BlockRecord>();
     final ExtendedBlock newBlock = new ExtendedBlock(bpid, block.getBlockId(), 
-        block.getLocalBlock().getIntSid(), -1, recoveryId);
+        block.getLocalBlock().getLongSid(), -1, recoveryId);
     switch(bestState) {
     case FINALIZED:
       assert finalizedLength > 0 : "finalizedLength is not positive";

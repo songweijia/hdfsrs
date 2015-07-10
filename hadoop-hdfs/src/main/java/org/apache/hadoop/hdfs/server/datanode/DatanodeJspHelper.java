@@ -58,6 +58,8 @@ import org.apache.hadoop.util.VersionInfo;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
+import edu.cornell.cs.blog.JNIBlog;
+
 @InterfaceAudience.Private
 public class DatanodeJspHelper {
   private static final int PREV_BLOCK = -1;
@@ -420,7 +422,7 @@ public class DatanodeJspHelper {
     final DFSClient dfs = getDFSClient(ugi, nnAddr, conf);
 
     String bpid = null;
-    int sid = -1;
+    long sid = JNIBlog.CURRENT_SNAPSHOT_ID;
     
     Token<BlockTokenIdentifier> blockToken = BlockTokenSecretManager.DUMMY_TOKEN;
     List<LocatedBlock> blks = dfs.getNamenode().getBlockLocations(filename, 0,
@@ -438,7 +440,7 @@ public class DatanodeJspHelper {
     for (int i = 0; i < blks.size(); i++) {
       if (blks.get(i).getBlock().getBlockId() == blockId) {
         bpid = blks.get(i).getBlock().getBlockPoolId();
-        sid = blks.get(i).getBlock().getLocalBlock().getIntSid();
+        sid = blks.get(i).getBlock().getLocalBlock().getLongSid();
         if (needBlockToken) {
           blockToken = blks.get(i).getBlockToken();
         }
@@ -653,7 +655,7 @@ public class DatanodeJspHelper {
     String poolId = lastBlk.getBlock().getBlockPoolId();
     long blockSize = lastBlk.getBlock().getNumBytes();
     long blockId = lastBlk.getBlock().getBlockId();
-    int sId = lastBlk.getBlock().getLocalBlock().getIntSid();
+    long sId = lastBlk.getBlock().getLocalBlock().getLongSid();
     Token<BlockTokenIdentifier> accessToken = lastBlk.getBlockToken();
     long genStamp = lastBlk.getBlock().getGenerationStamp();
     DatanodeInfo chosenNode;

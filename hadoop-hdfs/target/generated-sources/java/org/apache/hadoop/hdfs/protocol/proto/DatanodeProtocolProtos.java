@@ -5005,26 +5005,14 @@ public final class DatanodeProtocolProtos {
     // optional .hadoop.hdfs.VectorClockProto mvc = 6;
     /**
      * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-     *
-     * <pre>
-     * message clock
-     * </pre>
      */
     boolean hasMvc();
     /**
      * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-     *
-     * <pre>
-     * message clock
-     * </pre>
      */
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc();
     /**
      * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-     *
-     * <pre>
-     * message clock
-     * </pre>
      */
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder();
   }
@@ -5474,30 +5462,18 @@ public final class DatanodeProtocolProtos {
     private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto mvc_;
     /**
      * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-     *
-     * <pre>
-     * message clock
-     * </pre>
      */
     public boolean hasMvc() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
      * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-     *
-     * <pre>
-     * message clock
-     * </pre>
      */
     public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
       return mvc_;
     }
     /**
      * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-     *
-     * <pre>
-     * message clock
-     * </pre>
      */
     public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
       return mvc_;
@@ -6893,20 +6869,12 @@ public final class DatanodeProtocolProtos {
           org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> mvcBuilder_;
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       public boolean hasMvc() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getMvc() {
         if (mvcBuilder_ == null) {
@@ -6917,10 +6885,6 @@ public final class DatanodeProtocolProtos {
       }
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       public Builder setMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
         if (mvcBuilder_ == null) {
@@ -6937,10 +6901,6 @@ public final class DatanodeProtocolProtos {
       }
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       public Builder setMvc(
           org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
@@ -6955,10 +6915,6 @@ public final class DatanodeProtocolProtos {
       }
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       public Builder mergeMvc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
         if (mvcBuilder_ == null) {
@@ -6978,10 +6934,6 @@ public final class DatanodeProtocolProtos {
       }
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       public Builder clearMvc() {
         if (mvcBuilder_ == null) {
@@ -6995,10 +6947,6 @@ public final class DatanodeProtocolProtos {
       }
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getMvcBuilder() {
         bitField0_ |= 0x00000020;
@@ -7007,10 +6955,6 @@ public final class DatanodeProtocolProtos {
       }
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getMvcOrBuilder() {
         if (mvcBuilder_ != null) {
@@ -7021,10 +6965,6 @@ public final class DatanodeProtocolProtos {
       }
       /**
        * <code>optional .hadoop.hdfs.VectorClockProto mvc = 6;</code>
-       *
-       * <pre>
-       * message clock
-       * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 

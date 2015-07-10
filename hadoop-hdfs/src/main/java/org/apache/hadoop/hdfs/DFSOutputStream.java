@@ -1365,7 +1365,7 @@ public class DFSOutputStream extends FSOutputSummer
       if (success) {
         // update pipeline at the namenode
         ExtendedBlock newBlock = new ExtendedBlock(
-            block.getBlockPoolId(), block.getBlockId(), block.getLocalBlock().getIntSid(), block.getNumBytes(), newGS);
+            block.getBlockPoolId(), block.getBlockId(), block.getLocalBlock().getLongSid(), block.getNumBytes(), newGS);
         dfsClient.namenode.updatePipeline(dfsClient.clientName, block, newBlock,
             nodes, storageIDs);
         // update client side generation stamp

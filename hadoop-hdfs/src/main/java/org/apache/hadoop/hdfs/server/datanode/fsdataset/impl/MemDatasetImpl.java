@@ -195,7 +195,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   public long getLength(ExtendedBlock b) throws IOException {
     memManager.get(b.getBlockPoolId(), b.getBlockId());
     MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
-    if (meta != null) return meta.getNumBytes(b.getLocalBlock().getIntSid());
+    if (meta != null) return meta.getNumBytes(b.getLocalBlock().getLongSid());
     return -1;
   }
 
@@ -204,7 +204,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       long seekOffset) throws IOException {
     MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
     if(meta != null)
-    	return meta.getInputStream((int)seekOffset, b.getLocalBlock().getIntSid());
+    	return meta.getInputStream((int)seekOffset, b.getLocalBlock().getLongSid());
     else return null;
   }
   
@@ -227,7 +227,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     // The other reason is that an "append" is occurring to this block.
     
     // check the validity of the parameter
-    if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID){
+    if(b.getLocalBlock().getLongSid() != JNIBlog.CURRENT_SNAPSHOT_ID){
       throw new IOException("Cannot append to snapshot");
     }
     if (newGS < b.getGenerationStamp()) {
@@ -285,7 +285,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
 
   private MemDatasetManager.MemBlockMeta recoverCheck(ExtendedBlock b, long newGS, 
       long expectedBlockLen) throws IOException {
-    if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID){
+    if(b.getLocalBlock().getLongSid() != JNIBlog.CURRENT_SNAPSHOT_ID){
     	throw new IOException("Cannot recover snapshot block");
     }
     MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
@@ -367,7 +367,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       throws IOException {
     LOG.info("Recover RBW replica " + b);
     
-    if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
+    if(b.getLocalBlock().getLongSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
     	throw new IOException("Cannot recover snapshot.");
 
     MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
@@ -405,7 +405,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public synchronized Replica convertTemporaryToRbw(
       final ExtendedBlock b) throws IOException {
-    if(b.getLocalBlock().getIntSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)
+    if(b.getLocalBlock().getLongSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)
       throw new IOException("Cannot change states of snapshot replica.");
     final long expectedGs = b.getGenerationStamp();
     final long visible = b.getNumBytes();
@@ -485,7 +485,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       throw new IOException("Cannot finalize block from Interrupted Thread");
     }
     
-    if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
+    if(b.getLocalBlock().getLongSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
     	throw new IOException("in finalizeBlock(): Cannot finalize snapshot replica.");
     
     MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
@@ -515,7 +515,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
    */
   @Override // FsDatasetSpi
   public synchronized void unfinalizeBlock(ExtendedBlock b) throws IOException {
-    if(b.getLocalBlock().getIntSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)
+    if(b.getLocalBlock().getLongSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)
       throw new IOException("cannot unfinalize snapshoted block");
     MemDatasetManager.MemBlockMeta replicaInfo = memManager.get(b.getBlockPoolId(), b.getBlockId());
     if (replicaInfo != null && replicaInfo.getState() == ReplicaState.TEMPORARY) {
@@ -861,7 +861,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           "replica.getGenerationStamp() < block.getGenerationStamp(), block="
           + block + ", replica=" + replica);
     }
-    return replica.getVisibleLength((long)block.getLocalBlock().getIntSid());
+    return replica.getVisibleLength((long)block.getLocalBlock().getLongSid());
   }
   
   @Override
@@ -1049,7 +1049,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   
   public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
       throws IOException {
-  	if(b.getLocalBlock().getIntSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
+  	if(b.getLocalBlock().getLongSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
   		throw new IOException("in getBlockOutputStream(): Cannot write to snapshot.");
     MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
     if (meta != null) return meta.getOutputStream((int)seekOffset);
@@ -1107,7 +1107,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
 	throws IOException {
     final List<String> errors = new ArrayList<String>();
     for (int i = 0; i < invalidBlks.length; i++) {
-      if(invalidBlks[i].getIntSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)continue; // do not invalid snapshot blocks.
+      if(invalidBlks[i].getLongSid()!=JNIBlog.CURRENT_SNAPSHOT_ID)continue; // do not invalid snapshot blocks.
       final MemVolumeImpl v = volumes.get(0);
       synchronized (this) {
         final MemDatasetManager.MemBlockMeta info = memManager.get(bpid, invalidBlks[i].getBlockId());

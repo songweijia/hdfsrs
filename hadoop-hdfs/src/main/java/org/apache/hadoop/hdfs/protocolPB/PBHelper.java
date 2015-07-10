@@ -333,7 +333,7 @@ public class PBHelper {
   
   // Block
   public static BlockProto convert(Block b) {
-    return BlockProto.newBuilder().setBlockId(b.getBlockId()).setSId(b.getIntSid())
+    return BlockProto.newBuilder().setBlockId(b.getBlockId()).setSId(b.getLongSid())
         .setGenStamp(b.getGenerationStamp()).setNumBytes(b.getNumBytes())
         .build();
   }
@@ -510,7 +510,7 @@ public class PBHelper {
    return ExtendedBlockProto.newBuilder().
       setPoolId(b.getBlockPoolId()).
       setBlockId(b.getBlockId()).
-      setSId(b.getLocalBlock().getIntSid()).
+      setSId(b.getLocalBlock().getLongSid()).
       setNumBytes(b.getNumBytes()).
       setGenerationStamp(b.getGenerationStamp()).
       build();

@@ -260,7 +260,7 @@ public class JsonUtil {
     final Map<String, Object> m = new TreeMap<String, Object>();
     m.put("blockPoolId", extendedblock.getBlockPoolId());
     m.put("blockId", extendedblock.getBlockId());
-    m.put("sId", extendedblock.getLocalBlock().getIntSid());
+    m.put("sId", extendedblock.getLocalBlock().getLongSid());
     m.put("numBytes", extendedblock.getNumBytes());
     m.put("generationStamp", extendedblock.getGenerationStamp());
     return m;

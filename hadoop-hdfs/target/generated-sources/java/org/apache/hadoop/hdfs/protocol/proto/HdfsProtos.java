@@ -404,15 +404,15 @@ public final class HdfsProtos {
      */
     long getBlockId();
 
-    // required uint32 sId = 3;
+    // required uint64 sId = 3;
     /**
-     * <code>required uint32 sId = 3;</code>
+     * <code>required uint64 sId = 3;</code>
      */
     boolean hasSId();
     /**
-     * <code>required uint32 sId = 3;</code>
+     * <code>required uint64 sId = 3;</code>
      */
-    int getSId();
+    long getSId();
 
     // required uint64 generationStamp = 4;
     /**
@@ -510,7 +510,7 @@ public final class HdfsProtos {
             }
             case 24: {
               bitField0_ |= 0x00000004;
-              sId_ = input.readUInt32();
+              sId_ = input.readUInt64();
               break;
             }
             case 32: {
@@ -642,19 +642,19 @@ public final class HdfsProtos {
       return blockId_;
     }
 
-    // required uint32 sId = 3;
+    // required uint64 sId = 3;
     public static final int SID_FIELD_NUMBER = 3;
-    private int sId_;
+    private long sId_;
     /**
-     * <code>required uint32 sId = 3;</code>
+     * <code>required uint64 sId = 3;</code>
      */
     public boolean hasSId() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required uint32 sId = 3;</code>
+     * <code>required uint64 sId = 3;</code>
      */
-    public int getSId() {
+    public long getSId() {
       return sId_;
     }
 
@@ -701,7 +701,7 @@ public final class HdfsProtos {
     private void initFields() {
       poolId_ = "";
       blockId_ = 0L;
-      sId_ = 0;
+      sId_ = 0L;
       generationStamp_ = 0L;
       numBytes_ = 0L;
     }
@@ -740,7 +740,7 @@ public final class HdfsProtos {
         output.writeUInt64(2, blockId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeUInt32(3, sId_);
+        output.writeUInt64(3, sId_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeUInt64(4, generationStamp_);
@@ -767,7 +767,7 @@ public final class HdfsProtos {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(3, sId_);
+          .computeUInt64Size(3, sId_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
@@ -848,7 +848,7 @@ public final class HdfsProtos {
       }
       if (hasSId()) {
         hash = (37 * hash) + SID_FIELD_NUMBER;
-        hash = (53 * hash) + getSId();
+        hash = (53 * hash) + hashLong(getSId());
       }
       if (hasGenerationStamp()) {
         hash = (37 * hash) + GENERATIONSTAMP_FIELD_NUMBER;
@@ -976,7 +976,7 @@ public final class HdfsProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         blockId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
-        sId_ = 0;
+        sId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
         generationStamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -1253,35 +1253,35 @@ public final class HdfsProtos {
         return this;
       }
 
-      // required uint32 sId = 3;
-      private int sId_ ;
+      // required uint64 sId = 3;
+      private long sId_ ;
       /**
-       * <code>required uint32 sId = 3;</code>
+       * <code>required uint64 sId = 3;</code>
        */
       public boolean hasSId() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required uint32 sId = 3;</code>
+       * <code>required uint64 sId = 3;</code>
        */
-      public int getSId() {
+      public long getSId() {
         return sId_;
       }
       /**
-       * <code>required uint32 sId = 3;</code>
+       * <code>required uint64 sId = 3;</code>
        */
-      public Builder setSId(int value) {
+      public Builder setSId(long value) {
         bitField0_ |= 0x00000004;
         sId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint32 sId = 3;</code>
+       * <code>required uint64 sId = 3;</code>
        */
       public Builder clearSId() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        sId_ = 0;
+        sId_ = 0L;
         onChanged();
         return this;
       }
@@ -7086,7 +7086,6 @@ public final class HdfsProtos {
    **
    * Contains a list of paths corresponding to corrupt files and a cookie
    * used for iterative calls to NameNode.listCorruptFileBlocks.
-   *
    * </pre>
    */
   public static final class CorruptFileBlocksProto extends
@@ -7443,7 +7442,6 @@ public final class HdfsProtos {
      **
      * Contains a list of paths corresponding to corrupt files and a cookie
      * used for iterative calls to NameNode.listCorruptFileBlocks.
-     *
      * </pre>
      */
     public static final class Builder extends
@@ -26010,15 +26008,15 @@ public final class HdfsProtos {
      */
     long getBlockId();
 
-    // required uint32 sId = 2;
+    // required uint64 sId = 2;
     /**
-     * <code>required uint32 sId = 2;</code>
+     * <code>required uint64 sId = 2;</code>
      */
     boolean hasSId();
     /**
-     * <code>required uint32 sId = 2;</code>
+     * <code>required uint64 sId = 2;</code>
      */
-    int getSId();
+    long getSId();
 
     // required uint64 genStamp = 3;
     /**
@@ -26109,7 +26107,7 @@ public final class HdfsProtos {
             }
             case 16: {
               bitField0_ |= 0x00000002;
-              sId_ = input.readUInt32();
+              sId_ = input.readUInt64();
               break;
             }
             case 24: {
@@ -26178,19 +26176,19 @@ public final class HdfsProtos {
       return blockId_;
     }
 
-    // required uint32 sId = 2;
+    // required uint64 sId = 2;
     public static final int SID_FIELD_NUMBER = 2;
-    private int sId_;
+    private long sId_;
     /**
-     * <code>required uint32 sId = 2;</code>
+     * <code>required uint64 sId = 2;</code>
      */
     public boolean hasSId() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required uint32 sId = 2;</code>
+     * <code>required uint64 sId = 2;</code>
      */
-    public int getSId() {
+    public long getSId() {
       return sId_;
     }
 
@@ -26228,7 +26226,7 @@ public final class HdfsProtos {
 
     private void initFields() {
       blockId_ = 0L;
-      sId_ = 0;
+      sId_ = 0L;
       genStamp_ = 0L;
       numBytes_ = 0L;
     }
@@ -26260,7 +26258,7 @@ public final class HdfsProtos {
         output.writeUInt64(1, blockId_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeUInt32(2, sId_);
+        output.writeUInt64(2, sId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeUInt64(3, genStamp_);
@@ -26283,7 +26281,7 @@ public final class HdfsProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(2, sId_);
+          .computeUInt64Size(2, sId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
@@ -26355,7 +26353,7 @@ public final class HdfsProtos {
       }
       if (hasSId()) {
         hash = (37 * hash) + SID_FIELD_NUMBER;
-        hash = (53 * hash) + getSId();
+        hash = (53 * hash) + hashLong(getSId());
       }
       if (hasGenStamp()) {
         hash = (37 * hash) + GENSTAMP_FIELD_NUMBER;
@@ -26487,7 +26485,7 @@ public final class HdfsProtos {
         super.clear();
         blockId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
-        sId_ = 0;
+        sId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
         genStamp_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -26637,35 +26635,35 @@ public final class HdfsProtos {
         return this;
       }
 
-      // required uint32 sId = 2;
-      private int sId_ ;
+      // required uint64 sId = 2;
+      private long sId_ ;
       /**
-       * <code>required uint32 sId = 2;</code>
+       * <code>required uint64 sId = 2;</code>
        */
       public boolean hasSId() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required uint32 sId = 2;</code>
+       * <code>required uint64 sId = 2;</code>
        */
-      public int getSId() {
+      public long getSId() {
         return sId_;
       }
       /**
-       * <code>required uint32 sId = 2;</code>
+       * <code>required uint64 sId = 2;</code>
        */
-      public Builder setSId(int value) {
+      public Builder setSId(long value) {
         bitField0_ |= 0x00000002;
         sId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint32 sId = 2;</code>
+       * <code>required uint64 sId = 2;</code>
        */
       public Builder clearSId() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        sId_ = 0;
+        sId_ = 0L;
         onChanged();
         return this;
       }
@@ -38640,7 +38638,7 @@ public final class HdfsProtos {
     java.lang.String[] descriptorData = {
       "\n\nhdfs.proto\022\013hadoop.hdfs\032\016Security.prot" +
       "o\"p\n\022ExtendedBlockProto\022\016\n\006poolId\030\001 \002(\t\022" +
-      "\017\n\007blockId\030\002 \002(\004\022\013\n\003sId\030\003 \002(\r\022\027\n\017generat" +
+      "\017\n\007blockId\030\002 \002(\004\022\013\n\003sId\030\003 \002(\004\022\027\n\017generat" +
       "ionStamp\030\004 \002(\004\022\023\n\010numBytes\030\005 \001(\004:\0010\"\231\001\n\017" +
       "DatanodeIDProto\022\016\n\006ipAddr\030\001 \002(\t\022\020\n\010hostN" +
       "ame\030\002 \002(\t\022\024\n\014datanodeUuid\030\003 \002(\t\022\020\n\010xferP" +
@@ -38739,7 +38737,7 @@ public final class HdfsProtos {
       "roto\0228\n\tsignature\030\001 \002(\0132%.hadoop.hdfs.Ch" +
       "eckpointSignatureProto\022\031\n\021needToReturnIm",
       "age\030\002 \002(\010\"Q\n\nBlockProto\022\017\n\007blockId\030\001 \002(\004" +
-      "\022\013\n\003sId\030\002 \002(\r\022\020\n\010genStamp\030\003 \002(\004\022\023\n\010numBy" +
+      "\022\013\n\003sId\030\002 \002(\004\022\020\n\010genStamp\030\003 \002(\004\022\023\n\010numBy" +
       "tes\030\004 \001(\004:\0010\"n\n\027BlockWithLocationsProto\022" +
       "&\n\005block\030\001 \002(\0132\027.hadoop.hdfs.BlockProto\022" +
       "\025\n\rdatanodeUuids\030\002 \003(\t\022\024\n\014storageUuids\030\003" +

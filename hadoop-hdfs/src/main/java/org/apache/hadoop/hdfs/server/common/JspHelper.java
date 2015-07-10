@@ -209,7 +209,7 @@ public class JspHelper {
   }
 
   public static void streamBlockInAscii(InetSocketAddress addr, String poolId,
-      long blockId, int sId, Token<BlockTokenIdentifier> blockToken, long genStamp,
+      long blockId, long sId, Token<BlockTokenIdentifier> blockToken, long genStamp,
       long blockSize, long offsetIntoBlock, long chunkSizeToView,
       JspWriter out, final Configuration conf, DFSClient.Conf dfsConf,
       final DataEncryptionKey encryptionKey)
