@@ -1922,9 +1922,17 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
     return null;
   }
   
+  public void snapshot(long rtc,String bpid)
+  throws IOException{
+  	//do nothing
+  	return;
+  }
+
+/*
   public void snapshot(long timestamp, ExtendedBlock[] blks) 
       throws IOException {
     return;
   }
+  */
 }
 

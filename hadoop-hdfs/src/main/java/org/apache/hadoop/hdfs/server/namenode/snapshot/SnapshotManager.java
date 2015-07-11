@@ -38,6 +38,8 @@ import org.apache.hadoop.hdfs.server.namenode.INodeDirectory;
 import org.apache.hadoop.hdfs.server.namenode.INodesInPath;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.INodeDirectorySnapshottable.SnapshotDiffInfo;
 
+import edu.cornell.cs.blog.JNIBlog;
+
 /**
  * Manage snapshottable directories and their snapshots.
  * 
@@ -207,7 +209,9 @@ public class SnapshotManager implements SnapshotStats {
     }
     
     INodeDirectorySnapshottable srcRoot = getSnapshottableRoot(path);
-    srcRoot.addSnapshot(snapshotCounter, snapshotName);
+    
+    //srcRoot.addSnapshot(snapshotCounter, snapshotName);
+    srcRoot.addSnapshot(JNIBlog.readLocalRTC(), snapshotName); // snapshot id is read from local RTC
       
     //create success, update id
     snapshotCounter++;

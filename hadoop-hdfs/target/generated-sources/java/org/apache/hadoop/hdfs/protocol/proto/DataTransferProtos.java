@@ -4095,40 +4095,42 @@ public final class DataTransferProtos {
   public interface OpRequestSnapshotProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required uint64 timestamp = 1;
+    // required uint64 rtc = 1;
     /**
-     * <code>required uint64 timestamp = 1;</code>
+     * <code>required uint64 rtc = 1;</code>
      */
-    boolean hasTimestamp();
+    boolean hasRtc();
     /**
-     * <code>required uint64 timestamp = 1;</code>
+     * <code>required uint64 rtc = 1;</code>
      */
-    long getTimestamp();
+    long getRtc();
 
-    // repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;
+    // required string bpid = 2;
     /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+     * <code>required string bpid = 2;</code>
+     *
+     * <pre>
+     *  repeated ExtendedBlockProto blocks = 2;
+     * </pre>
      */
-    java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto> 
-        getBlocksList();
+    boolean hasBpid();
     /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+     * <code>required string bpid = 2;</code>
+     *
+     * <pre>
+     *  repeated ExtendedBlockProto blocks = 2;
+     * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto getBlocks(int index);
+    java.lang.String getBpid();
     /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+     * <code>required string bpid = 2;</code>
+     *
+     * <pre>
+     *  repeated ExtendedBlockProto blocks = 2;
+     * </pre>
      */
-    int getBlocksCount();
-    /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-     */
-    java.util.List<? extends org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder> 
-        getBlocksOrBuilderList();
-    /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-     */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder getBlocksOrBuilder(
-        int index);
+    com.google.protobuf.ByteString
+        getBpidBytes();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.OpRequestSnapshotProto}
@@ -4183,15 +4185,12 @@ public final class DataTransferProtos {
             }
             case 8: {
               bitField0_ |= 0x00000001;
-              timestamp_ = input.readUInt64();
+              rtc_ = input.readUInt64();
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                blocks_ = new java.util.ArrayList<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              blocks_.add(input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.PARSER, extensionRegistry));
+              bitField0_ |= 0x00000002;
+              bpid_ = input.readBytes();
               break;
             }
           }
@@ -4202,9 +4201,6 @@ public final class DataTransferProtos {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-          blocks_ = java.util.Collections.unmodifiableList(blocks_);
-        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -4237,76 +4233,93 @@ public final class DataTransferProtos {
     }
 
     private int bitField0_;
-    // required uint64 timestamp = 1;
-    public static final int TIMESTAMP_FIELD_NUMBER = 1;
-    private long timestamp_;
+    // required uint64 rtc = 1;
+    public static final int RTC_FIELD_NUMBER = 1;
+    private long rtc_;
     /**
-     * <code>required uint64 timestamp = 1;</code>
+     * <code>required uint64 rtc = 1;</code>
      */
-    public boolean hasTimestamp() {
+    public boolean hasRtc() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required uint64 timestamp = 1;</code>
+     * <code>required uint64 rtc = 1;</code>
      */
-    public long getTimestamp() {
-      return timestamp_;
+    public long getRtc() {
+      return rtc_;
     }
 
-    // repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;
-    public static final int BLOCKS_FIELD_NUMBER = 2;
-    private java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto> blocks_;
+    // required string bpid = 2;
+    public static final int BPID_FIELD_NUMBER = 2;
+    private java.lang.Object bpid_;
     /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+     * <code>required string bpid = 2;</code>
+     *
+     * <pre>
+     *  repeated ExtendedBlockProto blocks = 2;
+     * </pre>
      */
-    public java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto> getBlocksList() {
-      return blocks_;
+    public boolean hasBpid() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+     * <code>required string bpid = 2;</code>
+     *
+     * <pre>
+     *  repeated ExtendedBlockProto blocks = 2;
+     * </pre>
      */
-    public java.util.List<? extends org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder> 
-        getBlocksOrBuilderList() {
-      return blocks_;
+    public java.lang.String getBpid() {
+      java.lang.Object ref = bpid_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          bpid_ = s;
+        }
+        return s;
+      }
     }
     /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+     * <code>required string bpid = 2;</code>
+     *
+     * <pre>
+     *  repeated ExtendedBlockProto blocks = 2;
+     * </pre>
      */
-    public int getBlocksCount() {
-      return blocks_.size();
-    }
-    /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-     */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto getBlocks(int index) {
-      return blocks_.get(index);
-    }
-    /**
-     * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-     */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder getBlocksOrBuilder(
-        int index) {
-      return blocks_.get(index);
+    public com.google.protobuf.ByteString
+        getBpidBytes() {
+      java.lang.Object ref = bpid_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        bpid_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     private void initFields() {
-      timestamp_ = 0L;
-      blocks_ = java.util.Collections.emptyList();
+      rtc_ = 0L;
+      bpid_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasTimestamp()) {
+      if (!hasRtc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      for (int i = 0; i < getBlocksCount(); i++) {
-        if (!getBlocks(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
+      if (!hasBpid()) {
+        memoizedIsInitialized = 0;
+        return false;
       }
       memoizedIsInitialized = 1;
       return true;
@@ -4316,10 +4329,10 @@ public final class DataTransferProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeUInt64(1, timestamp_);
+        output.writeUInt64(1, rtc_);
       }
-      for (int i = 0; i < blocks_.size(); i++) {
-        output.writeMessage(2, blocks_.get(i));
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getBpidBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -4332,11 +4345,11 @@ public final class DataTransferProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(1, timestamp_);
+          .computeUInt64Size(1, rtc_);
       }
-      for (int i = 0; i < blocks_.size(); i++) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, blocks_.get(i));
+          .computeBytesSize(2, getBpidBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4361,13 +4374,16 @@ public final class DataTransferProtos {
       org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto other = (org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto) obj;
 
       boolean result = true;
-      result = result && (hasTimestamp() == other.hasTimestamp());
-      if (hasTimestamp()) {
-        result = result && (getTimestamp()
-            == other.getTimestamp());
+      result = result && (hasRtc() == other.hasRtc());
+      if (hasRtc()) {
+        result = result && (getRtc()
+            == other.getRtc());
       }
-      result = result && getBlocksList()
-          .equals(other.getBlocksList());
+      result = result && (hasBpid() == other.hasBpid());
+      if (hasBpid()) {
+        result = result && getBpid()
+            .equals(other.getBpid());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -4381,13 +4397,13 @@ public final class DataTransferProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasTimestamp()) {
-        hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
-        hash = (53 * hash) + hashLong(getTimestamp());
+      if (hasRtc()) {
+        hash = (37 * hash) + RTC_FIELD_NUMBER;
+        hash = (53 * hash) + hashLong(getRtc());
       }
-      if (getBlocksCount() > 0) {
-        hash = (37 * hash) + BLOCKS_FIELD_NUMBER;
-        hash = (53 * hash) + getBlocksList().hashCode();
+      if (hasBpid()) {
+        hash = (37 * hash) + BPID_FIELD_NUMBER;
+        hash = (53 * hash) + getBpid().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -4490,7 +4506,6 @@ public final class DataTransferProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getBlocksFieldBuilder();
         }
       }
       private static Builder create() {
@@ -4499,14 +4514,10 @@ public final class DataTransferProtos {
 
       public Builder clear() {
         super.clear();
-        timestamp_ = 0L;
+        rtc_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (blocksBuilder_ == null) {
-          blocks_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
-        } else {
-          blocksBuilder_.clear();
-        }
+        bpid_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -4538,16 +4549,11 @@ public final class DataTransferProtos {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.timestamp_ = timestamp_;
-        if (blocksBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            blocks_ = java.util.Collections.unmodifiableList(blocks_);
-            bitField0_ = (bitField0_ & ~0x00000002);
-          }
-          result.blocks_ = blocks_;
-        } else {
-          result.blocks_ = blocksBuilder_.build();
+        result.rtc_ = rtc_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
         }
+        result.bpid_ = bpid_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4564,49 +4570,26 @@ public final class DataTransferProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto other) {
         if (other == org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto.getDefaultInstance()) return this;
-        if (other.hasTimestamp()) {
-          setTimestamp(other.getTimestamp());
+        if (other.hasRtc()) {
+          setRtc(other.getRtc());
         }
-        if (blocksBuilder_ == null) {
-          if (!other.blocks_.isEmpty()) {
-            if (blocks_.isEmpty()) {
-              blocks_ = other.blocks_;
-              bitField0_ = (bitField0_ & ~0x00000002);
-            } else {
-              ensureBlocksIsMutable();
-              blocks_.addAll(other.blocks_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.blocks_.isEmpty()) {
-            if (blocksBuilder_.isEmpty()) {
-              blocksBuilder_.dispose();
-              blocksBuilder_ = null;
-              blocks_ = other.blocks_;
-              bitField0_ = (bitField0_ & ~0x00000002);
-              blocksBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getBlocksFieldBuilder() : null;
-            } else {
-              blocksBuilder_.addAllMessages(other.blocks_);
-            }
-          }
+        if (other.hasBpid()) {
+          bitField0_ |= 0x00000002;
+          bpid_ = other.bpid_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasTimestamp()) {
+        if (!hasRtc()) {
           
           return false;
         }
-        for (int i = 0; i < getBlocksCount(); i++) {
-          if (!getBlocks(i).isInitialized()) {
-            
-            return false;
-          }
+        if (!hasBpid()) {
+          
+          return false;
         }
         return true;
       }
@@ -4630,277 +4613,135 @@ public final class DataTransferProtos {
       }
       private int bitField0_;
 
-      // required uint64 timestamp = 1;
-      private long timestamp_ ;
+      // required uint64 rtc = 1;
+      private long rtc_ ;
       /**
-       * <code>required uint64 timestamp = 1;</code>
+       * <code>required uint64 rtc = 1;</code>
        */
-      public boolean hasTimestamp() {
+      public boolean hasRtc() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required uint64 timestamp = 1;</code>
+       * <code>required uint64 rtc = 1;</code>
        */
-      public long getTimestamp() {
-        return timestamp_;
+      public long getRtc() {
+        return rtc_;
       }
       /**
-       * <code>required uint64 timestamp = 1;</code>
+       * <code>required uint64 rtc = 1;</code>
        */
-      public Builder setTimestamp(long value) {
+      public Builder setRtc(long value) {
         bitField0_ |= 0x00000001;
-        timestamp_ = value;
+        rtc_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required uint64 timestamp = 1;</code>
+       * <code>required uint64 rtc = 1;</code>
        */
-      public Builder clearTimestamp() {
+      public Builder clearRtc() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        timestamp_ = 0L;
+        rtc_ = 0L;
         onChanged();
         return this;
       }
 
-      // repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;
-      private java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto> blocks_ =
-        java.util.Collections.emptyList();
-      private void ensureBlocksIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          blocks_ = new java.util.ArrayList<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto>(blocks_);
-          bitField0_ |= 0x00000002;
-         }
-      }
-
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder> blocksBuilder_;
-
+      // required string bpid = 2;
+      private java.lang.Object bpid_ = "";
       /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+       * <code>required string bpid = 2;</code>
+       *
+       * <pre>
+       *  repeated ExtendedBlockProto blocks = 2;
+       * </pre>
        */
-      public java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto> getBlocksList() {
-        if (blocksBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(blocks_);
+      public boolean hasBpid() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string bpid = 2;</code>
+       *
+       * <pre>
+       *  repeated ExtendedBlockProto blocks = 2;
+       * </pre>
+       */
+      public java.lang.String getBpid() {
+        java.lang.Object ref = bpid_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          bpid_ = s;
+          return s;
         } else {
-          return blocksBuilder_.getMessageList();
+          return (java.lang.String) ref;
         }
       }
       /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+       * <code>required string bpid = 2;</code>
+       *
+       * <pre>
+       *  repeated ExtendedBlockProto blocks = 2;
+       * </pre>
        */
-      public int getBlocksCount() {
-        if (blocksBuilder_ == null) {
-          return blocks_.size();
+      public com.google.protobuf.ByteString
+          getBpidBytes() {
+        java.lang.Object ref = bpid_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          bpid_ = b;
+          return b;
         } else {
-          return blocksBuilder_.getCount();
+          return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+       * <code>required string bpid = 2;</code>
+       *
+       * <pre>
+       *  repeated ExtendedBlockProto blocks = 2;
+       * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto getBlocks(int index) {
-        if (blocksBuilder_ == null) {
-          return blocks_.get(index);
-        } else {
-          return blocksBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public Builder setBlocks(
-          int index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto value) {
-        if (blocksBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureBlocksIsMutable();
-          blocks_.set(index, value);
-          onChanged();
-        } else {
-          blocksBuilder_.setMessage(index, value);
-        }
+      public Builder setBpid(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        bpid_ = value;
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+       * <code>required string bpid = 2;</code>
+       *
+       * <pre>
+       *  repeated ExtendedBlockProto blocks = 2;
+       * </pre>
        */
-      public Builder setBlocks(
-          int index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder builderForValue) {
-        if (blocksBuilder_ == null) {
-          ensureBlocksIsMutable();
-          blocks_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          blocksBuilder_.setMessage(index, builderForValue.build());
-        }
+      public Builder clearBpid() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        bpid_ = getDefaultInstance().getBpid();
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
+       * <code>required string bpid = 2;</code>
+       *
+       * <pre>
+       *  repeated ExtendedBlockProto blocks = 2;
+       * </pre>
        */
-      public Builder addBlocks(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto value) {
-        if (blocksBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureBlocksIsMutable();
-          blocks_.add(value);
-          onChanged();
-        } else {
-          blocksBuilder_.addMessage(value);
-        }
+      public Builder setBpidBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        bpid_ = value;
+        onChanged();
         return this;
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public Builder addBlocks(
-          int index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto value) {
-        if (blocksBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureBlocksIsMutable();
-          blocks_.add(index, value);
-          onChanged();
-        } else {
-          blocksBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public Builder addBlocks(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder builderForValue) {
-        if (blocksBuilder_ == null) {
-          ensureBlocksIsMutable();
-          blocks_.add(builderForValue.build());
-          onChanged();
-        } else {
-          blocksBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public Builder addBlocks(
-          int index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder builderForValue) {
-        if (blocksBuilder_ == null) {
-          ensureBlocksIsMutable();
-          blocks_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          blocksBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public Builder addAllBlocks(
-          java.lang.Iterable<? extends org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto> values) {
-        if (blocksBuilder_ == null) {
-          ensureBlocksIsMutable();
-          super.addAll(values, blocks_);
-          onChanged();
-        } else {
-          blocksBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public Builder clearBlocks() {
-        if (blocksBuilder_ == null) {
-          blocks_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
-          onChanged();
-        } else {
-          blocksBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public Builder removeBlocks(int index) {
-        if (blocksBuilder_ == null) {
-          ensureBlocksIsMutable();
-          blocks_.remove(index);
-          onChanged();
-        } else {
-          blocksBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder getBlocksBuilder(
-          int index) {
-        return getBlocksFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder getBlocksOrBuilder(
-          int index) {
-        if (blocksBuilder_ == null) {
-          return blocks_.get(index);  } else {
-          return blocksBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public java.util.List<? extends org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder> 
-           getBlocksOrBuilderList() {
-        if (blocksBuilder_ != null) {
-          return blocksBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(blocks_);
-        }
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder addBlocksBuilder() {
-        return getBlocksFieldBuilder().addBuilder(
-            org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder addBlocksBuilder(
-          int index) {
-        return getBlocksFieldBuilder().addBuilder(
-            index, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .hadoop.hdfs.ExtendedBlockProto blocks = 2;</code>
-       */
-      public java.util.List<org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder> 
-           getBlocksBuilderList() {
-        return getBlocksFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder> 
-          getBlocksFieldBuilder() {
-        if (blocksBuilder_ == null) {
-          blocksBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProtoOrBuilder>(
-                  blocks_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
-                  getParentForChildren(),
-                  isClean());
-          blocks_ = null;
-        }
-        return blocksBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OpRequestSnapshotProto)
@@ -22314,92 +22155,91 @@ public final class DataTransferProtos {
       "onHeaderProto\022\016\n\006offset\030\002 \002(\004\022\013\n\003len\030\003 \002" +
       "(\004\022\033\n\rsendChecksums\030\004 \001(\010:\004true\022:\n\017cachi" +
       "ngStrategy\030\005 \001(\0132!.hadoop.hdfs.CachingSt" +
-      "rategyProto\"\\\n\026OpRequestSnapshotProto\022\021\n",
-      "\ttimestamp\030\001 \002(\004\022/\n\006blocks\030\002 \003(\0132\037.hadoo" +
-      "p.hdfs.ExtendedBlockProto\"W\n\rChecksumPro" +
-      "to\022,\n\004type\030\001 \002(\0162\036.hadoop.hdfs.ChecksumT" +
-      "ypeProto\022\030\n\020bytesPerChecksum\030\002 \002(\r\"\305\006\n\021O" +
-      "pWriteBlockProto\0227\n\006header\030\001 \002(\0132\'.hadoo" +
-      "p.hdfs.ClientOperationHeaderProto\022/\n\007tar" +
-      "gets\030\002 \003(\0132\036.hadoop.hdfs.DatanodeInfoPro" +
-      "to\022.\n\006source\030\003 \001(\0132\036.hadoop.hdfs.Datanod" +
-      "eInfoProto\022D\n\005stage\030\004 \002(\01625.hadoop.hdfs." +
-      "OpWriteBlockProto.BlockConstructionStage",
-      "\022\024\n\014pipelineSize\030\005 \002(\r\022\024\n\014minBytesRcvd\030\006" +
-      " \002(\004\022\024\n\014maxBytesRcvd\030\007 \002(\004\022\035\n\025latestGene" +
-      "rationStamp\030\010 \002(\004\0225\n\021requestedChecksum\030\t" +
-      " \002(\0132\032.hadoop.hdfs.ChecksumProto\022:\n\017cach" +
-      "ingStrategy\030\n \001(\0132!.hadoop.hdfs.CachingS" +
-      "trategyProto\022\016\n\006offset\030\013 \001(\004\022*\n\003mvc\030\014 \001(" +
-      "\0132\035.hadoop.hdfs.VectorClockProto\"\277\002\n\026Blo" +
-      "ckConstructionStage\022\031\n\025PIPELINE_SETUP_AP" +
-      "PEND\020\000\022\"\n\036PIPELINE_SETUP_APPEND_RECOVERY" +
-      "\020\001\022\022\n\016DATA_STREAMING\020\002\022%\n!PIPELINE_SETUP",
-      "_STREAMING_RECOVERY\020\003\022\022\n\016PIPELINE_CLOSE\020" +
-      "\004\022\033\n\027PIPELINE_CLOSE_RECOVERY\020\005\022\031\n\025PIPELI" +
-      "NE_SETUP_CREATE\020\006\022\020\n\014TRANSFER_RBW\020\007\022\026\n\022T" +
-      "RANSFER_FINALIZED\020\010\022\034\n\030PIPELINE_SETUP_OV" +
-      "ERWRITE\020\t\022\027\n\023PIPELINE_SETUP_SEEK\020\n\"\200\001\n\024O" +
-      "pTransferBlockProto\0227\n\006header\030\001 \002(\0132\'.ha" +
-      "doop.hdfs.ClientOperationHeaderProto\022/\n\007" +
-      "targets\030\002 \003(\0132\036.hadoop.hdfs.DatanodeInfo" +
-      "Proto\"\260\001\n\023OpReplaceBlockProto\022,\n\006header\030" +
-      "\001 \002(\0132\034.hadoop.hdfs.BaseHeaderProto\022\017\n\007d",
-      "elHint\030\002 \002(\t\022.\n\006source\030\003 \002(\0132\036.hadoop.hd" +
-      "fs.DatanodeInfoProto\022*\n\003mvc\030\004 \001(\0132\035.hado" +
-      "op.hdfs.VectorClockProto\"@\n\020OpCopyBlockP" +
-      "roto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs.BaseH" +
-      "eaderProto\"D\n\024OpBlockChecksumProto\022,\n\006he" +
-      "ader\030\001 \002(\0132\034.hadoop.hdfs.BaseHeaderProto" +
-      "\"0\n\026ShortCircuitShmIdProto\022\n\n\002hi\030\001 \002(\003\022\n" +
-      "\n\002lo\030\002 \002(\003\"_\n\030ShortCircuitShmSlotProto\0222" +
-      "\n\005shmId\030\001 \002(\0132#.hadoop.hdfs.ShortCircuit" +
-      "ShmIdProto\022\017\n\007slotIdx\030\002 \002(\005\"\233\001\n OpReques",
-      "tShortCircuitAccessProto\022,\n\006header\030\001 \002(\013" +
-      "2\034.hadoop.hdfs.BaseHeaderProto\022\022\n\nmaxVer" +
-      "sion\030\002 \002(\r\0225\n\006slotId\030\003 \001(\0132%.hadoop.hdfs" +
-      ".ShortCircuitShmSlotProto\"^\n%ReleaseShor" +
-      "tCircuitAccessRequestProto\0225\n\006slotId\030\001 \002" +
-      "(\0132%.hadoop.hdfs.ShortCircuitShmSlotProt" +
-      "o\"\\\n&ReleaseShortCircuitAccessResponsePr" +
-      "oto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Status" +
-      "\022\r\n\005error\030\002 \001(\t\"1\n\033ShortCircuitShmReques" +
-      "tProto\022\022\n\nclientName\030\001 \002(\t\"\203\001\n\034ShortCirc",
-      "uitShmResponseProto\022#\n\006status\030\001 \002(\0162\023.ha" +
-      "doop.hdfs.Status\022\r\n\005error\030\002 \001(\t\022/\n\002id\030\003 " +
-      "\001(\0132#.hadoop.hdfs.ShortCircuitShmIdProto" +
-      "\"\253\001\n\021PacketHeaderProto\022\025\n\roffsetInBlock\030" +
-      "\001 \002(\020\022\r\n\005seqno\030\002 \002(\020\022\031\n\021lastPacketInBloc" +
-      "k\030\003 \002(\010\022\017\n\007dataLen\030\004 \002(\017\022\030\n\tsyncBlock\030\005 " +
-      "\001(\010:\005false\022*\n\003mvc\030\006 \001(\0132\035.hadoop.hdfs.Ve" +
-      "ctorClockProto\"\225\001\n\020PipelineAckProto\022\r\n\005s" +
-      "eqno\030\001 \002(\022\022#\n\006status\030\002 \003(\0162\023.hadoop.hdfs" +
-      ".Status\022!\n\026downstreamAckTimeNanos\030\003 \001(\004:",
-      "\0010\022*\n\003mvc\030\004 \001(\0132\035.hadoop.hdfs.VectorCloc" +
-      "kProto\"\\\n\027ReadOpChecksumInfoProto\022,\n\010che" +
-      "cksum\030\001 \002(\0132\032.hadoop.hdfs.ChecksumProto\022" +
-      "\023\n\013chunkOffset\030\002 \002(\004\"\214\002\n\024BlockOpResponse" +
-      "Proto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Stat" +
-      "us\022\024\n\014firstBadLink\030\002 \001(\t\022C\n\020checksumResp" +
-      "onse\030\003 \001(\0132).hadoop.hdfs.OpBlockChecksum" +
-      "ResponseProto\022@\n\022readOpChecksumInfo\030\004 \001(" +
-      "\0132$.hadoop.hdfs.ReadOpChecksumInfoProto\022" +
-      "\017\n\007message\030\005 \001(\t\022!\n\031shortCircuitAccessVe",
-      "rsion\030\006 \001(\r\"<\n\025ClientReadStatusProto\022#\n\006" +
-      "status\030\001 \002(\0162\023.hadoop.hdfs.Status\"9\n\022DNT" +
-      "ransferAckProto\022#\n\006status\030\001 \002(\0162\023.hadoop" +
-      ".hdfs.Status\"\206\001\n\034OpBlockChecksumResponse" +
-      "Proto\022\023\n\013bytesPerCrc\030\001 \002(\r\022\023\n\013crcPerBloc" +
-      "k\030\002 \002(\004\022\013\n\003md5\030\003 \002(\014\022/\n\007crcType\030\004 \001(\0162\036." +
-      "hadoop.hdfs.ChecksumTypeProto*\343\001\n\006Status" +
-      "\022\013\n\007SUCCESS\020\000\022\t\n\005ERROR\020\001\022\022\n\016ERROR_CHECKS" +
-      "UM\020\002\022\021\n\rERROR_INVALID\020\003\022\020\n\014ERROR_EXISTS\020" +
-      "\004\022\026\n\022ERROR_ACCESS_TOKEN\020\005\022\017\n\013CHECKSUM_OK",
-      "\020\006\022\025\n\021ERROR_UNSUPPORTED\020\007\022\017\n\013OOB_RESTART" +
-      "\020\010\022\021\n\rOOB_RESERVED1\020\t\022\021\n\rOOB_RESERVED2\020\n" +
-      "\022\021\n\rOOB_RESERVED3\020\013B>\n%org.apache.hadoop" +
-      ".hdfs.protocol.protoB\022DataTransferProtos" +
-      "\240\001\001"
+      "rategyProto\"3\n\026OpRequestSnapshotProto\022\013\n",
+      "\003rtc\030\001 \002(\004\022\014\n\004bpid\030\002 \002(\t\"W\n\rChecksumProt" +
+      "o\022,\n\004type\030\001 \002(\0162\036.hadoop.hdfs.ChecksumTy" +
+      "peProto\022\030\n\020bytesPerChecksum\030\002 \002(\r\"\305\006\n\021Op" +
+      "WriteBlockProto\0227\n\006header\030\001 \002(\0132\'.hadoop" +
+      ".hdfs.ClientOperationHeaderProto\022/\n\007targ" +
+      "ets\030\002 \003(\0132\036.hadoop.hdfs.DatanodeInfoProt" +
+      "o\022.\n\006source\030\003 \001(\0132\036.hadoop.hdfs.Datanode" +
+      "InfoProto\022D\n\005stage\030\004 \002(\01625.hadoop.hdfs.O" +
+      "pWriteBlockProto.BlockConstructionStage\022" +
+      "\024\n\014pipelineSize\030\005 \002(\r\022\024\n\014minBytesRcvd\030\006 ",
+      "\002(\004\022\024\n\014maxBytesRcvd\030\007 \002(\004\022\035\n\025latestGener" +
+      "ationStamp\030\010 \002(\004\0225\n\021requestedChecksum\030\t " +
+      "\002(\0132\032.hadoop.hdfs.ChecksumProto\022:\n\017cachi" +
+      "ngStrategy\030\n \001(\0132!.hadoop.hdfs.CachingSt" +
+      "rategyProto\022\016\n\006offset\030\013 \001(\004\022*\n\003mvc\030\014 \001(\013" +
+      "2\035.hadoop.hdfs.VectorClockProto\"\277\002\n\026Bloc" +
+      "kConstructionStage\022\031\n\025PIPELINE_SETUP_APP" +
+      "END\020\000\022\"\n\036PIPELINE_SETUP_APPEND_RECOVERY\020" +
+      "\001\022\022\n\016DATA_STREAMING\020\002\022%\n!PIPELINE_SETUP_" +
+      "STREAMING_RECOVERY\020\003\022\022\n\016PIPELINE_CLOSE\020\004",
+      "\022\033\n\027PIPELINE_CLOSE_RECOVERY\020\005\022\031\n\025PIPELIN" +
+      "E_SETUP_CREATE\020\006\022\020\n\014TRANSFER_RBW\020\007\022\026\n\022TR" +
+      "ANSFER_FINALIZED\020\010\022\034\n\030PIPELINE_SETUP_OVE" +
+      "RWRITE\020\t\022\027\n\023PIPELINE_SETUP_SEEK\020\n\"\200\001\n\024Op" +
+      "TransferBlockProto\0227\n\006header\030\001 \002(\0132\'.had" +
+      "oop.hdfs.ClientOperationHeaderProto\022/\n\007t" +
+      "argets\030\002 \003(\0132\036.hadoop.hdfs.DatanodeInfoP" +
+      "roto\"\260\001\n\023OpReplaceBlockProto\022,\n\006header\030\001" +
+      " \002(\0132\034.hadoop.hdfs.BaseHeaderProto\022\017\n\007de" +
+      "lHint\030\002 \002(\t\022.\n\006source\030\003 \002(\0132\036.hadoop.hdf",
+      "s.DatanodeInfoProto\022*\n\003mvc\030\004 \001(\0132\035.hadoo" +
+      "p.hdfs.VectorClockProto\"@\n\020OpCopyBlockPr" +
+      "oto\022,\n\006header\030\001 \002(\0132\034.hadoop.hdfs.BaseHe" +
+      "aderProto\"D\n\024OpBlockChecksumProto\022,\n\006hea" +
+      "der\030\001 \002(\0132\034.hadoop.hdfs.BaseHeaderProto\"" +
+      "0\n\026ShortCircuitShmIdProto\022\n\n\002hi\030\001 \002(\003\022\n\n" +
+      "\002lo\030\002 \002(\003\"_\n\030ShortCircuitShmSlotProto\0222\n" +
+      "\005shmId\030\001 \002(\0132#.hadoop.hdfs.ShortCircuitS" +
+      "hmIdProto\022\017\n\007slotIdx\030\002 \002(\005\"\233\001\n OpRequest" +
+      "ShortCircuitAccessProto\022,\n\006header\030\001 \002(\0132",
+      "\034.hadoop.hdfs.BaseHeaderProto\022\022\n\nmaxVers" +
+      "ion\030\002 \002(\r\0225\n\006slotId\030\003 \001(\0132%.hadoop.hdfs." +
+      "ShortCircuitShmSlotProto\"^\n%ReleaseShort" +
+      "CircuitAccessRequestProto\0225\n\006slotId\030\001 \002(" +
+      "\0132%.hadoop.hdfs.ShortCircuitShmSlotProto" +
+      "\"\\\n&ReleaseShortCircuitAccessResponsePro" +
+      "to\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Status\022" +
+      "\r\n\005error\030\002 \001(\t\"1\n\033ShortCircuitShmRequest" +
+      "Proto\022\022\n\nclientName\030\001 \002(\t\"\203\001\n\034ShortCircu" +
+      "itShmResponseProto\022#\n\006status\030\001 \002(\0162\023.had",
+      "oop.hdfs.Status\022\r\n\005error\030\002 \001(\t\022/\n\002id\030\003 \001" +
+      "(\0132#.hadoop.hdfs.ShortCircuitShmIdProto\"" +
+      "\253\001\n\021PacketHeaderProto\022\025\n\roffsetInBlock\030\001" +
+      " \002(\020\022\r\n\005seqno\030\002 \002(\020\022\031\n\021lastPacketInBlock" +
+      "\030\003 \002(\010\022\017\n\007dataLen\030\004 \002(\017\022\030\n\tsyncBlock\030\005 \001" +
+      "(\010:\005false\022*\n\003mvc\030\006 \001(\0132\035.hadoop.hdfs.Vec" +
+      "torClockProto\"\225\001\n\020PipelineAckProto\022\r\n\005se" +
+      "qno\030\001 \002(\022\022#\n\006status\030\002 \003(\0162\023.hadoop.hdfs." +
+      "Status\022!\n\026downstreamAckTimeNanos\030\003 \001(\004:\001" +
+      "0\022*\n\003mvc\030\004 \001(\0132\035.hadoop.hdfs.VectorClock",
+      "Proto\"\\\n\027ReadOpChecksumInfoProto\022,\n\010chec" +
+      "ksum\030\001 \002(\0132\032.hadoop.hdfs.ChecksumProto\022\023" +
+      "\n\013chunkOffset\030\002 \002(\004\"\214\002\n\024BlockOpResponseP" +
+      "roto\022#\n\006status\030\001 \002(\0162\023.hadoop.hdfs.Statu" +
+      "s\022\024\n\014firstBadLink\030\002 \001(\t\022C\n\020checksumRespo" +
+      "nse\030\003 \001(\0132).hadoop.hdfs.OpBlockChecksumR" +
+      "esponseProto\022@\n\022readOpChecksumInfo\030\004 \001(\013" +
+      "2$.hadoop.hdfs.ReadOpChecksumInfoProto\022\017" +
+      "\n\007message\030\005 \001(\t\022!\n\031shortCircuitAccessVer" +
+      "sion\030\006 \001(\r\"<\n\025ClientReadStatusProto\022#\n\006s",
+      "tatus\030\001 \002(\0162\023.hadoop.hdfs.Status\"9\n\022DNTr" +
+      "ansferAckProto\022#\n\006status\030\001 \002(\0162\023.hadoop." +
+      "hdfs.Status\"\206\001\n\034OpBlockChecksumResponseP" +
+      "roto\022\023\n\013bytesPerCrc\030\001 \002(\r\022\023\n\013crcPerBlock" +
+      "\030\002 \002(\004\022\013\n\003md5\030\003 \002(\014\022/\n\007crcType\030\004 \001(\0162\036.h" +
+      "adoop.hdfs.ChecksumTypeProto*\343\001\n\006Status\022" +
+      "\013\n\007SUCCESS\020\000\022\t\n\005ERROR\020\001\022\022\n\016ERROR_CHECKSU" +
+      "M\020\002\022\021\n\rERROR_INVALID\020\003\022\020\n\014ERROR_EXISTS\020\004" +
+      "\022\026\n\022ERROR_ACCESS_TOKEN\020\005\022\017\n\013CHECKSUM_OK\020" +
+      "\006\022\025\n\021ERROR_UNSUPPORTED\020\007\022\017\n\013OOB_RESTART\020",
+      "\010\022\021\n\rOOB_RESERVED1\020\t\022\021\n\rOOB_RESERVED2\020\n\022" +
+      "\021\n\rOOB_RESERVED3\020\013B>\n%org.apache.hadoop." +
+      "hdfs.protocol.protoB\022DataTransferProtos\240" +
+      "\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -22441,7 +22281,7 @@ public final class DataTransferProtos {
           internal_static_hadoop_hdfs_OpRequestSnapshotProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_OpRequestSnapshotProto_descriptor,
-              new java.lang.String[] { "Timestamp", "Blocks", });
+              new java.lang.String[] { "Rtc", "Bpid", });
           internal_static_hadoop_hdfs_ChecksumProto_descriptor =
             getDescriptor().getMessageTypes().get(6);
           internal_static_hadoop_hdfs_ChecksumProto_fieldAccessorTable = new

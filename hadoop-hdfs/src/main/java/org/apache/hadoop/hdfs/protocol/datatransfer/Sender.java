@@ -176,11 +176,11 @@ public class Sender implements DataTransferProtocol {
   }
 
   @Override
-  public void snapshot(final long timestamp, 
-      final ExtendedBlock[] blks) throws IOException {
+  public void snapshot(final long rtc,
+  		final String bpid)throws IOException {
     OpRequestSnapshotProto proto = OpRequestSnapshotProto.newBuilder()
-        .setTimestamp(timestamp)
-        .addAllBlocks(PBHelper.convert(blks))
+        .setRtc(rtc)
+        .setBpid(bpid)
         .build();
     
     send(out, Op.REQUEST_SNAPSHOT, proto);

@@ -808,13 +808,14 @@ class DataXceiver extends Receiver implements Runnable {
   }
 
   @Override
-  public void snapshot(final long timestamp, final ExtendedBlock[] blks) throws IOException {
+//  public void snapshot(final long timestamp, final ExtendedBlock[] blks) throws IOException {
+  public void snapshot(final long timestamp, String bpid) throws IOException {
     updateCurrentThreadName(Op.REQUEST_SNAPSHOT + " " + timestamp);
 
     final DataOutputStream out = new DataOutputStream(
         getOutputStream());
     try {
-      datanode.data.snapshot(timestamp, blks);
+      datanode.data.snapshot(timestamp, bpid);
       writeResponse(Status.SUCCESS, null, out);
     } finally {
       IOUtils.closeStream(out);

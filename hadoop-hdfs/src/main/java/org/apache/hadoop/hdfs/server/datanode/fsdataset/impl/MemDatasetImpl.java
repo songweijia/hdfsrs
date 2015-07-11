@@ -122,7 +122,8 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     this.dataStorage = storage;
     this.validVolsRequired = 1;
     
-    memManager = new MemDatasetManager(this, conf);
+//    memManager = new MemDatasetManager(this, conf);
+    memManager = new MemDatasetManager(conf);
     
     storageMap = new HashMap<String, DatanodeStorage>();
     storageMap.put("0", new DatanodeStorage("0", DatanodeStorage.State.NORMAL, StorageType.MEM));
@@ -1056,23 +1057,10 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     return null;
   }
   
-  public void snapshot(long timestamp, ExtendedBlock[] blks) 
+//  public void snapshot(long timestamp, ExtendedBlock[] blks)
+  public void snapshot(long rtc,String bpid)
       throws IOException {
-  /*
-   * TODO:
-   *
-    if (blks == null) return;
-    
-    for (ExtendedBlock b : blks) {
-      MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId() + 
-          Block.getDefaultSid(), b.getBlockId());
-
-      MemDatasetManager.MemBlockMeta newMeta = memManager.getNewBlock(b.getBlockPoolId() + 
-          b.getLocalBlock().getSid(), b.getBlockId(), b.getGenerationStamp());
-      
-      memManager.blockSnapshot(meta, newMeta);
-    }
-    */
+  	memManager.snapshot(bpid, rtc, memManager.since(bpid, rtc));
   }
   
   @Override

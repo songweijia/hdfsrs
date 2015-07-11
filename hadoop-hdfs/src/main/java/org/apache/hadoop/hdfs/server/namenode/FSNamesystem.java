@@ -7154,25 +7154,24 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   
   final int timeout = 3000;
   
-  private void sendToDNs(Map<DatanodeInfo, List<ExtendedBlock>> blks, 
-      long timestamp) throws IOException {
-    ArrayList<Socket> clients = new ArrayList<Socket>(blks.size());
-    for (Entry<DatanodeInfo, List<ExtendedBlock>> e : blks.entrySet()) {
-      Socket s = socketFactory.createSocket();
-      s.connect(NetUtils.createSocketAddr(e.getKey().getXferAddr(false)));
-      s.setSoTimeout(timeout);
+  private void sendToDNs(String bpid,long rtc) throws IOException {
+  	List<DatanodeDescriptor> dnList = 
+  			blockManager.getDatanodeManager().getDatanodeListForReport(DatanodeReportType.LIVE);
+    ArrayList<Socket> clients = new ArrayList<Socket>(dnList.size());
+  	for(DatanodeDescriptor dd: dnList){
+  		Socket s = socketFactory.createSocket();
+  		s.connect(NetUtils.createSocketAddr(dd.getXferAddr(false)));
+  		s.setSoTimeout(timeout);
       s.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
       
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
           NetUtils.getOutputStream(s, timeout),
           HdfsConstants.SMALL_BUFFER_SIZE));
       
-      new Sender(out).snapshot(timestamp, e.getValue().toArray(new ExtendedBlock[0]));
+      new Sender(out).snapshot(rtc, bpid);
       s.shutdownOutput();
-      
       clients.add(s);
-    }
-    
+  	}
     //ack
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
@@ -7225,11 +7224,12 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       writeUnlock();
     }
     
-    INode srcRoot = snapshotManager.getSnapshottableRoot(snapshotRoot).getSnapshot(
-        DFSUtil.string2Bytes(snapshotName)).getRoot();
-    Map<DatanodeInfo, List<ExtendedBlock>> blks = new HashMap<DatanodeInfo, List<ExtendedBlock>>();
-    getBlocks(srcRoot, blks);    
-    sendToDNs(blks, timestamp);
+//    INode srcRoot = snapshotManager.getSnapshottableRoot(snapshotRoot).getSnapshot(
+//        DFSUtil.string2Bytes(snapshotName)).getRoot();
+//    Map<DatanodeInfo, List<ExtendedBlock>> blks = new HashMap<DatanodeInfo, List<ExtendedBlock>>();
+//    getBlocks(srcRoot, blks);
+    
+    sendToDNs(this.blockPoolId, timestamp);
 
     if (auditLog.isInfoEnabled() && isExternalInvocation()) {
       logAuditEvent(true, "createSnapshot", snapshotRoot, snapshotPath, null);

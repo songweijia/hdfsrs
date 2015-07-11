@@ -68,8 +68,9 @@ message OpReadBlockProto {
 }
 
 message OpRequestSnapshotProto {
-  required uint64 timestamp = 1;
-  repeated ExtendedBlockProto blocks = 2;
+  required uint64 rtc = 1;
+  required string bpid = 2;
+//  repeated ExtendedBlockProto blocks = 2;
 }
 
 message ChecksumProto {

@@ -38,8 +38,8 @@ public class MemDatasetManager {
     JNIBlog blog; // blog for the memory
   }
   
-  private HashMap<ExtendedBlockId, String> diskMaps;
-  private MemDatasetImpl dataset;
+//  private HashMap<ExtendedBlockId, String> diskMaps;
+//  private MemDatasetImpl dataset;
   private Map<String, PoolData> poolMap; // where data is stored.
   private int myVCRank; // vector clock rank
   private final long capacity;
@@ -110,36 +110,35 @@ public class MemDatasetManager {
     public long getBytesAcked(long sid){
     	return getNumBytes(sid);
     }
+  	@Override
+  	public long getBlockId() {
+  		return this.blockId;
+  	}
 
-	@Override
-	public long getBlockId() {
-		return this.blockId;
-	}
-
-	@Override
-	public long getNumBytes() {
-		return getNumBytes(JNIBlog.CURRENT_SNAPSHOT_ID);
-	}
-	
-	public long getNumBytes(long sid){
-		return blog.getNumberOfBytes(blockId,sid);
-	}
-	
-	public BlogOutputStream getOutputStream(){
-		return getOutputStream((int)getNumBytes());
-	}
-	public BlogOutputStream getOutputStream(int offset){
-		if(offset < 0)
-			return getOutputStream();
-		else
-		  return new BlogOutputStream(blog,blockId,offset);
-	}
-	public BlogInputStream getInputStream(int offset){
-		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID);
-	}
-	protected BlogInputStream getInputStream(int offset, long snapshotId){
-		return new BlogInputStream(blog,blockId,offset,snapshotId);
-	}
+  	@Override
+  	public long getNumBytes() {
+  		return getNumBytes(JNIBlog.CURRENT_SNAPSHOT_ID);
+  	}
+  	
+  	public long getNumBytes(long sid){
+  		return blog.getNumberOfBytes(blockId,sid);
+  	}
+  	
+  	public BlogOutputStream getOutputStream(){
+  		return getOutputStream((int)getNumBytes());
+  	}
+  	public BlogOutputStream getOutputStream(int offset){
+  		if(offset < 0)
+  			return getOutputStream();
+  		else
+  		  return new BlogOutputStream(blog,blockId,offset);
+  	}
+  	public BlogInputStream getInputStream(int offset){
+  		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID);
+  	}
+  	protected BlogInputStream getInputStream(int offset, long snapshotId){
+  		return new BlogInputStream(blog,blockId,offset,snapshotId);
+  	}
   }
   
   class BlogInputStream extends InputStream {
@@ -235,14 +234,15 @@ public class MemDatasetManager {
 	  } 
   }
   
-  MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
-    this.dataset = dataset;
+//  MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
+//    this.dataset = dataset;
+  MemDatasetManager(Configuration conf){
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
     this.myVCRank = conf.getInt(DFS_VCPID, DEFAULT_DFS_VCPID)<<2;
     this.poolMap = new HashMap<String, PoolData>();
-    this.diskMaps = new HashMap<ExtendedBlockId, String>();
+//    this.diskMaps = new HashMap<ExtendedBlockId, String>();
   }
   
   void shutdown() {
@@ -356,5 +356,10 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
  */
   void snapshot(String bpid, long snapshotId, long eid)throws IOException{
 	  poolMap.get(bpid).blog.createSnapshot(snapshotId, eid);
+  }
+  
+  long since(String bpid, long rtc)throws IOException{
+  	VectorClock vc = new VectorClock();
+  	return poolMap.get(bpid).blog.since(rtc, vc);
   }
 }

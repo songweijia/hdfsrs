@@ -453,6 +453,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
   
   public StorageType getStorageType();
   
-  public void snapshot(long timestamp, ExtendedBlock[] blks) throws IOException;
+//  public void snapshot(long timestamp, ExtendedBlock[] blks) throws IOException;
+  public void snapshot(long rtc, String bpid)throws IOException;
 }
 
