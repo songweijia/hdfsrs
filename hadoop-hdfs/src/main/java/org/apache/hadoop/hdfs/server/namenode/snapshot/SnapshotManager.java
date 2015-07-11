@@ -196,7 +196,7 @@ public class SnapshotManager implements SnapshotStats {
    *           snapshot with the given name for the directory, and/or 3)
    *           snapshot number exceeds quota
    */
-  public String createSnapshot(final String path, String snapshotName
+  public String createSnapshot(final String path, String snapshotName, long localRtc
       ) throws IOException {
     if (snapshotCounter == getMaxSnapshotID()) {
       // We have reached the maximum allowable snapshot ID and since we don't
@@ -211,7 +211,7 @@ public class SnapshotManager implements SnapshotStats {
     INodeDirectorySnapshottable srcRoot = getSnapshottableRoot(path);
     
     //srcRoot.addSnapshot(snapshotCounter, snapshotName);
-    srcRoot.addSnapshot(JNIBlog.readLocalRTC(), snapshotName); // snapshot id is read from local RTC
+    srcRoot.addSnapshot(localRtc, snapshotName); // snapshot id is read from local RTC
       
     //create success, update id
     snapshotCounter++;

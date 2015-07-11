@@ -283,6 +283,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
+import edu.cornell.cs.blog.JNIBlog;
+
 /***************************************************
  * FSNamesystem does the actual bookkeeping work for the
  * DataNode.
@@ -7093,6 +7095,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     if (cacheEntry != null && cacheEntry.isSuccess()) {
       return (String) cacheEntry.getPayload();
     }
+    
+    long timestamp = JNIBlog.readLocalRTC();
     String snapshotPath = null;
     writeLock();
     try {
@@ -7114,11 +7118,11 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       dir.verifySnapshotName(snapshotName, snapshotRoot);
       dir.writeLock();
       try {
-        snapshotPath = snapshotManager.createSnapshot(snapshotRoot, snapshotName);
+        snapshotPath = snapshotManager.createSnapshot(snapshotRoot, snapshotName, timestamp);
       } finally {
         dir.writeUnlock();
       }
-      getEditLog().logCreateSnapshot(snapshotRoot, snapshotName,
+      getEditLog().logCreateSnapshot(snapshotRoot, snapshotName,timestamp,
           cacheEntry != null);
     } finally {
       writeUnlock();
@@ -7196,7 +7200,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     final FSPermissionChecker pc = getPermissionChecker();
     String snapshotPath = null;
     writeLock();
-    long timestamp = Time.now();
+    //long timestamp = Time.now();
+    long timestamp = JNIBlog.readLocalRTC();
     try {
       checkOperation(OperationCategory.WRITE);
       checkNameNodeSafeMode("Cannot create snapshot for " + snapshotRoot);
@@ -7216,7 +7221,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       dir.verifySnapshotName(snapshotName, snapshotRoot);
       dir.writeLock();
       try {
-        snapshotPath = snapshotManager.createSnapshot(snapshotRoot, snapshotName);
+        snapshotPath = snapshotManager.createSnapshot(snapshotRoot, snapshotName, timestamp);
       } finally {
         dir.writeUnlock();
       }

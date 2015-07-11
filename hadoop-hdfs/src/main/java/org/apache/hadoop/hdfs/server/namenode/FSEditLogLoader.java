@@ -650,7 +650,7 @@ public class FSEditLogLoader {
           renameReservedPathsOnUpgrade(createSnapshotOp.snapshotRoot,
               logVersion);
       String path = fsNamesys.getSnapshotManager().createSnapshot(
-          snapshotRoot, createSnapshotOp.snapshotName);
+          snapshotRoot, createSnapshotOp.snapshotName, createSnapshotOp.rtc);
       if (toAddRetryCache) {
         fsNamesys.addCacheEntryWithPayload(createSnapshotOp.rpcClientId,
             createSnapshotOp.rpcCallId, path);

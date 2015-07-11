@@ -2794,6 +2794,7 @@ public abstract class FSEditLogOp {
   static class CreateSnapshotOp extends FSEditLogOp {
     String snapshotRoot;
     String snapshotName;
+    long rtc;
     
     public CreateSnapshotOp() {
       super(OP_CREATE_SNAPSHOT);
@@ -2806,6 +2807,11 @@ public abstract class FSEditLogOp {
     CreateSnapshotOp setSnapshotName(String snapName) {
       this.snapshotName = snapName;
       return this;
+    }
+    
+    CreateSnapshotOp setSnapshotRtc(long rtc){
+    	this.rtc = rtc;
+    	return this;
     }
 
     public CreateSnapshotOp setSnapshotRoot(String snapRoot) {

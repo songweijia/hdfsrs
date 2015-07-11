@@ -24,6 +24,8 @@ import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hdfs.server.namenode.FSDirectory;
 import org.apache.hadoop.hdfs.server.namenode.INode;
 import org.junit.*;
+
+import edu.cornell.cs.blog.JNIBlog;
 import static org.mockito.Mockito.*;
 
 
@@ -50,14 +52,14 @@ public class TestSnapshotManager {
     // Create testMaxSnapshotLimit snapshots. These should all succeed.
     //
     for (Integer i = 0; i < testMaxSnapshotLimit; ++i) {
-      sm.createSnapshot("dummy", i.toString());
+      sm.createSnapshot("dummy", i.toString(), JNIBlog.readLocalRTC());
     }
 
     // Attempt to create one more snapshot. This should fail due to snapshot
     // ID rollover.
     //
     try {
-      sm.createSnapshot("dummy", "shouldFailSnapshot");
+      sm.createSnapshot("dummy", "shouldFailSnapshot", JNIBlog.readLocalRTC());
       Assert.fail("Expected SnapshotException not thrown");
     } catch (SnapshotException se) {
       Assert.assertTrue(
@@ -72,7 +74,7 @@ public class TestSnapshotManager {
     // to snapshot ID rollover.
     //
     try {
-      sm.createSnapshot("dummy", "shouldFailSnapshot2");
+      sm.createSnapshot("dummy", "shouldFailSnapshot2", JNIBlog.readLocalRTC());
       Assert.fail("Expected SnapshotException not thrown");
     } catch (SnapshotException se) {
       Assert.assertTrue(

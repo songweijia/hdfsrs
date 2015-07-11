@@ -947,9 +947,9 @@ public class FSEditLog implements LogsPurgeable {
     logEdit(op);
   }
   
-  void logCreateSnapshot(String snapRoot, String snapName, boolean toLogRpcIds) {
+  void logCreateSnapshot(String snapRoot, String snapName, long rtc, boolean toLogRpcIds) {
     CreateSnapshotOp op = CreateSnapshotOp.getInstance(cache.get())
-        .setSnapshotRoot(snapRoot).setSnapshotName(snapName);
+        .setSnapshotRoot(snapRoot).setSnapshotName(snapName).setSnapshotRtc(rtc);
     logRpcIds(op, toLogRpcIds);
     logEdit(op);
   }
