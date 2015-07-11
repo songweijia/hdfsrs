@@ -28,6 +28,8 @@ import org.apache.hadoop.util.LightWeightGSet.SetIterator;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
+import edu.cornell.cs.blog.JNIBlog;
+
 /**
  * This class maintains the map from a block to its metadata.
  * block's metadata currently includes blockCollection it belongs to and
@@ -170,7 +172,13 @@ class BlocksMap {
 
   /** counts number of containing nodes. Better than using iterator. */
   int numNodes(Block b) {
-    BlockInfo info = blocks.get(b);
+  	Block kb = b;
+    if(kb.getLongSid() != JNIBlog.CURRENT_SNAPSHOT_ID){
+      kb = new Block(b);
+      kb.setSid(JNIBlog.CURRENT_SNAPSHOT_ID);
+    }
+  	
+    BlockInfo info = blocks.get(kb);
     return info == null ? 0 : info.numNodes();
   }
 
