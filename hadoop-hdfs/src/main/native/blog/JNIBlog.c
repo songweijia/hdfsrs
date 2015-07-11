@@ -227,7 +227,7 @@ int64_t read_local_rtc()
   
   gettimeofday(&tv,NULL);
   rtc = tv.tv_sec;
-  rtc = (rtc<<32) | tv.tv_usec;
+  rtc = (rtc<<20) | tv.tv_usec;
   return rtc;
 }
 
