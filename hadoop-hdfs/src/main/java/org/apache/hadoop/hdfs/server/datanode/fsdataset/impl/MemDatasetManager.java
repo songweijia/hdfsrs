@@ -360,6 +360,8 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
   
   long since(String bpid, long rtc)throws IOException{
   	VectorClock vc = new VectorClock();
-  	return poolMap.get(bpid).blog.since(rtc, vc);
+  	if(poolMap.get(bpid).blog.since(rtc, vc)!=0)
+  		throw new IOException("call since failed with rtc="+rtc);
+  	return vc.vc.get(poolMap.get(bpid).blog.getMyRank());
   }
 }

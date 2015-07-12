@@ -23,6 +23,13 @@ public class JNIBlog {
   private long jniData;
 
   /**
+   * @return my rank
+   */
+  public int getMyRank(){
+    return vc.pid;
+  }
+  
+  /**
    * initialization
    * @param rank - rank of the current node
    * @param blockSize - block size for each block
