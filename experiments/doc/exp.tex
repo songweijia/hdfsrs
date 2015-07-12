@@ -1,0 +1,152 @@
+%-----------------------------------------------------------------------------
+%
+%               Template for sigplanconf LaTeX Class
+%
+% Name:         sigplanconf-template.tex
+%
+% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
+%               file for SIGPLAN conference proceedings.
+%
+% Guide:        Refer to "Author's Guide to the ACM SIGPLAN Class,"
+%               sigplanconf-guide.pdf
+%
+% Author:       Paul C. Anagnostopoulos
+%               Windfall Software
+%               978 371-2316
+%               paul@windfall.com
+%
+% Created:      15 February 2005
+%
+%-----------------------------------------------------------------------------
+
+
+\documentclass[10pt,preprint]{sigplanconf}
+
+% The following \documentclass options may be useful:
+
+% preprint      Remove this option only once the paper is in final form.
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{times}
+\usepackage{datetime}
+% \usepackage{flexisym}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{comment}
+\usepackage{url}
+\usepackage{color}
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{parskip}
+\usepackage{tabularx}
+%\usepackage{hyperref}
+%\hypersetup{
+%  colorlinks,
+%  linkcolor={red!50!black},
+%  citecolor={blue!50!black},
+%  urlcolor={blue!80!black}
+%}
+
+%\special{papersize=8.5in,11in}
+%\setlength{\pdfpageheight}{\paperheight}
+%\setlength{\pdfpagewidth}{\paperwidth}
+
+\widowpenalty 10000
+\clubpenalty 10000
+\renewcommand{\topfraction}{.99}
+\renewcommand{\bottomfraction}{.99}
+\renewcommand{\textfraction}{.01}
+\renewcommand{\floatpagefraction}{.9}
+\renewcommand{\dbltopfraction}{.99}
+\renewcommand{\dblfloatpagefraction}{.9}
+
+\conferenceinfo{SOSP'15}{October 4--7, 2015, Monterey, CA}
+\copyrightyear{2015}
+%\copyrightdata{978-1-nnnn-nnnn-n/yy/mm}
+%\doi{nnnnnnn.nnnnnnn}
+
+\preprintfooter{Weijia Song, ws393@cornell.edu}
+
+% These only appear when the 'preprint' option is specified.
+% Enabling these will cause the first page of the document to fail the
+% banal format check on HotCRP :-(
+%\titlebanner{Under submission to SOSP 2015 - do not cite or distribute}
+%\preprintfooter{Draft of {\currenttime}, \today{}}
+
+% No date in title area.
+\date{}
+
+\newcommand{\NOcite}[1]{}
+
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{axiom}{Axiom}
+\newtheorem{hypothesis}{Hypothesis}
+
+\hyphenation{broad-casts}
+
+% ITTAY: 
+
+\newcommand{\ittayComment}[2][*]{\textbf{\color{red}#2}\marginpar{\color{red}#1}} 
+
+% ITTAY END 
+
+\begin{document}
+
+
+
+%\title{Supercloud: Combining Diverse Cloud Providers into a Best-of-Breed Cloud}
+% \title{Follow the Sun: User-Level Cloud Virtual-Machine-Migration-as-a-Service}
+\title{HDFS Consistent Snapshots Evaluation}
+
+% Paper number and no. of pages as author
+\titlebanner{Weijia Song, Cornell, ws393@cornell.edu} 
+\authorinfo{\textbf{\#NNN}}{N pages}
+
+\maketitle
+
+\input {intro.tex}
+
+\input {exp1.tex}
+
+% \tableofcontents
+
+% Use the following at camera-ready time to suppress page numbers.
+% Comment it out when you first submit the paper for review.
+%\thispagestyle{empty}
+
+% \input{introduction.tex}
+
+% \input{definition.tex}
+
+%\input{algorithm.tex}
+
+% \input{proof.tex}
+
+% \input{discussion.tex}
+
+% \input{algorithm2.tex}
+
+% \input{related.tex}
+
+\nocite{chandy}
+\clearpage
+\bibliographystyle{acm}
+\bibliography{exp}
+
+
+%\theendnotes
+
+\end{document}
+
+
+
+
+
+
+
