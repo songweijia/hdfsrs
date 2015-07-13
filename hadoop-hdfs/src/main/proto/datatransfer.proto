@@ -81,7 +81,7 @@ message OpResponseSnapshotI1Proto{
 
 message OpRequestSnapshotI2Proto{
   required uint64 rtc = 1; //rtc clock
-  required long eid = 2; //log id
+  required uint64 eid = 2; //log id
   required string bpid = 3; //bpid
 }
 
