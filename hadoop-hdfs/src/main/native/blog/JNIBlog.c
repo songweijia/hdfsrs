@@ -53,9 +53,11 @@ void print_block(block_t *block, log_t *log, int page_size)
   printf("ID: %ld\n", block->id);
   printf("Length: %d\n", block->length);
   printf("Capacity: %d\n", block->cap);
-  for (i = 0; i <= (block->length - 1) / page_size; i++) {
-    printf("Page %d\n", i);
-    print_page(block->pages[i]);
+  if (block->length != 0) {
+    for (i = 0; i <= (block->length - 1) / page_size; i++) {
+      printf("Page %d\n", i);
+      print_page(block->pages[i]);
+    }
   }
   printf("Last Log Entry: %ld\n", block->last_entry - log);
 }
@@ -188,7 +190,10 @@ block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *s
       block->last_entry = NULL;
     } else {
       block->length = log[log_id].block_length;
-      block->cap = (block->length - 1) / filesystem->page_size + 1;
+      if (block->length == 0)
+        block->cap = 0;
+      else
+        block->cap = (block->length - 1) / filesystem->page_size + 1;
       block->pages = (page_t**) malloc(block->cap*sizeof(page_t*));
       for (i = 0; i < block->cap; i++)
         block->pages[i] = NULL;
@@ -282,6 +287,23 @@ void set_vector_clock(JNIEnv *env, jobject thisObj, size_t vc_length, char* vc)
   (*env)->CallObjectMethod(env, thisObj, mid, jbyteArray);
 }
 
+int64_t get_vector_clock_value(JNIEnv *env, jobject vcObj, size_t vc_length, char* vc, int rank)
+{
+  jclass thisClass = (*env)->GetObjectClass(env, vcObj);
+  jmethodID mid = (*env)->GetMethodID(env, thisClass, "fromByteArrayNoPid", "([B)V");
+  jmethodID mid2 = (*env)->GetMethodID(env, thisClass, "GetVectorClockValue", "(I)J");
+  jbyteArray jbyteArray;
+  
+  if (mid == NULL || mid2 == NULL) {
+    perror("Error: ");
+    exit(-1);
+  }
+  jbyteArray = (*env)->NewByteArray(env, vc_length);
+  (*env)->SetByteArrayRegion (env, jbyteArray, 0, vc_length, (jbyte *) vc);
+  (*env)->CallObjectMethod(env, vcObj, mid, jbyteArray);
+  
+  return (int64_t) (*env)->CallObjectMethod(env, vcObj, mid2, rank);
+}
 filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
 {
   jclass thisCls = (*env)->GetObjectClass(env,thisObj);
@@ -660,7 +682,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
  * Method:    since
  * Signature: (JLedu/cornell/cs/sa/VectorClock;)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JLedu_cornell_cs_sa_VectorClock_2
   (JNIEnv *env, jobject thisObj, jlong rtc, jobject mvc)
 {
   filesystem_t *filesystem;
@@ -697,6 +719,53 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    since
+ * Signature: (JIJLedu/cornell/cs/sa/VectorClock;)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JIJLedu_cornell_cs_sa_VectorClock_2
+  (JNIEnv *env, jobject thisObj, jlong rtc, jint rank, jlong lcv, jobject mvc)
+
+{
+  filesystem_t *filesystem;
+  log_t *log;
+  int64_t log_pos;
+  int64_t cur_value;
+  
+  // Find the corresponding log.
+  filesystem = get_filesystem(env, thisObj);
+  log = filesystem->log;
+  // If the real time cut is before the first log...
+  if (log[0].rtc > rtc)
+    return -1;
+  // If the real time cut is after the last log...
+  log_pos = filesystem->log_length-1;
+  if (log[log_pos].rtc <= rtc) {
+    while ((log_pos >= 0) && (get_vector_clock_value(env, mvc, log[log_pos].vc_length, log[log_pos].vc, rank) > lcv))
+      log_pos--;
+    if (log_pos == -1)
+      return -1;
+    set_vector_clock(env, mvc, log[log_pos].vc_length, log[log_pos].vc);
+    return 0;
+  }
+  
+  log_pos = filesystem->log_length / 2;
+  cur_value = log_pos / 2;
+  while ((log[log_pos].rtc > rtc) || (log[log_pos+1].rtc <= rtc)) {
+    if (log[log_pos].rtc > rtc)
+      log_pos -= cur_value;
+    else
+      log_pos += cur_value;
+    if (cur_value > 1)
+      cur_value /= 2;
+  }
+  while ((log_pos >= 0) && (get_vector_clock_value(env, mvc, log[log_pos].vc_length, log[log_pos].vc, rank) > lcv))
+      log_pos--;
+  if (log_pos == -1)
+      return -1;
+  set_vector_clock(env, mvc, log[log_pos].vc_length, log[log_pos].vc);
+  return 0;
+}
+/*
  * Method:    createSnapshot
  * Signature: (JJ)I
  */

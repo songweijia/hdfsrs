@@ -79,6 +79,10 @@ public class VectorClock implements ILogicalClock,Serializable
 		vc = new HashMap<Integer,Long> (vco.vc);
 		pid = vco.pid;
 	}
+	
+	public long GetVectorClockValue(int rank){
+	    return vc.get(rank);
+	}
 
 	/* (non-Javadoc)
 	 * @see edu.cornell.cs.sa.ILogicalClock#tick()
