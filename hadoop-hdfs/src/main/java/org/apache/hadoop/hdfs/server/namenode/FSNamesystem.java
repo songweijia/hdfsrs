@@ -104,6 +104,7 @@ import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7165,7 +7166,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   			blockManager.getDatanodeManager().getDatanodeListForReport(DatanodeReportType.LIVE);
   	
     ArrayList<Socket> clients = new ArrayList<Socket>(dnList.size());
-    Map<Integer, Socket> rankToSocket = new HashMap<Integer,Socket>();
+//    Map<Integer, Socket> rankToSocket = new HashMap<Integer,Socket>();
+    Map<Integer, SocketAddress> rankToSockAddr = new HashMap<Integer,SocketAddress>();
     
     //STEP I.1: send rtc
     for(DatanodeDescriptor dd: dnList){
@@ -7178,7 +7180,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
           NetUtils.getOutputStream(s, timeout),
           HdfsConstants.SMALL_BUFFER_SIZE));
       new Sender(out).snapshotI1(rtc, NameNode.myrank, nneid, bpid);
-//      s.shutdownOutput();
+      s.shutdownOutput();
       clients.add(s);
   	}
   	
@@ -7189,17 +7191,30 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
       OpResponseSnapshotI1Proto res = OpResponseSnapshotI1Proto.parseFrom(PBHelper.vintPrefixed(in));
-      rankToSocket.put(res.getMyrank(), s);
+      rankToSockAddr.put(res.getMyrank(), s.getRemoteSocketAddress());
+      //done
+      IOUtils.closeStream(in);
+      IOUtils.closeSocket(s);
       //COLLECT VectorClock
       vcs[pos++] = PBHelper.convert(res.getVc());
     }
     VectorClock cut = (VectorClock)vcs[0].getCausallyConsistentClock(vcs);
+    clients.clear();
     
     //STEP I.3: snapshot command
-    for (Map.Entry<Integer, Socket> e: rankToSocket.entrySet()){
-    	DataOutputStream out = new DataOutputStream(e.getValue().getOutputStream());
+    for (Map.Entry<Integer, SocketAddress> e: rankToSockAddr.entrySet()){
+    	Socket s  =socketFactory.createSocket();
+    	s.connect(e.getValue());
+  		s.setSoTimeout(timeout);
+      s.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
+
+      DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
+      		NetUtils.getOutputStream(s,timeout),
+      		HdfsConstants.SMALL_BUFFER_SIZE));
+      
     	new Sender(out).snapshotI2(rtc, cut.vc.get(e.getKey()), bpid);
-    	e.getValue().shutdownOutput();
+    	s.shutdownOutput();
+    	clients.add(s);
     }
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
@@ -7207,9 +7222,6 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       if (SUCCESS != response.getStatus()) {
         throw new IOException("Failed to add a datanode:" + s.getInetAddress().getHostAddress());
       }
-      
-      IOUtils.closeStream(in);
-      IOUtils.closeSocket(s);
     }
   }
   
