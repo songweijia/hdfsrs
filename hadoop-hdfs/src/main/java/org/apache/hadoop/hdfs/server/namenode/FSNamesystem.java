@@ -7190,13 +7190,15 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     //STEP I.2: collect vector clock report and calculate
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
-      OpResponseSnapshotI1Proto res = OpResponseSnapshotI1Proto.parseFrom(PBHelper.vintPrefixed(in));
-      rankToSockAddr.put(res.getMyrank(), s.getRemoteSocketAddress());
-      //done
-      IOUtils.closeStream(in);
-      IOUtils.closeSocket(s);
-      //COLLECT VectorClock
-      vcs[pos++] = PBHelper.convert(res.getVc());
+    	try{
+        OpResponseSnapshotI1Proto res = OpResponseSnapshotI1Proto.parseFrom(PBHelper.vintPrefixed(in));
+        rankToSockAddr.put(res.getMyrank(), s.getRemoteSocketAddress());
+        //COLLECT VectorClock
+        vcs[pos++] = PBHelper.convert(res.getVc());
+    	}finally{
+        IOUtils.closeStream(in);
+        IOUtils.closeSocket(s);
+    	}
     }
     VectorClock cut = (VectorClock)vcs[0].getCausallyConsistentClock(vcs);
     clients.clear();
@@ -7218,10 +7220,15 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     }
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
-      BlockOpResponseProto response = BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(in));
-      if (SUCCESS != response.getStatus()) {
-        throw new IOException("Failed to add a datanode:" + s.getInetAddress().getHostAddress());
-      }
+    	try{
+        BlockOpResponseProto response = BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(in));
+        if (SUCCESS != response.getStatus()) {
+          throw new IOException("Failed to add a datanode:" + s.getInetAddress().getHostAddress());
+        }
+    	}finally{
+        IOUtils.closeStream(in);
+        IOUtils.closeSocket(s);
+    	}
     }
   }
   
