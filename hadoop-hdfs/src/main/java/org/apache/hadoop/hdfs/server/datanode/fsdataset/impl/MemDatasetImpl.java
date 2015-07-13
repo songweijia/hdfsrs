@@ -1058,9 +1058,14 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   }
   
 //  public void snapshot(long timestamp, ExtendedBlock[] blks)
-  public void snapshot(long rtc,String bpid)
+  public VectorClock snapshotI1(long rtc,int nnrank, long nneid, String bpid)
       throws IOException {
-  	memManager.snapshot(bpid, rtc, memManager.since(bpid, rtc));
+  	return memManager.since(bpid, nnrank, nneid, rtc);
+  }
+  
+  public void snapshotI2(long rtc, long eid, String bpid)
+  throws IOException{
+  	memManager.snapshot(bpid, rtc, eid);
   }
   
   @Override

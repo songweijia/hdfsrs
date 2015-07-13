@@ -67,10 +67,22 @@ message OpReadBlockProto {
   optional CachingStrategyProto cachingStrategy = 5;
 }
 
-message OpRequestSnapshotProto {
+message OpRequestSnapshotI1Proto {
   required uint64 rtc = 1;
   required string bpid = 2;
-//  repeated ExtendedBlockProto blocks = 2;
+  required uint32 nnrank = 3;
+  required uint64 nneid = 4;
+}
+
+message OpResponseSnapshotI1Proto{
+  required VectorClockProto vc = 1;
+  required uint32 myrank = 2;
+}
+
+message OpRequestSnapshotI2Proto{
+  required uint64 rtc = 1; //rtc clock
+  required long eid = 2; //log id
+  required string bpid = 3; //bpid
 }
 
 message ChecksumProto {

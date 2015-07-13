@@ -30,14 +30,16 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumP
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpCopyBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReplaceBlockProto;
-import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotI1Proto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotI2Proto;
+//import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestShortCircuitAccessProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpWriteBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ReleaseShortCircuitAccessRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ShortCircuitShmRequestProto;
-import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto;
+//import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto;
 import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 import org.apache.hadoop.hdfs.server.datanode.CachingStrategy;
 
@@ -93,9 +95,15 @@ public abstract class Receiver implements DataTransferProtocol {
     case REQUEST_SHORT_CIRCUIT_SHM:
       opRequestShortCircuitShm(in);
       break;
-    case REQUEST_SNAPSHOT:
-      opRequestSnapshot(in);
-      break;
+//    case REQUEST_SNAPSHOT:
+//      opRequestSnapshot(in);
+//      break;
+    case REQUEST_SNAPSHOT_I1:
+    	opRequestSnapshotI1(in);
+    	break;
+    case REQUEST_SNAPSHOT_I2:
+    	opRequestSnapshotI2(in);
+    	break;
     default:
       throw new IOException("Unknown op " + op + " in data stream");
     }
@@ -158,12 +166,24 @@ public abstract class Receiver implements DataTransferProtocol {
         proto.getHeader().getClientName(),
         PBHelper.convert(proto.getTargetsList()));
   }
-
+/*
   private void opRequestSnapshot(DataInputStream in) throws IOException {
     final OpRequestSnapshotProto proto = 
         OpRequestSnapshotProto.parseFrom(vintPrefixed(in));
 //    snapshot(proto.getTimestamp(), PBHelper.convert(proto.getBlocksList().toArray(new ExtendedBlockProto[0])));
     snapshot(proto.getRtc(),proto.getBpid());
+  }
+*/
+  private void opRequestSnapshotI1(DataInputStream in) throws IOException{
+  	final OpRequestSnapshotI1Proto proto =
+  			OpRequestSnapshotI1Proto.parseFrom(vintPrefixed(in));
+  			snapshotI1(proto.getRtc(),proto.getNnrank(),proto.getNneid(),proto.getBpid());
+  }
+  
+  private void opRequestSnapshotI2(DataInputStream in) throws IOException{
+  	final OpRequestSnapshotI2Proto proto =
+  			OpRequestSnapshotI2Proto.parseFrom(vintPrefixed(in));
+  			snapshotI2(proto.getRtc(),proto.getEid(),proto.getBpid());
   }
   
   /** Receive {@link Op#REQUEST_SHORT_CIRCUIT_FDS} */

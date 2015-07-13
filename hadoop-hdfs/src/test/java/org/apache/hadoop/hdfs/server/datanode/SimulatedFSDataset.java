@@ -1127,9 +1127,14 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
     throw new UnsupportedOperationException();
   }
   
-  public void snapshot(long rtc, String bpid) 
+  public VectorClock snapshotI1(long rtc, int nnrank, long nneid, String bpid) 
       throws IOException {
     throw new UnsupportedOperationException();
+  }
+  
+  public void snapshotI2(long rtc, long eid, String bpid)
+  throws IOException {
+  	throw new UnsupportedOperationException();
   }
 }
 

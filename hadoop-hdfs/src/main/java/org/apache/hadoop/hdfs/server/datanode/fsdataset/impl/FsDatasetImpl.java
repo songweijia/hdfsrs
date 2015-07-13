@@ -1922,8 +1922,13 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
     return null;
   }
   
-  public void snapshot(long rtc,String bpid)
+  public VectorClock snapshotI1(long rtc,int nnrank, long nneid, String bpid)
   throws IOException{
+  	//do nothing
+  	return null;
+  }
+  
+  public void snapshotI2(long rtc, long eid, String bpid){
   	//do nothing
   	return;
   }

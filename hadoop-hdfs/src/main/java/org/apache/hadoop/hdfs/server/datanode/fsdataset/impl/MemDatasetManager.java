@@ -358,10 +358,22 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
 	  poolMap.get(bpid).blog.createSnapshot(snapshotId, eid);
   }
   
+  VectorClock since(String bpid, int nnrank, long nneid, long rtc)
+  throws IOException{
+  	VectorClock vc = new VectorClock();
+  	if(poolMap.get(bpid).blog.since(rtc, nnrank, nneid, vc)!=0)
+  		throw new IOException("call since failed with rtc="+rtc+
+  				",nnrank="+nnrank+
+  				",nneid="+nneid);
+  	
+  	return vc;
+  }
+/*  
   long since(String bpid, long rtc)throws IOException{
   	VectorClock vc = new VectorClock();
   	if(poolMap.get(bpid).blog.since(rtc, vc)!=0)
   		throw new IOException("call since failed with rtc="+rtc);
   	return vc.vc.get(poolMap.get(bpid).blog.getMyRank());
   }
+*/
 }

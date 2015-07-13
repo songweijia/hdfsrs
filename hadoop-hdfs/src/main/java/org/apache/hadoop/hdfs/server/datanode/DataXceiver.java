@@ -62,6 +62,7 @@ import org.apache.hadoop.hdfs.protocol.datatransfer.Sender;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.BlockOpResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ClientReadStatusProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumResponseProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpResponseSnapshotI1Proto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ReadOpChecksumInfoProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ReleaseShortCircuitAccessResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ShortCircuitShmResponseProto;
@@ -806,7 +807,7 @@ class DataXceiver extends Receiver implements Runnable {
     datanode.metrics.addWriteBlockOp(elapsed());
     datanode.metrics.incrWritesFromClient(peer.isLocal());
   }
-
+/*
   @Override
 //  public void snapshot(final long timestamp, final ExtendedBlock[] blks) throws IOException {
   public void snapshot(final long timestamp, String bpid) throws IOException {
@@ -820,6 +821,38 @@ class DataXceiver extends Receiver implements Runnable {
     } finally {
       IOUtils.closeStream(out);
     }
+  }
+*/
+  @Override
+  public void snapshotI1(final long rtc, final int nnrank, final long nneid, final String bpid)
+  throws IOException{
+  	updateCurrentThreadName(Op.REQUEST_SNAPSHOT_I1 + " " + rtc);
+  	
+  	final DataOutputStream out = new DataOutputStream(getOutputStream());
+  	try{
+  		VectorClock vc = datanode.data.snapshotI1(rtc, nnrank, nneid, bpid);
+  		OpResponseSnapshotI1Proto proto = OpResponseSnapshotI1Proto.newBuilder()
+  				.setVc(PBHelper.convert(vc))
+  				.setMyrank(vc.pid).build();
+  		proto.writeDelimitedTo(out);
+  	} finally{
+  		IOUtils.closeStream(out);
+  	}
+  }
+  
+ 
+  @Override
+  public void snapshotI2(final long rtc, final long eid, final String bpid)
+  throws IOException{
+  	updateCurrentThreadName(Op.REQUEST_SNAPSHOT_I2 + " " + rtc);
+  	
+  	final DataOutputStream out = new DataOutputStream(getOutputStream());
+  	try{
+  		datanode.data.snapshotI2(rtc, eid, bpid);
+  		writeResponse(Status.SUCCESS, null, out);
+  	} finally{
+  		IOUtils.closeStream(out);
+  	}
   }
   
   @Override

@@ -104,6 +104,16 @@ public class JNIBlog {
   public native int since(long rtc, VectorClock vc);
   
   /**
+   * Get the vc of the latest log before rtc.
+   * @param rtc realtime clock for expected snapshot
+   * @param nnrank rank for the namenode
+   * @param nnver version for the vectorclock
+   * @param vc[OUTPUT] vector clock
+   * @return
+   */
+  public native int since(long rtc, int nnrank, long nnver, VectorClock vc);
+  
+  /**
    * create a local realtime snapshot
    * @param rtc realtime clock as identifier of the snapshot
    * @param eid log entry id, corresponding to the value

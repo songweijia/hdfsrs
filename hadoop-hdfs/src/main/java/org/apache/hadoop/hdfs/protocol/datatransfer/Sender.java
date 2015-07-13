@@ -19,6 +19,8 @@ package org.apache.hadoop.hdfs.protocol.datatransfer;
 
 import static org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil.toProto;
 
+
+
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -34,7 +36,9 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumP
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpCopyBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReplaceBlockProto;
-import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotI1Proto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotI2Proto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpResponseSnapshotI1Proto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestShortCircuitAccessProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto;
@@ -174,7 +178,7 @@ public class Sender implements DataTransferProtocol {
 
     send(out, Op.TRANSFER_BLOCK, proto);
   }
-
+/*
   @Override
   public void snapshot(final long rtc,
   		final String bpid)throws IOException {
@@ -184,6 +188,25 @@ public class Sender implements DataTransferProtocol {
         .build();
     
     send(out, Op.REQUEST_SNAPSHOT, proto);
+  }
+*/  
+  @Override
+  public void snapshotI1(final long rtc, final int nnrank,
+  		final long nneid, final String bpid)throws IOException{
+  	OpRequestSnapshotI1Proto proto = OpRequestSnapshotI1Proto.newBuilder()
+  			.setRtc(rtc)
+  			.setNnrank(nnrank)
+  			.setNneid(nneid)
+  			.setBpid(bpid).build();
+  	send(out, Op.REQUEST_SNAPSHOT_I1, proto);
+  }
+  
+  @Override
+  public void snapshotI2(final long rtc, final long eid,
+  		final String bpid)throws IOException{
+  	OpRequestSnapshotI2Proto proto = OpRequestSnapshotI2Proto.newBuilder()
+  			.setRtc(rtc).setBpid(bpid).setEid(eid).build();
+  	send(out, Op.REQUEST_SNAPSHOT_I2, proto);
   }
   
   @Override

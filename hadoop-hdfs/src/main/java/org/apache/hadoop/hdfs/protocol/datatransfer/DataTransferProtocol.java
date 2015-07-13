@@ -121,8 +121,22 @@ public interface DataTransferProtocol {
       final String clientName,
       final DatanodeInfo[] targets) throws IOException;
 
-//  public void snapshot(final long timestamp, final ExtendedBlock[] blks) throws IOException;
-  public void snapshot(final long timestamp, final String bpid) throws IOException;
+//  public void snapshotI1(final long rtc, final String bpid) throws IOException;
+  /**
+   * @param rtc
+   * @param nnrank rank of the namenode
+   * @param nnver version of the namenode
+   * @param bpid
+   * @throws IOException
+   */
+  public void snapshotI1(final long rtc, final int nnrank, final long nnver, final String bpid) throws IOException;
+  /**
+   * @param rtc
+   * @param eid version for the corresponding datanode
+   * @param bpid
+   * @throws IOException
+   */
+  public void snapshotI2(final long rtc, final long eid, final String bpid) throws IOException;
   
   /**
    * Request short circuit access file descriptors from a DataNode.

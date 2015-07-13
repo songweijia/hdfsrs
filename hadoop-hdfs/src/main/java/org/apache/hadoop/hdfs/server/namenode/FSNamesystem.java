@@ -189,6 +189,7 @@ import org.apache.hadoop.hdfs.protocol.SnapshottableDirectoryStatus;
 import org.apache.hadoop.hdfs.protocol.datatransfer.ReplaceDatanodeOnFailure;
 import org.apache.hadoop.hdfs.protocol.datatransfer.Sender;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.BlockOpResponseProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpResponseSnapshotI1Proto;
 import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.AccessMode;
@@ -284,6 +285,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import edu.cornell.cs.blog.JNIBlog;
+import edu.cornell.cs.sa.VectorClock;
 
 /***************************************************
  * FSNamesystem does the actual bookkeeping work for the
@@ -7158,11 +7160,15 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   
   final int timeout = 3000;
   
-  private void sendToDNs(String bpid,long rtc) throws IOException {
+  private void sendToDNs(String bpid,long rtc,long nneid) throws IOException {
   	List<DatanodeDescriptor> dnList = 
   			blockManager.getDatanodeManager().getDatanodeListForReport(DatanodeReportType.LIVE);
+  	
     ArrayList<Socket> clients = new ArrayList<Socket>(dnList.size());
-  	for(DatanodeDescriptor dd: dnList){
+    Map<Integer, Socket> rankToSocket = new HashMap<Integer,Socket>();
+    
+    //STEP I.1: send rtc
+    for(DatanodeDescriptor dd: dnList){
   		Socket s = socketFactory.createSocket();
   		s.connect(NetUtils.createSocketAddr(dd.getXferAddr(false)));
   		s.setSoTimeout(timeout);
@@ -7171,12 +7177,29 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
           NetUtils.getOutputStream(s, timeout),
           HdfsConstants.SMALL_BUFFER_SIZE));
-      
-      new Sender(out).snapshot(rtc, bpid);
+      new Sender(out).snapshotI1(rtc, NameNode.myrank, nneid, bpid);
       s.shutdownOutput();
       clients.add(s);
   	}
-    //ack
+  	
+  	
+  	VectorClock [] vcs = new VectorClock[clients.size()];
+  	int pos = 0;
+    //STEP I.2: collect vector clock report and calculate
+    for (Socket s : clients) {
+      DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
+      OpResponseSnapshotI1Proto res = OpResponseSnapshotI1Proto.parseFrom(PBHelper.vintPrefixed(in));
+      rankToSocket.put(res.getMyrank(), s);
+      //COLLECT VectorClock
+      vcs[pos++] = PBHelper.convert(res.getVc());
+    }
+    VectorClock cut = (VectorClock)vcs[0].getCausallyConsistentClock(vcs);
+    
+    //STEP I.3: snapshot command
+    for (Map.Entry<Integer, Socket> e: rankToSocket.entrySet()){
+    	DataOutputStream out = new DataOutputStream(e.getValue().getOutputStream());
+    	new Sender(out).snapshotI2(rtc, cut.vc.get(e.getKey()), bpid);
+    }
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
       BlockOpResponseProto response = BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(in));
@@ -7202,6 +7225,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     writeLock();
     //long timestamp = Time.now();
     long timestamp = JNIBlog.readLocalRTC();
+    long nneid = NameNode.vc.vc.get(NameNode.myrank);
     try {
       checkOperation(OperationCategory.WRITE);
       checkNameNodeSafeMode("Cannot create snapshot for " + snapshotRoot);
@@ -7234,7 +7258,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
 //    Map<DatanodeInfo, List<ExtendedBlock>> blks = new HashMap<DatanodeInfo, List<ExtendedBlock>>();
 //    getBlocks(srcRoot, blks);
     
-    sendToDNs(this.blockPoolId, timestamp);
+    sendToDNs(this.blockPoolId, timestamp, nneid);
 
     if (auditLog.isInfoEnabled() && isExternalInvocation()) {
       logAuditEvent(true, "createSnapshot", snapshotRoot, snapshotPath, null);

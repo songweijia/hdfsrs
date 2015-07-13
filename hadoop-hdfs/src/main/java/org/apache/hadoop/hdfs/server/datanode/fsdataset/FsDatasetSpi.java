@@ -454,6 +454,22 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
   public StorageType getStorageType();
   
 //  public void snapshot(long timestamp, ExtendedBlock[] blks) throws IOException;
-  public void snapshot(long rtc, String bpid)throws IOException;
+  // public void snapshot(long rtc, String bpid)throws IOException;
+  /**
+   * @param rtc
+   * @param nnrank
+   * @param nneid
+   * @param bpid
+   * @return
+   * @throws IOException
+   */
+  public VectorClock snapshotI1(long rtc, int nnrank, long nneid, String bpid)throws IOException;
+  /**
+   * @param rtc
+   * @param eid
+   * @param bpid
+   * @throws IOException
+   */
+  public void snapshotI2(long rtc, long eid, String bpid)throws IOException;
 }
 
