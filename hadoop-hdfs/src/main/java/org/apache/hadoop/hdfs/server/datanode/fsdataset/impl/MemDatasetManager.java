@@ -365,7 +365,7 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
   		throw new IOException("call since failed with rtc="+rtc+
   				",nnrank="+nnrank+
   				",nneid="+nneid);
-  	
+  	vc.pid = poolMap.get(bpid).blog.getMyRank();
   	return vc;
   }
 /*  

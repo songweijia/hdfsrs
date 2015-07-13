@@ -7178,7 +7178,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
           NetUtils.getOutputStream(s, timeout),
           HdfsConstants.SMALL_BUFFER_SIZE));
       new Sender(out).snapshotI1(rtc, NameNode.myrank, nneid, bpid);
-      s.shutdownOutput();
+//      s.shutdownOutput();
       clients.add(s);
   	}
   	
@@ -7199,6 +7199,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     for (Map.Entry<Integer, Socket> e: rankToSocket.entrySet()){
     	DataOutputStream out = new DataOutputStream(e.getValue().getOutputStream());
     	new Sender(out).snapshotI2(rtc, cut.vc.get(e.getKey()), bpid);
+    	e.getValue().shutdownOutput();
     }
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
