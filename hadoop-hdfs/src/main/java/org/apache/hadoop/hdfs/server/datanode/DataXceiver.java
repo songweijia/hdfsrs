@@ -835,6 +835,7 @@ class DataXceiver extends Receiver implements Runnable {
   				.setVc(PBHelper.convert(vc))
   				.setMyrank(vc.pid).build();
   		proto.writeDelimitedTo(out);
+  		out.flush();
   	} finally{
   		IOUtils.closeStream(out);
   	}

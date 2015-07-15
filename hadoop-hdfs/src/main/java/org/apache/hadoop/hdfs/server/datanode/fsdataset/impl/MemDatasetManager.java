@@ -367,7 +367,7 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
   	}
   	int rCode = poolMap.get(bpid).blog.since(rtc, nnrank, nneid, vc);
     vc.pid = poolMap.get(bpid).blog.getMyRank();
-    if(rCode == -1)
+    if(rCode == -1) // cut before the first log or no log
       vc.vc.put(vc.pid,0l);
     else if(rCode < -1)
   		throw new IOException("call since failed with rtc="+rtc+

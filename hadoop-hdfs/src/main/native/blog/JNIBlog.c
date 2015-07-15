@@ -692,6 +692,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JLedu_cornell_cs_
   
   // Find the corresponding log.
   filesystem = get_filesystem(env, thisObj);
+  if(filesystem->log_length == 0)
+    return -1;
   log = filesystem->log;
   // If the real time cut is before the first log...
   if (log[0].rtc > rtc)
@@ -733,6 +735,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JIJLedu_cornell_c
   
   // Find the corresponding log.
   filesystem = get_filesystem(env, thisObj);
+  if(filesystem->log_length == 0)
+    return -1;
   log = filesystem->log;
   // If the real time cut is before the first log...
   if (log[0].rtc > rtc)
