@@ -361,12 +361,19 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
   VectorClock since(String bpid, int nnrank, long nneid, long rtc)
   throws IOException{
   	VectorClock vc = new VectorClock();
-  	if(poolMap.get(bpid).blog.since(rtc, nnrank, nneid, vc)!=0)
+  	if(poolMap.get(bpid)==null){
+      PoolData pd = newPoolData();
+      poolMap.put(bpid, pd);
+  	}
+  	int rCode = poolMap.get(bpid).blog.since(rtc, nnrank, nneid, vc);
+    vc.pid = poolMap.get(bpid).blog.getMyRank();
+    if(rCode == -1)
+      vc.vc.put(vc.pid,0l);
+    else if(rCode < -1)
   		throw new IOException("call since failed with rtc="+rtc+
   				",nnrank="+nnrank+
   				",nneid="+nneid);
-  	vc.pid = poolMap.get(bpid).blog.getMyRank();
-  	return vc;
+    return vc;
   }
 /*  
   long since(String bpid, long rtc)throws IOException{
