@@ -420,10 +420,7 @@ final private ClientProtocol server;
     		  vc/*HDFSRS_VC*/);
       AppendResponseProto.Builder builder = AppendResponseProto.newBuilder();
       builder.setVc(PBHelper.convert(vc));
-      if (result != null) {
-        return AppendResponseProto.newBuilder()
-            .setBlock(PBHelper.convert(result)).build();
-      }
+      if (result != null) builder.setBlock(PBHelper.convert(result));
       return builder.build();
     } catch (IOException e) {
       throw new ServiceException(e);
