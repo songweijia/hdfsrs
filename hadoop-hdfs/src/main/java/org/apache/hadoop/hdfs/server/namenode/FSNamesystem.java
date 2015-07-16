@@ -7110,7 +7110,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       }
 
       if (snapshotName == null || snapshotName.isEmpty()) {
-        snapshotName = Snapshot.generateDefaultSnapshotName();
+//        snapshotName = Snapshot.generateDefaultSnapshotName();
+        snapshotName = ""+timestamp;
       }
       if(snapshotName != null){
         if (!DFSUtil.isValidNameForComponent(snapshotName)) {
