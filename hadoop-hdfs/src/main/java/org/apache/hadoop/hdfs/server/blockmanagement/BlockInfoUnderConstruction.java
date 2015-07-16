@@ -383,4 +383,15 @@ public class BlockInfoUnderConstruction extends BlockInfo {
     }
     sb.append("]}");
   }
+  
+  @Override
+  public BlockInfo clone(){
+    BlockInfoUnderConstruction biuc = 
+        new BlockInfoUnderConstruction(this, bc.getBlockReplication(), this.blockUCState, null);
+    biuc.blockRecoveryId = this.blockRecoveryId;
+    biuc.primaryNodeIndex = this.primaryNodeIndex;
+    for(ReplicaUnderConstruction ruc:this.replicas)
+      biuc.replicas.add(new ReplicaUnderConstruction(ruc,ruc.expectedLocation,ruc.state));
+    return biuc;
+  }
 }
