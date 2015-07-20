@@ -800,7 +800,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
       fprintf(stderr, "Snapshot %ld already exists\n", id);
       return -1;
     }
-    last_snapshot == snapshot;
+    last_snapshot = snapshot;
     snapshot = snapshot->next;
   }
   
