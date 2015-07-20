@@ -16,7 +16,7 @@ struct log {
   int page_id;
   int nr_pages;
   page_t *pages;
-  log_t *previous;
+  int64_t previous;
   int64_t rtc;
   size_t vc_length;
   char *vc;
@@ -27,7 +27,7 @@ struct block {
   int length;
   int cap;
   page_t **pages;
-  log_t *last_entry;
+  int64_t last_entry;
   block_t *next;
 };
 

@@ -14,12 +14,13 @@ void print_page(page_t *page)
   printf("%s\n", page->data);
 }
 
-void print_log(JNIEnv *env, log_t *log, log_t *cur_log)
+void print_log(JNIEnv *env, log_t *log, int64_t index)
 {
   jclass vc_class = (*env)->FindClass(env, "edu/cornell/cs/sa/VectorClock");
   jmethodID mid = (*env)->GetStaticMethodID(env, vc_class, "toString", "([B)Ljava/lang/String;");
   jbyteArray jbyteArray;
   jstring jstring;
+  log_t *cur_log = log + index;
   const char *vc_string;
   int i;
   
@@ -42,11 +43,11 @@ void print_log(JNIEnv *env, log_t *log, log_t *cur_log)
   }
   printf("RTC Value: %ld\n", cur_log->rtc);
   printf("VC Value: %s\n", vc_string);
-  if (cur_log->previous != NULL)
-    printf("Previous: %ld\n", cur_log->previous - log);
+  if (cur_log->previous != -1)
+    printf("Previous: %ld\n", cur_log->previous);
 }
 
-void print_block(block_t *block, log_t *log, int page_size)
+void print_block(block_t *block, int page_size)
 {
   int i = 0;
 
@@ -59,7 +60,7 @@ void print_block(block_t *block, log_t *log, int page_size)
       print_page(block->pages[i]);
     }
   }
-  printf("Last Log Entry: %ld\n", block->last_entry - log);
+  printf("Last Log Entry: %ld\n", block->last_entry);
 }
 
 void print_snapshot(snapshot_t *snapshot, log_t *log, int page_size)
@@ -73,7 +74,7 @@ void print_snapshot(snapshot_t *snapshot, log_t *log, int page_size)
   for (i = 0; i < BLOCK_MAP_SIZE; i++) {
     block = snapshot->block_map[i];
     while (block != NULL) {
-      print_block(block, log, page_size);
+      print_block(block, page_size);
       printf("\n");
       block = block->next;
     }
@@ -85,7 +86,7 @@ void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
 {
   block_t *block;
   snapshot_t *snapshot;
-  int i = 0;
+  int64_t i = 0;
   
   printf("Filesystem\n");
   printf("----------\n");
@@ -95,7 +96,7 @@ void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
   for (i = 0; i < BLOCK_MAP_SIZE; i++) {
     block = filesystem->block_map[i];
     while (block != NULL) {
-      print_block(block, filesystem->log, filesystem->page_size);
+      print_block(block, filesystem->page_size);
       printf("\n");
       block = block->next;
     }
@@ -114,8 +115,8 @@ void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
   printf("Log Capacity: %zu\n", filesystem->log_cap);
   printf("Log Length: %zu\n", filesystem->log_length);
   for (i = 0; i < filesystem->log_length; i++) {
-    printf("Log %d\n", i);
-    print_log(env, filesystem->log, filesystem->log+i);
+    printf("Log %ld\n", i);
+    print_log(env, filesystem->log, i);
     printf("\n");
   }
 }
@@ -173,44 +174,51 @@ block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *s
   int i, log_id, nr_unfilled_pages;
   block_t *block = find_block(snapshot->block_map, block_id);
 
-  if (block == NULL) {
-    block = allocate_block(snapshot->block_map, block_id);
-    log_id = snapshot->last_entry;
-    while ((log_id >= 0) && (log[log_id].block_id != block_id))
-      log_id--;
-    if (log_id == 0 || log[log_id].page_id == -2) {
-      block->length = 0;
-      block->cap = -1;
-      block->pages = NULL;
-      block->last_entry = NULL;
-    } else if (log[log_id].page_id == -1) {
-      block->length = 0;
+  if (block != NULL)
+    return block;
+  
+  block = allocate_block(snapshot->block_map, block_id);
+  log_id = snapshot->last_entry;
+  while ((log_id >= 0) && (log[log_id].block_id != block_id))
+    log_id--;
+  printf("LogID: %d\n", log_id);
+  if (log_id == -1 || log[log_id].page_id == -2) {
+    block->length = 0;
+    block->cap = -1;
+    block->pages = NULL;
+    block->last_entry = -1;
+  } else if (log[log_id].page_id == -1) {
+    block->length = 0;
+    block->cap = 0;
+    block->pages = NULL;
+    block->last_entry = -1;
+  } else {
+    block->length = log[log_id].block_length;
+    if (block->length == 0)
       block->cap = 0;
-      block->pages = NULL;
-      block->last_entry = NULL;
-    } else {
-      block->length = log[log_id].block_length;
-      if (block->length == 0)
-        block->cap = 0;
-      else
-        block->cap = (block->length - 1) / filesystem->page_size + 1;
-      block->pages = (page_t**) malloc(block->cap*sizeof(page_t*));
-      for (i = 0; i < block->cap; i++)
-        block->pages[i] = NULL;
-      cur_log = log + log_id;
-      nr_unfilled_pages = block->cap;
-      while (cur_log != NULL && nr_unfilled_pages > 0) {
-        for (i = 0; i < cur_log->nr_pages; i++) {
-          if (block->pages[cur_log->page_id + i] == NULL) {
-            nr_unfilled_pages--;
-            block->pages[cur_log->page_id + i] = cur_log->pages + i;
-          }
+    else
+      block->cap = (block->length - 1) / filesystem->page_size + 1;
+    block->pages = (page_t**) malloc(block->cap*sizeof(page_t*));
+    for (i = 0; i < block->cap; i++)
+      block->pages[i] = NULL;
+    cur_log = log + log_id;
+    nr_unfilled_pages = block->cap;
+    while (cur_log != NULL && nr_unfilled_pages > 0) {
+      for (i = 0; i < cur_log->nr_pages; i++) {
+        if (block->pages[cur_log->page_id + i] == NULL) {
+          nr_unfilled_pages--;
+          block->pages[cur_log->page_id + i] = cur_log->pages + i;
         }
-        cur_log = cur_log->previous;
       }
-      block->last_entry = log + log_id;
+      if (cur_log->previous != -1)
+        cur_log = log + cur_log->previous;
+      else
+        cur_log = NULL;
     }
+    block->last_entry = log_id;
   }
+  
+  return block;
 }
 
 void check_and_increase_log_length(filesystem_t *filesystem)
@@ -232,7 +240,8 @@ int64_t read_local_rtc()
   
   gettimeofday(&tv,NULL);
   rtc = tv.tv_sec;
-  rtc = (rtc<<20) | tv.tv_usec;
+//  rtc = (rtc<<20) | tv.tv_usec;
+  rtc = tv.tv_sec*1000 + tv.tv_usec/1000;
   return rtc;
 }
 
@@ -380,7 +389,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   filesystem->log[log_pos].page_id = -1;
   filesystem->log[log_pos].nr_pages = 0;
   filesystem->log[log_pos].pages = NULL;
-  filesystem->log[log_pos].previous = NULL;
+  filesystem->log[log_pos].previous = -1;
   filesystem->log[log_pos].rtc = read_local_rtc();
   tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
   filesystem->log_length += 1;
@@ -389,7 +398,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   new_block->length = 0;
   new_block->cap = 0;
   new_block->pages = NULL;
-  new_block->last_entry = filesystem->log + log_pos;
+  new_block->last_entry = log_pos;
   new_block->next = NULL;
 
   return 0;
@@ -492,7 +501,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
   }
 
   // In case the data you ask is not written return an error.
-  if (blkOfst > block->length) {
+  if (blkOfst >= block->length) {
     fprintf(stderr, "Block %ld is not written at %d byte.\n", blockId, blkOfst);
     return -3;
   }
@@ -672,7 +681,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   filesystem->log[log_pos].rtc = read_local_rtc();
   tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
   filesystem->log_length += 1;
-  block->last_entry = filesystem->log + log_pos;
+  block->last_entry = log_pos;
   
   return 0;
 }
