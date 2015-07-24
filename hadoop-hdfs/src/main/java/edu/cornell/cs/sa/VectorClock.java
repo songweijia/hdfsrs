@@ -29,7 +29,9 @@ public class VectorClock implements ILogicalClock,Serializable
 	public byte[] toByteArrayNoPid() throws IOException{
 	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	  ObjectOutputStream oos = new ObjectOutputStream(baos);
-	  oos.writeObject(this.vc);
+	  synchronized(this){
+	    oos.writeObject(this.vc);
+	  }
 	  oos.flush();
 	  return baos.toByteArray();
 	}
@@ -41,7 +43,7 @@ public class VectorClock implements ILogicalClock,Serializable
 	 * @throws ClassNotFoundException
 	 */
 	@SuppressWarnings("unchecked")
-  public void fromByteArrayNoPid(byte vcObj[]) throws IOException, ClassNotFoundException{
+  synchronized public void fromByteArrayNoPid(byte vcObj[]) throws IOException, ClassNotFoundException{
 	  ByteArrayInputStream bais = new ByteArrayInputStream(vcObj);
 	  ObjectInputStream ois = new ObjectInputStream(bais);
 	  this.vc = (Map<Integer,Long>)ois.readObject();
@@ -64,21 +66,24 @@ public class VectorClock implements ILogicalClock,Serializable
 		return false;
 	}
 	
-	public VectorClock(int pid){
-		this.vc = new HashMap<Integer,Long> ();
-		this.pid = pid;
-		if(pid >= 0)
-			this.vc.put(pid, 0l);
-	}
+    public VectorClock(int pid){
+      this.vc = new HashMap<Integer,Long> ();
+      this.pid = pid;
+      if(pid >= 0){
+        this.vc.put(pid, 0l);
+      }
+    }
 	
-	public VectorClock(){
-		this(-1);
-	}
+    public VectorClock(){
+      this(-1);
+    }
 	
-	public VectorClock(VectorClock vco){
-		vc = new HashMap<Integer,Long> (vco.vc);
-		pid = vco.pid;
-	}
+    public VectorClock(VectorClock vco){
+      synchronized(vco){
+        vc = new HashMap<Integer,Long> (vco.vc);
+        pid = vco.pid;
+      }
+    }
 	
 	public long GetVectorClockValue(int rank){
 	    return vc.get(rank);
