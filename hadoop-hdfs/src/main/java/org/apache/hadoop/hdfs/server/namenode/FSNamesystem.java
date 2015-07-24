@@ -7162,7 +7162,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   
   final int timeout = 3000;
   
-  private void sendToDNs(String bpid,long rtc,long nneid) throws IOException {
+  private void sendToDNs(String bpid,long rtc,VectorClock nnvc) throws IOException {
   	List<DatanodeDescriptor> dnList = 
   			blockManager.getDatanodeManager().getDatanodeListForReport(DatanodeReportType.LIVE);
   	
@@ -7180,14 +7180,15 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
           NetUtils.getOutputStream(s, timeout),
           HdfsConstants.SMALL_BUFFER_SIZE));
-      new Sender(out).snapshotI1(rtc, NameNode.myrank, nneid, bpid);
+      new Sender(out).snapshotI1(rtc, NameNode.myrank, nnvc.GetVectorClockValue(NameNode.myrank), bpid);
       s.shutdownOutput();
       clients.add(s);
   	}
   	
   	
-  	VectorClock [] vcs = new VectorClock[clients.size()];
-  	int pos = 0;
+  	VectorClock [] vcs = new VectorClock[clients.size()+1];
+  	vcs[0] = new VectorClock(nnvc);
+  	int pos = 1;
     //STEP I.2: collect vector clock report and calculate
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
@@ -7246,7 +7247,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     writeLock();
     //long timestamp = Time.now();
     long timestamp = JNIBlog.readLocalRTC();
-    long nneid = NameNode.vc.vc.get(NameNode.myrank);
+//    long nneid = NameNode.vc.vc.get(NameNode.myrank);
+    VectorClock nnvc = new VectorClock(NameNode.vc);
     try {
       checkOperation(OperationCategory.WRITE);
       checkNameNodeSafeMode("Cannot create snapshot for " + snapshotRoot);
@@ -7280,7 +7282,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
 //    Map<DatanodeInfo, List<ExtendedBlock>> blks = new HashMap<DatanodeInfo, List<ExtendedBlock>>();
 //    getBlocks(srcRoot, blks);
     
-    sendToDNs(this.blockPoolId, timestamp, nneid);
+    sendToDNs(this.blockPoolId, timestamp, nnvc);
 
     if (auditLog.isInfoEnabled() && isExternalInvocation()) {
       logAuditEvent(true, "createSnapshot", snapshotRoot, snapshotPath, null);
