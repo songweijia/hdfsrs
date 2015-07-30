@@ -189,7 +189,8 @@ class MemBlockReceiver extends BlockReceiver {
     }
   }
 
-  private static final int MAX_PACKET_SIZE = 64 * 1024 * 1024;
+//  private static final int MAX_PACKET_SIZE = 64 * 1024 * 1024;
+  private static final int MAX_PACKET_SIZE = 3 * 1024 * 1024; // initialze a 64MB buffer takes 30 milliseconds on an old server to 3MB
   private PacketHeader header = new PacketHeader();
   private byte[] dataBuf = new byte[MAX_PACKET_SIZE];  
   private long packetRecvTime;
