@@ -611,12 +611,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     return -3;
   }
 
-  // Remove after experiment.
+#ifdef FIRST_EXPERIMENT
+  // First experiment.
   if (blkOfst + length > block->length)
       block->length = blkOfst + length;
-
+#else
   // Create the new pages.
-  /*
   buffer_offset = (int) bufOfst;
   first_page = blkOfst / filesystem->page_size;
   last_page = (blkOfst + length - 1) / filesystem->page_size;
@@ -629,24 +629,32 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   if (first_page == last_page) {
     write_length = (jint) length;
     pdata = new_pages[0].data + page_offset;
+#ifdef SECOND_EXPERIMENT    
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
+#endif
     last_page_length = page_offset + write_length;
   } else {
     write_length = filesystem->page_size - page_offset;
     pdata = new_pages[0].data + page_offset;
+#ifdef SECOND_EXPERIMENT 
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
+#endif
     buffer_offset += write_length;
     for (i = 1; i < new_pages_length-1; i++) {
       new_pages[i].data = (char *) malloc(filesystem->page_size*sizeof(char));
       write_length = filesystem->page_size;
       pdata = new_pages[i].data;
+#ifdef SECOND_EXPERIMENT
       (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
+#endif
       buffer_offset += write_length;
     }
     new_pages[new_pages_length-1].data =  (char *) malloc(filesystem->page_size*sizeof(char));
     write_length = (int) bufOfst + (int) length - buffer_offset;
     pdata = new_pages[new_pages_length-1].data;
+#ifdef SECOND_EXPERIMENT 
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
+#endif
     last_page_length = write_length;
   }
   if (last_page*filesystem->page_size + last_page_length > block->length) {
@@ -683,10 +691,16 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   filesystem->log[log_pos].pages = new_pages;
   filesystem->log[log_pos].previous = block->last_entry;
   filesystem->log[log_pos].rtc = read_local_rtc();
+#ifdef SECOND_EXPERIMENT
+#else
+#ifdef THIRD_EXPERIMENT
+#else
   tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
+#endif
+#endif
   filesystem->log_length += 1;
   block->last_entry = log_pos;
-  */
+#endif
   return 0;
 }
 
