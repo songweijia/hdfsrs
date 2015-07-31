@@ -610,9 +610,13 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     fprintf(stderr, "Block %ld cannot be written at byte %d.\n", blockId, blkOfst);
     return -3;
   }
-  
+
+  // Remove after experiment.
+  if (blkOfst + length > block->length)
+      block->length = blkOfst + length;
 
   // Create the new pages.
+  /*
   buffer_offset = (int) bufOfst;
   first_page = blkOfst / filesystem->page_size;
   last_page = (blkOfst + length - 1) / filesystem->page_size;
@@ -682,7 +686,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
   filesystem->log_length += 1;
   block->last_entry = log_pos;
-  
+  */
   return 0;
 }
 
