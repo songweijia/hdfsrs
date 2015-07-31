@@ -100,7 +100,7 @@ public class VectorClock implements ILogicalClock,Serializable
           if(vcl==null) vcl = new Long(0);
           vc.put(pid, vcl+1);
 		}
-		return this;
+		return new VectorClock(this);
 	}
 
 	/* (non-Javadoc)
@@ -116,7 +116,9 @@ public class VectorClock implements ILogicalClock,Serializable
 				vc.put(p, mvc.vc.get(p));
 		}
 
-		return this;
+        mvc.pid = pid;
+        mvc.vc = new HashMap<Integer,Long> (vc);
+		return mvc;
 	}
 
 	/* (non-Javadoc)
