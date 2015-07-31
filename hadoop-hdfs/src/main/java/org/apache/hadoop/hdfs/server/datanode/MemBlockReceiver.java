@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.datatransfer.BlockConstructionStage;
@@ -37,23 +38,28 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.VCOutputStream;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.hadoop.hdfs.util.DataTransferThrottler;
+import org.apache.hadoop.hdfs.util.DirectBufferPool;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.Daemon;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.hdfs.protocol.datatransfer.PacketHeader;
-import org.apache.hadoop.io.IOUtils;
 
 import com.google.common.primitives.Ints;
 
 import edu.cornell.cs.sa.VectorClock;
 import static org.apache.hadoop.util.Time.now;
 
+import org.apache.hadoop.conf.Configuration;
+
 /** A class that receives a block and writes to its own disk, meanwhile
  * may copies it to another site. If a throttler is provided,
  * streaming throttling is also supported.
  **/
 class MemBlockReceiver extends BlockReceiver {
+  private static final DirectBufferPool bufferPool = new DirectBufferPool();
+  private static final int MAX_BUFFER_SIZE = new Configuration().getInt(
+      DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_KEY, DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_DEFAULT) + 4096;
+  
   /** the replica to write */
   private MemDatasetManager.MemBlockMeta replicaInfo;
 
@@ -66,6 +72,8 @@ class MemBlockReceiver extends BlockReceiver {
       long offset/*HDFSRS_RWAPI*/,VectorClock mvc/*HDFSRS_VC*/) throws IOException {
     
     super(block, in, inAddr, myAddr, stage,clientname, srcDataNode, datanode, requestedChecksum);
+    //acclocate a buffer from pool:
+    this.reallocDataBuf(MAX_BUFFER_SIZE);
   
     //
     // Open local disk out
@@ -137,6 +145,8 @@ class MemBlockReceiver extends BlockReceiver {
       packetReceiver.close();
     }
     
+    this.returnDataBufToPool();
+    
     if (syncOnClose && out != null) {
       datanode.metrics.incrFsyncCount();      
     }
@@ -190,11 +200,38 @@ class MemBlockReceiver extends BlockReceiver {
   }
 
 //  private static final int MAX_PACKET_SIZE = 64 * 1024 * 1024;
-  private static final int MAX_PACKET_SIZE = 3 * 1024 * 1024; // initialze a 64MB buffer takes 30 milliseconds on an old server to 3MB
+//  private static final int MAX_PACKET_SIZE = 3 * 1024 * 1024; // initialze a 64MB buffer takes 30 milliseconds on an old server to 3MB
   private PacketHeader header = new PacketHeader();
-  private byte[] dataBuf = new byte[MAX_PACKET_SIZE];  
+//  private byte[] dataBuf = new byte[MAX_PACKET_SIZE];
+  private ByteBuffer dataBuf = null;
   private long packetRecvTime;
 
+  private void reallocDataBuf(int atLeastCapacity) {
+    // Realloc the buffer if this packet is longer than the previous
+    // one.
+    if (dataBuf == null ||
+        dataBuf.capacity() < atLeastCapacity) {
+      ByteBuffer newBuf;
+      newBuf = bufferPool.getBuffer(atLeastCapacity);
+      // prefixes over
+      if (dataBuf != null) {
+        dataBuf.flip();
+        newBuf.put(dataBuf);
+      }
+      
+      returnDataBufToPool();
+      dataBuf = newBuf;
+    }
+  }
+  
+  private void returnDataBufToPool() {
+    if (dataBuf != null && dataBuf.isDirect()) {
+      bufferPool.returnBuffer(dataBuf);
+      dataBuf = null;
+    }
+  }
+  
+  
   void receiveNextPacket(DataInputStream in) throws IOException {
     int payloadLen = in.readInt();
     if (payloadLen < Ints.BYTES) {
@@ -229,7 +266,7 @@ class MemBlockReceiver extends BlockReceiver {
     in.skipBytes(checksumLen);
 
     long startTime = now();
-    IOUtils.readFully(in, dataBuf, 0, header.getDataLen());
+    IOUtils.readFully(in, dataBuf.array(), 0, header.getDataLen());
     this.packetRecvTime += now() - startTime;
   }
   
@@ -317,7 +354,7 @@ class MemBlockReceiver extends BlockReceiver {
           //out.write(dataBuf, startByteToDisk, numBytesToDisk);
           VCOutputStream vcout = (VCOutputStream)out;
           
-          vcout.write(mvc,dataBuf, startByteToDisk, numBytesToDisk);
+          vcout.write(mvc,dataBuf.array(), startByteToDisk, numBytesToDisk);
 
           /// flush entire packet, sync if requested
           flushOrSync(syncBlock);
@@ -334,7 +371,7 @@ class MemBlockReceiver extends BlockReceiver {
           //dx.2 write data to disk.
           int startByteToDisk = 0;
           VCOutputStream vcout = (VCOutputStream)out;
-          vcout.write(mvc,dataBuf, startByteToDisk, len);//packet len
+          vcout.write(mvc,dataBuf.array(), startByteToDisk, len);//packet len
           
           /// dx.7 flush entire packet, sync if requested
           flushOrSync(syncBlock);
