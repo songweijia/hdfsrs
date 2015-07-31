@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
@@ -38,7 +39,6 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.VCOutputStream;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.hadoop.hdfs.util.DataTransferThrottler;
-import org.apache.hadoop.hdfs.util.DirectBufferPool;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.Daemon;
 import org.apache.hadoop.util.DataChecksum;
@@ -56,7 +56,7 @@ import org.apache.hadoop.conf.Configuration;
  * streaming throttling is also supported.
  **/
 class MemBlockReceiver extends BlockReceiver {
-  private static final DirectBufferPool bufferPool = new DirectBufferPool();
+  private static final List<ByteBuffer> bufferPool = new LinkedList<ByteBuffer>();
   private static final int MAX_BUFFER_SIZE = new Configuration().getInt(
       DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_KEY, DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_DEFAULT) + 4096;
   
@@ -73,7 +73,7 @@ class MemBlockReceiver extends BlockReceiver {
     
     super(block, in, inAddr, myAddr, stage,clientname, srcDataNode, datanode, requestedChecksum);
     //acclocate a buffer from pool:
-    this.reallocDataBuf(MAX_BUFFER_SIZE);
+    this.getBuf();
   
     //
     // Open local disk out
@@ -206,27 +206,28 @@ class MemBlockReceiver extends BlockReceiver {
   private ByteBuffer dataBuf = null;
   private long packetRecvTime;
 
-  private void reallocDataBuf(int atLeastCapacity) {
+  private void getBuf() {
     // Realloc the buffer if this packet is longer than the previous
     // one.
-    if (dataBuf == null ||
-        dataBuf.capacity() < atLeastCapacity) {
+    if (dataBuf == null) {
       ByteBuffer newBuf;
-      newBuf = bufferPool.getBuffer(atLeastCapacity);
-      // prefixes over
-      if (dataBuf != null) {
-        dataBuf.flip();
-        newBuf.put(dataBuf);
+      synchronized(bufferPool){
+        if(bufferPool.size()==0)
+          newBuf = null;
+        else
+          newBuf = bufferPool.remove(0);
       }
-      
-      returnDataBufToPool();
+      if(newBuf == null)
+        newBuf = ByteBuffer.allocate(MAX_BUFFER_SIZE);
       dataBuf = newBuf;
     }
   }
   
   private void returnDataBufToPool() {
-    if (dataBuf != null && dataBuf.isDirect()) {
-      bufferPool.returnBuffer(dataBuf);
+    if (dataBuf != null) {
+      synchronized(bufferPool){
+        bufferPool.add(dataBuf);
+      }
       dataBuf = null;
     }
   }
