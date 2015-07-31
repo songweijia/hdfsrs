@@ -629,14 +629,16 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   if (first_page == last_page) {
     write_length = (jint) length;
     pdata = new_pages[0].data + page_offset;
-#ifdef SECOND_EXPERIMENT    
+#ifdef SECOND_EXPERIMENT
+#else    
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
 #endif
     last_page_length = page_offset + write_length;
   } else {
     write_length = filesystem->page_size - page_offset;
     pdata = new_pages[0].data + page_offset;
-#ifdef SECOND_EXPERIMENT 
+#ifdef SECOND_EXPERIMENT
+#else
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
 #endif
     buffer_offset += write_length;
@@ -645,6 +647,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
       write_length = filesystem->page_size;
       pdata = new_pages[i].data;
 #ifdef SECOND_EXPERIMENT
+#else
       (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
 #endif
       buffer_offset += write_length;
@@ -652,7 +655,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     new_pages[new_pages_length-1].data =  (char *) malloc(filesystem->page_size*sizeof(char));
     write_length = (int) bufOfst + (int) length - buffer_offset;
     pdata = new_pages[new_pages_length-1].data;
-#ifdef SECOND_EXPERIMENT 
+#ifdef SECOND_EXPERIMENT
+#else
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
 #endif
     last_page_length = write_length;
