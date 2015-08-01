@@ -4,20 +4,18 @@
 package edu.cornell.cs.sa;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.*;
 
+import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto;
+import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 /**
  * @author sonic
  *
  */
-public class VectorClock implements ILogicalClock,Serializable
+public class VectorClock implements ILogicalClock
 {
-	private static final long serialVersionUID = -8748121323197839581L;
 	public Map<Integer,Long> vc;
 	public int pid;
 	
@@ -27,6 +25,9 @@ public class VectorClock implements ILogicalClock,Serializable
 	 * @throws IOException
 	 */
 	public byte[] toByteArrayNoPid() throws IOException{
+	  VectorClockProto vcp = PBHelper.convert(this);
+	  return vcp.toByteArray();
+/*	  
 	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	  ObjectOutputStream oos = new ObjectOutputStream(baos);
 	  synchronized(this){
@@ -34,6 +35,7 @@ public class VectorClock implements ILogicalClock,Serializable
 	  }
 	  oos.flush();
 	  return baos.toByteArray();
+*/
 	}
 	
 	/**
