@@ -3,9 +3,7 @@
  */
 package edu.cornell.cs.sa;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.*;
 
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto;
@@ -45,10 +43,8 @@ public class VectorClock implements ILogicalClock
 	 * @throws ClassNotFoundException
 	 */
 	@SuppressWarnings("unchecked")
-  synchronized public void fromByteArrayNoPid(byte vcObj[]) throws IOException, ClassNotFoundException{
-	  ByteArrayInputStream bais = new ByteArrayInputStream(vcObj);
-	  ObjectInputStream ois = new ObjectInputStream(bais);
-	  this.vc = (Map<Integer,Long>)ois.readObject();
+    synchronized public void fromByteArrayNoPid(byte vcObj[]) throws IOException, ClassNotFoundException{
+	  this.vc = PBHelper.convert(VectorClockProto.parseFrom(vcObj)).vc;
 	}
 	
 	@Override
