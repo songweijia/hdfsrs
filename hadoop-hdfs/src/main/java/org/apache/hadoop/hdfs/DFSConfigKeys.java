@@ -641,5 +641,8 @@ public class DFSConfigKeys extends CommonConfigurationKeys {
   public static final int DEFAULT_DFS_VCPID = 0;
   public static final String DFS_MEMBLOCK_PAGESIZE = "dfs.memblock.pagesize";
   public static final int DEFAULT_DFS_MEMBLOCK_PAGESIZE = 4096;
+  
+  public static final String DFS_VC_NUM_PROC = "dfs.vc.numproc";
+  public static final int DEFAULT_DFS_VC_NUM_PROC = 16;
   //HDFSRS_VC
 }

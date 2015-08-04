@@ -589,9 +589,9 @@ public class NameNode implements NameNodeStatusMXBean {
      * HDFSRS_VC:set vector clock
      */
     if(vc == null){
-      myrank = conf.getInt(DFS_VCPID,0);
-      myrank = (myrank<<2)+1;
-      vc = new VectorClock(myrank);
+      VectorClock.numProc = conf.getInt(DFS_VC_NUM_PROC,DEFAULT_DFS_VC_NUM_PROC);
+      myrank = 0; // This is always 0 for namenode.
+      vc = new VectorClock(0);
     }
     //HDFSRS_VC
     

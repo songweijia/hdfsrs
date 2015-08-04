@@ -22,6 +22,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.BlockingService;
 
+import edu.cornell.cs.sa.VectorClock;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -1873,6 +1875,9 @@ public class DataNode extends Configured
   @InterfaceAudience.Private
   public static DataNode createDataNode(String args[], Configuration conf,
       SecureResources resources) throws IOException {
+    //HDFSRS_VC
+    VectorClock.numProc = conf.getInt(DFS_VC_NUM_PROC, DEFAULT_DFS_VC_NUM_PROC);
+    //HDFSRS_VC
     DataNode dn = instantiateDataNode(args, conf, resources);
     if (dn != null) {
       dn.runDatanodeDaemon();

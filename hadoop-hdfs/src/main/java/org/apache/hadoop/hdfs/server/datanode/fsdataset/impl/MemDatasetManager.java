@@ -240,7 +240,7 @@ public class MemDatasetManager {
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
-    this.myVCRank = conf.getInt(DFS_VCPID, DEFAULT_DFS_VCPID)<<2;
+    this.myVCRank = conf.getInt(DFS_VCPID, DEFAULT_DFS_VCPID);
     this.poolMap = new HashMap<String, PoolData>();
 //    this.diskMaps = new HashMap<ExtendedBlockId, String>();
   }
