@@ -298,7 +298,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .build();
     try {
       CreateResponseProto res = rpcProxy.create(null, req);
-      mvc.vc=PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      mvc.vcs=PBHelper.convert(res.getVc()).vcs; // HDFSRS_VC
       return res.hasFs() ? PBHelper.convert(res.getFs()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -319,7 +319,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .build();
     try {
       AppendResponseProto res = rpcProxy.append(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs;//HDFSRS_VC
       return res.hasBlock() ? PBHelper.convert(res.getBlock()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -345,7 +345,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
     try {
       OverwriteBlockResponseProto res = rpcProxy.overwriteBlock(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs; // HDFSRS_VC
       return res.hasBlock() ? PBHelper.convert(res.getBlock()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -410,7 +410,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setVc(PBHelper.convert(mvc)).build();
     try {
       AbandonBlockResponseProto res = rpcProxy.abandonBlock(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs; // HDFSRS_VC
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -438,7 +438,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
     	 */
       AddBlockResponseProto abrp = rpcProxy.addBlock(null, req.build());
       if(mvc!=null)
-    	  mvc.vc = PBHelper.convert(abrp.getVc()).vc;
+    	  mvc.vcs = PBHelper.convert(abrp.getVc()).vcs;
       return PBHelper.convert(abrp.getBlock());
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -485,7 +485,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
       req.setLast(PBHelper.convert(last));
     try {
       CompleteResponseProto res = rpcProxy.complete(null, req.build()); //HDFSRS_VC
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs;//HDFSRS_VC
       return res.getResult();
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -513,7 +513,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setVc(PBHelper.convert(mvc)).build();
     try {
       RenameResponseProto res = rpcProxy.rename(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs;//HDFSRS_VC
       return res.getResult();
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -542,7 +542,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         build();
     try {
       Rename2ResponseProto res = rpcProxy.rename2(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc;
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -557,7 +557,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         addAllSrcs(Arrays.asList(srcs)).build();
     try {
       ConcatResponseProto res = rpcProxy.concat(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc; //HDFSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs; //HDFSRS_VC
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -573,7 +573,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
     try {
       DeleteResponseProto res = rpcProxy.delete(null, req);
       boolean bRet = res.getResult();
-      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs; // HDFSRS_VC
       return bRet;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -596,7 +596,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
     try {
       MkdirsResponseProto res = rpcProxy.mkdirs(null, req);
       boolean bRet = res.getResult();
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HFDSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs;//HFDSRS_VC
       return bRet;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -859,7 +859,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setVc(PBHelper.convert(mvc)).build();//HDFSRS_VC
     try {
       FsyncResponseProto res = rpcProxy.fsync(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      mvc.vcs = PBHelper.convert(res.getVc()).vcs;//HDFSRS_VC
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }

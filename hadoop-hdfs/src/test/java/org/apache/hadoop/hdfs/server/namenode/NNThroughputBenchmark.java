@@ -118,8 +118,8 @@ public class NNThroughputBenchmark implements Tool {
   static VectorClock copyVC(){
 	  return new VectorClock(vc);
   }
-  static VectorClock tickOnMessage(VectorClock mvc){
-	  return (VectorClock)vc.tickOnRecv(mvc);
+  static void tickOnMessage(VectorClock mvc){
+	  vc.tickOnRecv(mvc);
   }
 
   NNThroughputBenchmark(Configuration conf) throws IOException {

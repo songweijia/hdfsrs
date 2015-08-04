@@ -5512,12 +5512,6 @@ public final class DatanodeProtocolProtos {
           return false;
         }
       }
-      if (hasMvc()) {
-        if (!getMvc().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -6001,12 +5995,6 @@ public final class DatanodeProtocolProtos {
         }
         for (int i = 0; i < getTargetsCount(); i++) {
           if (!getTargets(i).isInitialized()) {
-            
-            return false;
-          }
-        }
-        if (hasMvc()) {
-          if (!getMvc().isInitialized()) {
             
             return false;
           }

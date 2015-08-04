@@ -544,7 +544,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     metrics.incrCreateFileOps();
     
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
 
     return fileStatus;
@@ -561,7 +561,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     LocatedBlock info = namesystem.appendFile(src, clientName, clientMachine);
     metrics.incrFilesAppended();
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC    
     return info;
   }
@@ -614,7 +614,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     if (locatedBlock != null)
       metrics.incrAddBlockOps();
     //HDFSRS_VC:return mvc
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
     return locatedBlock;
   }
@@ -661,7 +661,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
       throw new IOException("Cannot abandon block during write to " + src);
     }
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
   }
 
@@ -676,7 +676,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     }
     boolean bRet = namesystem.completeFile(src, clientName, last, fileId);
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
     return bRet;
   }
@@ -737,7 +737,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
       metrics.incrFilesRenamed();
     }
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
     return ret;
   }
@@ -746,7 +746,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
   public void concat(String trg, String[] src, VectorClock mvc) throws IOException {
     namesystem.concat(trg, src);
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
   }
   
@@ -763,7 +763,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     namesystem.renameTo(src, dst, options);
     metrics.incrFilesRenamed();
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
   }
 
@@ -777,7 +777,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     if (ret) 
       metrics.incrDeleteFileOps();
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
     return ret;
   }
@@ -807,7 +807,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
         new PermissionStatus(getRemoteUser().getShortUserName(),
             null, masked), createParent);
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
     return bRet;
   }
@@ -993,7 +993,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
       throws IOException {
     namesystem.fsync(src, clientName, lastBlockLength);
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
   }
 
@@ -1445,7 +1445,7 @@ class NameNodeRpcServer implements NamenodeProtocols {
     }
     LocatedBlock locatedBlock = namesystem.overwriteBlock(src, previous, bIndex, fileId, clientName);
     //HDFSRS_VC: tick on recv.
-    mvc.vc = ((VectorClock)nn.vc.tickOnRecv(mvc)).vc;
+    NameNode.vc.tickOnRecvWriteBack(mvc);
     //HDFSRS_VC
     return locatedBlock;
   }

@@ -5094,10 +5094,6 @@ public final class DataTransferProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -5372,10 +5368,6 @@ public final class DataTransferProtos {
           return false;
         }
         if (!hasMyrank()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -7925,12 +7917,6 @@ public final class DataTransferProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (hasMvc()) {
-        if (!getMvc().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -8563,12 +8549,6 @@ public final class DataTransferProtos {
         if (!getRequestedChecksum().isInitialized()) {
           
           return false;
-        }
-        if (hasMvc()) {
-          if (!getMvc().isInitialized()) {
-            
-            return false;
-          }
         }
         return true;
       }
@@ -11035,12 +11015,6 @@ public final class DataTransferProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (hasMvc()) {
-        if (!getMvc().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -11399,12 +11373,6 @@ public final class DataTransferProtos {
         if (!getSource().isInitialized()) {
           
           return false;
-        }
-        if (hasMvc()) {
-          if (!getMvc().isInitialized()) {
-            
-            return false;
-          }
         }
         return true;
       }
@@ -18170,12 +18138,6 @@ public final class DataTransferProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (hasMvc()) {
-        if (!getMvc().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -18560,12 +18522,6 @@ public final class DataTransferProtos {
         if (!hasDataLen()) {
           
           return false;
-        }
-        if (hasMvc()) {
-          if (!getMvc().isInitialized()) {
-            
-            return false;
-          }
         }
         return true;
       }
@@ -19190,12 +19146,6 @@ public final class DataTransferProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (hasMvc()) {
-        if (!getMvc().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -19528,12 +19478,6 @@ public final class DataTransferProtos {
         if (!hasSeqno()) {
           
           return false;
-        }
-        if (hasMvc()) {
-          if (!getMvc().isInitialized()) {
-            
-            return false;
-          }
         }
         return true;
       }

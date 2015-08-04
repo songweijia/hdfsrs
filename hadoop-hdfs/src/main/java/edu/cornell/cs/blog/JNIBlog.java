@@ -225,7 +225,7 @@ public class JNIBlog {
       System.out.println("VC: " + mvc.toString());
       since(rtc,mvc);
       System.out.println("VC: " + mvc.toString());
-      cut = mvc.vc.get(0);
+      cut = mvc.getVectorClockValue(0);
       System.out.println("Cut: " + cut);
       createSnapshot(rtc, cut);
       readBlock(4101, rtc, 0, 0, 40, mybuf);

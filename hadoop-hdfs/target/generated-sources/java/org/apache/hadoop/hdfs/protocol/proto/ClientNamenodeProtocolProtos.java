@@ -3319,10 +3319,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -3788,10 +3784,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!getMasked().isInitialized()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -4645,10 +4637,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -4936,10 +4924,6 @@ public final class ClientNamenodeProtocolProtos {
             
             return false;
           }
-        }
-        if (!getVc().isInitialized()) {
-          
-          return false;
         }
         return true;
       }
@@ -5559,10 +5543,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -5870,10 +5850,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -6446,10 +6422,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -6737,10 +6709,6 @@ public final class ClientNamenodeProtocolProtos {
             
             return false;
           }
-        }
-        if (!getVc().isInitialized()) {
-          
-          return false;
         }
         return true;
       }
@@ -7492,10 +7460,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -7907,10 +7871,6 @@ public final class ClientNamenodeProtocolProtos {
             
             return false;
           }
-        }
-        if (!getVc().isInitialized()) {
-          
-          return false;
         }
         return true;
       }
@@ -8664,10 +8624,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -8955,10 +8911,6 @@ public final class ClientNamenodeProtocolProtos {
             
             return false;
           }
-        }
-        if (!getVc().isInitialized()) {
-          
-          return false;
         }
         return true;
       }
@@ -12998,10 +12950,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -13351,10 +13299,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!getB().isInitialized()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -13992,10 +13936,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -14245,10 +14185,6 @@ public final class ClientNamenodeProtocolProtos {
 
       public final boolean isInitialized() {
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -15030,10 +14966,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -15505,10 +15437,6 @@ public final class ClientNamenodeProtocolProtos {
             
             return false;
           }
-        }
-        if (!getVc().isInitialized()) {
-          
-          return false;
         }
         return true;
       }
@@ -16616,10 +16544,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -16907,10 +16831,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!getBlock().isInitialized()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -20153,10 +20073,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -20531,10 +20447,6 @@ public final class ClientNamenodeProtocolProtos {
             
             return false;
           }
-        }
-        if (!getVc().isInitialized()) {
-          
-          return false;
         }
         return true;
       }
@@ -21251,10 +21163,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -21529,10 +21437,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -23131,10 +23035,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -23447,10 +23347,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -23990,10 +23886,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -24243,10 +24135,6 @@ public final class ClientNamenodeProtocolProtos {
 
       public final boolean isInitialized() {
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -24751,10 +24639,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -25062,10 +24946,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -25618,10 +25498,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -25896,10 +25772,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -26473,10 +26345,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -26813,10 +26681,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -27370,10 +27234,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -27623,10 +27483,6 @@ public final class ClientNamenodeProtocolProtos {
 
       public final boolean isInitialized() {
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -28099,10 +27955,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -28408,10 +28260,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -28923,10 +28771,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -29201,10 +29045,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -29768,10 +29608,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -30119,10 +29955,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!getMasked().isInitialized()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -30751,10 +30583,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -31029,10 +30857,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -68972,10 +68796,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -69308,10 +69128,6 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }
@@ -69865,10 +69681,6 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -70118,10 +69930,6 @@ public final class ClientNamenodeProtocolProtos {
 
       public final boolean isInitialized() {
         if (!hasVc()) {
-          
-          return false;
-        }
-        if (!getVc().isInitialized()) {
           
           return false;
         }

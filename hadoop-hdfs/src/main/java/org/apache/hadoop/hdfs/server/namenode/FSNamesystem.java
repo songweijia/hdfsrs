@@ -7180,7 +7180,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
           NetUtils.getOutputStream(s, timeout),
           HdfsConstants.SMALL_BUFFER_SIZE));
-      new Sender(out).snapshotI1(rtc, NameNode.myrank, nnvc.GetVectorClockValue(NameNode.myrank), bpid);
+      new Sender(out).snapshotI1(rtc, NameNode.myrank, nnvc.getVectorClockValue(NameNode.myrank), bpid);
       s.shutdownOutput();
       clients.add(s);
   	}
@@ -7202,7 +7202,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
         IOUtils.closeSocket(s);
     	}
     }
-    VectorClock cut = (VectorClock)vcs[0].getCausallyConsistentClock(vcs);
+    VectorClock cut = VectorClock.getCCC(vcs);
     clients.clear();
     
     //STEP I.3: snapshot command
@@ -7216,7 +7216,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       		NetUtils.getOutputStream(s,timeout),
       		HdfsConstants.SMALL_BUFFER_SIZE));
       
-    	new Sender(out).snapshotI2(rtc, cut.vc.get(e.getKey()), bpid);
+    	new Sender(out).snapshotI2(rtc, cut.vcs[e.getKey()], bpid);
     	s.shutdownOutput();
     	clients.add(s);
     }

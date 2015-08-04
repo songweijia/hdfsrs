@@ -54,20 +54,18 @@ import edu.cornell.cs.sa.VectorClock;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 public class PacketHeader {
-	private static final int MAX_RANK = 32; // the maximum number nodes
-	static{
-		VectorClock vc = new VectorClock(-1);
-		for(int i=0;i<MAX_RANK;i++)
-			vc.vc.put(i,0l);
-		MAX_PROTO_SIZE = PacketHeaderProto.newBuilder()
-    .setOffsetInBlock(0)
-    .setSeqno(0)
-    .setLastPacketInBlock(false)
-    .setDataLen(0)
-    .setSyncBlock(false)
-    .setMvc(PBHelper.convert(vc))
-    .build().getSerializedSize();
-	}
+  static{
+    VectorClock vc = new VectorClock(-1);
+    MAX_PROTO_SIZE = PacketHeaderProto.newBuilder()
+        .setOffsetInBlock(0)
+        .setSeqno(0)
+        .setLastPacketInBlock(false)
+        .setDataLen(0)
+        .setSyncBlock(false)
+        .setMvc(PBHelper.convert(vc))
+        .build().getSerializedSize();
+  }
+
   private static final int MAX_PROTO_SIZE;
   public static final int PKT_LENGTHS_LEN =
       Ints.BYTES + Shorts.BYTES;

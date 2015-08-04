@@ -140,7 +140,6 @@ import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlocksProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.NamenodeCommandProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.NamenodeRegistrationProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.NamenodeRegistrationProto.NamenodeRoleProto;
-import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.NamespaceInfoProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.RecoveringBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.RemoteEditLogManifestProto;
@@ -2119,16 +2118,17 @@ public class PBHelper {
   ////HDFSRS_VC: helper for vector clock
   public static VectorClock convert(VectorClockProto vcp){
       VectorClock vc = new VectorClock();
-      for(VectorClockProto.VectorClockEntry vce : vcp.getEntryList())
-    	  vc.vc.put(vce.getRank(),vce.getVc());
+      int i=0;
+      for(long vce : vcp.getEntryList())
+    	  vc.vcs[i++]=vce;
       return vc;
   }
   
   public static VectorClockProto convert(VectorClock vc){
 	  VectorClockProto.Builder vcp = VectorClockProto.newBuilder();
 	  
-	  for(int rank : vc.vc.keySet())
-		  vcp.addEntry(VectorClockEntry.newBuilder().setRank(rank).setVc(vc.vc.get(rank)));
+	  for(long vcv: vc.vcs)
+		  vcp.addEntry(vcv);
 	  
 	  return vcp.build();
   }
