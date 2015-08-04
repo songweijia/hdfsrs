@@ -9,7 +9,7 @@ package edu.cornell.cs.sa;
  */
 public class VectorClock
 {
-  static public int numProc = 16; // 16 is the default number: TODO: remember to initialized this to a configuratio  
+  static public int numProc = 16; // 16 is the default number: remember to initialized this to a configuratio  
   public long vcs[]; // vector clocks, the first item is the number of nodes.
   public int pid;
 
@@ -96,7 +96,23 @@ public class VectorClock
       sb.append(vcs[i]);
       if( i < numProc - 1 )sb.append(',');
     }
+    sb.append("}");
     return sb.toString();
+  }
+  
+  static public void main(String args[]){
+    VectorClock.numProc = 3;
+    VectorClock vcs [] = new VectorClock[3];
+    vcs[0] = new VectorClock(0);
+    vcs[0].tick();
+    vcs[1] = new VectorClock(1);
+    vcs[2] = new VectorClock(2);
+    vcs[2].tick();
+    vcs[2].tickOnRecvWriteBack(vcs[0]);
+    for(int i=0;i<3;i++)
+      System.out.println(vcs[i]);
+    System.out.println(VectorClock.getCCC(vcs));
+    System.out.println(vcs[2].tickAndCopy());
   }
 }
 
