@@ -251,55 +251,43 @@ void tick_vector_clock(JNIEnv *env, jobject thisObj, jobject mvc, log_t* log)
   jfieldID vc_id = (*env)->GetFieldID(env, thisClass, "vc", "Ledu/cornell/cs/sa/VectorClock;");
   jobject vc = (*env)->GetObjectField(env, thisObj, vc_id);
   jclass vc_class = (*env)->GetObjectClass(env, vc);
-  jmethodID mid1, mid2;
-  jbyteArray jbyteArray;
+  jmethodID tickMid;
+  jFieldID vcsFid;
+  jlongArray jlongArray;
   jbyte* jbytePointer;
   
-  mid1 = (*env)->GetMethodID(env, vc_class, "tickOnRecv",
-                             "(Ledu/cornell/cs/sa/ILogicalClock;)Ledu/cornell/cs/sa/ILogicalClock;");
-  if (mid1 == NULL) {
+  tickMid = (*env)->GetMethodID(env, vc_class, "tickOnRecvWriteBack",
+                             "(Ledu/cornell/cs/sa/VectorClock;)V");
+  if (tickMid == NULL) {
     perror("Error");
     exit(-1);
   }
-  mid2 = (*env)->GetMethodID(env, vc_class, "toByteArrayNoPid", "()[B");
-  if (mid2 == NULL) {
+  vcsFid = (*env)->GetFieldID(env, vc_class, "vcs", "[J");
+  if (vcsFid == NULL) {
     perror("Error");
     exit(-1);
   }
-  vc = (*env)->CallObjectMethod(env, vc, mid1, mvc);
-  jbyteArray = (*env)->CallObjectMethod(env, vc, mid2, NULL);
-  log->vc_length = (*env)->GetArrayLength(env, jbyteArray);
-  log->vc = (char *) malloc(log->vc_length*sizeof(char));
-  (*env)->GetByteArrayRegion (env, jbyteArray, 0, log->vc_length, (jbyte *) log->vc);
-/*
-  {
-    jfieldID vcm_id = (*env)->GetFieldID(env, vc_class, "vc", "Ljava/util/Map;");
-    jobject vcm = (*env)->GetObjectField(env, vc, vcm_id);
-    jclass mapClass = (*env)->FindClass(env, "java/util/HashMap");
-    jmethodID constructor = (*env)->GetMethodID(env, mapClass,"<init>", "(Ljava/util/Map;)V");
-    jobject cvc = (*env)->NewObject(env, mapClass, constructor, vcm);
-    (*env)->SetObjectField(env,mvc,vcm_id,cvc);
-  }
-*/
+  (*env)->CallVoidMethod(env, vc, tickMid, mvc);
+  jlongArray = (*env)->GetObjectField(env, mvc, vcsFid);
+  log->vc_length = (*env)->GetArrayLength(env, jlongArray);
+  log->vc = (char *) malloc(log->vc_length*sizeof(int64_t));
+  (*env)->GetLongArrayRegion (env, jlongArray, 0, log->vc_length, (jlong *) log->vc);
 }
 
 void set_vector_clock(JNIEnv *env, jobject thisObj, size_t vc_length, char* vc)
 {
   jclass thisClass = (*env)->GetObjectClass(env, thisObj);
-  jmethodID mid = (*env)->GetMethodID(env, thisClass, "fromByteArrayNoPid", "([B)V");
-  jbyteArray jbyteArray;
+  jfieldID fid = (*env)->GetFieldID(env, thisClass, "vcs", "[J");
+  jlongArray jlongArray;
   
-  if (mid == NULL) {
-    perror("Error: ");
-    exit(-1);
-  }
-  jbyteArray = (*env)->NewByteArray(env, vc_length);
-  (*env)->SetByteArrayRegion (env, jbyteArray, 0, vc_length, (jbyte *) vc);
-  (*env)->CallObjectMethod(env, thisObj, mid, jbyteArray);
+  jlongArray = (*env)->GetObjectField(env,thisObj,fid);
+  (*env)->SetLongArrayRegion (env, jlongArray, 0, vc_length, (jlong *)vc);
 }
 
 int64_t get_vector_clock_value(JNIEnv *env, jobject vcObj, size_t vc_length, char* vc, int rank)
 {
+  return (int64_t)*(((jlong*)vc) + rank));
+/*
   jclass thisClass = (*env)->GetObjectClass(env, vcObj);
   jmethodID mid = (*env)->GetMethodID(env, thisClass, "fromByteArrayNoPid", "([B)V");
   jmethodID mid2 = (*env)->GetMethodID(env, thisClass, "GetVectorClockValue", "(I)J");
@@ -314,6 +302,7 @@ int64_t get_vector_clock_value(JNIEnv *env, jobject vcObj, size_t vc_length, cha
   (*env)->CallObjectMethod(env, vcObj, mid, jbyteArray);
   
   return (int64_t) (*env)->CallObjectMethod(env, vcObj, mid2, rank);
+*/
 }
 filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
 {
