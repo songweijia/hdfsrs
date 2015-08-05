@@ -740,7 +740,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   gettimeofday(&tv2,NULL);
   t_tot+=(tv2.tv_usec-tv_base.tv_usec+(1<<20))%(1<<20);
   printf("%ld %ld %ld\n",t_tot,t_copy,t_tick);
-  fflush();
+  fflush(stdout);
 #endif//PERF_WRITE
   return 0;
 }
