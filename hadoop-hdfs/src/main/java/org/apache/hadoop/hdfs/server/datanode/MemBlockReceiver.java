@@ -51,6 +51,8 @@ import static org.apache.hadoop.util.Time.now;
 
 import org.apache.hadoop.conf.Configuration;
 
+import edu.cornell.cs.perf.PerformanceTraceSwitch;
+
 /** A class that receives a block and writes to its own disk, meanwhile
  * may copies it to another site. If a throttler is provided,
  * streaming throttling is also supported.
@@ -275,10 +277,15 @@ class MemBlockReceiver extends BlockReceiver {
    * Receives and processes a packet. It can contain many chunks.
    * returns the number of data bytes that the packet has.
    */
+  @SuppressWarnings("unused")
   int receivePacket() throws IOException {
+    long tsBase=0l,tsRecvd=0l,tsWritten=0l,iar=0l,ibr=01,t1=0l,t2=0l,t3=0l;
     // read the next packet
     receiveNextPacket(in);
 
+    if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN || PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE)
+      tsRecvd = System.nanoTime();
+    
     if (LOG.isDebugEnabled()){
       LOG.debug("MemBlockReceiver: Receiving one packet for block " + block +
                 ": " + header);
@@ -355,7 +362,13 @@ class MemBlockReceiver extends BlockReceiver {
           //out.write(dataBuf, startByteToDisk, numBytesToDisk);
           VCOutputStream vcout = (VCOutputStream)out;
           
+          if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN || PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE)
+            ibr = System.nanoTime();
+
           vcout.write(mvc,dataBuf.array(), startByteToDisk, numBytesToDisk);
+
+          if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN || PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE)
+            iar = System.nanoTime();
 
           /// flush entire packet, sync if requested
           flushOrSync(syncBlock);
@@ -411,7 +424,18 @@ class MemBlockReceiver extends BlockReceiver {
     if (throttler != null) { // throttle I/O
       throttler.throttle(len);
     }
-    
+
+    if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN || PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE)
+      tsWritten = System.nanoTime();
+
+    if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE){
+      System.out.println((tsWritten-tsRecvd+ibr-iar)+" "+len);
+      System.out.flush();
+    }
+    if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN){
+      System.out.println((tsWritten-tsRecvd)+" "+len);
+      System.out.flush();
+    }
     return lastPacketInBlock?-1:len;
   }
 

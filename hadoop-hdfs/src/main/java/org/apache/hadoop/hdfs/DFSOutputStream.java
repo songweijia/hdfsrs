@@ -96,6 +96,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
+import edu.cornell.cs.perf.PerformanceTraceSwitch;
 import edu.cornell.cs.sa.VectorClock;
 
 
@@ -706,6 +707,10 @@ public class DFSOutputStream extends FSOutputSummer
                 " sending packet " + one);
           }
 
+          if(PerformanceTraceSwitch.PACKET_TIMESTAMP)
+            System.out.println(one.seqno + " " + 
+                (one.numChunks * checksum.getBytesPerChecksum()) + 
+                " send " + System.nanoTime());
           // write out data to remote datanode
           try {
             one.writeTo(blockStream);
@@ -990,6 +995,10 @@ public class DFSOutputStream extends FSOutputSummer
             // do we change the size of a block.
             // block.setNumBytes(one.getLastByteOffsetBlock());
             block.setNumBytes(Math.max(block.getNumBytes(), one.getLastByteOffsetBlock()));
+            if(PerformanceTraceSwitch.PACKET_TIMESTAMP)
+              System.out.println(seqno + " " + 
+                (one.numChunks * checksum.getBytesPerChecksum()) +
+                " acked " + System.nanoTime());
 
             synchronized (dataQueue) {
               lastAckedSeqno = seqno;
@@ -1829,6 +1838,11 @@ public class DFSOutputStream extends FSOutputSummer
     synchronized (dataQueue) {
       if (currentPacket == null) return;
       dataQueue.addLast(currentPacket);
+      if(PerformanceTraceSwitch.PACKET_TIMESTAMP){
+        System.out.println(currentPacket.seqno + " " +
+          (currentPacket.numChunks * this.checksum.getBytesPerChecksum()) +
+          " enq " + System.nanoTime());
+      }
       lastQueuedSeqno = currentPacket.seqno;
       if (DFSClient.LOG.isDebugEnabled()) {
         DFSClient.LOG.debug("Queued packet " + currentPacket.seqno);

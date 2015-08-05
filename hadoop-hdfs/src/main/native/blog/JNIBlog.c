@@ -579,6 +579,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   (JNIEnv *env, jobject thisObj, jobject mvc, jlong blockId, jint blkOfst,
   jint bufOfst, jint length, jbyteArray buf)
 {
+#ifdef PERF_WRITE
+  struct timeval tv_base,tv1,tv2;
+  long t_tot=0,t_tick=0,t_copy=0;
+  gettimeofday(&tv_base,NULL);
+#endif//PERF_WRITE
   filesystem_t *filesystem;
   block_t *block;
   page_t *new_pages;
@@ -621,8 +626,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     write_length = (jint) length;
     pdata = new_pages[0].data + page_offset;
 #ifdef SECOND_EXPERIMENT
-#else    
+#else
+#ifdef PERF_WRITE
+    gettimeofday(&tv1,NULL);
+#endif//PERF_WRITE
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
+#ifdef PERF_WRITE
+    gettimeofday(&tv2,NULL);
+    t_copy+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
+#endif//PERF_WRITE
 #endif
     last_page_length = page_offset + write_length;
   } else {
@@ -630,7 +642,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     pdata = new_pages[0].data + page_offset;
 #ifdef SECOND_EXPERIMENT
 #else
+#ifdef PERF_WRITE
+    gettimeofday(&tv1,NULL);
+#endif//PERF_WRITE
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
+#ifdef PERF_WRITE
+    gettimeofday(&tv2,NULL);
+    t_copy+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
+#endif//PERF_WRITE
 #endif
     buffer_offset += write_length;
     for (i = 1; i < new_pages_length-1; i++) {
@@ -639,7 +658,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
       pdata = new_pages[i].data;
 #ifdef SECOND_EXPERIMENT
 #else
+#ifdef PERF_WRITE
+    gettimeofday(&tv1,NULL);
+#endif//PERF_WRITE
       (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
+#ifdef PERF_WRITE
+    gettimeofday(&tv2,NULL);
+    t_copy+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
+#endif//PERF_WRITE
 #endif
       buffer_offset += write_length;
     }
@@ -648,7 +674,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     pdata = new_pages[new_pages_length-1].data;
 #ifdef SECOND_EXPERIMENT
 #else
+#ifdef PERF_WRITE
+    gettimeofday(&tv1,NULL);
+#endif//PERF_WRITE
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
+#ifdef PERF_WRITE
+    gettimeofday(&tv2,NULL);
+    t_copy+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
+#endif//PERF_WRITE
 #endif
     last_page_length = write_length;
   }
@@ -690,12 +723,25 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
 #else
 #ifdef THIRD_EXPERIMENT
 #else
+#ifdef PERF_WRITE
+  gettimeofday(&tv1,NULL);
+#endif
   tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
+#ifdef PERF_WRITE
+  gettimeofday(&tv1,NULL);
+  t_tick+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
+#endif//PERF_WRITE
 #endif
 #endif
   filesystem->log_length += 1;
   block->last_entry = log_pos;
 #endif
+#ifdef PERF_WRITE
+  gettimeofday(&tv2,NULL);
+  t_tot+=(tv2.tv_usec-tv_base.tv_usec+(1<<20))%(1<<20);
+  printf("%ld %ld %ld\n",t_tot,t_copy,t_tick);
+  fflush();
+#endif//PERF_WRITE
   return 0;
 }
 
