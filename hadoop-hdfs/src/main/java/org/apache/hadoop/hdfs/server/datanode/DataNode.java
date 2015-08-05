@@ -1814,6 +1814,11 @@ public class DataNode extends Configured
     if (conf == null)
       conf = new HdfsConfiguration();
     
+    //HDFSRS_VC
+    VectorClock.numProc = conf.getInt(DFS_VC_NUM_PROC, DEFAULT_DFS_VC_NUM_PROC);
+    //HDFSRS_VC
+
+    
     if (args != null) {
       // parse generic hadoop options
       GenericOptionsParser hParser = new GenericOptionsParser(conf, args);
@@ -1875,9 +1880,6 @@ public class DataNode extends Configured
   @InterfaceAudience.Private
   public static DataNode createDataNode(String args[], Configuration conf,
       SecureResources resources) throws IOException {
-    //HDFSRS_VC
-    VectorClock.numProc = conf.getInt(DFS_VC_NUM_PROC, DEFAULT_DFS_VC_NUM_PROC);
-    //HDFSRS_VC
     DataNode dn = instantiateDataNode(args, conf, resources);
     if (dn != null) {
       dn.runDatanodeDaemon();
