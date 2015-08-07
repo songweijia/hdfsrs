@@ -280,10 +280,12 @@ class MemBlockReceiver extends BlockReceiver {
   @SuppressWarnings("unused")
   int receivePacket() throws IOException {
     long tsBase=0l,tsRecvd=0l,tsWritten=0l,iar=0l,ibr=01,t1=0l,t2=0l,t3=0l;
+    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
+      tsBase = System.nanoTime();
     // read the next packet
     receiveNextPacket(in);
 
-    if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN || PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE)
+    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
       tsRecvd = System.nanoTime();
     
     if (LOG.isDebugEnabled()){
@@ -362,12 +364,12 @@ class MemBlockReceiver extends BlockReceiver {
           //out.write(dataBuf, startByteToDisk, numBytesToDisk);
           VCOutputStream vcout = (VCOutputStream)out;
           
-          if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN || PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE)
+          if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
             ibr = System.nanoTime();
 
           vcout.write(mvc,dataBuf.array(), startByteToDisk, numBytesToDisk);
 
-          if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN || PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE)
+          if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
             iar = System.nanoTime();
 
           /// flush entire packet, sync if requested
@@ -425,15 +427,15 @@ class MemBlockReceiver extends BlockReceiver {
       throttler.throttle(len);
     }
 
-    if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN || PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE)
+    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
       tsWritten = System.nanoTime();
 
-    if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN_NO_WRITE){
-      System.out.println((tsWritten-tsRecvd+ibr-iar)+" "+len);
+    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE){
+      System.out.println((tsRecvd - tsBase)+" "+(tsWritten-tsRecvd+ibr-iar)+" "+len);
       System.out.flush();
     }
-    if(PerformanceTraceSwitch.PACKET_TIME_BREAKDOWN){
-      System.out.println((tsWritten-tsRecvd)+" "+len);
+    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN){
+      System.out.println((tsRecvd - tsBase)+" "+(tsWritten-tsRecvd)+" "+len);
       System.out.flush();
     }
     return lastPacketInBlock?-1:len;
