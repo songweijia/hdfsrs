@@ -63,7 +63,7 @@ public class PacketHeader {
         .setDataLen(0)
         .setSyncBlock(false)
         .setMvc(PBHelper.convert(vc))
-        .build().getSerializedSize();
+        .build().getSerializedSize() + 64; // extra space for vector clock serialization.TODO: use VectorClock.numProc
   }
 
   private static final int MAX_PROTO_SIZE;
