@@ -280,12 +280,14 @@ class MemBlockReceiver extends BlockReceiver {
   @SuppressWarnings("unused")
   int receivePacket() throws IOException {
     long tsBase=0l,tsRecvd=0l,tsWritten=0l,iar=0l,ibr=01,t1=0l,t2=0l,t3=0l;
-    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
+    if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
+        PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
       tsBase = System.nanoTime();
     // read the next packet
     receiveNextPacket(in);
 
-    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
+    if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
+        PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
       tsRecvd = System.nanoTime();
     
     if (LOG.isDebugEnabled()){
@@ -364,12 +366,14 @@ class MemBlockReceiver extends BlockReceiver {
           //out.write(dataBuf, startByteToDisk, numBytesToDisk);
           VCOutputStream vcout = (VCOutputStream)out;
           
-          if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
+          if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
+              PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
             ibr = System.nanoTime();
 
           vcout.write(mvc,dataBuf.array(), startByteToDisk, numBytesToDisk);
 
-          if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
+          if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
+              PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
             iar = System.nanoTime();
 
           /// flush entire packet, sync if requested
@@ -427,14 +431,15 @@ class MemBlockReceiver extends BlockReceiver {
       throttler.throttle(len);
     }
 
-    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN || PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE)
+    if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
+        PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
       tsWritten = System.nanoTime();
 
-    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN_NO_WRITE){
+    if(PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite()){
       System.out.println((tsRecvd - tsBase)+" "+(tsWritten-tsRecvd+ibr-iar)+" "+len);
       System.out.flush();
     }
-    if(PerformanceTraceSwitch.DATANODE_TIME_BREAKDOWN){
+    if(PerformanceTraceSwitch.getDataNodeTimeBreakDown()){
       System.out.println((tsRecvd - tsBase)+" "+(tsWritten-tsRecvd)+" "+len);
       System.out.flush();
     }

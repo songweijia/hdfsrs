@@ -71,7 +71,10 @@ public class HdfsConstants {
   public static final int MAX_PATH_DEPTH = 1000;
 
   // TODO should be conf injected?
-  public static final int DEFAULT_DATA_SOCKET_SIZE = 128 * 1024;
+  private static final int DEFAULT_DATA_SOCKET_SIZE = 128 * 1024;
+  public static int getDataSocketSize(){
+    return DEFAULT_DATA_SOCKET_SIZE;
+  }
   public static final int IO_FILE_BUFFER_SIZE = new HdfsConfiguration().getInt(
       DFSConfigKeys.IO_FILE_BUFFER_SIZE_KEY,
       DFSConfigKeys.IO_FILE_BUFFER_SIZE_DEFAULT);

@@ -707,7 +707,7 @@ public class DFSOutputStream extends FSOutputSummer
                 " sending packet " + one);
           }
 
-          if(PerformanceTraceSwitch.PACKET_TIMESTAMP)
+          if(PerformanceTraceSwitch.getPacketTimestamp())
             System.out.println(one.seqno + " " + 
                 (one.numChunks * checksum.getBytesPerChecksum()) + 
                 " send " + System.nanoTime());
@@ -995,7 +995,7 @@ public class DFSOutputStream extends FSOutputSummer
             // do we change the size of a block.
             // block.setNumBytes(one.getLastByteOffsetBlock());
             block.setNumBytes(Math.max(block.getNumBytes(), one.getLastByteOffsetBlock()));
-            if(PerformanceTraceSwitch.PACKET_TIMESTAMP)
+            if(PerformanceTraceSwitch.getPacketTimestamp())
               System.out.println(seqno + " " + 
                 (one.numChunks * checksum.getBytesPerChecksum()) +
                 " acked " + System.nanoTime());
@@ -1670,7 +1670,8 @@ public class DFSOutputStream extends FSOutputSummer
     final int timeout = client.getDatanodeReadTimeout(length);
     NetUtils.connect(sock, isa, client.getRandomLocalInterfaceAddr(), client.getConf().socketTimeout);
     sock.setSoTimeout(timeout);
-    sock.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
+    if(HdfsConstants.getDataSocketSize() > 0)
+      sock.setSendBufferSize(HdfsConstants.getDataSocketSize());
     if(DFSClient.LOG.isDebugEnabled()) {
       DFSClient.LOG.debug("Send buf size " + sock.getSendBufferSize());
     }
@@ -1838,7 +1839,7 @@ public class DFSOutputStream extends FSOutputSummer
     synchronized (dataQueue) {
       if (currentPacket == null) return;
       dataQueue.addLast(currentPacket);
-      if(PerformanceTraceSwitch.PACKET_TIMESTAMP){
+      if(PerformanceTraceSwitch.getPacketTimestamp()){
         System.out.println(currentPacket.seqno + " " +
           (currentPacket.numChunks * this.checksum.getBytesPerChecksum()) +
           " enq " + System.nanoTime());

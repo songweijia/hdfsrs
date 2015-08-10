@@ -7175,7 +7175,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   		Socket s = socketFactory.createSocket();
   		s.connect(NetUtils.createSocketAddr(dd.getXferAddr(false)));
   		s.setSoTimeout(timeout);
-      s.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
+  		if(HdfsConstants.getDataSocketSize() > 0)
+  		  s.setSendBufferSize(HdfsConstants.getDataSocketSize());
       
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
           NetUtils.getOutputStream(s, timeout),
@@ -7210,7 +7211,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     	Socket s  =socketFactory.createSocket();
     	s.connect(e.getValue());
   		s.setSoTimeout(timeout);
-      s.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
+  		if(HdfsConstants.getDataSocketSize() > 0)
+  		  s.setSendBufferSize(HdfsConstants.getDataSocketSize());
 
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
       		NetUtils.getOutputStream(s,timeout),
