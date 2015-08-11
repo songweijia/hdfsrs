@@ -60,8 +60,16 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
  * Method:    since
  * Signature: (JLedu/cornell/cs/sa/VectorClock;)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JLedu_cornell_cs_sa_VectorClock_2
   (JNIEnv *, jobject, jlong, jobject);
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    since
+ * Signature: (JIJLedu/cornell/cs/sa/VectorClock;)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JIJLedu_cornell_cs_sa_VectorClock_2
+  (JNIEnv *, jobject, jlong, jint, jlong, jobject);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -73,28 +81,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    deleteSnapshot
- * Signature: (J)I
- */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteSnapshot
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    readLocalRTC
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
   (JNIEnv *, jclass);
-
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    destroy
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_destroy
-  (JNIEnv *, jobject);
-
 
 #ifdef __cplusplus
 }

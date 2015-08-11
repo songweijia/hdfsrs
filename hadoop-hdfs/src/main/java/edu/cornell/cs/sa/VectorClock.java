@@ -3,11 +3,10 @@
  */
 package edu.cornell.cs.sa;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
-import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto;
-import org.apache.hadoop.hdfs.protocolPB.PBHelper;
+
 /**
  * @author sonic
  *
@@ -23,9 +22,9 @@ public class VectorClock implements ILogicalClock
 	 * @throws IOException
 	 */
 	public byte[] toByteArrayNoPid() throws IOException{
-	  VectorClockProto vcp = PBHelper.convert(this);
+/*	  VectorClockProto vcp = PBHelper.convert(this);
 	  return vcp.toByteArray();
-/*	  
+*/	  
 	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	  ObjectOutputStream oos = new ObjectOutputStream(baos);
 	  synchronized(this){
@@ -33,7 +32,6 @@ public class VectorClock implements ILogicalClock
 	  }
 	  oos.flush();
 	  return baos.toByteArray();
-*/
 	}
 	
 	/**
@@ -44,7 +42,12 @@ public class VectorClock implements ILogicalClock
 	 */
 	@SuppressWarnings("unchecked")
     synchronized public void fromByteArrayNoPid(byte vcObj[]) throws IOException, ClassNotFoundException{
-	  this.vc = PBHelper.convert(VectorClockProto.parseFrom(vcObj)).vc;
+//	  this.vc = PBHelper.convert(VectorClockProto.parseFrom(vcObj)).vc;
+	  ByteArrayInputStream bais = new ByteArrayInputStream(vcObj);
+      ObjectInputStream ios = new ObjectInputStream(bais);
+      synchronized(this){
+        this.vc = (Map<Integer,Long>)ios.readObject();
+      }
 	}
 	
 	@Override

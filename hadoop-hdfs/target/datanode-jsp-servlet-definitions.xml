@@ -6,13 +6,8 @@ description, distributable, and context-param elements.
 -->
 
     <servlet>
-        <servlet-name>org.apache.hadoop.hdfs.server.datanode.dataNodeHome_jsp</servlet-name>
-        <servlet-class>org.apache.hadoop.hdfs.server.datanode.dataNodeHome_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.hadoop.hdfs.server.datanode.browseBlock_jsp</servlet-name>
-        <servlet-class>org.apache.hadoop.hdfs.server.datanode.browseBlock_jsp</servlet-class>
+        <servlet-name>org.apache.hadoop.hdfs.server.datanode.browseDirectory_jsp</servlet-name>
+        <servlet-class>org.apache.hadoop.hdfs.server.datanode.browseDirectory_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -21,18 +16,18 @@ description, distributable, and context-param elements.
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.hadoop.hdfs.server.datanode.browseDirectory_jsp</servlet-name>
-        <servlet-class>org.apache.hadoop.hdfs.server.datanode.browseDirectory_jsp</servlet-class>
+        <servlet-name>org.apache.hadoop.hdfs.server.datanode.browseBlock_jsp</servlet-name>
+        <servlet-class>org.apache.hadoop.hdfs.server.datanode.browseBlock_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.hadoop.hdfs.server.datanode.dataNodeHome_jsp</servlet-name>
+        <servlet-class>org.apache.hadoop.hdfs.server.datanode.dataNodeHome_jsp</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>org.apache.hadoop.hdfs.server.datanode.dataNodeHome_jsp</servlet-name>
-        <url-pattern>/dataNodeHome.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.hadoop.hdfs.server.datanode.browseBlock_jsp</servlet-name>
-        <url-pattern>/browseBlock.jsp</url-pattern>
+        <servlet-name>org.apache.hadoop.hdfs.server.datanode.browseDirectory_jsp</servlet-name>
+        <url-pattern>/browseDirectory.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -41,8 +36,13 @@ description, distributable, and context-param elements.
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.hadoop.hdfs.server.datanode.browseDirectory_jsp</servlet-name>
-        <url-pattern>/browseDirectory.jsp</url-pattern>
+        <servlet-name>org.apache.hadoop.hdfs.server.datanode.browseBlock_jsp</servlet-name>
+        <url-pattern>/browseBlock.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.hadoop.hdfs.server.datanode.dataNodeHome_jsp</servlet-name>
+        <url-pattern>/dataNodeHome.jsp</url-pattern>
     </servlet-mapping>
 
 <!--

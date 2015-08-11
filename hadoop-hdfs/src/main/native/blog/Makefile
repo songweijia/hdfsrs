@@ -1,4 +1,5 @@
-LIB=libJNIBlog.so
+#LIB=libJNIBlog.so
+LIB=edu_cornell_cs_blog_JNIBlog.so
 SRCS=JNIBlog.c
 HEADERS=JNIBlog.h
 CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux
