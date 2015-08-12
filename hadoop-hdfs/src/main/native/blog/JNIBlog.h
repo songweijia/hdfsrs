@@ -10,15 +10,15 @@ extern "C" {
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    initialize
- * Signature: (III)I
+ * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *, jobject, jint, jint, jint);
+  (JNIEnv *, jobject, jint, jint);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createBlock
- * Signature: (Ledu/cornell/cs/sa/VectorClock;J)I
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;J)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   (JNIEnv *, jobject, jobject, jlong);
@@ -26,7 +26,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    deleteBlock
- * Signature: (Ledu/cornell/cs/sa/VectorClock;J)I
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;J)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   (JNIEnv *, jobject, jobject, jlong);
@@ -50,34 +50,18 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    writeBlock
- * Signature: (Ledu/cornell/cs/sa/VectorClock;JIII[B)I
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;JIII[B)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   (JNIEnv *, jobject, jobject, jlong, jint, jint, jint, jbyteArray);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    since
- * Signature: (JLedu/cornell/cs/sa/VectorClock;)I
- */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JLedu_cornell_cs_sa_VectorClock_2
-  (JNIEnv *, jobject, jlong, jobject);
-
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    since
- * Signature: (JIJLedu/cornell/cs/sa/VectorClock;)I
- */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JIJLedu_cornell_cs_sa_VectorClock_2
-  (JNIEnv *, jobject, jlong, jint, jlong, jobject);
-
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createSnapshot
- * Signature: (JJ)I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
-  (JNIEnv *, jobject, jlong, jlong);
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog

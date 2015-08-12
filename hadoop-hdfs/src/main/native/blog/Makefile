@@ -1,9 +1,11 @@
 #LIB=libJNIBlog.so
-LIB=edu_cornell_cs_blog_JNIBlog.so
+LIB=libedu_cornell_cs_blog_JNIBlog.so
 SRCS=JNIBlog.c
-HEADERS=JNIBlog.h
+HEADERS=JNIBlog.h map.h types.h
 CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux
-LDFLAGS=-shared -fpic
+LDFLAGS=-shared -fpic -pthread
+
+all: $(LIB)
 
 $(LIB): $(SRCS) $(HEADERS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(LIB) $(SRCS)

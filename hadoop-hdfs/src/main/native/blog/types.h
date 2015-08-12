@@ -28,9 +28,8 @@ struct log {
   int nr_pages;
   page_t *pages;
   int64_t previous;
-  int64_t rtc;
-  size_t vc_length;
-  char *vc;
+  int64_t r;
+  int64_t c;
 };
 
 struct block {

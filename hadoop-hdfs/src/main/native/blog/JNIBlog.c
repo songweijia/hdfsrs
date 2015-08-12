@@ -15,37 +15,21 @@ void print_page(page_t *page)
   printf("%s\n", page->data);
 }
 
-void print_log(JNIEnv *env, log_t *log, int64_t index)
+void print_log(log_t *log)
 {
-  jclass vc_class = (*env)->FindClass(env, "edu/cornell/cs/sa/VectorClock");
-  jmethodID mid = (*env)->GetStaticMethodID(env, vc_class, "toString", "([B)Ljava/lang/String;");
-  jbyteArray jbyteArray;
-  jstring jstring;
-  log_t *cur_log = log + index;
-  const char *vc_string;
   int i;
   
-  if (mid == NULL) {
-    perror("Error: ");
-    exit(-1);
+  printf("Block ID: %ld\n", log->block_id);
+  printf("Block Length: %d\n", log->block_length);
+  printf("Starting Page: %d\n", log->page_id);
+  printf("Number of Pages: %d\n", log->nr_pages);
+  for (i = 0; i < log->nr_pages; i++) {
+    printf("Page %d:\n", log->page_id + i);
+    print_page(log->pages + i);
   }
-  jbyteArray = (*env)->NewByteArray(env, cur_log->vc_length);
-  (*env)->SetByteArrayRegion (env, jbyteArray, 0, cur_log->vc_length, (jbyte *) cur_log->vc);
-  jstring = (*env)->CallStaticObjectMethod(env, vc_class, mid, jbyteArray);
-  vc_string = (*env)->GetStringUTFChars(env, jstring, NULL);
-  
-  printf("Block ID: %ld\n", cur_log->block_id);
-  printf("Block Length: %d\n", cur_log->block_length);
-  printf("Starting Page: %d\n", cur_log->page_id);
-  printf("Number of Pages: %d\n", cur_log->nr_pages);
-  for (i = 0; i < cur_log->nr_pages; i++) {
-    printf("Page %d:\n", cur_log->page_id + i);
-    print_page(cur_log->pages + i);
-  }
-  printf("RTC Value: %ld\n", cur_log->rtc);
-  printf("VC Value: %s\n", vc_string);
-  if (cur_log->previous != -1)
-    printf("Previous: %ld\n", cur_log->previous);
+  printf("HLC Value: (%ld,%ld)\n", log->r, log->c);
+  if (log->previous != -1)
+    printf("Previous: %ld\n", log->previous);
 }
 
 void print_block(block_t *block, int page_size)
@@ -155,7 +139,7 @@ void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
   printf("Log Length: %zu\n", filesystem->log_length);
   for (i = 0; i < filesystem->log_length; i++) {
     printf("Log %ld\n", i);
-    print_log(env, filesystem->log, i);
+    print_log(filesystem->log + i);
     printf("\n");
   }
   
@@ -247,77 +231,46 @@ void check_and_increase_log_length(filesystem_t *filesystem)
 
 int64_t read_local_rtc()
 {
-  int64_t rtc = 0;
   struct timeval tv;
+  int64_t rtc;
   
   gettimeofday(&tv,NULL);
-  rtc = tv.tv_sec;
-//  rtc = (rtc<<20) | tv.tv_usec;
   rtc = tv.tv_sec*1000 + tv.tv_usec/1000;
   return rtc;
 }
 
-void tick_vector_clock(JNIEnv *env, jobject thisObj, jobject mvc, log_t* log)
-{
-  jclass thisClass = (*env)->GetObjectClass(env, thisObj);
-  jfieldID vc_id = (*env)->GetFieldID(env, thisClass, "vc", "Ledu/cornell/cs/sa/VectorClock;");
-  jobject vc = (*env)->GetObjectField(env, thisObj, vc_id);
-  jclass vc_class = (*env)->GetObjectClass(env, vc);
-  jmethodID mid1, mid2;
-  jbyteArray jbyteArray;
-  jbyte* jbytePointer;
-  
-  mid1 = (*env)->GetMethodID(env, vc_class, "tickOnRecv",
-                             "(Ledu/cornell/cs/sa/ILogicalClock;)Ledu/cornell/cs/sa/ILogicalClock;");
-  if (mid1 == NULL) {
-    perror("Error");
-    exit(-1);
-  }
-  mid2 = (*env)->GetMethodID(env, vc_class, "toByteArrayNoPid", "()[B");
-  if (mid2 == NULL) {
-    perror("Error");
-    exit(-1);
-  }
-  vc = (*env)->CallObjectMethod(env, vc, mid1, mvc);
-  jbyteArray = (*env)->CallObjectMethod(env, vc, mid2, NULL);
-  log->vc_length = (*env)->GetArrayLength(env, jbyteArray);
-  log->vc = (char *) malloc(log->vc_length*sizeof(char));
-  (*env)->GetByteArrayRegion (env, jbyteArray, 0, log->vc_length, (jbyte *) log->vc);
+void update_log_clock(JNIEnv *env, jobject hlc, log_t *log) {
+  jclass hlcClass = (*env)->GetObjectClass(env, hlc);
+  jfieldID rfield = (*env)->GetFieldID(env, hlcClass, "r", "J");
+  jfieldID cfield = (*env)->GetFieldID(env, hlcClass, "c", "J");
+
+  log->r = (*env)->GetLongField(env, hlc, rfield);
+  log->c = (*env)->GetLongField(env, hlc, cfield);
 }
 
-void set_vector_clock(JNIEnv *env, jobject thisObj, size_t vc_length, char* vc)
+void tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jobject mhlc)
 {
-  jclass thisClass = (*env)->GetObjectClass(env, thisObj);
-  jmethodID mid = (*env)->GetMethodID(env, thisClass, "fromByteArrayNoPid", "([B)V");
-  jbyteArray jbyteArray;
+  jclass hlcClass = (*env)->GetObjectClass(env, hlc);
+  jmethodID mid = (*env)->GetMethodID(env, hlcClass, "tickOnRecv", "(Ledu/cornell/cs/sa/HybridLogicalClock;)V");
+
+  if (mid == NULL) {
+    perror("Error");
+    exit(-1);
+  }
+  (*env)->CallObjectMethod(env, hlc, mid, mhlc);
+}
+
+void mock_tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jlong rtc)
+{
+  jclass hlcClass = (*env)->GetObjectClass(env, hlc);
+  jmethodID mid = (*env)->GetMethodID(env, hlcClass, "mockTick", "(J;)V;");
   
   if (mid == NULL) {
-    perror("Error: ");
+    perror("Error");
     exit(-1);
   }
-  jbyteArray = (*env)->NewByteArray(env, vc_length);
-  (*env)->SetByteArrayRegion (env, jbyteArray, 0, vc_length, (jbyte *) vc);
-  (*env)->CallObjectMethod(env, thisObj, mid, jbyteArray);
+  (*env)->CallObjectMethod(env, hlc, mid, rtc);
 }
-
-int64_t get_vector_clock_value(JNIEnv *env, jobject vcObj, size_t vc_length, char* vc, int rank)
-{
-  jclass thisClass = (*env)->GetObjectClass(env, vcObj);
-  jmethodID mid = (*env)->GetMethodID(env, thisClass, "fromByteArrayNoPid", "([B)V");
-  jmethodID mid2 = (*env)->GetMethodID(env, thisClass, "GetVectorClockValue", "(I)J");
-  jbyteArray jbyteArray;
-  
-  if (mid == NULL || mid2 == NULL) {
-    perror("Error: ");
-    exit(-1);
-  }
-  jbyteArray = (*env)->NewByteArray(env, vc_length);
-  (*env)->SetByteArrayRegion (env, jbyteArray, 0, vc_length, (jbyte *) vc);
-  (*env)->CallObjectMethod(env, vcObj, mid, jbyteArray);
-  
-  return (int64_t) (*env)->CallObjectMethod(env, vcObj, mid2, rank);
-}
-
 
 filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
 {
@@ -327,20 +280,28 @@ filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
   return (filesystem_t *) (*env)->GetLongField(env, thisObj, fid);
 }
 
+jobject get_hybrid_logical_clock(JNIEnv *env, jobject thisObj)
+{
+  jclass thisCls = (*env)->GetObjectClass(env,thisObj);
+  jfieldID fid = (*env)->GetFieldID(env,thisCls,"hlc","Ledu/cornell/cs/sa/HybridLogicalClock;");
+  
+  return (*env)->GetObjectField(env, thisObj, fid);
+}
+
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    initialize
- * Signature: (III)I
+ * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *env, jobject thisObj, jint rank, jint blockSize, jint pageSize)
+  (JNIEnv *env, jobject thisObj, jint blockSize, jint pageSize)
 {
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jfieldID long_id = (*env)->GetFieldID(env, thisCls, "jniData", "J");
-  jfieldID vc_id = (*env)->GetFieldID(env, thisCls, "vc", "Ledu/cornell/cs/sa/VectorClock;");
-  jclass vc_class = (*env)->FindClass(env, "edu/cornell/cs/sa/VectorClock");
-  jmethodID cid = (*env)->GetMethodID(env, vc_class, "<init>", "(I)V");
-  jobject vc_object = (*env)->NewObject(env, vc_class, cid, rank);
+  jfieldID hlc_id = (*env)->GetFieldID(env, thisCls, "hlc", "Ledu/cornell/cs/sa/HybridLogicalClock;");
+  jclass hlc_class = (*env)->FindClass(env, "edu/cornell/cs/sa/HybridLogicalClock");
+  jmethodID cid = (*env)->GetMethodID(env, hlc_class, "<init>", "()V");
+  jobject hlc_object = (*env)->NewObject(env, hlc_class, cid);
   filesystem_t *filesystem;
   int i;
   
@@ -371,7 +332,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
   pthread_rwlock_init(&(filesystem->lock), NULL);
   
-  (*env)->SetObjectField(env, thisObj, vc_id, vc_object);
+  (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
   (*env)->SetLongField(env, thisObj, long_id, (int64_t) filesystem);
   
   return 0;
@@ -380,14 +341,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createBlock
- * Signature: (Ledu/cornell/cs/sa/VectorClock;J)I
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;J)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
-  (JNIEnv *env, jobject thisObj, jobject mvc, jlong blockId)
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId)
 {
   filesystem_t *filesystem;
   block_t *new_block;
   int64_t log_pos;
+  jobject hlc;
   
   // Create a new block.
   filesystem = get_filesystem(env, thisObj);
@@ -400,8 +362,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   MAP_UNLOCK(block, filesystem->block_map, blockId);
   
   // Create the corresponding log entry.
+  printf("Create Block: Writing to log.\n");
   pthread_rwlock_wrlock(&(filesystem->lock));
+  printf("Create Block: Acquired lock.\n");
   check_and_increase_log_length(filesystem);
+  printf("Create Block: Increased length.\n");
   log_pos = filesystem->log_length;
   filesystem->log[log_pos].block_id = blockId;
   filesystem->log[log_pos].block_length = 0;
@@ -409,9 +374,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   filesystem->log[log_pos].nr_pages = 0;
   filesystem->log[log_pos].pages = NULL;
   filesystem->log[log_pos].previous = -1;
-  filesystem->log[log_pos].rtc = read_local_rtc();
-  tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
+  printf("Create Block: Trying to Tick.\n");
+  hlc = get_hybrid_logical_clock(env, thisObj);
+  tick_hybrid_logical_clock(env, hlc, mhlc);
+  printf("Create Block: Tick.\n");
+  update_log_clock(env, hlc, filesystem->log+log_pos);
+  printf("Create Block: Update the log.\n");
   filesystem->log_length += 1;
+  printf("Create Block: Finished.\n");
   pthread_rwlock_unlock(&(filesystem->lock));
 
   // Create the block, fill the appropriate fields and write it to block map.
@@ -427,7 +397,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
     return -2;
   }
   MAP_UNLOCK(block, filesystem->block_map, blockId);
-  new_block = filesystem->block_map[blockId%BLOCK_MAP_SIZE].entry->value;
   return 0;
 }
 
@@ -437,7 +406,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
  * Signature: (Ledu/cornell/cs/sa/VectorClock;J)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
-  (JNIEnv *env, jobject thisObj, jobject mvc, jlong blockId)
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId)
 {
   filesystem_t *filesystem;
   int block_pos;
@@ -466,8 +435,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   filesystem->log[log_pos].nr_pages = 0;
   filesystem->log[log_pos].pages = NULL;
   filesystem->log[log_pos].previous = cur_block->last_entry;
-  filesystem->log[log_pos].rtc = read_local_rtc();
-  tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  update_log_clock(env, mhlc, filesystem->log+log_pos);
   filesystem->log_length += 1;
   pthread_rwlock_unlock(&(filesystem->lock));
   
@@ -634,7 +603,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes
  * Signature: (Ledu/cornell/cs/sa/VectorClock;JIII[B)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
-  (JNIEnv *env, jobject thisObj, jobject mvc, jlong blockId, jint blkOfst,
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst,
   jint bufOfst, jint length, jbyteArray buf)
 {
   filesystem_t *filesystem;
@@ -750,12 +719,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   filesystem->log[log_pos].nr_pages = new_pages_length;
   filesystem->log[log_pos].pages = new_pages;
   filesystem->log[log_pos].previous = block->last_entry;
-  filesystem->log[log_pos].rtc = read_local_rtc();
 #ifdef SECOND_EXPERIMENT
 #else
 #ifdef THIRD_EXPERIMENT
 #else
-  tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  update_log_clock(env, mhlc, filesystem->log+log_pos);
 #endif
 #endif
   filesystem->log_length += 1;
@@ -767,114 +736,48 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    since
- * Signature: (JLedu/cornell/cs/sa/VectorClock;)I
- */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JLedu_cornell_cs_sa_VectorClock_2
-  (JNIEnv *env, jobject thisObj, jlong rtc, jobject mvc)
-{
-  filesystem_t *filesystem;
-  log_t *log;
-  int64_t log_pos;
-  int64_t cur_value;
-  
-  // Find the corresponding log.
-  filesystem = get_filesystem(env, thisObj);
-  if(filesystem->log_length == 0)
-    return -1;
-  log = filesystem->log;
-  // If the real time cut is before the first log...
-  if (log[0].rtc > rtc)
-    return -1;
-  // If the real time cut is after the last log...
-  log_pos = filesystem->log_length-1;
-  if (log[log_pos].rtc <= rtc) {
-    set_vector_clock(env, mvc, log[log_pos].vc_length, log[log_pos].vc);
-    return 0;
-  }
-  
-  log_pos = filesystem->log_length / 2;
-  cur_value = log_pos / 2;
-  while ((log[log_pos].rtc > rtc) || (log[log_pos+1].rtc <= rtc)) {
-    if (log[log_pos].rtc > rtc)
-      log_pos -= cur_value;
-    else
-      log_pos += cur_value;
-    if (cur_value > 1)
-      cur_value /= 2;
-  }
-  set_vector_clock(env, mvc, log[log_pos].vc_length, log[log_pos].vc);
-  return 0;
-}
-
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    since
- * Signature: (JIJLedu/cornell/cs/sa/VectorClock;)I
- */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_since__JIJLedu_cornell_cs_sa_VectorClock_2
-  (JNIEnv *env, jobject thisObj, jlong rtc, jint rank, jlong lcv, jobject mvc)
-
-{
-  filesystem_t *filesystem;
-  log_t *log;
-  int64_t log_pos;
-  int64_t cur_value;
-  
-  // Find the corresponding log.
-  filesystem = get_filesystem(env, thisObj);
-  if(filesystem->log_length == 0)
-    return -1;
-  log = filesystem->log;
-  // If the real time cut is before the first log...
-  if (log[0].rtc > rtc)
-    return -1;
-  // If the real time cut is after the last log...
-  log_pos = filesystem->log_length-1;
-  if (log[log_pos].rtc <= rtc) {
-    while ((log_pos >= 0) && (get_vector_clock_value(env, mvc, log[log_pos].vc_length, log[log_pos].vc, rank) > lcv))
-      log_pos--;
-    if (log_pos == -1)
-      return -1;
-    set_vector_clock(env, mvc, log[log_pos].vc_length, log[log_pos].vc);
-    return 0;
-  }
-  
-  log_pos = filesystem->log_length / 2;
-  cur_value = log_pos / 2;
-  while ((log[log_pos].rtc > rtc) || (log[log_pos+1].rtc <= rtc)) {
-    if (log[log_pos].rtc > rtc)
-      log_pos -= cur_value;
-    else
-      log_pos += cur_value;
-    if (cur_value > 1)
-      cur_value /= 2;
-  }
-  while ((log_pos >= 0) && (get_vector_clock_value(env, mvc, log[log_pos].vc_length, log[log_pos].vc, rank) > lcv))
-      log_pos--;
-  if (log_pos == -1)
-      return -1;
-  set_vector_clock(env, mvc, log[log_pos].vc_length, log[log_pos].vc);
-  return 0;
-}
-
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createSnapshot
  * Signature: (JJ)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
-  (JNIEnv *env, jobject thisObj, jlong rtc, jlong eid)
+  (JNIEnv *env, jobject thisObj, jlong rtc)
 {
   filesystem_t *filesystem;
   snapshot_t *snapshot;
   snapshot_t *last_snapshot = NULL;
-  int64_t id = (int64_t) rtc;
+  log_t *log;
+  int64_t log_pos, cur_value, length;
   int64_t *new_id;
-  int i;
+  
+  // Find the corresponding log.
+  filesystem = get_filesystem(env, thisObj);
+  log = filesystem->log;
+  pthread_rwlock_rdlock(&(filesystem->lock));
+  length = filesystem->log_length;
+  pthread_rwlock_unlock(&(filesystem->lock));
+  // If the real time cut is before the first log...
+  if ((length == 0) || (log[0].r > rtc)) {
+    fprintf(stderr, "Create Snapshot: Log has not entries before RTC %ld\n", rtc);
+    return -1;
+  }
+  // If the real time cut is after the last log, create a mock event with rtc timestamp. Otherwise do binary search.
+  log_pos = length-1;
+  if ((log[log_pos].r < rtc) || ((log[log_pos].r == rtc) && (log[log_pos].c == 0))) {
+    mock_tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), rtc);
+  } else {
+    log_pos = length / 2;
+    cur_value = log_pos / 2;
+    while ((log[log_pos].r > rtc) || (log[log_pos+1].r <= rtc)) {
+      if (log[log_pos].r > rtc)
+        log_pos -= cur_value;
+      else
+        log_pos += cur_value;
+      if (cur_value > 1)
+        cur_value /= 2;
+    }
+  }
   
   // Find the corresponding position to write snapshot.
-  filesystem = get_filesystem(env, thisObj);
   MAP_LOCK(log, filesystem->log_map, rtc, 'w');
   if (MAP_CREATE(log, filesystem->log_map, rtc) != 0) {
     MAP_UNLOCK(log, filesystem->log_map, rtc);
@@ -882,22 +785,22 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
     return -1;
   }
   new_id = (int64_t *) malloc(sizeof(int64_t));
-  *new_id = eid;
+  *new_id = log_pos;
   if (MAP_WRITE(log, filesystem->log_map, rtc, new_id)) {
     MAP_UNLOCK(log, filesystem->log_map, rtc);
     fprintf(stderr, "Create Snapshot: Something is wrong with LOG_MAP_CREATE or LOG_MAP_WRITE\n");
     return -2;
   }
-  MAP_LOCK(snapshot, filesystem->snapshot_map, eid, 'w');
+  MAP_LOCK(snapshot, filesystem->snapshot_map, log_pos, 'w');
   MAP_UNLOCK(log, filesystem->log_map, rtc);
   
-  if (MAP_CREATE(snapshot, filesystem->snapshot_map, eid) != 0) {
-    if (MAP_READ(snapshot, filesystem->snapshot_map, eid, &snapshot) != 0) {
-      MAP_UNLOCK(snapshot, filesystem->snapshot_map, eid);
+  if (MAP_CREATE(snapshot, filesystem->snapshot_map, log_pos) != 0) {
+    if (MAP_READ(snapshot, filesystem->snapshot_map, log_pos, &snapshot) != 0) {
+      MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_pos);
       fprintf(stderr, "Create Snapshot: Something is wrong with SNAPSHOT_MAP_CREATE or SNAPSHOT_MAP_READ\n");
     }
     snapshot->ref_count++;
-    MAP_UNLOCK(snapshot, filesystem->snapshot_map, eid);
+    MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_pos);
     return 0;
   }
     
@@ -908,12 +811,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
     return -1;
   }
   snapshot->ref_count = 1;
-  if (MAP_WRITE(snapshot, filesystem->snapshot_map, eid, snapshot)) {
-    MAP_UNLOCK(snapshot, filesystem->snapshot_map, eid);
+  if (MAP_WRITE(snapshot, filesystem->snapshot_map, log_pos, snapshot)) {
+    MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_pos);
     fprintf(stderr, "Create Snapshot: Something is wrong with SNAPSHOT_MAP_CREATE or SNAPSHOT_MAP_WRITE\n");
     return -2;
   }
-  MAP_UNLOCK(snapshot, filesystem->snapshot_map, eid);
+  MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_pos);
   return 0;
 }
 
