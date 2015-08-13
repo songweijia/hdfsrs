@@ -263,7 +263,7 @@ void tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jobject mhlc)
 void mock_tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jlong rtc)
 {
   jclass hlcClass = (*env)->GetObjectClass(env, hlc);
-  jmethodID mid = (*env)->GetMethodID(env, hlcClass, "mockTick", "(J;)V;");
+  jmethodID mid = (*env)->GetMethodID(env, hlcClass, "mockTick", "(J)V");
   
   if (mid == NULL) {
     perror("Error");
@@ -362,11 +362,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   MAP_UNLOCK(block, filesystem->block_map, blockId);
   
   // Create the corresponding log entry.
-  printf("Create Block: Writing to log.\n");
   pthread_rwlock_wrlock(&(filesystem->lock));
-  printf("Create Block: Acquired lock.\n");
   check_and_increase_log_length(filesystem);
-  printf("Create Block: Increased length.\n");
   log_pos = filesystem->log_length;
   filesystem->log[log_pos].block_id = blockId;
   filesystem->log[log_pos].block_length = 0;
@@ -374,14 +371,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   filesystem->log[log_pos].nr_pages = 0;
   filesystem->log[log_pos].pages = NULL;
   filesystem->log[log_pos].previous = -1;
-  printf("Create Block: Trying to Tick.\n");
   hlc = get_hybrid_logical_clock(env, thisObj);
   tick_hybrid_logical_clock(env, hlc, mhlc);
-  printf("Create Block: Tick.\n");
   update_log_clock(env, hlc, filesystem->log+log_pos);
-  printf("Create Block: Update the log.\n");
   filesystem->log_length += 1;
-  printf("Create Block: Finished.\n");
   pthread_rwlock_unlock(&(filesystem->lock));
 
   // Create the block, fill the appropriate fields and write it to block map.
@@ -762,7 +755,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
   }
   // If the real time cut is after the last log, create a mock event with rtc timestamp. Otherwise do binary search.
   log_pos = length-1;
-  if ((log[log_pos].r < rtc) || ((log[log_pos].r == rtc) && (log[log_pos].c == 0))) {
+  if (log[log_pos].r < rtc) {
     mock_tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), rtc);
   } else {
     log_pos = length / 2;

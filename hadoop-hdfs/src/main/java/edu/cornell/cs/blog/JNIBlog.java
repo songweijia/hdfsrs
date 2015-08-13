@@ -2,6 +2,7 @@
  * 
  */
 package edu.cornell.cs.blog;
+
 import edu.cornell.cs.sa.HybridLogicalClock;
 import java.nio.charset.*;
 
@@ -95,7 +96,6 @@ public class JNIBlog {
   {
     for (long i = 0; i < 100; i++) {
       mhlc.tick();
-      writeLine("MHLC:" + mhlc.toString());
       if (createBlock(mhlc,i) == 0)
         writeLine("Block " + i + " was created.");
     }
@@ -136,12 +136,12 @@ public class JNIBlog {
       writeLine("Block 4100 was deleted.");
   }
   
-  public long testWrite(HybridLogicalClock mhlc)
+  public long testWrite(HybridLogicalClock mhlc) throws InterruptedException
   {
     String a = "Hello Theo & Weijia. I am working well!!";
     String b = "This should not be in the snapshot read.";
     String c = "Laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
-    long res;
+    long rtc;
 
     mhlc.tick();
     if (writeBlock(mhlc, 4101, 0, 0, a.length(), a.getBytes()) == 0)
@@ -152,7 +152,12 @@ public class JNIBlog {
     mhlc.tick();
     if (writeBlock(mhlc, 4101, 100, 0, 20, a.getBytes()) == 0)
       writeLine("Block 4101 was written.");
-    res = readLocalRTC();
+    writeLine("Before Snapshot: " + hlc.toString());
+    Thread.sleep(1);
+    rtc = readLocalRTC();
+    writeLine("RTC: " + new Long(rtc).toString());
+    createSnapshot(rtc);
+    writeLine("After Snapshot: " + hlc.toString());
     mhlc.tick();
     if (writeBlock(mhlc, 4101, 0, 0, b.length(), b.getBytes()) == 0)
       writeLine("Block 4101 was written.");
@@ -160,7 +165,7 @@ public class JNIBlog {
     if (writeBlock(mhlc, 5000, 0, 0, c.length(), c.getBytes()) == 0)
       writeLine("Block 5000 was written.");
     
-    return res;
+    return rtc;
   }
   
   public void testRead()
@@ -179,7 +184,6 @@ public class JNIBlog {
     long cut;
     int nrBytes;
     
-    createSnapshot(rtc);
     readBlock(4101, rtc, 0, 0, 40, mybuf);
     writeLine("Read Snapshot: " + new String(mybuf, Charset.forName("UTF-8")));
     nrBytes = getNumberOfBytes(5000,rtc);
@@ -199,7 +203,7 @@ public class JNIBlog {
    * Test stub
    * @param args
    */
-  public static void main(String[] args){
+  public static void main(String[] args) throws InterruptedException{
     JNIBlog bl = new JNIBlog();
     HybridLogicalClock mhlc = new HybridLogicalClock();
     long rtc;

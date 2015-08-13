@@ -62,9 +62,6 @@ public class HybridLogicalClock implements Comparable<HybridLogicalClock>
       c = 0;
     mhlc.r = r;
     mhlc.c = c;
-    System.out.println(this.toString());
-    System.out.println(mhlc.toString());
-    System.out.flush();
   }
   
   synchronized public void mockTick(long rtc) {
@@ -73,7 +70,6 @@ public class HybridLogicalClock implements Comparable<HybridLogicalClock>
     r = Math.max(previous_r, rtc);
     if (r != previous_r)
       c = 0;
-    tick();
   }
 
   @Override
