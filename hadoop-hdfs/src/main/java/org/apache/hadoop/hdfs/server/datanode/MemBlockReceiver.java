@@ -64,6 +64,8 @@ class MemBlockReceiver extends BlockReceiver {
   
   /** the replica to write */
   private MemDatasetManager.MemBlockMeta replicaInfo;
+  
+  BlockWriter blockWriter = null;
 
   MemBlockReceiver(final ExtendedBlock block, final DataInputStream in,
       final String inAddr, final String myAddr,
@@ -138,11 +140,13 @@ class MemBlockReceiver extends BlockReceiver {
     }
   }
 
+  boolean bClosed = false;
   /**
    * close files.
    */
   @Override
   public void close() throws IOException {
+    if(bClosed)return;
     if (packetReceiver != null) {
       packetReceiver.close();
     }
@@ -180,6 +184,8 @@ class MemBlockReceiver extends BlockReceiver {
     if(ioe != null) {
       throw ioe;
     }
+    
+    bClosed = true;
   }
 
   /**
@@ -205,35 +211,39 @@ class MemBlockReceiver extends BlockReceiver {
 //  private static final int MAX_PACKET_SIZE = 3 * 1024 * 1024; // initialze a 64MB buffer takes 30 milliseconds on an old server to 3MB
   private PacketHeader header = new PacketHeader();
 //  private byte[] dataBuf = new byte[MAX_PACKET_SIZE];
-  private ByteBuffer dataBuf = null;
+  private int icb = 0;
+  private ByteBuffer buffers[] = new ByteBuffer[2];
   private long packetRecvTime;
 
   private void getBuf() {
     // Realloc the buffer if this packet is longer than the previous
     // one.
-    if (dataBuf == null) {
-      ByteBuffer newBuf;
-      synchronized(bufferPool){
-        if(bufferPool.size()==0)
-          newBuf = null;
-        else
-          newBuf = bufferPool.remove(0);
+    for(int i=0;i<2;i++){
+      if (buffers[i] == null) {
+        ByteBuffer newBuf;
+        synchronized(bufferPool){
+          if(bufferPool.size()==0)
+            newBuf = null;
+          else
+            newBuf = bufferPool.remove(0);
+        }
+        if(newBuf == null)
+          newBuf = ByteBuffer.allocate(MAX_BUFFER_SIZE);
+        buffers[i] = newBuf;
       }
-      if(newBuf == null)
-        newBuf = ByteBuffer.allocate(MAX_BUFFER_SIZE);
-      dataBuf = newBuf;
     }
   }
   
   private void returnDataBufToPool() {
-    if (dataBuf != null) {
-      synchronized(bufferPool){
-        bufferPool.add(dataBuf);
+    for(int i=0;i<2;i++){
+      if (buffers[i] != null) {
+        synchronized(bufferPool){
+          bufferPool.add(buffers[i]);
+        }
+        buffers[i] = null;
       }
-      dataBuf = null;
     }
   }
-  
   
   void receiveNextPacket(DataInputStream in) throws IOException {
     int payloadLen = in.readInt();
@@ -269,7 +279,7 @@ class MemBlockReceiver extends BlockReceiver {
     in.skipBytes(checksumLen);
 
     long startTime = now();
-    IOUtils.readFully(in, dataBuf.array(), 0, header.getDataLen());
+    IOUtils.readFully(in, buffers[icb].array(), 0, header.getDataLen());
     this.packetRecvTime += now() - startTime;
   }
   
@@ -296,11 +306,13 @@ class MemBlockReceiver extends BlockReceiver {
     }
 
     // Sanity check the header
+/* dont do sanity check
     if (header.getOffsetInBlock() > replicaInfo.getNumBytes()) {
       throw new IOException("Received an out-of-sequence packet for " + block + 
           "from " + inAddr + " at offset " + header.getOffsetInBlock() +
           ". Expecting packet starting at " + replicaInfo.getNumBytes());
     }
+*/
     if (header.getDataLen() < 0) {
       throw new IOException("Got wrong length during writeBlock(" + block + 
                             ") from " + inAddr + " at offset " + 
@@ -320,12 +332,12 @@ class MemBlockReceiver extends BlockReceiver {
     }
 
     // update received bytes
-    long firstByteInBlock = offsetInBlock;
+/*    long firstByteInBlock = offsetInBlock;
     offsetInBlock += len;
     if (replicaInfo.getNumBytes() < offsetInBlock) {
       replicaInfo.setNumBytes(offsetInBlock);
     }
-    
+  */  
     // put in queue for pending acks, unless sync was requested
 //    if (responder != null && !syncBlock && !shouldVerifyChecksum()) {
 //      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
@@ -344,84 +356,18 @@ class MemBlockReceiver extends BlockReceiver {
       }
     } else {
       // by this point, the data in the buffer uses the disk checksum
-      try {
-        long onDiskLen = replicaInfo.getBytesOnDisk();
-        //HDFSRS_RWAPI{
-        //if (onDiskLen<offsetInBlock) {
-        if (onDiskLen==firstByteInBlock) {
-          LOG.debug("[HDFSRS_RWAPI]MemBlockReceiver.receivePacket():appending packet received.");
-        //}
-          //finally write to the disk :
-          
-          if (onDiskLen % bytesPerChecksum != 0) { 
-            // prepare to overwrite last checksum
-            out.flush();
-          }
-
-          int startByteToDisk = (int)(onDiskLen-firstByteInBlock);
-
-          int numBytesToDisk = (int)(offsetInBlock-onDiskLen);
-          
-          // Write data to disk.
-          //out.write(dataBuf, startByteToDisk, numBytesToDisk);
-          VCOutputStream vcout = (VCOutputStream)out;
-          
-          if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
-              PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
-            ibr = System.nanoTime();
-
-          vcout.write(mvc,dataBuf.array(), startByteToDisk, numBytesToDisk);
-
-          if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
-              PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
-            iar = System.nanoTime();
-
-          /// flush entire packet, sync if requested
-          flushOrSync(syncBlock);
-          
-          ///HDFSRS_VC: we dont need this: replicaInfo.setBytesOnDisk(offsetInBlock);
-
-          datanode.metrics.incrBytesWritten(len);
-
-        }//HDFSRS_RWAPI
-        else{// for overwriting
-          LOG.debug("[HDFSRS_RWAPI]MemBlockReceiver.receivePacket():overwriting packet received:packet(" +
-              firstByteInBlock+","+offsetInBlock+")/replica("+onDiskLen+")");
-          
-          //dx.2 write data to disk.
-          int startByteToDisk = 0;
-          VCOutputStream vcout = (VCOutputStream)out;
-          vcout.write(mvc,dataBuf.array(), startByteToDisk, len);//packet len
-          
-          /// dx.7 flush entire packet, sync if requested
-          flushOrSync(syncBlock);
-          
-          // dx.8 update replicaInfo as long as the last chunkChecksum changed.
-//
-//HDFSRS_VC          if( (onDiskLen - offsetInBlock) < bytesPerChecksum )
-//HDFSRS_VC          replicaInfo.setBytesOnDisk(Math.max(offsetInBlock,onDiskLen));
-
-          datanode.metrics.incrBytesWritten(len);     
-        }
-        //}
-      } catch (IOException iex) {
-        throw iex;
-      }
+      icb = 1 - icb; // shift
+      if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
+          PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
+        ibr = System.nanoTime();
+      blockWriter.requestWrite(1 - icb, mvc, offsetInBlock, len);
+      if(PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
+          PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
+        iar = System.nanoTime();
+      
+        datanode.metrics.incrBytesWritten(len);
     }
 
-    // put in queue for pending acks, unless sync was requested
-//    if (responder != null && !syncBlock && !shouldVerifyChecksum()) {
-//      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
-//    	    lastPacketInBlock, offsetInBlock, Status.SUCCESS);
-//    }
-  
-
-    // if sync was requested, put in queue for pending acks here
-    // (after the fsync finished)
-//    if (responder != null && (syncBlock || shouldVerifyChecksum())) {
-//      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
-//          lastPacketInBlock, offsetInBlock, Status.SUCCESS);
-//    }
     if(responder != null){
     	((PacketResponder) responder.getRunnable()).enqueue(seqno,
     			lastPacketInBlock, offsetInBlock, Status.SUCCESS, mvc);
@@ -463,6 +409,9 @@ class MemBlockReceiver extends BlockReceiver {
             new PacketResponder(replyOut, mirrIn, downstreams));
         responder.start(); // start thread to processes responses
       }
+      
+      //start blockWriter
+      blockWriter = new BlockWriter((VCOutputStream)this.out, this.buffers, this.replicaInfo);
 
       this.packetRecvTime = 0;
       while (receivePacket() >= 0) { /* Receive until the last packet */ }
@@ -506,6 +455,13 @@ class MemBlockReceiver extends BlockReceiver {
         throw ioe;
       }
     } finally {
+      if(blockWriter!=null){
+        try{
+          blockWriter.shutdown();
+        }catch(Exception e){
+          //do nothing
+        }
+      }
       // Clear the previous interrupt state of this thread.
       Thread.interrupted();
 
@@ -861,7 +817,15 @@ class MemBlockReceiver extends BlockReceiver {
      * @param startTime time when BlockReceiver started receiving the block
      */
     private void finalizeBlock(long startTime) throws IOException {
-      MemBlockReceiver.this.close();
+      if(blockWriter!=null){
+        try{
+          blockWriter.shutdown();
+          blockWriter = null;
+        }catch(InterruptedException ie){
+          //do nothing
+        }
+      }
+//      MemBlockReceiver.this.close();
       final long endTime = ClientTraceLog.isInfoEnabled() ? System.nanoTime()
           : 0;
       block.setNumBytes(replicaInfo.getNumBytes());
@@ -995,6 +959,89 @@ class MemBlockReceiver extends BlockReceiver {
       synchronized(ackQueue) {
         ackQueue.removeFirst();
         ackQueue.notifyAll();
+      }
+    }
+  }
+  
+  class BlockWriter implements Runnable{
+
+    VCOutputStream vcout;
+    ByteBuffer[] bufs;
+    int curBufIdx=-1;
+    VectorClock vc;
+    long offsetInBlock;
+    int len;
+    boolean isRunning;
+    Thread thread;
+    MemDatasetManager.MemBlockMeta replica;
+    
+    public BlockWriter(VCOutputStream vcout, ByteBuffer[] bufs, MemDatasetManager.MemBlockMeta replicaInfo){
+      this.vcout = vcout;
+      this.bufs = bufs;
+      isRunning = true;
+      thread = new Thread(this);
+      thread.start();
+      this.replica = replicaInfo;
+    }
+    
+    void requestWrite(int icb, VectorClock vc, long offsetInBlock ,int len){
+      synchronized(bufs){
+        if(this.curBufIdx!=-1)
+          try{
+            bufs.wait();
+          }catch(InterruptedException e){
+            //do nothing
+          }
+        this.curBufIdx = icb;
+        this.vc = vc;
+        this.offsetInBlock = offsetInBlock;
+        this.len = len;
+        bufs.notify();
+      }
+    }
+
+    void shutdown()throws InterruptedException{
+      synchronized(bufs){
+        isRunning = false;
+        bufs.notify();
+      }
+      join();
+    }
+    
+    private void join()throws InterruptedException{
+      if(this.thread!=null)
+        this.thread.join();
+    }
+    
+    private void sanityCheck() throws IOException{
+      if (offsetInBlock > replica.getNumBytes()) {
+        throw new IOException("Received an out-of-sequence packet for " + block + 
+            "from " + inAddr + " at offset " + offsetInBlock +
+            ". Expecting packet starting at " + replica.getNumBytes());
+      }
+    }
+    
+    @Override
+    public void run() {
+      synchronized(bufs){
+        do{
+          try{
+            if(curBufIdx == 0 || curBufIdx == 1){
+              sanityCheck();
+              vcout.write(vc,bufs[curBufIdx].array(), 0, len);
+              if(replica.getNumBytes() < replica.getBytesOnDisk())
+                replica.setNumBytes(replica.getBytesOnDisk());
+            }else
+              bufs.wait();
+          }catch(InterruptedException ie)
+          {
+            //do nothing
+          }catch(IOException ioe){
+            //do something
+            System.out.println(ioe);
+            ioe.printStackTrace();
+          }
+        }while(isRunning);
       }
     }
   }
