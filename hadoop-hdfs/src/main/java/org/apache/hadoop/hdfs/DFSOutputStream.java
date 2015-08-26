@@ -2029,10 +2029,12 @@ public class DFSOutputStream extends FSOutputSummer
          * After the flush, reset the bytesCurBlock back to its previous value,
          * any partial checksum chunk will be sent now and in next packet.
          */
-        long saveOffset = bytesCurBlock;
+//        long saveOffset = bytesCurBlock;
         Packet oldCurrentPacket = currentPacket;
         // flush checksum buffer, but keep checksum buffer intact
-        flushBuffer(true);
+//        flushBuffer(true);
+// flush the buffer ...
+        flushBuffer(false);
         // bytesCurBlock potentially incremented if there was buffered data
 
         if (DFSClient.LOG.isDebugEnabled()) {
@@ -2089,7 +2091,7 @@ public class DFSOutputStream extends FSOutputSummer
         // Restore state of stream. Record the last flush offset 
         // of the last full chunk that was flushed.
         //
-        bytesCurBlock = saveOffset;
+//        bytesCurBlock = saveOffset;
         toWaitFor = lastQueuedSeqno;
       } // end synchronized
 
