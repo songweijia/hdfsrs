@@ -1031,6 +1031,7 @@ class MemBlockReceiver extends BlockReceiver {
               vcout.write(vc,bufs[curBufIdx].array(), 0, len);
               if(replica.getNumBytes() < replica.getBytesOnDisk())
                 replica.setNumBytes(replica.getBytesOnDisk());
+              curBufIdx = -1;
             }else
               bufs.wait();
           }catch(InterruptedException ie)
