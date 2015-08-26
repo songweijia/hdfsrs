@@ -2039,7 +2039,7 @@ public class DFSOutputStream extends FSOutputSummer
 
         if (DFSClient.LOG.isDebugEnabled()) {
           DFSClient.LOG.debug(
-            "DFSClient flush() : saveOffset " + saveOffset +  
+            "DFSClient flush() : saveOffset " + //saveOffset +  
             " bytesCurBlock " + bytesCurBlock +
             " lastFlushOffset " + lastFlushOffset);
         }
