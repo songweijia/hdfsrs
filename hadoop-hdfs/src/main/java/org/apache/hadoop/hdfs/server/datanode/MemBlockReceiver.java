@@ -1032,6 +1032,7 @@ class MemBlockReceiver extends BlockReceiver {
               if(replica.getNumBytes() < replica.getBytesOnDisk())
                 replica.setNumBytes(replica.getBytesOnDisk());
               curBufIdx = -1;
+              bufs.notify();
             }else
               bufs.wait();
           }catch(InterruptedException ie)
