@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.apache.hadoop.hdfs.server.datanode.DataNode.DN_CLIENTTRACE_FORMAT;
 
+
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -59,7 +60,7 @@ import org.apache.hadoop.util.Time;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /** A class that receives a block and writes to its own disk, meanwhile
  * may copies it to another site. If a throttler is provided,
@@ -169,7 +170,7 @@ class BlockReceiver implements Closeable {
       final String clientname, final DatanodeInfo srcDataNode,
       final DataNode datanode, DataChecksum requestedChecksum,
       CachingStrategy cachingStrategy, long offset/*HDFSRS_RWAPI*/,
-      VectorClock mvc/*HDFSRS_VC*/) throws IOException {
+      HybridLogicalClock mhlc) throws IOException {
   	
     try{
       this.block = block;
@@ -204,11 +205,11 @@ class BlockReceiver implements Closeable {
       // Open local disk out
       //
       if (isDatanode) { //replication or move
-        replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block,mvc);
+        replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block,mhlc);
       } else {
         switch (stage) {
         case PIPELINE_SETUP_CREATE:
-          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createRbw(block,mvc);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createRbw(block,mhlc);
           datanode.notifyNamenodeReceivingBlock(
               block, replicaInfo.getStorageUuid());
           break;
@@ -241,7 +242,7 @@ class BlockReceiver implements Closeable {
         case TRANSFER_RBW:
         case TRANSFER_FINALIZED:
           // this is a transfer destination
-          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block,mvc);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.createTemporary(block,mhlc);
           break;
         default: throw new IOException("Unsupported stage " + stage + 
               " while receiving block " + block + " from " + inAddr);
@@ -1080,9 +1081,9 @@ class BlockReceiver implements Closeable {
      * @param offsetInBlock
      */
     void enqueue(final long seqno, final boolean lastPacketInBlock,
-        final long offsetInBlock, final Status ackStatus, VectorClock mvc/*HDFRS_VC*/) {
+        final long offsetInBlock, final Status ackStatus, HybridLogicalClock mhlc/*HDFRS_HLC*/) {
       final Packet p = new Packet(seqno, lastPacketInBlock, offsetInBlock,
-          System.nanoTime(), ackStatus, mvc);
+          System.nanoTime(), ackStatus, mhlc);
       if(LOG.isDebugEnabled()) {
         LOG.debug(myString + ": enqueue " + p);
       }
@@ -1462,16 +1463,16 @@ class BlockReceiver implements Closeable {
     final long offsetInBlock;
     final long ackEnqueueNanoTime;
     final Status ackStatus;
-    final VectorClock mvc; // ack's message vector clock.
+    final HybridLogicalClock mhlc; // ack's message vector clock.
 
     Packet(long seqno, boolean lastPacketInBlock, long offsetInBlock,
-        long ackEnqueueNanoTime, Status ackStatus, VectorClock mvc/*HDFSRS_VC*/) {
+        long ackEnqueueNanoTime, Status ackStatus, HybridLogicalClock mhlc/*HDFSRS_VC*/) {
       this.seqno = seqno;
       this.lastPacketInBlock = lastPacketInBlock;
       this.offsetInBlock = offsetInBlock;
       this.ackEnqueueNanoTime = ackEnqueueNanoTime;
       this.ackStatus = ackStatus;
-      this.mvc = mvc;
+      this.mhlc = mhlc;
     }
 
     @Override
@@ -1481,7 +1482,7 @@ class BlockReceiver implements Closeable {
         + ", offsetInBlock=" + offsetInBlock
         + ", ackEnqueueNanoTime=" + ackEnqueueNanoTime
         + ", ackStatus=" + ackStatus
-        + ", mvc=" + mvc
+        + ", mhlc=" + mhlc
         + ")";
     }
   }

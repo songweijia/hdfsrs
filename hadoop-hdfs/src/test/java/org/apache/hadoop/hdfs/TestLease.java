@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs;
 
 import static org.mockito.Matchers.anyString;
+
 import static org.mockito.Matchers.anyShort;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyBoolean;
@@ -53,7 +54,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 public class TestLease {
   static boolean hasLease(MiniDFSCluster cluster, Path src) {
@@ -65,12 +66,12 @@ public class TestLease {
     return NameNodeAdapter.getLeaseManager(cluster.getNamesystem()).countLease();
   }
   
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
   
@@ -301,7 +302,7 @@ public class TestLease {
       ugi[i] = UserGroupInformation.createUserForTesting("user" + i, groups);
     }
 
-    VectorClock mvc;
+    HybridLogicalClock mhlc;
     Mockito.doReturn(
         new HdfsFileStatus(0, false, 1, 1024, 0, 0, new FsPermission(
             (short) 777), "owner", "group", new byte[0], new byte[0],
@@ -314,8 +315,8 @@ public class TestLease {
         .when(mcp)
         .create(anyString(), (FsPermission) anyObject(), anyString(),
             (EnumSetWritable<CreateFlag>) anyObject(), anyBoolean(),
-            anyShort(), anyLong(), mvc=copyVC());
-    tickOn(mvc);
+            anyShort(), anyLong(), mhlc=copyHLC());
+    tickOn(mhlc);
 
     final Configuration conf = new Configuration();
     final DFSClient c1 = createDFSClientAs(ugi[0], conf);

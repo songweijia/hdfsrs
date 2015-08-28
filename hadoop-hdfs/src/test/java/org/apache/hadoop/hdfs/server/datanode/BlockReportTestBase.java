@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.hamcrest.core.Is.is;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -67,7 +68,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This is the base class for simulating a variety of situations
@@ -361,7 +362,7 @@ public abstract class BlockReportTestBase {
                            FILE_SIZE, REPL_FACTOR, rand.nextLong());
 
     //HDFSRS_VC
-    VectorClock vc = new VectorClock();
+    HybridLogicalClock hlc = new HybridLogicalClock();
 
     DataNode dn = cluster.getDataNodes().get(DN_N0);
     // all blocks belong to the same file, hence same BP
@@ -370,7 +371,7 @@ public abstract class BlockReportTestBase {
     // Create a bogus new block which will not be present on the namenode.
     ExtendedBlock b = new ExtendedBlock(
         poolId, rand.nextLong(), 1024L, rand.nextLong());
-    dn.getFSDataset().createRbw(b,vc);
+    dn.getFSDataset().createRbw(b,hlc);
 
     DatanodeRegistration dnR = dn.getDNRegistrationForBP(poolId);
     StorageBlockReport[] reports = getBlockReports(dn, poolId, false, false);

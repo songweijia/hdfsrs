@@ -18,10 +18,10 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import java.io.DataOutputStream;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -33,9 +33,8 @@ import org.apache.hadoop.hdfs.util.DataTransferThrottler;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.net.SocketOutputStream;
-import org.apache.hadoop.util.DataChecksum;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 
 /**
@@ -90,9 +89,9 @@ class MemBlockSender extends BlockSender {
    * @throws IOException
    */
   MemBlockSender(ExtendedBlock block, long startOffset, long length,
-                 DataNode datanode, String clientTraceFmt, VectorClock myVC)
+                 DataNode datanode, String clientTraceFmt, HybridLogicalClock myHLC)
       throws IOException {
-    super(block, datanode, clientTraceFmt, myVC);
+    super(block, datanode, clientTraceFmt, myHLC);
     try {
       final Replica replica;
       final long replicaVisibleLength;
@@ -198,7 +197,7 @@ class MemBlockSender extends BlockSender {
     // C = checksums
     // D? = data, if transferTo is false.
     
-    int headerLen = writePacketHeader(pkt, dataLen, packetLen, this.myVC/*HDFSRS_VC*/);
+    int headerLen = writePacketHeader(pkt, dataLen, packetLen, this.hlc/*HDFSRS_VC*/);
     
     // Per above, the header doesn't start at the beginning of the
     // buffer

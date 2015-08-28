@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.protocol;
 
 import java.io.FileNotFoundException;
+
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
@@ -54,7 +55,7 @@ import org.apache.hadoop.security.KerberosInfo;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenInfo;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**********************************************************************
  * ClientProtocol is used by user code via 
@@ -198,7 +199,7 @@ public interface ClientProtocol {
   public HdfsFileStatus create(String src, FsPermission masked,
       String clientName, EnumSetWritable<CreateFlag> flag,
       boolean createParent, short replication, long blockSize,
-      VectorClock mvc/*HDFSRS_VC*/)
+      HybridLogicalClock mhlc/*HDFSRS_HLC*/)
       throws AccessControlException, AlreadyBeingCreatedException,
       DSQuotaExceededException, FileAlreadyExistsException,
       FileNotFoundException, NSQuotaExceededException,
@@ -231,7 +232,7 @@ public interface ClientProtocol {
    * @throws UnsupportedOperationException if append is not supported
    */
   @AtMostOnce
-  public LocatedBlock append(String src, String clientName,VectorClock mvc/*HDFSRS_VC*/)
+  public LocatedBlock append(String src, String clientName,HybridLogicalClock mhlc/*HDFSRS_HLC*/)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException;
@@ -255,7 +256,7 @@ public interface ClientProtocol {
    */
   @AtMostOnce
   public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
-      int bIndex, long fileId, String clientName, VectorClock mvc/*HDFSRS_VC*/)
+      int bIndex, long fileId, String clientName, HybridLogicalClock mhlc/*HDFSRS_HLC*/)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException;
@@ -337,7 +338,7 @@ public interface ClientProtocol {
    */
   @Idempotent
   public void abandonBlock(ExtendedBlock b, String src, String holder,
-		  VectorClock mvc/*HDFSRS_VC*/)
+      HybridLogicalClock mhlc)
       throws AccessControlException, FileNotFoundException,
       UnresolvedLinkException, IOException;
 
@@ -377,7 +378,7 @@ public interface ClientProtocol {
   @Idempotent
   public LocatedBlock addBlock(String src, String clientName,
       ExtendedBlock previous, DatanodeInfo[] excludeNodes, long fileId, 
-      String[] favoredNodes,VectorClock mvc/*HDFSRS_VC*/)
+      String[] favoredNodes,HybridLogicalClock mhlc)
       throws AccessControlException, FileNotFoundException,
       NotReplicatedYetException, SafeModeException, UnresolvedLinkException,
       IOException;
@@ -441,7 +442,7 @@ public interface ClientProtocol {
   @Idempotent
   public boolean complete(String src, String clientName,
                           ExtendedBlock last, long fileId,
-                          VectorClock mvc/*HDFSRS_VC*/)
+                          HybridLogicalClock mhlc)
       throws AccessControlException, FileNotFoundException, SafeModeException,
       UnresolvedLinkException, IOException;
 
@@ -468,7 +469,7 @@ public interface ClientProtocol {
    * @throws IOException an I/O error occurred 
    */
   @AtMostOnce
-  public boolean rename(String src, String dst, VectorClock mvc/*HDFSRS_VC*/) 
+  public boolean rename(String src, String dst, HybridLogicalClock mhlc) 
       throws UnresolvedLinkException, SnapshotAccessControlException, IOException;
 
   /**
@@ -483,7 +484,7 @@ public interface ClientProtocol {
    * @throws SnapshotAccessControlException if path is in RO snapshot
    */
   @AtMostOnce
-  public void concat(String trg, String[] srcs, VectorClock mvc/*HDFSRS_VC*/) 
+  public void concat(String trg, String[] srcs, HybridLogicalClock mhlc) 
       throws IOException, UnresolvedLinkException, SnapshotAccessControlException;
 
   /**
@@ -523,7 +524,7 @@ public interface ClientProtocol {
    * @throws IOException If an I/O error occurred
    */
   @AtMostOnce
-  public void rename2(String src, String dst, VectorClock mvc/*HDFSRS_VC*/, Options.Rename... options)
+  public void rename2(String src, String dst, HybridLogicalClock mhlc, Options.Rename... options)
       throws AccessControlException, DSQuotaExceededException,
       FileAlreadyExistsException, FileNotFoundException,
       NSQuotaExceededException, ParentNotDirectoryException, SafeModeException,
@@ -549,7 +550,7 @@ public interface ClientProtocol {
    * @throws IOException If an I/O error occurred
    */
   @AtMostOnce
-  public boolean delete(String src, boolean recursive, VectorClock mvc/*HDFSRS_VC*/)
+  public boolean delete(String src, boolean recursive, HybridLogicalClock mhlc)
       throws AccessControlException, FileNotFoundException, SafeModeException,
       UnresolvedLinkException, SnapshotAccessControlException, IOException;
   
@@ -581,7 +582,7 @@ public interface ClientProtocol {
    */
   @Idempotent
   public boolean mkdirs(String src, FsPermission masked, boolean createParent,
-		  VectorClock mvc/*HDFSRS_VC*/)
+      HybridLogicalClock mhlc)
       throws AccessControlException, FileAlreadyExistsException,
       FileNotFoundException, NSQuotaExceededException,
       ParentNotDirectoryException, SafeModeException, UnresolvedLinkException,
@@ -957,7 +958,7 @@ public interface ClientProtocol {
    */
   @Idempotent
   public void fsync(String src, String client, long lastBlockLength,
-		  VectorClock mvc/*HDFSRS_VC*/) 
+      HybridLogicalClock mhlc) 
       throws AccessControlException, FileNotFoundException, 
       UnresolvedLinkException, IOException;
 

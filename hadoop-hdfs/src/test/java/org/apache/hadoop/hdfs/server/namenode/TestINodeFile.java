@@ -19,6 +19,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
@@ -67,7 +68,7 @@ import org.apache.hadoop.util.Time;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 public class TestINodeFile {
   // Re-enable symlinks for tests, see HADOOP-10020 and HADOOP-10052
@@ -78,12 +79,12 @@ public class TestINodeFile {
 
   static final short BLOCKBITS = 48;
   static final long BLKSIZE_MAXVALUE = ~(0xffffL << BLOCKBITS);
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
   private final PermissionStatus perm = new PermissionStatus(
@@ -427,9 +428,9 @@ public class TestINodeFile {
       assertEquals(inodeCount, fsn.dir.getInodeMapSize());
       assertEquals(expectedLastInodeId, fsn.getLastInodeId());
       // Concat the /test1/file1 /test1/file2 into /test1/file2
-      VectorClock mvc;
-      nnrpc.concat(file2, new String[] {file1}, mvc=copyVC());
-      tickOn(mvc);
+      HybridLogicalClock mhlc;
+      nnrpc.concat(file2, new String[] {file1}, mhlc=copyHLC());
+      tickOn(mhlc);
       inodeCount--; // file1 and file2 are concatenated to file2
       assertEquals(inodeCount, fsn.dir.getInodeMapSize());
       assertEquals(expectedLastInodeId, fsn.getLastInodeId());

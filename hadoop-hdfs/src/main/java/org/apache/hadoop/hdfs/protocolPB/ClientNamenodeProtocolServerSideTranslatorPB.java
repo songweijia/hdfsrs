@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.protocolPB;
 
 import java.io.IOException;
+
 import java.util.List;
 
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -176,7 +177,7 @@ import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Update
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.DatanodeIDProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.DatanodeInfoProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProto;
-import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto;
+import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto;
 import org.apache.hadoop.hdfs.security.token.block.DataEncryptionKey;
 import org.apache.hadoop.hdfs.security.token.delegation.DelegationTokenIdentifier;
 import org.apache.hadoop.hdfs.server.namenode.INodeId;
@@ -192,7 +193,7 @@ import org.apache.hadoop.security.token.Token;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This class is used on the server side. Calls come across the wire for the
@@ -378,22 +379,22 @@ final private ClientProtocol server;
   public CreateResponseProto create(RpcController controller,
       CreateRequestProto req) throws ServiceException {
       /**
-       * HDFSRS_VC: get vector clock
+       * HDFSRS_HLC: get hybridlogicalclock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+      HybridLogicalClockProto hlcp = req.getHlc();
+      HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
-       * HDFSRS_VC: gen vector clock END
+       * HDFSRS_HLC: gen vector clock END
        */	  
     try {
       HdfsFileStatus result = server.create(req.getSrc(),
           PBHelper.convert(req.getMasked()), req.getClientName(),
           PBHelper.convertCreateFlag(req.getCreateFlag()), req.getCreateParent(),
           (short) req.getReplication(), req.getBlockSize(),
-          vc/*HDFSRS_VC*/);
+          hlc);
 
       CreateResponseProto.Builder builder =  CreateResponseProto.newBuilder();
-      builder.setVc(PBHelper.convert(vc));
+      builder.setHlc(PBHelper.convert(hlc));
       if (result != null) {
         builder.setFs(PBHelper.convert(result));
       }
@@ -408,18 +409,18 @@ final private ClientProtocol server;
   public AppendResponseProto append(RpcController controller,
       AppendRequestProto req) throws ServiceException {
       /**
-       * HDFSRS_VC: get vector clock
+       * HDFSRS_HLC
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+      HybridLogicalClockProto hlcp = req.getHlc();
+      HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
-       * HDFSRS_VC: gen vector clock END
+       * HDFSRS_HLC
        */
     try {
       LocatedBlock result = server.append(req.getSrc(), req.getClientName(),
-    		  vc/*HDFSRS_VC*/);
+    		  hlc);
       AppendResponseProto.Builder builder = AppendResponseProto.newBuilder();
-      builder.setVc(PBHelper.convert(vc));
+      builder.setHlc(PBHelper.convert(hlc));
       if (result != null) builder.setBlock(PBHelper.convert(result));
       return builder.build();
     } catch (IOException e) {
@@ -470,19 +471,18 @@ final private ClientProtocol server;
       /**
        * HDFSRS_VC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+      HybridLogicalClockProto hlcp = req.getHlc();
+      HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
        * HDFSRS_VC: gen vector clock END
        */	  
     try {
       server.abandonBlock(PBHelper.convert(req.getB()), req.getSrc(),
-          req.getHolder(), vc/*HDFSRS_VC*/);
+          req.getHolder(), hlc);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
-//    return VOID_ADD_BLOCK_RESPONSE;
-    return AbandonBlockResponseProto.newBuilder().setVc(PBHelper.convert(vc)).build();
+    return AbandonBlockResponseProto.newBuilder().setHlc(PBHelper.convert(hlc)).build();
   }
 
   @Override
@@ -495,8 +495,8 @@ final private ClientProtocol server;
       /**
        * HDFSRS_VC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+      HybridLogicalClockProto hlcp = req.getHlc();
+      HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
        * HDFSRS_VC: gen vector clock END
        */
@@ -507,10 +507,10 @@ final private ClientProtocol server;
           (excl == null || excl.size() == 0) ? null : PBHelper.convert(excl
               .toArray(new DatanodeInfoProto[excl.size()])), req.getFileId(),
           (favor == null || favor.size() == 0) ? null : favor
-              .toArray(new String[favor.size()]),vc/*HDFSRS_VC:message VC*/);
+              .toArray(new String[favor.size()]),hlc);
       return AddBlockResponseProto.newBuilder()
           .setBlock(PBHelper.convert(result))
-          .setVc(PBHelper.convert(vc)).build();
+          .setHlc(PBHelper.convert(hlc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -547,8 +547,8 @@ final private ClientProtocol server;
     /**
      * HDFSRS_VC: get vector clock
      */
-    VectorClockProto vcp = req.getVc();
-    VectorClock vc = PBHelper.convert(vcp);
+    HybridLogicalClockProto hlcp = req.getHlc();
+    HybridLogicalClock hlc = PBHelper.convert(hlcp);
     /**
      * HDFSRS_VC: gen vector clock END
      */
@@ -557,8 +557,8 @@ final private ClientProtocol server;
           server.complete(req.getSrc(), req.getClientName(),
           req.hasLast() ? PBHelper.convert(req.getLast()) : null,
           req.hasFileId() ? req.getFileId() : INodeId.GRANDFATHER_INODE_ID,
-          vc/*HDFSRS_VC*/);
-      return CompleteResponseProto.newBuilder().setResult(result).setVc(PBHelper.convert(vc)).build();
+          hlc);
+      return CompleteResponseProto.newBuilder().setResult(result).setHlc(PBHelper.convert(hlc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -583,36 +583,36 @@ final private ClientProtocol server;
       /**
        * HDFSRS_VC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+    HybridLogicalClockProto hlcp = req.getHlc();
+    HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
        * HDFSRS_VC: gen vector clock END
        */
     try {
       List<String> srcs = req.getSrcsList();
-      server.concat(req.getTrg(), srcs.toArray(new String[srcs.size()]),vc/*HDFSRS_VC*/);
+      server.concat(req.getTrg(), srcs.toArray(new String[srcs.size()]),hlc);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
 //    return VOID_CONCAT_RESPONSE;
-    return ConcatResponseProto.newBuilder().setVc(PBHelper.convert(vc)).build();
+    return ConcatResponseProto.newBuilder().setHlc(PBHelper.convert(hlc)).build();
   }
 
   @Override
   public RenameResponseProto rename(RpcController controller,
       RenameRequestProto req) throws ServiceException {
       /**
-       * HDFSRS_VC: get vector clock
+       * HDFSRS_HLC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+    HybridLogicalClockProto hlcp = req.getHlc();
+    HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
-       * HDFSRS_VC: gen vector clock END
+       * HDFSRS_HLC: gen vector clock END
        */	  
     try {
-      boolean result = server.rename(req.getSrc(), req.getDst(),vc /*HDFSRS_VC*/);
+      boolean result = server.rename(req.getSrc(), req.getDst(),hlc /*HDFSRS_VC*/);
       return RenameResponseProto.newBuilder().setResult(result)
-    		  .setVc(PBHelper.convert(vc)).build();
+    		  .setHlc(PBHelper.convert(hlc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -624,20 +624,20 @@ final private ClientProtocol server;
       /**
        * HDFSRS_VC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+    HybridLogicalClockProto hlcp = req.getHlc();
+    HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
        * HDFSRS_VC: gen vector clock END
        */
     try {
-      server.rename2(req.getSrc(), req.getDst(), vc/*HDFSRS_VC*/,
+      server.rename2(req.getSrc(), req.getDst(), hlc,
           req.getOverwriteDest() ? Rename.OVERWRITE : Rename.NONE);
     } catch (IOException e) {
       throw new ServiceException(e);
     }   
 //    return VOID_RENAME2_RESPONSE;
     return Rename2ResponseProto.newBuilder()
-    		.setVc(PBHelper.convert(vc)).build();
+    		.setHlc(PBHelper.convert(hlc)).build();
   }
 
   @Override
@@ -646,14 +646,14 @@ final private ClientProtocol server;
       /**
        * HDFSRS_VC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+    HybridLogicalClockProto hlcp = req.getHlc();
+    HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
        * HDFSRS_VC: gen vector clock END
        */	  
     try {
-      boolean result =  server.delete(req.getSrc(), req.getRecursive(), vc/*HDFSRS_VC*/);
-      return DeleteResponseProto.newBuilder().setResult(result).setVc(PBHelper.convert(vc)).build();
+      boolean result =  server.delete(req.getSrc(), req.getRecursive(), hlc);
+      return DeleteResponseProto.newBuilder().setResult(result).setHlc(PBHelper.convert(hlc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -665,17 +665,17 @@ final private ClientProtocol server;
       /**
        * HDFSRS_VC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+    HybridLogicalClockProto hlcp = req.getHlc();
+    HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
        * HDFSRS_VC: gen vector clock END
        */	  
     try {
       boolean result = server.mkdirs(req.getSrc(),
           PBHelper.convert(req.getMasked()), req.getCreateParent(),
-          vc/*HDFSRS_VC*/);
+          hlc);
       return MkdirsResponseProto.newBuilder().setResult(result)
-    		  .setVc(PBHelper.convert(vc)).build();
+    		  .setHlc(PBHelper.convert(hlc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -939,16 +939,16 @@ final private ClientProtocol server;
       /**
        * HDFSRS_VC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+    HybridLogicalClockProto hlcp = req.getHlc();
+    HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
        * HDFSRS_VC: gen vector clock END
        */	  
     try {
       server.fsync(req.getSrc(), req.getClient(), req.getLastBlockLength(),
-    		  vc/*HDFSRS_VC*/);
+    		  hlc/*HDFSRS_VC*/);
 //      return VOID_FSYNC_RESPONSE;
-      return FsyncResponseProto.newBuilder().setVc(PBHelper.convert(vc)).build();
+      return FsyncResponseProto.newBuilder().setHlc(PBHelper.convert(hlc)).build();
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -1400,8 +1400,8 @@ final private ClientProtocol server;
       /**
        * HDFSRS_VC: get vector clock
        */
-      VectorClockProto vcp = req.getVc();
-      VectorClock vc = PBHelper.convert(vcp);
+      HybridLogicalClockProto hlcp = req.getHlc();
+      HybridLogicalClock hlc = PBHelper.convert(hlcp);
       /**
        * HDFSRS_VC: gen vector clock END
        */
@@ -1409,10 +1409,10 @@ final private ClientProtocol server;
 	        LocatedBlock result = server.overwriteBlock(req.getSrc(), 
 	            req.hasPrevious() ? PBHelper.convert(req.getPrevious()) : null,
 	            req.getBIndex(), req.getFileId(), req.getClientName(),
-	            vc/*HDFSRS_VC*/);
+	            hlc);
 	        OverwriteBlockResponseProto.Builder builder = 
 	        		OverwriteBlockResponseProto.newBuilder();
-	        builder.setVc(PBHelper.convert(vc));
+	        builder.setHlc(PBHelper.convert(hlc));
 	        if (result != null) {
 	          return builder.setBlock(PBHelper.convert(result)).build();
 	        }

@@ -488,10 +488,13 @@ message RollingUpgradeStatusProto {
  * HDFSRS_VC: VectorClock
  */
 message VectorClockProto{
-  message VectorClockEntry{
-    required uint32 rank = 1;
-    required uint64 vc = 2;
-  }
-  
-  repeated VectorClockEntry entry = 1;
+  repeated uint64 entry = 1 [packed = true];
+}
+
+/**
+ * HDFSRS_HLC: HybridLogicalClock
+ */ 
+message HybridLogicalClockProto{
+  required uint64 r = 1;
+  required uint64 c = 2;
 }

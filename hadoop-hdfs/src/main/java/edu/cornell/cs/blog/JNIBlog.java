@@ -4,6 +4,7 @@
 package edu.cornell.cs.blog;
 
 import edu.cornell.cs.sa.HybridLogicalClock;
+
 import java.nio.charset.*;
 
 /**
@@ -31,6 +32,11 @@ public class JNIBlog {
    * @return error code, 0 for success.
    */
   public native int initialize(int blockSize, int pageSize);
+  
+  /**
+   * destroy the blog
+   */
+  public native void destroy();
   
   /**
    * create a block

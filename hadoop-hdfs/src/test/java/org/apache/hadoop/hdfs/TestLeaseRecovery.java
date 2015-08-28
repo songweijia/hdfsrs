@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs;
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -43,18 +44,18 @@ import org.apache.hadoop.hdfs.server.namenode.NameNodeAdapter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 public class TestLeaseRecovery {
   static final int BLOCK_SIZE = 1024;
   static final short REPLICATION_NUM = (short)3;
   private static final long LEASE_PERIOD = 300L;
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
   static void checkMetaInfo(ExtendedBlock b, DataNode dn
@@ -127,9 +128,9 @@ public class TestLeaseRecovery {
 
 
       DataNode.LOG.info("dfs.dfs.clientName=" + dfs.dfs.clientName);
-      VectorClock mvc;
-      cluster.getNameNodeRpc().append(filestr, dfs.dfs.clientName, mvc=copyVC());
-      tickOn(mvc);
+      HybridLogicalClock mhlc;
+      cluster.getNameNodeRpc().append(filestr, dfs.dfs.clientName, mhlc=copyHLC());
+      tickOn(mhlc);
 
       // expire lease to trigger block recovery.
       waitLeaseRecovery(cluster);

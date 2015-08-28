@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -57,7 +58,7 @@ import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This class implements a simulated FSDataset.
@@ -606,7 +607,7 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized void invalidate(String bpid, Block[] invalidBlks, VectorClock mvc/*HDFSRS_VC*/)
+  public synchronized void invalidate(String bpid, Block[] invalidBlks, HybridLogicalClock mhlc/*HDFSRS_VC*/)
       throws IOException {
     boolean error = false;
     if (invalidBlks == null) {
@@ -745,13 +746,13 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized Replica createRbw(ExtendedBlock b, VectorClock mvc/*HDFRS_VC*/) 
+  public synchronized Replica createRbw(ExtendedBlock b, HybridLogicalClock mhlc/*HDFRS_VC*/) 
   throws IOException {
-    return createTemporary(b,mvc);
+    return createTemporary(b,mhlc);
   }
 
   @Override // FsDatasetSpi
-  public synchronized Replica createTemporary(ExtendedBlock b, VectorClock mvc/*HDFSRS_VC*/)
+  public synchronized Replica createTemporary(ExtendedBlock b, HybridLogicalClock mhlc/*HDFSRS_VC*/)
       throws IOException {
     if (isValidBlock(b)) {
           throw new ReplicaAlreadyExistsException("Block " + b + 
@@ -1127,14 +1128,9 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
     throw new UnsupportedOperationException();
   }
   
-  public VectorClock snapshotI1(long rtc, int nnrank, long nneid, String bpid) 
-      throws IOException {
-    throw new UnsupportedOperationException();
-  }
-  
-  public void snapshotI2(long rtc, long eid, String bpid)
+  public void snapshot(long rtc, String bpid)
   throws IOException {
-  	throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException();
   }
 }
 

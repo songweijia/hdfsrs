@@ -1,5 +1,6 @@
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
+
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
@@ -21,6 +22,8 @@ import static org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil
 
 
 
+
+
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -36,9 +39,7 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumP
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpCopyBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReplaceBlockProto;
-import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotI1Proto;
-import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotI2Proto;
-import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpResponseSnapshotI1Proto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestShortCircuitAccessProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto;
@@ -53,7 +54,7 @@ import org.apache.hadoop.util.DataChecksum;
 
 import com.google.protobuf.Message;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /** Sender */
 @InterfaceAudience.Private
@@ -133,7 +134,8 @@ public class Sender implements DataTransferProtocol {
       final long offset,
       //}
       //HDFSRS_VC{
-      VectorClock mvc //we are not using it so far.
+      //VectorClock mvc //we are not using it so far.
+      final HybridLogicalClock mhlc
       //}
       ) throws IOException {
     ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
@@ -154,8 +156,8 @@ public class Sender implements DataTransferProtocol {
       .setCachingStrategy(getCachingStrategy(cachingStrategy))
       .setOffset(offset); // HDFSRS_WRAPI: sent offset
     
-    if(mvc != null)
-    	proto.setMvc(PBHelper.convert(mvc));
+    if(mhlc != null)
+    	proto.setMhlc(PBHelper.convert(mhlc));
     
     if (source != null) {
       proto.setSource(PBHelper.convertDatanodeInfo(source));
@@ -178,7 +180,7 @@ public class Sender implements DataTransferProtocol {
 
     send(out, Op.TRANSFER_BLOCK, proto);
   }
-/*
+
   @Override
   public void snapshot(final long rtc,
   		final String bpid)throws IOException {
@@ -188,25 +190,6 @@ public class Sender implements DataTransferProtocol {
         .build();
     
     send(out, Op.REQUEST_SNAPSHOT, proto);
-  }
-*/  
-  @Override
-  public void snapshotI1(final long rtc, final int nnrank,
-  		final long nneid, final String bpid)throws IOException{
-  	OpRequestSnapshotI1Proto proto = OpRequestSnapshotI1Proto.newBuilder()
-  			.setRtc(rtc)
-  			.setNnrank(nnrank)
-  			.setNneid(nneid)
-  			.setBpid(bpid).build();
-  	send(out, Op.REQUEST_SNAPSHOT_I1, proto);
-  }
-  
-  @Override
-  public void snapshotI2(final long rtc, final long eid,
-  		final String bpid)throws IOException{
-  	OpRequestSnapshotI2Proto proto = OpRequestSnapshotI2Proto.newBuilder()
-  			.setRtc(rtc).setBpid(bpid).setEid(eid).build();
-  	send(out, Op.REQUEST_SNAPSHOT_I2, proto);
   }
   
   @Override
@@ -247,16 +230,14 @@ public class Sender implements DataTransferProtocol {
       final Token<BlockTokenIdentifier> blockToken,
       final String delHint,
       final DatanodeInfo source,
-      //HDFSRS_VC{
-      final VectorClock mvc
-      //}
+      final HybridLogicalClock mhlc
       ) throws IOException {
   	OpReplaceBlockProto.Builder builder = OpReplaceBlockProto.newBuilder()
         .setHeader(DataTransferProtoUtil.buildBaseHeader(blk, blockToken))
         .setDelHint(delHint)
         .setSource(PBHelper.convertDatanodeInfo(source));
-  	if(mvc!=null)
-  		builder.setMvc(PBHelper.convert(mvc));
+  	if(mhlc!=null)
+  		builder.setMhlc(PBHelper.convert(mhlc));
   	
     OpReplaceBlockProto proto = builder.build();
     

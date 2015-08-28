@@ -71,7 +71,7 @@ import org.apache.hadoop.util.Time;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This class provides rudimentary checking of DFS volumes for errors and
@@ -477,8 +477,8 @@ public class NamenodeFsck {
 
   private void deleteCorruptedFile(String path) {
     try {
-      VectorClock mvc = new VectorClock(-1); // HDFSRS_VC: NamenodeFsck does not use it.
-      namenode.getRpcServer().delete(path, true, mvc);
+      HybridLogicalClock mhlc = new HybridLogicalClock(); // HDFSRS_VC: NamenodeFsck does not use it.
+      namenode.getRpcServer().delete(path, true, mhlc);
       LOG.info("Fsck: deleted corrupt file " + path);
     } catch (Exception e) {
       LOG.error("Fsck: error deleting corrupted file " + path, e);
@@ -514,9 +514,9 @@ public class NamenodeFsck {
           "lost+found, because " + target + " already exists.");
         return;
       }
-      VectorClock mvc = new VectorClock(); // actually we don't need it
+      HybridLogicalClock mhlc = new HybridLogicalClock(); // actually we don't need it
       if (!namenode.getRpcServer().mkdirs(
-          target, file.getPermission(), true, mvc/*HDFSRS_VC*/)) {
+          target, file.getPermission(), true, mhlc/*HDFSRS_VC*/)) {
         throw new IOException("failed to create directory " + target);
       }
       // create chains

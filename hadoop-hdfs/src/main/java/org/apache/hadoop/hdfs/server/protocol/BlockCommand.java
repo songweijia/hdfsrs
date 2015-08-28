@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs.server.protocol;
 
 import java.util.List;
 
+
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hdfs.protocol.Block;
@@ -26,7 +27,7 @@ import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor.BlockTargetPair;
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /****************************************************
  * A BlockCommand is an instruction to a datanode 
@@ -53,14 +54,15 @@ public class BlockCommand extends DatanodeCommand {
   final Block[] blocks;
   final DatanodeInfo[][] targets;
   final String[][] targetStorageIDs;
-  final VectorClock mvc;
+//  final VectorClock mvc;
+  final HybridLogicalClock mhlc;
 
   /**
    * Create BlockCommand for transferring blocks to another datanode
    * @param blocktargetlist    blocks to be transferred 
    */
   public BlockCommand(int action, String poolId,
-      List<BlockTargetPair> blocktargetlist, VectorClock mvc/*HDFSRS_VC*/) {
+      List<BlockTargetPair> blocktargetlist, HybridLogicalClock mhlc/*HDFSRS_HLC*/) {
     super(action);
     this.poolId = poolId;
     blocks = new Block[blocktargetlist.size()]; 
@@ -75,7 +77,7 @@ public class BlockCommand extends DatanodeCommand {
     }
     
     /*set the message vector clock*/
-    this.mvc = mvc;
+    this.mhlc = mhlc;
   }
 
   private static final DatanodeInfo[][] EMPTY_TARGET_DATANODES = {};
@@ -85,9 +87,9 @@ public class BlockCommand extends DatanodeCommand {
    * Create BlockCommand for the given action
    * @param blocks blocks related to the action
    */
-  public BlockCommand(int action, String poolId, Block blocks[], VectorClock mvc/*HDFSRS_VC*/) {
+  public BlockCommand(int action, String poolId, Block blocks[], HybridLogicalClock mhlc/*HDFSRS_HLC*/) {
     this(action, poolId, blocks, EMPTY_TARGET_DATANODES,
-        EMPTY_TARGET_STORAGEIDS, mvc/*HDFSRS_VC*/);
+        EMPTY_TARGET_STORAGEIDS, mhlc/*HDFSRS_HLC*/);
   }
 
   /**
@@ -96,13 +98,13 @@ public class BlockCommand extends DatanodeCommand {
    */
   public BlockCommand(int action, String poolId, Block[] blocks,
       DatanodeInfo[][] targets, String[][] targetStorageIDs,
-      VectorClock mvc/*HDFSRS_VC*/) {
+      HybridLogicalClock mhlc/*HDFSRS_HLC*/) {
     super(action);
     this.poolId = poolId;
     this.blocks = blocks;
     this.targets = targets;
     this.targetStorageIDs = targetStorageIDs;
-    this.mvc = mvc;
+    this.mhlc = mhlc;
   }
   
   public String getBlockPoolId() {
@@ -121,7 +123,7 @@ public class BlockCommand extends DatanodeCommand {
     return targetStorageIDs;
   }
   
-  public VectorClock getMvc(){
-  	return mvc;
+  public HybridLogicalClock getMhlc(){
+  	return mhlc;
   }
 }

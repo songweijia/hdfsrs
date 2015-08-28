@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import org.apache.commons.logging.Log;
+
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
@@ -43,7 +44,7 @@ import org.apache.hadoop.util.DiskChecker.DiskOutOfSpaceException;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Time;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
@@ -741,7 +742,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized ReplicaInPipeline createRbw(ExtendedBlock b, VectorClock mvc)// we just do nothing with the vector clock.
+  public synchronized ReplicaInPipeline createRbw(ExtendedBlock b, HybridLogicalClock mhlc)// we just do nothing with the vector clock.
       throws IOException {
     ReplicaInfo replicaInfo = volumeMap.get(b.getBlockPoolId(), 
         b.getBlockId());
@@ -879,7 +880,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
   }
 
   @Override // FsDatasetSpi
-  public synchronized ReplicaInPipeline createTemporary(ExtendedBlock b, VectorClock mvc)
+  public synchronized ReplicaInPipeline createTemporary(ExtendedBlock b, HybridLogicalClock mhlc)
       throws IOException {
     ReplicaInfo replicaInfo = volumeMap.get(b.getBlockPoolId(), b.getBlockId());
     if (replicaInfo != null) {
@@ -1154,7 +1155,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
    * just get rid of it.
    */
   @Override // FsDatasetSpi
-  public void invalidate(String bpid, Block invalidBlks[], VectorClock mvc) throws IOException {
+  public void invalidate(String bpid, Block invalidBlks[], HybridLogicalClock mhlc) throws IOException {
     final List<String> errors = new ArrayList<String>();
     for (int i = 0; i < invalidBlks.length; i++) {
       final File f;
@@ -1922,22 +1923,11 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
     return null;
   }
   
-  public VectorClock snapshotI1(long rtc,int nnrank, long nneid, String bpid)
+  public void snapshot(long rtc, String bpid)
   throws IOException{
-  	//do nothing
-  	return null;
-  }
-  
-  public void snapshotI2(long rtc, long eid, String bpid){
-  	//do nothing
-  	return;
-  }
-
-/*
-  public void snapshot(long timestamp, ExtendedBlock[] blks) 
-      throws IOException {
+    //do nothing
     return;
   }
-  */
+  
 }
 

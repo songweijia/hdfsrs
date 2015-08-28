@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs.protocol.datatransfer;
 
 import static org.apache.hadoop.hdfs.protocolPB.PBHelper.vintPrefixed;
 
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,7 +32,6 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_OOB_TIMEOUT_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_OOB_TIMEOUT_DEFAULT;
 
-import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.PipelineAckProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.PipelineAckProto.Builder;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status;
@@ -39,7 +39,7 @@ import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 
 import com.google.protobuf.TextFormat;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /** Pipeline Acknowledgment **/
 @InterfaceAudience.Private
@@ -83,13 +83,13 @@ public class PipelineAck {
    * @param downstreamAckTimeNanos ack RTT in nanoseconds, 0 if no next DN in pipeline
    */
   public PipelineAck(long seqno, Status[] replies, 
-  		long downstreamAckTimeNanos, VectorClock mvc/*HDFSRS_VC*/) {
+  		long downstreamAckTimeNanos, HybridLogicalClock mhlc) {
     Builder builder = PipelineAckProto.newBuilder()
       .setSeqno(seqno)
       .addAllStatus(Arrays.asList(replies))
       .setDownstreamAckTimeNanos(downstreamAckTimeNanos);
-    if(mvc!=null)
-    	builder.setMvc(PBHelper.convert(mvc));
+    if(mhlc!=null)
+    	builder.setMhlc(PBHelper.convert(mhlc));
     proto = builder.build();
   }
   
@@ -129,9 +129,9 @@ public class PipelineAck {
    * Get the message vector clock. 
    * @return
    */
-  public VectorClock getMvc(){
-  	if(proto.hasMvc())
-  		return PBHelper.convert(proto.getMvc());
+  public HybridLogicalClock getMhlc(){
+  	if(proto.hasMhlc())
+  		return PBHelper.convert(proto.getMhlc());
   	else return null;
   }
 

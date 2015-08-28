@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import java.io.IOException;
 
+
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
@@ -36,7 +37,7 @@ import org.apache.hadoop.util.DiskChecker.DiskOutOfSpaceException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /** Test if FSDataset#append, writeToRbw, and writeToTmp */
 public class TestWriteToReplica {
@@ -347,7 +348,7 @@ public class TestWriteToReplica {
   }
   
   private void testWriteToRbw(FsDatasetImpl dataSet, ExtendedBlock[] blocks) throws IOException {
-    VectorClock vc = new VectorClock();
+    HybridLogicalClock vc = new HybridLogicalClock();
     try {
       dataSet.recoverRbw(blocks[FINALIZED],
           blocks[FINALIZED].getGenerationStamp()+1,
@@ -441,7 +442,7 @@ public class TestWriteToReplica {
   }
   
   private void testWriteToTemporary(FsDatasetImpl dataSet, ExtendedBlock[] blocks) throws IOException {
-    VectorClock vc = new VectorClock();
+    HybridLogicalClock vc = new HybridLogicalClock();
 
     try {
       dataSet.createTemporary(blocks[FINALIZED],vc);

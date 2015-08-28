@@ -112,7 +112,7 @@ message BlockCommandProto {
   repeated BlockProto blocks = 3;
   repeated DatanodeInfosProto targets = 4;
   repeated StorageUuidsProto targetStorageUuids = 5;
-  optional VectorClockProto mvc = 6;
+  optional HybridLogicalClockProto mhlc = 6; // HDFSRS_HLC
 }
 
 /**

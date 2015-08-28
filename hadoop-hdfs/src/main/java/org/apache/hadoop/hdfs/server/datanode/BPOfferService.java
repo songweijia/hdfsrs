@@ -18,11 +18,12 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -588,13 +589,13 @@ class BPOfferService {
       // safely garbage-collected.
       //
       Block toDelete[] = bcmd.getBlocks();
-      VectorClock mvc = bcmd.getMvc();
+      HybridLogicalClock mhlc = bcmd.getMhlc();
       try {
         if (dn.blockScanner != null) {
           dn.blockScanner.deleteBlocks(bcmd.getBlockPoolId(), toDelete);
         }
         // using global fsdataset
-        dn.getFSDataset().invalidate(bcmd.getBlockPoolId(), toDelete, mvc/*HDFSRS_VC*/);
+        dn.getFSDataset().invalidate(bcmd.getBlockPoolId(), toDelete, mhlc/*HDFSRS_VC*/);
       } catch(IOException e) {
         // Exceptions caught here are not expected to be disk-related.
         throw e;

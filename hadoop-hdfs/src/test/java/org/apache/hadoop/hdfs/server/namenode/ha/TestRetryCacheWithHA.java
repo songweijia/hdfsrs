@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
@@ -82,7 +83,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 public class TestRetryCacheWithHA {
   private static final Log LOG = LogFactory.getLog(TestRetryCacheWithHA.class);
@@ -92,12 +93,12 @@ public class TestRetryCacheWithHA {
   private static final int CHECKTIMES = 10;
   private static final int ResponseSize = 3;
 
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
   private MiniDFSCluster cluster;
@@ -401,12 +402,12 @@ public class TestRetryCacheWithHA {
     @Override
     void invoke() throws Exception {
       EnumSet<CreateFlag> createFlag = EnumSet.of(CreateFlag.CREATE);
-      VectorClock mvc;
+      HybridLogicalClock mhlc;
       this.status = client.getNamenode().create(fileName,
           FsPermission.getFileDefault(), client.getClientName(),
           new EnumSetWritable<CreateFlag>(createFlag), false, DataNodes,
-          BlockSize, mvc=copyVC());
-      tickOn(mvc);
+          BlockSize, mhlc=copyHLC());
+      tickOn(mhlc);
     }
 
     @Override
@@ -446,9 +447,9 @@ public class TestRetryCacheWithHA {
 
     @Override
     void invoke() throws Exception {
-      VectorClock mvc;
-      lbk = client.getNamenode().append(fileName, client.getClientName(), mvc=copyVC());
-      tickOn(mvc);
+      HybridLogicalClock mhlc;
+      lbk = client.getNamenode().append(fileName, client.getClientName(), mhlc=copyHLC());
+      tickOn(mhlc);
     }
     
     // check if the inode of the file is under construction

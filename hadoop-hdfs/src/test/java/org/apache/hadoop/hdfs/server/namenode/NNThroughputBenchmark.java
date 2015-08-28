@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import java.io.File;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ import org.apache.hadoop.util.VersionInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * Main class for a series of name-node benchmarks.
@@ -114,12 +115,12 @@ public class NNThroughputBenchmark implements Tool {
   static NameNode nameNode;
   static NamenodeProtocols nameNodeProto;
   /*HDFSRS_VC:vector clock*/
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static VectorClock tickOnMessage(VectorClock mvc){
-	  return (VectorClock)vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
   NNThroughputBenchmark(Configuration conf) throws IOException {
@@ -292,9 +293,9 @@ public class NNThroughputBenchmark implements Tool {
       nameNodeProto.setSafeMode(HdfsConstants.SafeModeAction.SAFEMODE_LEAVE,
           false);
       if(!keepResults){
-        VectorClock mvc = copyVC(); // HDFSRS_VC
-        nameNodeProto.delete(getBaseDir(), true, mvc);
-        tickOnMessage(mvc);
+        HybridLogicalClock mhlc = copyHLC(); // HDFSRS_VC
+        nameNodeProto.delete(getBaseDir(), true, mhlc);
+        tickOn(mhlc);
       }
     }
 
@@ -497,9 +498,9 @@ public class NNThroughputBenchmark implements Tool {
       nameNodeProto.setSafeMode(HdfsConstants.SafeModeAction.SAFEMODE_LEAVE,
           false);
       long start = Time.now();
-      VectorClock mvc = copyVC();
-      nameNodeProto.delete(BASE_DIR_NAME, true, mvc);//HDFSRS_VC
-      tickOnMessage(mvc);
+      HybridLogicalClock mhlc = copyHLC();
+      nameNodeProto.delete(BASE_DIR_NAME, true, mhlc);//HDFSRS_VC
+      tickOn(mhlc);
       long end = Time.now();
       return end-start;
     }
@@ -600,17 +601,17 @@ public class NNThroughputBenchmark implements Tool {
     throws IOException {
       long start = Time.now();
       // dummyActionNoSynch(fileIdx);
-      VectorClock mvc = copyVC();
+      HybridLogicalClock mhlc = copyHLC();
       nameNodeProto.create(fileNames[daemonId][inputIdx], FsPermission.getDefault(),
                       clientName, new EnumSetWritable<CreateFlag>(EnumSet
-              .of(CreateFlag.CREATE, CreateFlag.OVERWRITE)), true, replication, BLOCK_SIZE, mvc);
-      tickOnMessage(mvc);
+              .of(CreateFlag.CREATE, CreateFlag.OVERWRITE)), true, replication, BLOCK_SIZE, mhlc);
+      tickOn(mhlc);
       long end = Time.now();
       for(boolean written = !closeUponCreate; !written;) {
-        mvc = copyVC();
+        mhlc = copyHLC();
         written = nameNodeProto.complete(fileNames[daemonId][inputIdx],
-                                    clientName, null, INodeId.GRANDFATHER_INODE_ID, mvc);
-        tickOnMessage(mvc);
+                                    clientName, null, INodeId.GRANDFATHER_INODE_ID, mhlc);
+        tickOn(mhlc);
       }
       return end-start;
     }
@@ -701,10 +702,10 @@ public class NNThroughputBenchmark implements Tool {
     long executeOp(int daemonId, int inputIdx, String clientName)
         throws IOException {
       long start = Time.now();
-      VectorClock mvc = copyVC();
+      HybridLogicalClock mhlc = copyHLC();
       nameNodeProto.mkdirs(dirPaths[daemonId][inputIdx],
-          FsPermission.getDefault(), true, mvc);
-      tickOnMessage(mvc);
+          FsPermission.getDefault(), true, mhlc);
+      tickOn(mhlc);
       long end = Time.now();
       return end-start;
     }
@@ -777,9 +778,9 @@ public class NNThroughputBenchmark implements Tool {
       super.generateInputs(opsPerThread);
       if(nameNodeProto.getFileInfo(opCreate.getBaseDir()) != null
           && nameNodeProto.getFileInfo(getBaseDir()) == null) {
-        VectorClock mvc = copyVC();
-        nameNodeProto.rename(opCreate.getBaseDir(), getBaseDir(),mvc);
-        tickOnMessage(mvc);
+        HybridLogicalClock mhlc = copyHLC();
+        nameNodeProto.rename(opCreate.getBaseDir(), getBaseDir(),mhlc);
+        tickOn(mhlc);
       }
       if(nameNodeProto.getFileInfo(getBaseDir()) == null) {
         throw new IOException(getBaseDir() + " does not exist.");
@@ -823,9 +824,9 @@ public class NNThroughputBenchmark implements Tool {
     long executeOp(int daemonId, int inputIdx, String ignore) 
     throws IOException {
       long start = Time.now();
-      VectorClock mvc = copyVC();
-      nameNodeProto.delete(fileNames[daemonId][inputIdx], false, mvc);
-      tickOnMessage(mvc);
+      HybridLogicalClock mhlc = copyHLC();
+      nameNodeProto.delete(fileNames[daemonId][inputIdx], false, mhlc);
+      tickOn(mhlc);
       long end = Time.now();
       return end-start;
     }
@@ -899,10 +900,10 @@ public class NNThroughputBenchmark implements Tool {
     long executeOp(int daemonId, int inputIdx, String ignore) 
     throws IOException {
       long start = Time.now();
-      VectorClock mvc = copyVC();
+      HybridLogicalClock mhlc = copyHLC();
       nameNodeProto.rename(fileNames[daemonId][inputIdx],
-                      destNames[daemonId][inputIdx],mvc);
-      tickOnMessage(mvc);
+                      destNames[daemonId][inputIdx],mhlc);
+      tickOn(mhlc);
       long end = Time.now();
       return end-start;
     }
@@ -1166,15 +1167,15 @@ public class NNThroughputBenchmark implements Tool {
           false);
       for(int idx=0; idx < nrFiles; idx++) {
         String fileName = nameGenerator.getNextFileName("ThroughputBench");
-        VectorClock mvc = copyVC();
+        HybridLogicalClock mhlc = copyHLC();
         nameNodeProto.create(fileName, FsPermission.getDefault(), clientName,
             new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE, CreateFlag.OVERWRITE)), true, replication,
-            BLOCK_SIZE, mvc);
-        tickOnMessage(mvc);
+            BLOCK_SIZE, mhlc);
+        tickOn(mhlc);
         ExtendedBlock lastBlock = addBlocks(fileName, clientName);
-        mvc = copyVC();
-        nameNodeProto.complete(fileName, clientName, lastBlock, INodeId.GRANDFATHER_INODE_ID, mvc);
-        tickOnMessage(mvc);
+        mhlc = copyHLC();
+        nameNodeProto.complete(fileName, clientName, lastBlock, INodeId.GRANDFATHER_INODE_ID, mhlc);
+        tickOn(mhlc);
       }
       // prepare block reports
       for(int idx=0; idx < nrDatanodes; idx++) {

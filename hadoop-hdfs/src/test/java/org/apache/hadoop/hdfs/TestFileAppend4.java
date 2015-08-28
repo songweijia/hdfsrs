@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs;
 
 import static org.junit.Assert.assertNotNull;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyLong;
@@ -55,7 +56,7 @@ import org.apache.log4j.Level;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /* File Append tests for HDFS-200 & HDFS-142, specifically focused on:
  *  using append()/sync() to recover block information
@@ -67,12 +68,12 @@ public class TestFileAppend4 {
 
   static final Object [] NO_ARGS = new Object []{};
   
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
   Configuration conf;
@@ -171,10 +172,10 @@ public class TestFileAppend4 {
  
       // Delay completeFile
       GenericTestUtils.DelayAnswer delayer = new GenericTestUtils.DelayAnswer(LOG);
-      VectorClock mvc = copyVC();
+      HybridLogicalClock mhlc = copyHLC();
       doAnswer(delayer).when(spyNN).complete(
-          anyString(), anyString(), (ExtendedBlock)anyObject(), anyLong(), mvc);
-      tickOn(mvc);
+          anyString(), anyString(), (ExtendedBlock)anyObject(), anyLong(), mhlc);
+      tickOn(mhlc);
  
       DFSClient client = new DFSClient(null, spyNN, conf, null);
       file1 = new Path("/testRecoverFinalized");
@@ -246,10 +247,10 @@ public class TestFileAppend4 {
       // Delay completeFile
       GenericTestUtils.DelayAnswer delayer =
         new GenericTestUtils.DelayAnswer(LOG);
-      VectorClock mvc = copyVC();
+      HybridLogicalClock mhlc = copyHLC();
       doAnswer(delayer).when(spyNN).complete(anyString(), anyString(),
-          (ExtendedBlock) anyObject(), anyLong(), mvc);
-      tickOn(mvc);
+          (ExtendedBlock) anyObject(), anyLong(), mhlc);
+      tickOn(mhlc);
  
       DFSClient client = new DFSClient(null, spyNN, conf, null);
       file1 = new Path("/testCompleteOtherLease");

@@ -2,17 +2,12 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
-import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_VCPID;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_MEMBLOCK_PAGESIZE;
-import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_VCPID;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_MEMBLOCK_PAGESIZE;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +16,10 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import  org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
 import org.apache.hadoop.hdfs.server.datanode.Replica;
-import org.apache.hadoop.hdfs.server.datanode.fsdataset.VCOutputStream;
+import org.apache.hadoop.hdfs.server.datanode.fsdataset.HLCOutputStream;
 
 import edu.cornell.cs.blog.JNIBlog;
 import edu.cornell.cs.sa.*;
@@ -41,7 +35,6 @@ public class MemDatasetManager {
 //  private HashMap<ExtendedBlockId, String> diskMaps;
 //  private MemDatasetImpl dataset;
   private Map<String, PoolData> poolMap; // where data is stored.
-  private int myVCRank; // vector clock rank
   private final long capacity;
   private final long blocksize; 
   private final int pagesize;
@@ -197,7 +190,7 @@ public class MemDatasetManager {
     }
   }
   
-  class BlogOutputStream extends VCOutputStream {
+  class BlogOutputStream extends HLCOutputStream {
     JNIBlog blog;
     long blockId;
     int offset;
@@ -222,12 +215,12 @@ public class MemDatasetManager {
         throw new IOException("Blog allows write with vector clock only.");
     }
 
-	  @Override
-    public void write(VectorClock mvc, byte[] b, int off, int len)
+    @Override
+    public void write(HybridLogicalClock mhlc, byte[] b, int off, int len)
     throws IOException {
-      int ret = blog.writeBlock(mvc, blockId, offset, off, len, b);
+      int ret = blog.writeBlock(mhlc, blockId, offset, off, len, b);
       if(ret < 0)
-        throw new IOException("error in JNIBlog.write("+mvc+","+
+        throw new IOException("error in JNIBlog.write("+mhlc+","+
           blockId+","+offset+","+off+","+len+",b):"+ret);
       else
         offset += len;
@@ -240,7 +233,6 @@ public class MemDatasetManager {
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
-    this.myVCRank = conf.getInt(DFS_VCPID, DEFAULT_DFS_VCPID)<<2;
     this.poolMap = new HashMap<String, PoolData>();
 //    this.diskMaps = new HashMap<ExtendedBlockId, String>();
   }
@@ -271,7 +263,7 @@ MemBlockMeta get(String bpid, long blockId) {
   	pd = new PoolData();
     pd.blockMaps = new HashMap<Long,MemBlockMeta>();
     pd.blog = new JNIBlog();
-    pd.blog.initialize(myVCRank, (int)blocksize, pagesize);
+    pd.blog.initialize((int)blocksize, pagesize);
     return pd;
   }
 
@@ -280,10 +272,10 @@ MemBlockMeta get(String bpid, long blockId) {
    * @param bpid
    * @param blockId
    * @param genStamp
-   * @param mvc message vector clock: input/output
+   * @param mhlc message hybrid logical clock clock: input/output
    * @return metadata
    */
-  MemBlockMeta createBlock(String bpid, long blockId, long genStamp, VectorClock mvc) {
+  MemBlockMeta createBlock(String bpid, long blockId, long genStamp, HybridLogicalClock mhlc) {
   	PoolData pd = null;
   	synchronized(poolMap){
   		pd = poolMap.get(bpid);
@@ -293,7 +285,7 @@ MemBlockMeta get(String bpid, long blockId) {
       }
   	}
     synchronized(pd){
-      pd.blog.createBlock(mvc, blockId);
+      pd.blog.createBlock(mhlc, blockId);
       MemBlockMeta meta = new MemBlockMeta(bpid, genStamp, blockId, ReplicaState.TEMPORARY); 
       pd.blockMaps.put(blockId, meta);
       return meta;
@@ -305,13 +297,13 @@ MemBlockMeta get(String bpid, long blockId) {
    * history.
  * @param bpid
  * @param blockId
- * @param mvc message vector clock : input/output
+ * @param mhlc message vector clock : input/output
  */
-  void deleteBlock(String bpid, long blockId, VectorClock mvc) {
+  void deleteBlock(String bpid, long blockId, HybridLogicalClock mhlc) {
     PoolData pd = poolMap.get(bpid);
     synchronized(pd){
       pd.blockMaps.get(blockId).delete();
-      pd.blog.deleteBlock(mvc, blockId);
+      pd.blog.deleteBlock(mhlc, blockId);
     }
   }
   
@@ -354,33 +346,7 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
  * @param eid
  * @throws IOException
  */
-  void snapshot(String bpid, long snapshotId, long eid)throws IOException{
-	  poolMap.get(bpid).blog.createSnapshot(snapshotId, eid);
+  void snapshot(String bpid, long rtc)throws IOException{
+	  poolMap.get(bpid).blog.createSnapshot(rtc);
   }
-  
-  VectorClock since(String bpid, int nnrank, long nneid, long rtc)
-  throws IOException{
-  	VectorClock vc = new VectorClock();
-  	if(poolMap.get(bpid)==null){
-      PoolData pd = newPoolData();
-      poolMap.put(bpid, pd);
-  	}
-  	int rCode = poolMap.get(bpid).blog.since(rtc, nnrank, nneid, vc);
-    vc.pid = poolMap.get(bpid).blog.getMyRank();
-    if(rCode == -1) // cut before the first log or no log
-      vc.vc.put(vc.pid,0l);
-    else if(rCode < -1)
-  		throw new IOException("call since failed with rtc="+rtc+
-  				",nnrank="+nnrank+
-  				",nneid="+nneid);
-    return vc;
-  }
-/*  
-  long since(String bpid, long rtc)throws IOException{
-  	VectorClock vc = new VectorClock();
-  	if(poolMap.get(bpid).blog.since(rtc, vc)!=0)
-  		throw new IOException("call since failed with rtc="+rtc);
-  	return vc.vc.get(poolMap.get(bpid).blog.getMyRank());
-  }
-*/
 }

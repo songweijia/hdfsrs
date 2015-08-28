@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.protocolPB;
 
 import java.io.Closeable;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -172,30 +173,7 @@ import org.apache.hadoop.security.token.Token;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import edu.cornell.cs.sa.VectorClock;
-
-
-
-
-
-
-
-
-
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 //HDFSRS_RWAPI{
 import org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.OverwriteBlockRequestProto;
@@ -280,7 +258,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
   public HdfsFileStatus create(String src, FsPermission masked,
       String clientName, EnumSetWritable<CreateFlag> flag,
       boolean createParent, short replication, long blockSize,
-      VectorClock mvc/*HDFSRS_VC*/)
+      HybridLogicalClock mhlc/*HDFSRS_VC*/)
       throws AccessControlException, AlreadyBeingCreatedException,
       DSQuotaExceededException, FileAlreadyExistsException,
       FileNotFoundException, NSQuotaExceededException,
@@ -294,11 +272,12 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setCreateParent(createParent)
         .setReplication(replication)
         .setBlockSize(blockSize)
-        .setVc(PBHelper.convert(mvc)) // HDFSRS_VC
+        .setHlc(PBHelper.convert(mhlc)) // HDFSRS_HLC
         .build();
     try {
       CreateResponseProto res = rpcProxy.create(null, req);
-      mvc.vc=PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
       return res.hasFs() ? PBHelper.convert(res.getFs()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -308,18 +287,19 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
   @Override
   public LocatedBlock append(String src, String clientName, 
-		  VectorClock mvc/*HDFSRS_VC*/)
+      HybridLogicalClock mhlc/*HDFSRS_VC*/)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       IOException {
     AppendRequestProto req = AppendRequestProto.newBuilder()
         .setSrc(src)
         .setClientName(clientName)
-        .setVc(PBHelper.convert(mvc))
+        .setHlc(PBHelper.convert(mhlc))
         .build();
     try {
       AppendResponseProto res = rpcProxy.append(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
       return res.hasBlock() ? PBHelper.convert(res.getBlock()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -328,7 +308,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
   //HDFSRS_RWAPI{
   @Override
   public LocatedBlock overwriteBlock(String src, ExtendedBlock previous, 
-      int bIndex, long fileId, String clientName, VectorClock mvc/*HDFSRS_VC*/)
+      int bIndex, long fileId, String clientName, HybridLogicalClock mhlc)
       throws AccessControlException, DSQuotaExceededException,
       FileNotFoundException, SafeModeException, UnresolvedLinkException,
       SnapshotAccessControlException, IOException {
@@ -337,7 +317,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setBIndex(bIndex)
         .setFileId(fileId)
         .setClientName(clientName)
-        .setVc(PBHelper.convert(mvc));/*HDFSRS_VC*/
+        .setHlc(PBHelper.convert(mhlc));/*HDFSRS_VC*/
     if(previous!=null)
       bldr = bldr.setPrevious(PBHelper.convert(previous));
 
@@ -345,7 +325,8 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
     try {
       OverwriteBlockResponseProto res = rpcProxy.overwriteBlock(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
       return res.hasBlock() ? PBHelper.convert(res.getBlock()) : null;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -402,15 +383,16 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
   @Override
   public void abandonBlock(ExtendedBlock b, String src, String holder,
-		  VectorClock mvc/*HDFSRS_VC*/)
+		  HybridLogicalClock mhlc/*HDFSRS_HLC*/)
       throws AccessControlException, FileNotFoundException,
       UnresolvedLinkException, IOException {
     AbandonBlockRequestProto req = AbandonBlockRequestProto.newBuilder()
         .setB(PBHelper.convert(b)).setSrc(src).setHolder(holder)
-        .setVc(PBHelper.convert(mvc)).build();
+        .setHlc(PBHelper.convert(mhlc)).build();
     try {
       AbandonBlockResponseProto res = rpcProxy.abandonBlock(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -419,7 +401,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
   @Override
   public LocatedBlock addBlock(String src, String clientName,
       ExtendedBlock previous, DatanodeInfo[] excludeNodes, long fileId,
-      String[] favoredNodes, VectorClock mvc/*HDFSRS_VC*/)
+      String[] favoredNodes, HybridLogicalClock mhlc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException,
       NotReplicatedYetException, SafeModeException, UnresolvedLinkException,
       IOException {
@@ -432,13 +414,15 @@ public class ClientNamenodeProtocolTranslatorPB implements
     if (favoredNodes != null) {
       req.addAllFavoredNodes(Arrays.asList(favoredNodes));
     }
-    req.setVc(PBHelper.convert(mvc));/*HDFSRS_VC:vector clock*/
+    req.setHlc(PBHelper.convert(mhlc));/*HDFSRS_VC:vector clock*/
     try {
     	/* HDFSRS_VC:return mvc throught mvc parameter.
     	 */
       AddBlockResponseProto abrp = rpcProxy.addBlock(null, req.build());
-      if(mvc!=null)
-    	  mvc.vc = PBHelper.convert(abrp.getVc()).vc;
+      if(mhlc!=null){
+        HybridLogicalClock rHLC = PBHelper.convert(abrp.getHlc()); // HDFSRS_HLC
+        mhlc.c = rHLC.c;mhlc.r = rHLC.r;
+      }
       return PBHelper.convert(abrp.getBlock());
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -473,19 +457,20 @@ public class ClientNamenodeProtocolTranslatorPB implements
   @Override
   public boolean complete(String src, String clientName,
                           ExtendedBlock last, long fileId,
-                          VectorClock mvc)
+                          HybridLogicalClock mhlc)
       throws AccessControlException, FileNotFoundException, SafeModeException,
       UnresolvedLinkException, IOException {
     CompleteRequestProto.Builder req = CompleteRequestProto.newBuilder()
         .setSrc(src)
         .setClientName(clientName)
         .setFileId(fileId)
-        .setVc(PBHelper.convert(mvc));//HDFSRS_VC
+        .setHlc(PBHelper.convert(mhlc));//HDFSRS_VC
     if (last != null)
       req.setLast(PBHelper.convert(last));
     try {
       CompleteResponseProto res = rpcProxy.complete(null, req.build()); //HDFSRS_VC
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
       return res.getResult();
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -505,15 +490,16 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
 
   @Override
-  public boolean rename(String src, String dst, VectorClock mvc/*HDFSRS_VC*/) throws UnresolvedLinkException,
+  public boolean rename(String src, String dst, HybridLogicalClock mhlc/*HDFSRS_VC*/) throws UnresolvedLinkException,
       IOException {
     RenameRequestProto req = RenameRequestProto.newBuilder()
         .setSrc(src)
         .setDst(dst)
-        .setVc(PBHelper.convert(mvc)).build();
+        .setHlc(PBHelper.convert(mhlc)).build();
     try {
       RenameResponseProto res = rpcProxy.rename(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
       return res.getResult();
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -522,7 +508,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
   
 
   @Override
-  public void rename2(String src, String dst, VectorClock mvc/*HDFSRS_VC*/, Rename... options)
+  public void rename2(String src, String dst, HybridLogicalClock mhlc/*HDFSRS_VC*/, Rename... options)
       throws AccessControlException, DSQuotaExceededException,
       FileAlreadyExistsException, FileNotFoundException,
       NSQuotaExceededException, ParentNotDirectoryException, SafeModeException,
@@ -538,11 +524,12 @@ public class ClientNamenodeProtocolTranslatorPB implements
     Rename2RequestProto req = Rename2RequestProto.newBuilder().
         setSrc(src).
         setDst(dst).setOverwriteDest(overwrite).
-        setVc(PBHelper.convert(mvc)). //HDFSRS_VC
+        setHlc(PBHelper.convert(mhlc)). //HDFSRS_VC
         build();
     try {
       Rename2ResponseProto res = rpcProxy.rename2(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc;
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -550,14 +537,15 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
 
   @Override
-  public void concat(String trg, String[] srcs, VectorClock mvc) throws IOException,
+  public void concat(String trg, String[] srcs, HybridLogicalClock mhlc) throws IOException,
       UnresolvedLinkException {
     ConcatRequestProto req = ConcatRequestProto.newBuilder().
-        setTrg(trg).setVc(PBHelper.convert(mvc)).//HDFSRS_VC
+        setTrg(trg).setHlc(PBHelper.convert(mhlc)).//HDFSRS_VC
         addAllSrcs(Arrays.asList(srcs)).build();
     try {
       ConcatResponseProto res = rpcProxy.concat(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc; //HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }
@@ -565,15 +553,16 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
 
   @Override
-  public boolean delete(String src, boolean recursive, VectorClock mvc/*HDFSRS_VC*/)
+  public boolean delete(String src, boolean recursive, HybridLogicalClock mhlc/*HDFSRS_HLC*/)
       throws AccessControlException, FileNotFoundException, SafeModeException,
       UnresolvedLinkException, IOException {
     DeleteRequestProto req = DeleteRequestProto.newBuilder().setSrc(src).setRecursive(recursive)
-    		.setVc(PBHelper.convert(mvc)).build();//HDFSRS_VC
+    		.setHlc(PBHelper.convert(mhlc)).build();//HDFSRS_HLC
     try {
       DeleteResponseProto res = rpcProxy.delete(null, req);
       boolean bRet = res.getResult();
-      mvc.vc = PBHelper.convert(res.getVc()).vc; // HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
       return bRet;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -582,7 +571,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
   @Override
   public boolean mkdirs(String src, FsPermission masked, boolean createParent,
-		  VectorClock mvc)
+		  HybridLogicalClock mhlc)
       throws AccessControlException, FileAlreadyExistsException,
       FileNotFoundException, NSQuotaExceededException,
       ParentNotDirectoryException, SafeModeException, UnresolvedLinkException,
@@ -591,12 +580,13 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setSrc(src)
         .setMasked(PBHelper.convert(masked))
         .setCreateParent(createParent)
-        .setVc(PBHelper.convert(mvc)).build();//HDFSRS_VC
+        .setHlc(PBHelper.convert(mhlc)).build();//HDFSRS_VC
 
     try {
       MkdirsResponseProto res = rpcProxy.mkdirs(null, req);
       boolean bRet = res.getResult();
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HFDSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
       return bRet;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
@@ -851,15 +841,16 @@ public class ClientNamenodeProtocolTranslatorPB implements
 
   @Override
   public void fsync(String src, String client, long lastBlockLength,
-		  VectorClock mvc/*HDFSRS_VC*/)
+		  HybridLogicalClock mhlc/*HDFSRS_VC*/)
       throws AccessControlException, FileNotFoundException,
       UnresolvedLinkException, IOException {
     FsyncRequestProto req = FsyncRequestProto.newBuilder().setSrc(src)
         .setClient(client).setLastBlockLength(lastBlockLength)
-        .setVc(PBHelper.convert(mvc)).build();//HDFSRS_VC
+        .setHlc(PBHelper.convert(mhlc)).build();//HDFSRS_VC
     try {
       FsyncResponseProto res = rpcProxy.fsync(null, req);
-      mvc.vc = PBHelper.convert(res.getVc()).vc;//HDFSRS_VC
+      HybridLogicalClock rHLC = PBHelper.convert(res.getHlc()); // HDFSRS_HLC
+      mhlc.c = rHLC.c;mhlc.r = rHLC.r;
     } catch (ServiceException e) {
       throw ProtobufHelper.getRemoteException(e);
     }

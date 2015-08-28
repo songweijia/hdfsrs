@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -66,7 +67,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This tests data transfer protocol handling in the Datanode. It sends
@@ -159,14 +160,14 @@ public class TestDataTransferProtocol {
   
   private void writeZeroLengthPacket(ExtendedBlock block, String description)
   throws IOException {
-  	VectorClock vc = new VectorClock();//HDFSRS_VC
+    HybridLogicalClock hlc = new HybridLogicalClock();
     PacketHeader hdr = new PacketHeader(
       8,                   // size of packet
       block.getNumBytes(), // OffsetInBlock
       100,                 // sequencenumber
       true,                // lastPacketInBlock
       0,                   // chunk length
-      false, vc/*HDFSRS_VC*/);               // sync block
+      false, hlc/*HDFSRS_HLC*/);               // sync block
     hdr.write(sendOut);
     sendOut.writeInt(0);           // zero checksum
 
@@ -193,14 +194,15 @@ public class TestDataTransferProtocol {
 
   private void testWrite(ExtendedBlock block, BlockConstructionStage stage, long newGS,
       String description, Boolean eofExcepted) throws IOException {
-  	VectorClock vc = new VectorClock();
+//  	VectorClock vc = new VectorClock();
+    HybridLogicalClock hlc = new HybridLogicalClock();
     sendBuf.reset();
     recvBuf.reset();
     sender.writeBlock(block, BlockTokenSecretManager.DUMMY_TOKEN, "cl",
         new DatanodeInfo[1], null, stage,
         0, block.getNumBytes(), block.getNumBytes(), newGS,
-        DEFAULT_CHECKSUM, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/,
-        vc/*HDFSRS_VC*/);
+        DEFAULT_CHECKSUM, CachingStrategy.newDefaultStrategy(),-1,
+        hlc);
     if (eofExcepted) {
       sendResponse(Status.ERROR, null, null, recvOut);
       sendRecvData(description, true);
@@ -351,7 +353,7 @@ public class TestDataTransferProtocol {
     Path file = new Path("dataprotocol.dat");
     int numDataNodes = 1;
     
-    VectorClock vc = new VectorClock();//HDFSRS_VC
+    HybridLogicalClock hlc = new HybridLogicalClock(); //HDFSRS_HLC
     
     Configuration conf = new HdfsConfiguration();
     conf.setInt(DFSConfigKeys.DFS_REPLICATION_KEY, numDataNodes); 
@@ -400,7 +402,7 @@ public class TestDataTransferProtocol {
         BlockConstructionStage.PIPELINE_SETUP_CREATE,
         0, 0L, 0L, 0L,
         badChecksum, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/,
-        vc);
+        hlc);
     recvBuf.reset();
     sendResponse(Status.ERROR, null, null, recvOut);
     sendRecvData("wrong bytesPerChecksum while writing", true);
@@ -412,7 +414,7 @@ public class TestDataTransferProtocol {
         new DatanodeInfo[1], null,
         BlockConstructionStage.PIPELINE_SETUP_CREATE, 0, 0L, 0L, 0L,
         DEFAULT_CHECKSUM, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/,
-        vc/*HDFSRS_VC*/);
+        hlc);
 
     PacketHeader hdr = new PacketHeader(
       4,     // size of packet
@@ -420,7 +422,7 @@ public class TestDataTransferProtocol {
       100,   // seqno
       false, // last packet
       -1 - random.nextInt(oneMil), // bad datalen
-      false, vc);
+      false, hlc);
     hdr.write(sendOut);
 
     sendResponse(Status.SUCCESS, "", null, recvOut);
@@ -436,7 +438,7 @@ public class TestDataTransferProtocol {
         new DatanodeInfo[1], null,
         BlockConstructionStage.PIPELINE_SETUP_CREATE, 0, 0L, 0L, 0L,
         DEFAULT_CHECKSUM, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/,
-        vc/*HDFSRS_VC*/);
+        hlc/*HDFSRS_VC*/);
 
     hdr = new PacketHeader(
       8,     // size of packet
@@ -444,7 +446,7 @@ public class TestDataTransferProtocol {
       100,   // sequencenumber
       true,  // lastPacketInBlock
       0,     // chunk length
-      false, vc/*HDFSRS_VC*/);    
+      false, hlc/*HDFSRS_VC*/);    
     hdr.write(sendOut);
     sendOut.writeInt(0);           // zero checksum
     sendOut.flush();
@@ -524,14 +526,14 @@ public class TestDataTransferProtocol {
 
   @Test
   public void testPacketHeader() throws IOException {
-  	VectorClock vc = new VectorClock();
+    HybridLogicalClock hlc = new HybridLogicalClock();
     PacketHeader hdr = new PacketHeader(
       4,                   // size of packet
       1024,                // OffsetInBlock
       100,                 // sequencenumber
       false,               // lastPacketInBlock
       4096,                // chunk length
-      false, vc/*HDFSRS_VC*/);
+      false, hlc/*HDFSRS_VC*/);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     hdr.write(new DataOutputStream(baos));
 

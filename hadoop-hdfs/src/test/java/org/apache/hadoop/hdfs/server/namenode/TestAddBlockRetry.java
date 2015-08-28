@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs.server.namenode;
 
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
@@ -50,7 +51,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * Race between two threads simultaneously calling
@@ -61,14 +62,13 @@ public class TestAddBlockRetry {
 
   private static final short REPLICATION = 3;
 
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
-
   
   private Configuration conf;
   private MiniDFSCluster cluster;
@@ -136,12 +136,12 @@ public class TestAddBlockRetry {
         Mockito.anyLong(), Mockito.<List<String>>any());
 
     // create file
-    VectorClock mvc;
+    HybridLogicalClock mhlc;
     nn.create(src, FsPermission.getFileDefault(),
         "clientName",
         new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE)),
-        true, (short)3, 1024, mvc=copyVC());
-    tickOn(mvc);
+        true, (short)3, 1024, mhlc=copyHLC());
+    tickOn(mhlc);
 
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
@@ -166,11 +166,11 @@ public class TestAddBlockRetry {
     final String src = "/testAddBlockRetryShouldReturnBlockWithLocations";
     NamenodeProtocols nameNodeRpc = cluster.getNameNodeRpc();
     // create file
-    VectorClock mvc;
+    HybridLogicalClock mhlc;
     nameNodeRpc.create(src, FsPermission.getFileDefault(), "clientName",
         new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE)), true,
-        (short) 3, 1024, mvc=copyVC());
-    tickOn(mvc);
+        (short) 3, 1024, mhlc=copyHLC());
+    tickOn(mhlc);
     // start first addBlock()
     LOG.info("Starting first addBlock for " + src);
     LocatedBlock lb1 = nameNodeRpc.addBlock(src, "clientName", null, null,

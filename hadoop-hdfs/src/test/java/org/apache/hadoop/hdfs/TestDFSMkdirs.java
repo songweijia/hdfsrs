@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs;
 
 import static org.junit.Assert.*;
 
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -32,7 +33,7 @@ import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.util.Time;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This class tests that the DFS command mkdirs only creates valid
@@ -49,12 +50,12 @@ public class TestDFSMkdirs {
       "/test5/."
   };
   
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
 
@@ -152,9 +153,9 @@ public class TestDFSMkdirs {
       
       for (String pathStr : NON_CANONICAL_PATHS) {
         try {
-          VectorClock mvc;
-          nnrpc.mkdirs(pathStr, new FsPermission((short)0755), true, mvc=copyVC());
-          tickOn(mvc);
+          HybridLogicalClock mhlc;
+          nnrpc.mkdirs(pathStr, new FsPermission((short)0755), true, mhlc=copyHLC());
+          tickOn(mhlc);
           fail("Did not fail when called with a non-canonicalized path: "
              + pathStr);
         } catch (InvalidPathException ipe) {

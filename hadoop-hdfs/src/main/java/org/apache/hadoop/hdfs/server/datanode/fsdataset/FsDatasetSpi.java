@@ -1,5 +1,6 @@
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
+
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
@@ -19,6 +20,7 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset;
 
 
 import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +50,7 @@ import org.apache.hadoop.hdfs.server.protocol.StorageReport;
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This is a service provider interface for the underlying storage that
@@ -187,7 +189,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return the meta info of the replica which is being written to
    * @throws IOException if an error occurs
    */
-  public Replica createTemporary(ExtendedBlock b, VectorClock mvc
+  public Replica createTemporary(ExtendedBlock b, HybridLogicalClock mhlc
       ) throws IOException;
 
   /**
@@ -198,7 +200,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @return the meta info of the replica which is being written to
    * @throws IOException if an error occurs
    */
-  public Replica createRbw(ExtendedBlock b, VectorClock mvc/*HDFSRS_VC*/
+  public Replica createRbw(ExtendedBlock b, HybridLogicalClock mhlc
       ) throws IOException;
 
   /**
@@ -316,7 +318,7 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * @param mvc Message Vector Clock, I/O parameter
    * @throws IOException
    */
-  public void invalidate(String bpid, Block invalidBlks[], VectorClock mvc) throws IOException;
+  public void invalidate(String bpid, Block invalidBlks[], HybridLogicalClock mhlc) throws IOException;
 
   /**
    * Caches the specified blocks
@@ -457,19 +459,10 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
   // public void snapshot(long rtc, String bpid)throws IOException;
   /**
    * @param rtc
-   * @param nnrank
-   * @param nneid
    * @param bpid
    * @return
    * @throws IOException
    */
-  public VectorClock snapshotI1(long rtc, int nnrank, long nneid, String bpid)throws IOException;
-  /**
-   * @param rtc
-   * @param eid
-   * @param bpid
-   * @throws IOException
-   */
-  public void snapshotI2(long rtc, long eid, String bpid)throws IOException;
+  public void snapshot(long rtc,String bpid)throws IOException;
 }
 

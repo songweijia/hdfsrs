@@ -19,6 +19,7 @@
 package org.apache.hadoop.hdfs;
 
 import static org.junit.Assert.assertArrayEquals;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -47,7 +48,7 @@ import org.apache.hadoop.test.PathUtils;
 import org.apache.log4j.Level;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * A JUnit test for checking if restarting DFS preserves the
@@ -59,12 +60,12 @@ public class TestPersistBlocks {
     ((Log4JLogger)FSNamesystem.LOG).getLogger().setLevel(Level.ALL);
   }
 
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+	  return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+	  hlc.tickOnRecv(mhlc);
   }
   
   
@@ -174,10 +175,10 @@ public class TestPersistBlocks {
           FILE_NAME, 0, BLOCK_SIZE * NUM_BLOCKS);
       assertEquals(NUM_BLOCKS, blocks.getLocatedBlocks().size());
       LocatedBlock b = blocks.getLastLocatedBlock();
-      VectorClock mvc;
+      HybridLogicalClock mhlc;
       dfsclient.getNamenode().abandonBlock(b.getBlock(), FILE_NAME,
-          dfsclient.clientName, mvc=copyVC());
-      tickOn(mvc);
+          dfsclient.clientName, mhlc=copyHLC());
+      tickOn(mhlc);
       
       // explicitly do NOT close the file.
       cluster.restartNameNode();

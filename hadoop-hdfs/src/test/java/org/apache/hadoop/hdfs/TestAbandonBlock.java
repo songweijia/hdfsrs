@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs;
 
 import static org.junit.Assert.fail;
 
+
 import java.io.IOException;
 
 import org.apache.commons.logging.Log;
@@ -35,7 +36,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * Test abandoning blocks, which clients do on pipeline creation failure.
@@ -43,12 +44,12 @@ import edu.cornell.cs.sa.VectorClock;
 public class TestAbandonBlock {
   public static final Log LOG = LogFactory.getLog(TestAbandonBlock.class);
   
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+	  return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+	  hlc.tickOnRecv(mhlc);
   }
 
   
@@ -89,14 +90,14 @@ public class TestAbandonBlock {
       dfsclient.getNamenode().getBlockLocations(src, 0, Integer.MAX_VALUE);
     int orginalNumBlocks = blocks.locatedBlockCount();
     LocatedBlock b = blocks.getLastLocatedBlock();
-    VectorClock mvc;
+    HybridLogicalClock mhlc;
     dfsclient.getNamenode().abandonBlock(b.getBlock(), src,
-        dfsclient.clientName, mvc=copyVC());
-    tickOn(mvc);
+        dfsclient.clientName, mhlc=copyHLC());
+    tickOn(mhlc);
     // call abandonBlock again to make sure the operation is idempotent
     dfsclient.getNamenode().abandonBlock(b.getBlock(), src,
-        dfsclient.clientName, mvc=copyVC());
-    tickOn(mvc);
+        dfsclient.clientName, mhlc=copyHLC());
+    tickOn(mhlc);
 
     // And close the file
     fout.close();

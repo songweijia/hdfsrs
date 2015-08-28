@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode.ha;
 
 import static org.junit.Assert.assertNotNull;
+
 import static org.junit.Assert.assertNull;
 
 import java.io.File;
@@ -46,7 +47,7 @@ import org.junit.Test;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * Test cases for the handling of edit logs during failover
@@ -56,12 +57,12 @@ public class TestEditLogsDuringFailover {
   private static final Log LOG =
     LogFactory.getLog(TestEditLogsDuringFailover.class);
   private static final int NUM_DIRS_IN_LOG = 5;
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
   static {
@@ -99,10 +100,10 @@ public class TestEditLogsDuringFailover {
           Collections.singletonList(cluster.getSharedEditsDir(0, 1)),
           NNStorage.getInProgressEditsFileName(1));
       assertNoEditFiles(cluster.getNameDirs(1));
-      VectorClock mvc;
+      HybridLogicalClock mhlc;
       cluster.getNameNode(0).getRpcServer().mkdirs("/test",
-          FsPermission.createImmutable((short)0755), true, mvc=copyVC());
-      tickOn(mvc);
+          FsPermission.createImmutable((short)0755), true, mhlc=copyHLC());
+      tickOn(mhlc);
 
       // Restarting the standby should not finalize any edits files
       // in the shared directory when it starts up!
@@ -123,8 +124,8 @@ public class TestEditLogsDuringFailover {
       assertNull(NameNodeAdapter.getFileInfo(cluster.getNameNode(1), "/test", true));
       
       cluster.getNameNode(0).getRpcServer().mkdirs("/test2",
-          FsPermission.createImmutable((short)0755), true, mvc=copyVC());
-      tickOn(mvc);
+          FsPermission.createImmutable((short)0755), true, mhlc=copyHLC());
+      tickOn(mhlc);
 
       // If we restart NN0, it'll come back as standby, and we can
       // transition NN1 to active and make sure it reads edits correctly at this point.

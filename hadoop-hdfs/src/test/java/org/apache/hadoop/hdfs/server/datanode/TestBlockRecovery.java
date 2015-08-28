@@ -19,6 +19,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.junit.Assert.fail;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyListOf;
@@ -89,7 +90,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This tests if sync all replicas in block recovery works correctly
@@ -527,11 +528,11 @@ public class TestBlockRecovery {
    */
   @Test
   public void testNoReplicaUnderRecovery() throws IOException {
-  	VectorClock vc = new VectorClock();
+  	HybridLogicalClock hlc = new HybridLogicalClock();
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
     }
-    dn.data.createRbw(block,vc/*HDFSRS_VC*/);
+    dn.data.createRbw(block,hlc/*HDFSRS_VC*/);
     try {
       dn.syncBlock(rBlock, initBlockRecords(dn));
       fail("Sync should fail");
@@ -551,11 +552,11 @@ public class TestBlockRecovery {
    */
   @Test
   public void testNotMatchedReplicaID() throws IOException {
-  	VectorClock vc = new VectorClock();
+  	HybridLogicalClock hlc = new HybridLogicalClock();
     if(LOG.isDebugEnabled()) {
       LOG.debug("Running " + GenericTestUtils.getMethodName());
     }
-    ReplicaInPipelineInterface replicaInfo = (ReplicaInPipelineInterface)dn.data.createRbw(block,vc);
+    ReplicaInPipelineInterface replicaInfo = (ReplicaInPipelineInterface)dn.data.createRbw(block,hlc);
     ReplicaOutputStreams streams = null;
     try {
       streams = replicaInfo.createStreams(true,

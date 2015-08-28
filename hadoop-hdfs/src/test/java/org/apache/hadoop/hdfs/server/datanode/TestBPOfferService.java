@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -65,7 +66,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 public class TestBPOfferService {
 
@@ -204,11 +205,12 @@ public class TestBPOfferService {
   public void testIgnoreDeletionsFromNonActive() throws Exception {
     BPOfferService bpos = setupBPOSForNNs(mockNN1, mockNN2);
 
-    VectorClock vc = new VectorClock();// HDFSRS_VC
+//    VectorClock vc = new VectorClock();// HDFSRS_VC
+    HybridLogicalClock hlc = new HybridLogicalClock();
     // Ask to invalidate FAKE_BLOCK when block report hits the
     // standby
     Mockito.doReturn(new BlockCommand(DatanodeProtocol.DNA_INVALIDATE,
-        FAKE_BPID, new Block[] { FAKE_BLOCK.getLocalBlock() }, vc/*HDFSRS_VC*/))
+        FAKE_BPID, new Block[] { FAKE_BLOCK.getLocalBlock() }, hlc))
         .when(mockNN2).blockReport(
             Mockito.<DatanodeRegistration>anyObject(),  
             Mockito.eq(FAKE_BPID),
@@ -229,7 +231,7 @@ public class TestBPOfferService {
     // Should ignore the delete command from the standby
     Mockito.verify(mockFSDataset, Mockito.never())
       .invalidate(Mockito.eq(FAKE_BPID),
-          (Block[]) Mockito.anyObject(),vc);
+          (Block[]) Mockito.anyObject(),hlc);
   }
 
   /**

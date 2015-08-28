@@ -72,23 +72,23 @@ message CreateRequestProto {
   required bool createParent = 5;
   required uint32 replication = 6; // Short: Only 16 bits used
   required uint64 blockSize = 7;
-  required VectorClockProto vc = 8; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 8; // HDFSRS_VC: vector clock
 }
 
 message CreateResponseProto {
   optional HdfsFileStatusProto fs = 1;
-  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 2; // HDFSRS_VC: vector clock
 }
 
 message AppendRequestProto {
   required string src = 1;
   required string clientName = 2;
-  required VectorClockProto vc = 3; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 3; // HDFSRS_VC: vector clock
 }
 
 message AppendResponseProto {
   optional LocatedBlockProto block = 1;
-  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 2; // HDFSRS_VC: vector clock
 }
 
 //HDFSRS_RWAPI{
@@ -98,12 +98,12 @@ message OverwriteBlockRequestProto {
   required int32 bIndex = 3;
   required uint64 fileId = 4;
   required string clientName = 5;
-  required VectorClockProto vc = 6; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 6; // HDFSRS_VC: vector clock
 }
 
 message OverwriteBlockResponseProto {
   optional LocatedBlockProto block = 1;
-  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 2; // HDFSRS_VC: vector clock
 }
 //}
 
@@ -137,11 +137,11 @@ message AbandonBlockRequestProto {
   required ExtendedBlockProto b = 1;
   required string src = 2;
   required string holder = 3;
-  required VectorClockProto vc = 4; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 4; // HDFSRS_HLC
 }
 
 message AbandonBlockResponseProto { // void response
-  required VectorClockProto vc = 1; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 1; // HDFSRS_HLC
 }
 
 message AddBlockRequestProto {
@@ -151,12 +151,12 @@ message AddBlockRequestProto {
   repeated DatanodeInfoProto excludeNodes = 4;
   optional uint64 fileId = 5 [default = 0];  // default as a bogus id
   repeated string favoredNodes = 6; //the set of datanodes to use for the block
-  required VectorClockProto vc = 7; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 7; // HDFSRS_HLC
 }
 
 message AddBlockResponseProto {
   required LocatedBlockProto block = 1;
-  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 2; // HDFSRS_HLC
 }
 
 message GetAdditionalDatanodeRequestProto {
@@ -178,12 +178,12 @@ message CompleteRequestProto {
   required string clientName = 2;
   optional ExtendedBlockProto last = 3;
   optional uint64 fileId = 4 [default = 0];  // default to GRANDFATHER_INODE_ID
-  required VectorClockProto vc = 5; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 5; // HDFSRS_HLC
 }
 
 message CompleteResponseProto {
   required bool result = 1;
-  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 2; // HDFSRS_HLC
 }
 
 message ReportBadBlocksRequestProto {
@@ -196,22 +196,22 @@ message ReportBadBlocksResponseProto { // void response
 message ConcatRequestProto {
   required string trg = 1;
   repeated string srcs = 2;
-  required VectorClockProto vc = 3; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 3; // HDFSRS_HLC
 }
 
 message ConcatResponseProto { // void response
-  required VectorClockProto vc = 1; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 1; // HDFSRS_HLC
 }
 
 message RenameRequestProto {
   required string src = 1;
   required string dst = 2;
-  required VectorClockProto vc = 3; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 3; // HDFSRS_HLC
 }
 
 message RenameResponseProto {
   required bool result = 1;
-  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 2; // HDFSRS_HLC
 }
 
 
@@ -219,33 +219,33 @@ message Rename2RequestProto {
   required string src = 1;
   required string dst = 2;
   required bool overwriteDest = 3;
-  required VectorClockProto vc = 4; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 4; // HDFSRS_HLC
 }
 
 message Rename2ResponseProto { // void response
-  required VectorClockProto vc = 1; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 1; // HDFSRS_HLC
 }
 
 message DeleteRequestProto {
   required string src = 1;
   required bool recursive = 2;
-  required VectorClockProto vc = 3; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 3; // HDFSRS_HLC
 }
 
 message DeleteResponseProto {
     required bool result = 1;
-    required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
+    required HybridLogicalClockProto hlc = 2; // HDFSRS_HLC
 }
 
 message MkdirsRequestProto {
   required string src = 1;
   required FsPermissionProto masked = 2;
   required bool createParent = 3;
-  required VectorClockProto vc = 4; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 4; // HDFSRS_HLC
 }
 message MkdirsResponseProto {
-    required bool result = 1;
-  required VectorClockProto vc = 2; // HDFSRS_VC: vector clock
+  required bool result = 1;
+  required HybridLogicalClockProto hlc = 2; // HDFSRS_HLC
 }
 
 message GetListingRequestProto {
@@ -567,11 +567,11 @@ message FsyncRequestProto {
   required string src = 1;
   required string client = 2;
   optional sint64 lastBlockLength = 3 [default = -1];
-  required VectorClockProto vc = 4; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 4; // HDFSRS_HLC
 }
 
 message FsyncResponseProto { // void response
-  required VectorClockProto vc = 1; // HDFSRS_VC: vector clock
+  required HybridLogicalClockProto hlc = 1; // HDFSRS_HLC
 }
 
 message SetTimesRequestProto {

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_CLIENT_SOCKET_TIMEOUT_KEY;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -99,7 +100,7 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Joiner;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * These tests make sure that DFSClient retries fetching data from DFS
@@ -113,14 +114,14 @@ public class TestDFSClientRetries {
     LogFactory.getLog(TestDFSClientRetries.class.getName());
   static private Configuration conf = null;
   
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
- 
+
  private static class TestServer extends Server {
     private boolean sleep;
     private Class<? extends Writable> responseClass;
@@ -254,19 +255,19 @@ public class TestDFSClientRetries {
                                     exceptionMsg);
       }
     };
-    VectorClock mvc = copyVC();
+    HybridLogicalClock mhlc = copyHLC();
     when(mockNN.addBlock(anyString(), 
                          anyString(),
                          any(ExtendedBlock.class),
                          any(DatanodeInfo[].class),
-                         anyLong(), any(String[].class),mvc)).thenAnswer(answer);
-    tickOn(mvc);
+                         anyLong(), any(String[].class),mhlc)).thenAnswer(answer);
+    tickOn(mhlc);
     Mockito.doReturn(
             new HdfsFileStatus(0, false, 1, 1024, 0, 0, new FsPermission(
                 (short) 777), "owner", "group", new byte[0], new byte[0],
                 1010, 0)).when(mockNN).getFileInfo(anyString());
     
-    mvc = copyVC();
+    mhlc = copyHLC();
     Mockito.doReturn(
             new HdfsFileStatus(0, false, 1, 1024, 0, 0, new FsPermission(
                 (short) 777), "owner", "group", new byte[0], new byte[0],
@@ -274,8 +275,8 @@ public class TestDFSClientRetries {
         .when(mockNN)
         .create(anyString(), (FsPermission) anyObject(), anyString(),
             (EnumSetWritable<CreateFlag>) anyObject(), anyBoolean(),
-            anyShort(), anyLong(), mvc);
-    tickOn(mvc);
+            anyShort(), anyLong(), mhlc);
+    tickOn(mhlc);
 
     final DFSClient client = new DFSClient(null, mockNN, conf, null);
     OutputStream os = client.create("testfile", true);
@@ -389,7 +390,7 @@ public class TestDFSClientRetries {
       
       // Make the call to addBlock() get called twice, as if it were retried
       // due to an IPC issue.
-      VectorClock mvc;
+      HybridLogicalClock mhlc;
       doAnswer(new Answer<LocatedBlock>() {
         @Override
         public LocatedBlock answer(InvocationOnMock invocation) throws Throwable {
@@ -411,8 +412,8 @@ public class TestDFSClientRetries {
         }
       }).when(spyNN).addBlock(Mockito.anyString(), Mockito.anyString(),
           Mockito.<ExtendedBlock> any(), Mockito.<DatanodeInfo[]> any(),
-          Mockito.anyLong(), Mockito.<String[]> any(), (mvc = copyVC()));
-      tickOn(mvc);
+          Mockito.anyLong(), Mockito.<String[]> any(), (mhlc = copyHLC()));
+      tickOn(mhlc);
 
       doAnswer(new Answer<Boolean>() {
 
@@ -439,8 +440,8 @@ public class TestDFSClientRetries {
           }
         }
       }).when(spyNN).complete(Mockito.anyString(), Mockito.anyString(),
-          Mockito.<ExtendedBlock>any(), anyLong(), (mvc = copyVC()));
-      tickOn(mvc);
+          Mockito.<ExtendedBlock>any(), anyLong(), (mhlc = copyHLC()));
+      tickOn(mhlc);
       
       OutputStream stm = client.create(file.toString(), true);
       try {
@@ -455,12 +456,12 @@ public class TestDFSClientRetries {
       Mockito.verify(spyNN, Mockito.atLeastOnce()).addBlock(
           Mockito.anyString(), Mockito.anyString(),
           Mockito.<ExtendedBlock> any(), Mockito.<DatanodeInfo[]> any(),
-          Mockito.anyLong(), Mockito.<String[]> any(),mvc=copyVC());
-      tickOn(mvc);
+          Mockito.anyLong(), Mockito.<String[]> any(),mhlc=copyHLC());
+      tickOn(mhlc);
       Mockito.verify(spyNN, Mockito.atLeastOnce()).complete(
           Mockito.anyString(), Mockito.anyString(),
-          Mockito.<ExtendedBlock>any(), anyLong(),mvc=copyVC());
-      tickOn(mvc);
+          Mockito.<ExtendedBlock>any(), anyLong(),mhlc=copyHLC());
+      tickOn(mhlc);
       
       AppendTestUtil.check(fs, file, 10000);
     } finally {

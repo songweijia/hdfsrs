@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -39,7 +40,7 @@ import org.apache.hadoop.util.DataChecksum;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * this class tests the methods of the  SimulatedFSDataset.
@@ -63,12 +64,12 @@ public class TestSimulatedFSDataset {
   int addSomeBlocks(SimulatedFSDataset fsdataset, int startingBlockId)
       throws IOException {
     int bytesAdded = 0;
-    VectorClock vc = new VectorClock();
+    HybridLogicalClock hlc = new HybridLogicalClock();
     for (int i = startingBlockId; i < startingBlockId+NUMBLOCKS; ++i) {
       ExtendedBlock b = new ExtendedBlock(bpid, i, 0, 0); 
       // we pass expected len as zero, - fsdataset should use the sizeof actual
       // data written
-      ReplicaInPipelineInterface bInfo = (ReplicaInPipelineInterface)fsdataset.createRbw(b,vc);
+      ReplicaInPipelineInterface bInfo = (ReplicaInPipelineInterface)fsdataset.createRbw(b,hlc);
       ReplicaOutputStreams out = bInfo.createStreams(true,
           DataChecksum.newDataChecksum(DataChecksum.Type.CRC32, 512),-1/*HDFSRS_RWAPI:unused here*/);
       try {
@@ -296,11 +297,11 @@ public class TestSimulatedFSDataset {
   public void testInvalidate() throws IOException {
     final SimulatedFSDataset fsdataset = getSimulatedFSDataset();
     int bytesAdded = addSomeBlocks(fsdataset);
-    VectorClock vc = new VectorClock();
+    HybridLogicalClock hlc = new HybridLogicalClock();
     Block[] deleteBlocks = new Block[2];
     deleteBlocks[0] = new Block(1, 0, 0);
     deleteBlocks[1] = new Block(2, 0, 0);
-    fsdataset.invalidate(bpid, deleteBlocks, vc/*HDFSRS_VC*/);
+    fsdataset.invalidate(bpid, deleteBlocks, hlc/*HDFSRS_VC*/);
     checkInvalidBlock(new ExtendedBlock(bpid, deleteBlocks[0]));
     checkInvalidBlock(new ExtendedBlock(bpid, deleteBlocks[1]));
     long sizeDeleted = blockIdToLen(1) + blockIdToLen(2);

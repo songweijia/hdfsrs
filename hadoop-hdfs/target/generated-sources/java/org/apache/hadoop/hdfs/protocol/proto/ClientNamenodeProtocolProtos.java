@@ -2873,31 +2873,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     long getBlockSize();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 8;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.CreateRequestProto}
@@ -2994,14 +2994,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 66: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000080) == 0x00000080)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000080;
               break;
@@ -3234,38 +3234,38 @@ public final class ClientNamenodeProtocolProtos {
       return blockSize_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 8;
-    public static final int VC_FIELD_NUMBER = 8;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;
+    public static final int HLC_FIELD_NUMBER = 8;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
@@ -3276,7 +3276,7 @@ public final class ClientNamenodeProtocolProtos {
       createParent_ = false;
       replication_ = 0;
       blockSize_ = 0L;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3311,7 +3311,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -3319,7 +3319,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -3352,7 +3352,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeUInt64(7, blockSize_);
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        output.writeMessage(8, vc_);
+        output.writeMessage(8, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3393,7 +3393,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, vc_);
+          .computeMessageSize(8, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3453,10 +3453,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getBlockSize()
             == other.getBlockSize());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -3499,9 +3499,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + BLOCKSIZE_FIELD_NUMBER;
         hash = (53 * hash) + hashLong(getBlockSize());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -3605,7 +3605,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getMaskedFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -3632,10 +3632,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000020);
         blockSize_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000040);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000080);
         return this;
@@ -3701,10 +3701,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
           to_bitField0_ |= 0x00000080;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -3747,8 +3747,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasBlockSize()) {
           setBlockSize(other.getBlockSize());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -3783,7 +3783,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -3791,7 +3791,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -4246,157 +4246,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 8;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000080;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000080;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000080) == 0x00000080) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000080;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000080;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 8;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 8;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.CreateRequestProto)
@@ -4427,31 +4427,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HdfsFileStatusProtoOrBuilder getFsOrBuilder();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.CreateResponseProto}
@@ -4518,14 +4518,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -4592,50 +4592,50 @@ public final class ClientNamenodeProtocolProtos {
       return fs_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
-    public static final int VC_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+    public static final int HLC_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       fs_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HdfsFileStatusProto.getDefaultInstance();
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -4645,7 +4645,7 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -4660,7 +4660,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeMessage(1, fs_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, vc_);
+        output.writeMessage(2, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -4677,7 +4677,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, vc_);
+          .computeMessageSize(2, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4707,10 +4707,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getFs()
             .equals(other.getFs());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -4729,9 +4729,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + FS_FIELD_NUMBER;
         hash = (53 * hash) + getFs().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -4835,7 +4835,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getFsFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -4850,10 +4850,10 @@ public final class ClientNamenodeProtocolProtos {
           fsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
@@ -4895,10 +4895,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -4919,15 +4919,15 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasFs()) {
           mergeFs(other.getFs());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -4937,7 +4937,7 @@ public final class ClientNamenodeProtocolProtos {
             return false;
           }
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -5080,157 +5080,157 @@ public final class ClientNamenodeProtocolProtos {
         return fsBuilder_;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 2;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.CreateResponseProto)
@@ -5277,31 +5277,31 @@ public final class ClientNamenodeProtocolProtos {
     com.google.protobuf.ByteString
         getClientNameBytes();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 3;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.AppendRequestProto}
@@ -5365,14 +5365,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 26: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000004) == 0x00000004)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000004;
               break;
@@ -5503,44 +5503,44 @@ public final class ClientNamenodeProtocolProtos {
       }
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 3;
-    public static final int VC_FIELD_NUMBER = 3;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
+    public static final int HLC_FIELD_NUMBER = 3;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       src_ = "";
       clientName_ = "";
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -5555,11 +5555,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -5577,7 +5577,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBytes(2, getClientNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, vc_);
+        output.writeMessage(3, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -5598,7 +5598,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, vc_);
+          .computeMessageSize(3, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -5633,10 +5633,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getClientName()
             .equals(other.getClientName());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -5659,9 +5659,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + CLIENTNAME_FIELD_NUMBER;
         hash = (53 * hash) + getClientName().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -5764,7 +5764,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -5777,10 +5777,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         clientName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
@@ -5822,10 +5822,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -5853,8 +5853,8 @@ public final class ClientNamenodeProtocolProtos {
           clientName_ = other.clientName_;
           onChanged();
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -5869,11 +5869,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -6047,157 +6047,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 3;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000004) == 0x00000004) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000004;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.AppendRequestProto)
@@ -6228,31 +6228,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProtoOrBuilder getBlockOrBuilder();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.AppendResponseProto}
@@ -6319,14 +6319,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -6393,50 +6393,50 @@ public final class ClientNamenodeProtocolProtos {
       return block_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
-    public static final int VC_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+    public static final int HLC_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       block_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProto.getDefaultInstance();
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -6446,7 +6446,7 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -6461,7 +6461,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeMessage(1, block_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, vc_);
+        output.writeMessage(2, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -6478,7 +6478,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, vc_);
+          .computeMessageSize(2, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6508,10 +6508,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getBlock()
             .equals(other.getBlock());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -6530,9 +6530,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + BLOCK_FIELD_NUMBER;
         hash = (53 * hash) + getBlock().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -6636,7 +6636,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getBlockFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -6651,10 +6651,10 @@ public final class ClientNamenodeProtocolProtos {
           blockBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
@@ -6696,10 +6696,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -6720,15 +6720,15 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasBlock()) {
           mergeBlock(other.getBlock());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -6738,7 +6738,7 @@ public final class ClientNamenodeProtocolProtos {
             return false;
           }
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -6881,157 +6881,157 @@ public final class ClientNamenodeProtocolProtos {
         return blockBuilder_;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 2;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.AppendResponseProto)
@@ -7112,31 +7112,31 @@ public final class ClientNamenodeProtocolProtos {
     com.google.protobuf.ByteString
         getClientNameBytes();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 6;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.OverwriteBlockRequestProto}
@@ -7227,14 +7227,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 50: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000020) == 0x00000020)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000020;
               break;
@@ -7419,38 +7419,38 @@ public final class ClientNamenodeProtocolProtos {
       }
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 6;
-    public static final int VC_FIELD_NUMBER = 6;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;
+    public static final int HLC_FIELD_NUMBER = 6;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
@@ -7459,7 +7459,7 @@ public final class ClientNamenodeProtocolProtos {
       bIndex_ = 0;
       fileId_ = 0L;
       clientName_ = "";
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7482,7 +7482,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -7492,7 +7492,7 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -7519,7 +7519,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBytes(5, getClientNameBytes());
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeMessage(6, vc_);
+        output.writeMessage(6, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -7552,7 +7552,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(6, vc_);
+          .computeMessageSize(6, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7602,10 +7602,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getClientName()
             .equals(other.getClientName());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -7640,9 +7640,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + CLIENTNAME_FIELD_NUMBER;
         hash = (53 * hash) + getClientName().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -7750,7 +7750,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getPreviousFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -7773,10 +7773,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000008);
         clientName_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000020);
         return this;
@@ -7834,10 +7834,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -7874,8 +7874,8 @@ public final class ClientNamenodeProtocolProtos {
           clientName_ = other.clientName_;
           onChanged();
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -7898,7 +7898,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -7908,7 +7908,7 @@ public final class ClientNamenodeProtocolProtos {
             return false;
           }
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -8265,157 +8265,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 6;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000020;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000020;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000020) == 0x00000020) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000020;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000020;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 6;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 6;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OverwriteBlockRequestProto)
@@ -8446,31 +8446,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProtoOrBuilder getBlockOrBuilder();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.OverwriteBlockResponseProto}
@@ -8537,14 +8537,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -8611,50 +8611,50 @@ public final class ClientNamenodeProtocolProtos {
       return block_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
-    public static final int VC_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+    public static final int HLC_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
      * HDFSRS_VC: vector clock
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       block_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProto.getDefaultInstance();
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -8664,7 +8664,7 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -8679,7 +8679,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeMessage(1, block_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, vc_);
+        output.writeMessage(2, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -8696,7 +8696,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, vc_);
+          .computeMessageSize(2, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -8726,10 +8726,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getBlock()
             .equals(other.getBlock());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -8748,9 +8748,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + BLOCK_FIELD_NUMBER;
         hash = (53 * hash) + getBlock().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -8854,7 +8854,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getBlockFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -8869,10 +8869,10 @@ public final class ClientNamenodeProtocolProtos {
           blockBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
@@ -8914,10 +8914,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -8938,15 +8938,15 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasBlock()) {
           mergeBlock(other.getBlock());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -8956,7 +8956,7 @@ public final class ClientNamenodeProtocolProtos {
             return false;
           }
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -9099,157 +9099,157 @@ public final class ClientNamenodeProtocolProtos {
         return blockBuilder_;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 2;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
        * HDFSRS_VC: vector clock
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.OverwriteBlockResponseProto)
@@ -12672,31 +12672,31 @@ public final class ClientNamenodeProtocolProtos {
     com.google.protobuf.ByteString
         getHolderBytes();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 4;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.AbandonBlockRequestProto}
@@ -12773,14 +12773,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 34: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000008) == 0x00000008)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000008;
               break;
@@ -12933,45 +12933,45 @@ public final class ClientNamenodeProtocolProtos {
       }
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 4;
-    public static final int VC_FIELD_NUMBER = 4;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
+    public static final int HLC_FIELD_NUMBER = 4;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       b_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance();
       src_ = "";
       holder_ = "";
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -12990,7 +12990,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -12998,7 +12998,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -13019,7 +13019,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBytes(3, getHolderBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, vc_);
+        output.writeMessage(4, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -13044,7 +13044,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, vc_);
+          .computeMessageSize(4, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -13084,10 +13084,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getHolder()
             .equals(other.getHolder());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -13114,9 +13114,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + HOLDER_FIELD_NUMBER;
         hash = (53 * hash) + getHolder().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -13220,7 +13220,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getBFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -13239,10 +13239,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         holder_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
@@ -13292,10 +13292,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -13326,8 +13326,8 @@ public final class ClientNamenodeProtocolProtos {
           holder_ = other.holder_;
           onChanged();
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -13346,7 +13346,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -13354,7 +13354,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -13645,157 +13645,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 4;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000008) == 0x00000008) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000008;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.AbandonBlockRequestProto)
@@ -13812,31 +13812,31 @@ public final class ClientNamenodeProtocolProtos {
   public interface AbandonBlockResponseProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required .hadoop.hdfs.VectorClockProto vc = 1;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.AbandonBlockResponseProto}
@@ -13894,14 +13894,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 10: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000001;
               break;
@@ -13946,53 +13946,53 @@ public final class ClientNamenodeProtocolProtos {
     }
 
     private int bitField0_;
-    // required .hadoop.hdfs.VectorClockProto vc = 1;
-    public static final int VC_FIELD_NUMBER = 1;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
+    public static final int HLC_FIELD_NUMBER = 1;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -14004,7 +14004,7 @@ public final class ClientNamenodeProtocolProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, vc_);
+        output.writeMessage(1, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -14017,7 +14017,7 @@ public final class ClientNamenodeProtocolProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, vc_);
+          .computeMessageSize(1, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -14042,10 +14042,10 @@ public final class ClientNamenodeProtocolProtos {
       org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto other = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto) obj;
 
       boolean result = true;
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -14060,9 +14060,9 @@ public final class ClientNamenodeProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -14169,7 +14169,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -14178,10 +14178,10 @@ public final class ClientNamenodeProtocolProtos {
 
       public Builder clear() {
         super.clear();
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
@@ -14215,10 +14215,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -14236,19 +14236,19 @@ public final class ClientNamenodeProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto other) {
         if (other == org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.AbandonBlockResponseProto.getDefaultInstance()) return this;
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -14274,157 +14274,157 @@ public final class ClientNamenodeProtocolProtos {
       }
       private int bitField0_;
 
-      // required .hadoop.hdfs.VectorClockProto vc = 1;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000001;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.AbandonBlockResponseProto)
@@ -14564,31 +14564,31 @@ public final class ClientNamenodeProtocolProtos {
     com.google.protobuf.ByteString
         getFavoredNodesBytes(int index);
 
-    // required .hadoop.hdfs.VectorClockProto vc = 7;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.AddBlockRequestProto}
@@ -14686,14 +14686,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 58: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000010) == 0x00000010)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000010;
               break;
@@ -14958,38 +14958,38 @@ public final class ClientNamenodeProtocolProtos {
       return favoredNodes_.getByteString(index);
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 7;
-    public static final int VC_FIELD_NUMBER = 7;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;
+    public static final int HLC_FIELD_NUMBER = 7;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
@@ -14999,7 +14999,7 @@ public final class ClientNamenodeProtocolProtos {
       excludeNodes_ = java.util.Collections.emptyList();
       fileId_ = 0L;
       favoredNodes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -15014,7 +15014,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -15030,7 +15030,7 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -15060,7 +15060,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBytes(6, favoredNodes_.getByteString(i));
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeMessage(7, vc_);
+        output.writeMessage(7, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -15102,7 +15102,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(7, vc_);
+          .computeMessageSize(7, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -15151,10 +15151,10 @@ public final class ClientNamenodeProtocolProtos {
       }
       result = result && getFavoredNodesList()
           .equals(other.getFavoredNodesList());
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -15193,9 +15193,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + FAVOREDNODES_FIELD_NUMBER;
         hash = (53 * hash) + getFavoredNodesList().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -15300,7 +15300,7 @@ public final class ClientNamenodeProtocolProtos {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getPreviousFieldBuilder();
           getExcludeNodesFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -15329,10 +15329,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000010);
         favoredNodes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000020);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000040);
         return this;
@@ -15401,10 +15401,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
           to_bitField0_ |= 0x00000010;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -15474,8 +15474,8 @@ public final class ClientNamenodeProtocolProtos {
           }
           onChanged();
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -15490,7 +15490,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -15506,7 +15506,7 @@ public final class ClientNamenodeProtocolProtos {
             return false;
           }
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -16215,157 +16215,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 7;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000040;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000040;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000040) == 0x00000040) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000040;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000040;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 7;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 7;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.AddBlockRequestProto)
@@ -16396,31 +16396,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProtoOrBuilder getBlockOrBuilder();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.AddBlockResponseProto}
@@ -16487,14 +16487,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -16561,43 +16561,43 @@ public final class ClientNamenodeProtocolProtos {
       return block_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
-    public static final int VC_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+    public static final int HLC_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       block_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProto.getDefaultInstance();
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -16608,7 +16608,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -16616,7 +16616,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -16631,7 +16631,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeMessage(1, block_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, vc_);
+        output.writeMessage(2, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -16648,7 +16648,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, vc_);
+          .computeMessageSize(2, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -16678,10 +16678,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getBlock()
             .equals(other.getBlock());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -16700,9 +16700,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + BLOCK_FIELD_NUMBER;
         hash = (53 * hash) + getBlock().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -16806,7 +16806,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getBlockFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -16821,10 +16821,10 @@ public final class ClientNamenodeProtocolProtos {
           blockBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
@@ -16866,10 +16866,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -16890,8 +16890,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasBlock()) {
           mergeBlock(other.getBlock());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -16902,7 +16902,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -16910,7 +16910,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -17053,157 +17053,157 @@ public final class ClientNamenodeProtocolProtos {
         return blockBuilder_;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 2;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.AddBlockResponseProto)
@@ -19799,31 +19799,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     long getFileId();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 5;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.CompleteRequestProto}
@@ -19905,14 +19905,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 42: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000010) == 0x00000010)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000010;
               break;
@@ -20089,38 +20089,38 @@ public final class ClientNamenodeProtocolProtos {
       return fileId_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 5;
-    public static final int VC_FIELD_NUMBER = 5;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;
+    public static final int HLC_FIELD_NUMBER = 5;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
@@ -20128,7 +20128,7 @@ public final class ClientNamenodeProtocolProtos {
       clientName_ = "";
       last_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.ExtendedBlockProto.getDefaultInstance();
       fileId_ = 0L;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -20143,7 +20143,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -20153,7 +20153,7 @@ public final class ClientNamenodeProtocolProtos {
           return false;
         }
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -20177,7 +20177,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeUInt64(4, fileId_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeMessage(5, vc_);
+        output.writeMessage(5, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -20206,7 +20206,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(5, vc_);
+          .computeMessageSize(5, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -20251,10 +20251,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getFileId()
             == other.getFileId());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -20285,9 +20285,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + FILEID_FIELD_NUMBER;
         hash = (53 * hash) + hashLong(getFileId());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -20391,7 +20391,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getLastFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -20412,10 +20412,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000004);
         fileId_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000008);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
         return this;
@@ -20469,10 +20469,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -20506,8 +20506,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasFileId()) {
           setFileId(other.getFileId());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -20522,7 +20522,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -20532,7 +20532,7 @@ public final class ClientNamenodeProtocolProtos {
             return false;
           }
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -20872,157 +20872,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 5;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000010;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000010;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000010) == 0x00000010) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000010;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000010;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 5;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 5;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.CompleteRequestProto)
@@ -21049,31 +21049,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     boolean getResult();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.CompleteResponseProto}
@@ -21132,14 +21132,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -21200,43 +21200,43 @@ public final class ClientNamenodeProtocolProtos {
       return result_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
-    public static final int VC_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+    public static final int HLC_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       result_ = false;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -21247,11 +21247,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -21266,7 +21266,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBool(1, result_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, vc_);
+        output.writeMessage(2, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -21283,7 +21283,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, vc_);
+          .computeMessageSize(2, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -21313,10 +21313,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getResult()
             == other.getResult());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -21335,9 +21335,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + RESULT_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getResult());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -21440,7 +21440,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -21451,10 +21451,10 @@ public final class ClientNamenodeProtocolProtos {
         super.clear();
         result_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
@@ -21492,10 +21492,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -21516,8 +21516,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasResult()) {
           setResult(other.getResult());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -21528,11 +21528,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -21591,157 +21591,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 2;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.CompleteResponseProto)
@@ -22860,31 +22860,31 @@ public final class ClientNamenodeProtocolProtos {
     com.google.protobuf.ByteString
         getSrcsBytes(int index);
 
-    // required .hadoop.hdfs.VectorClockProto vc = 3;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.ConcatRequestProto}
@@ -22951,14 +22951,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 26: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -23079,44 +23079,44 @@ public final class ClientNamenodeProtocolProtos {
       return srcs_.getByteString(index);
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 3;
-    public static final int VC_FIELD_NUMBER = 3;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
+    public static final int HLC_FIELD_NUMBER = 3;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       trg_ = "";
       srcs_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -23127,11 +23127,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -23149,7 +23149,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBytes(2, srcs_.getByteString(i));
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(3, vc_);
+        output.writeMessage(3, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -23175,7 +23175,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, vc_);
+          .computeMessageSize(3, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -23207,10 +23207,10 @@ public final class ClientNamenodeProtocolProtos {
       }
       result = result && getSrcsList()
           .equals(other.getSrcsList());
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -23233,9 +23233,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + SRCS_FIELD_NUMBER;
         hash = (53 * hash) + getSrcsList().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -23338,7 +23338,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -23351,10 +23351,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         srcs_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
@@ -23398,10 +23398,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -23434,8 +23434,8 @@ public final class ClientNamenodeProtocolProtos {
           }
           onChanged();
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -23446,11 +23446,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -23643,157 +23643,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 3;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000004) == 0x00000004) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000004;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.ConcatRequestProto)
@@ -23810,31 +23810,31 @@ public final class ClientNamenodeProtocolProtos {
   public interface ConcatResponseProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required .hadoop.hdfs.VectorClockProto vc = 1;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.ConcatResponseProto}
@@ -23892,14 +23892,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 10: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000001;
               break;
@@ -23944,53 +23944,53 @@ public final class ClientNamenodeProtocolProtos {
     }
 
     private int bitField0_;
-    // required .hadoop.hdfs.VectorClockProto vc = 1;
-    public static final int VC_FIELD_NUMBER = 1;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
+    public static final int HLC_FIELD_NUMBER = 1;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -24002,7 +24002,7 @@ public final class ClientNamenodeProtocolProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, vc_);
+        output.writeMessage(1, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -24015,7 +24015,7 @@ public final class ClientNamenodeProtocolProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, vc_);
+          .computeMessageSize(1, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -24040,10 +24040,10 @@ public final class ClientNamenodeProtocolProtos {
       org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto other = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto) obj;
 
       boolean result = true;
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -24058,9 +24058,9 @@ public final class ClientNamenodeProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -24167,7 +24167,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -24176,10 +24176,10 @@ public final class ClientNamenodeProtocolProtos {
 
       public Builder clear() {
         super.clear();
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
@@ -24213,10 +24213,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -24234,19 +24234,19 @@ public final class ClientNamenodeProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto other) {
         if (other == org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.ConcatResponseProto.getDefaultInstance()) return this;
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -24272,157 +24272,157 @@ public final class ClientNamenodeProtocolProtos {
       }
       private int bitField0_;
 
-      // required .hadoop.hdfs.VectorClockProto vc = 1;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000001;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.ConcatResponseProto)
@@ -24469,31 +24469,31 @@ public final class ClientNamenodeProtocolProtos {
     com.google.protobuf.ByteString
         getDstBytes();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 3;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.RenameRequestProto}
@@ -24557,14 +24557,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 26: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000004) == 0x00000004)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000004;
               break;
@@ -24695,44 +24695,44 @@ public final class ClientNamenodeProtocolProtos {
       }
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 3;
-    public static final int VC_FIELD_NUMBER = 3;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
+    public static final int HLC_FIELD_NUMBER = 3;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       src_ = "";
       dst_ = "";
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -24747,11 +24747,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -24769,7 +24769,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBytes(2, getDstBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, vc_);
+        output.writeMessage(3, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -24790,7 +24790,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, vc_);
+          .computeMessageSize(3, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -24825,10 +24825,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && getDst()
             .equals(other.getDst());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -24851,9 +24851,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + DST_FIELD_NUMBER;
         hash = (53 * hash) + getDst().hashCode();
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -24956,7 +24956,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -24969,10 +24969,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         dst_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
@@ -25014,10 +25014,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -25045,8 +25045,8 @@ public final class ClientNamenodeProtocolProtos {
           dst_ = other.dst_;
           onChanged();
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -25061,11 +25061,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -25239,157 +25239,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 3;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000004) == 0x00000004) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000004;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.RenameRequestProto)
@@ -25416,31 +25416,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     boolean getResult();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.RenameResponseProto}
@@ -25499,14 +25499,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -25567,43 +25567,43 @@ public final class ClientNamenodeProtocolProtos {
       return result_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
-    public static final int VC_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+    public static final int HLC_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       result_ = false;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -25614,11 +25614,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -25633,7 +25633,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBool(1, result_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, vc_);
+        output.writeMessage(2, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -25650,7 +25650,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, vc_);
+          .computeMessageSize(2, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -25680,10 +25680,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getResult()
             == other.getResult());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -25702,9 +25702,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + RESULT_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getResult());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -25807,7 +25807,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -25818,10 +25818,10 @@ public final class ClientNamenodeProtocolProtos {
         super.clear();
         result_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
@@ -25859,10 +25859,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -25883,8 +25883,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasResult()) {
           setResult(other.getResult());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -25895,11 +25895,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -25958,157 +25958,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 2;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.RenameResponseProto)
@@ -26165,31 +26165,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     boolean getOverwriteDest();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 4;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.Rename2RequestProto}
@@ -26258,14 +26258,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 34: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000008) == 0x00000008)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000008;
               break;
@@ -26412,45 +26412,45 @@ public final class ClientNamenodeProtocolProtos {
       return overwriteDest_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 4;
-    public static final int VC_FIELD_NUMBER = 4;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
+    public static final int HLC_FIELD_NUMBER = 4;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       src_ = "";
       dst_ = "";
       overwriteDest_ = false;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -26469,11 +26469,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -26494,7 +26494,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBool(3, overwriteDest_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, vc_);
+        output.writeMessage(4, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -26519,7 +26519,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, vc_);
+          .computeMessageSize(4, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -26559,10 +26559,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getOverwriteDest()
             == other.getOverwriteDest());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -26589,9 +26589,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + OVERWRITEDEST_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getOverwriteDest());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -26694,7 +26694,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -26709,10 +26709,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         overwriteDest_ = false;
         bitField0_ = (bitField0_ & ~0x00000004);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
@@ -26758,10 +26758,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -26792,8 +26792,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasOverwriteDest()) {
           setOverwriteDest(other.getOverwriteDest());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -26812,11 +26812,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -27023,157 +27023,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 4;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000008) == 0x00000008) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000008;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.Rename2RequestProto)
@@ -27190,31 +27190,31 @@ public final class ClientNamenodeProtocolProtos {
   public interface Rename2ResponseProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required .hadoop.hdfs.VectorClockProto vc = 1;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.Rename2ResponseProto}
@@ -27272,14 +27272,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 10: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000001;
               break;
@@ -27324,53 +27324,53 @@ public final class ClientNamenodeProtocolProtos {
     }
 
     private int bitField0_;
-    // required .hadoop.hdfs.VectorClockProto vc = 1;
-    public static final int VC_FIELD_NUMBER = 1;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
+    public static final int HLC_FIELD_NUMBER = 1;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -27382,7 +27382,7 @@ public final class ClientNamenodeProtocolProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, vc_);
+        output.writeMessage(1, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -27395,7 +27395,7 @@ public final class ClientNamenodeProtocolProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, vc_);
+          .computeMessageSize(1, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -27420,10 +27420,10 @@ public final class ClientNamenodeProtocolProtos {
       org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto other = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto) obj;
 
       boolean result = true;
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -27438,9 +27438,9 @@ public final class ClientNamenodeProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -27547,7 +27547,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -27556,10 +27556,10 @@ public final class ClientNamenodeProtocolProtos {
 
       public Builder clear() {
         super.clear();
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
@@ -27593,10 +27593,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -27614,19 +27614,19 @@ public final class ClientNamenodeProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto other) {
         if (other == org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.Rename2ResponseProto.getDefaultInstance()) return this;
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -27652,157 +27652,157 @@ public final class ClientNamenodeProtocolProtos {
       }
       private int bitField0_;
 
-      // required .hadoop.hdfs.VectorClockProto vc = 1;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000001;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.Rename2ResponseProto)
@@ -27844,31 +27844,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     boolean getRecursive();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 3;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.DeleteRequestProto}
@@ -27932,14 +27932,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 26: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000004) == 0x00000004)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000004;
               break;
@@ -28043,44 +28043,44 @@ public final class ClientNamenodeProtocolProtos {
       return recursive_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 3;
-    public static final int VC_FIELD_NUMBER = 3;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
+    public static final int HLC_FIELD_NUMBER = 3;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       src_ = "";
       recursive_ = false;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -28095,11 +28095,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -28117,7 +28117,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBool(2, recursive_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, vc_);
+        output.writeMessage(3, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -28138,7 +28138,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, vc_);
+          .computeMessageSize(3, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -28173,10 +28173,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getRecursive()
             == other.getRecursive());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -28199,9 +28199,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + RECURSIVE_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getRecursive());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -28304,7 +28304,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -28317,10 +28317,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         recursive_ = false;
         bitField0_ = (bitField0_ & ~0x00000002);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
@@ -28362,10 +28362,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -28391,8 +28391,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasRecursive()) {
           setRecursive(other.getRecursive());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -28407,11 +28407,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -28544,157 +28544,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 3;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000004) == 0x00000004) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000004;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000004;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 3;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 3;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.DeleteRequestProto)
@@ -28721,31 +28721,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     boolean getResult();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.DeleteResponseProto}
@@ -28804,14 +28804,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -28872,43 +28872,43 @@ public final class ClientNamenodeProtocolProtos {
       return result_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
-    public static final int VC_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+    public static final int HLC_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       result_ = false;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -28919,11 +28919,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -28938,7 +28938,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBool(1, result_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, vc_);
+        output.writeMessage(2, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -28955,7 +28955,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, vc_);
+          .computeMessageSize(2, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -28985,10 +28985,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getResult()
             == other.getResult());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -29007,9 +29007,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + RESULT_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getResult());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -29112,7 +29112,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -29123,10 +29123,10 @@ public final class ClientNamenodeProtocolProtos {
         super.clear();
         result_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
@@ -29164,10 +29164,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -29188,8 +29188,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasResult()) {
           setResult(other.getResult());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -29200,11 +29200,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -29263,157 +29263,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 2;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.DeleteResponseProto)
@@ -29469,31 +29469,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     boolean getCreateParent();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 4;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.MkdirsRequestProto}
@@ -29570,14 +29570,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 34: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000008) == 0x00000008)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000008;
               break;
@@ -29703,45 +29703,45 @@ public final class ClientNamenodeProtocolProtos {
       return createParent_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 4;
-    public static final int VC_FIELD_NUMBER = 4;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
+    public static final int HLC_FIELD_NUMBER = 4;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       src_ = "";
       masked_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.FsPermissionProto.getDefaultInstance();
       createParent_ = false;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -29760,7 +29760,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -29768,7 +29768,7 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -29789,7 +29789,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBool(3, createParent_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, vc_);
+        output.writeMessage(4, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -29814,7 +29814,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, vc_);
+          .computeMessageSize(4, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -29854,10 +29854,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getCreateParent()
             == other.getCreateParent());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -29884,9 +29884,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + CREATEPARENT_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getCreateParent());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -29990,7 +29990,7 @@ public final class ClientNamenodeProtocolProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getMaskedFieldBuilder();
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -30009,10 +30009,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         createParent_ = false;
         bitField0_ = (bitField0_ & ~0x00000004);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
@@ -30062,10 +30062,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -30094,8 +30094,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasCreateParent()) {
           setCreateParent(other.getCreateParent());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -30114,7 +30114,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
@@ -30122,7 +30122,7 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -30372,157 +30372,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 4;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000008) == 0x00000008) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000008;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.MkdirsRequestProto)
@@ -30549,31 +30549,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     boolean getResult();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.MkdirsResponseProto}
@@ -30632,14 +30632,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 18: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
               break;
@@ -30700,43 +30700,43 @@ public final class ClientNamenodeProtocolProtos {
       return result_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 2;
-    public static final int VC_FIELD_NUMBER = 2;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+    public static final int HLC_FIELD_NUMBER = 2;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       result_ = false;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -30747,11 +30747,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -30766,7 +30766,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeBool(1, result_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, vc_);
+        output.writeMessage(2, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -30783,7 +30783,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, vc_);
+          .computeMessageSize(2, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -30813,10 +30813,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getResult()
             == other.getResult());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -30835,9 +30835,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + RESULT_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getResult());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -30940,7 +30940,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -30951,10 +30951,10 @@ public final class ClientNamenodeProtocolProtos {
         super.clear();
         result_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
@@ -30992,10 +30992,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -31016,8 +31016,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasResult()) {
           setResult(other.getResult());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -31028,11 +31028,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -31091,157 +31091,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 2;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 2;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 2;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.MkdirsResponseProto)
@@ -68668,31 +68668,31 @@ public final class ClientNamenodeProtocolProtos {
      */
     long getLastBlockLength();
 
-    // required .hadoop.hdfs.VectorClockProto vc = 4;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.FsyncRequestProto}
@@ -68761,14 +68761,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 34: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000008) == 0x00000008)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000008;
               break;
@@ -68915,45 +68915,45 @@ public final class ClientNamenodeProtocolProtos {
       return lastBlockLength_;
     }
 
-    // required .hadoop.hdfs.VectorClockProto vc = 4;
-    public static final int VC_FIELD_NUMBER = 4;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
+    public static final int HLC_FIELD_NUMBER = 4;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
       src_ = "";
       client_ = "";
       lastBlockLength_ = -1L;
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -68968,11 +68968,11 @@ public final class ClientNamenodeProtocolProtos {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -68993,7 +68993,7 @@ public final class ClientNamenodeProtocolProtos {
         output.writeSInt64(3, lastBlockLength_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, vc_);
+        output.writeMessage(4, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -69018,7 +69018,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, vc_);
+          .computeMessageSize(4, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -69058,10 +69058,10 @@ public final class ClientNamenodeProtocolProtos {
         result = result && (getLastBlockLength()
             == other.getLastBlockLength());
       }
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -69088,9 +69088,9 @@ public final class ClientNamenodeProtocolProtos {
         hash = (37 * hash) + LASTBLOCKLENGTH_FIELD_NUMBER;
         hash = (53 * hash) + hashLong(getLastBlockLength());
       }
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -69193,7 +69193,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -69208,10 +69208,10 @@ public final class ClientNamenodeProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         lastBlockLength_ = -1L;
         bitField0_ = (bitField0_ & ~0x00000004);
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
@@ -69257,10 +69257,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -69291,8 +69291,8 @@ public final class ClientNamenodeProtocolProtos {
         if (other.hasLastBlockLength()) {
           setLastBlockLength(other.getLastBlockLength());
         }
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -69307,11 +69307,11 @@ public final class ClientNamenodeProtocolProtos {
           
           return false;
         }
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -69518,157 +69518,157 @@ public final class ClientNamenodeProtocolProtos {
         return this;
       }
 
-      // required .hadoop.hdfs.VectorClockProto vc = 4;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000008) == 0x00000008) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000008;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 4;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 4;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.FsyncRequestProto)
@@ -69685,31 +69685,31 @@ public final class ClientNamenodeProtocolProtos {
   public interface FsyncResponseProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required .hadoop.hdfs.VectorClockProto vc = 1;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    boolean hasVc();
+    boolean hasHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc();
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder();
+    org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder();
   }
   /**
    * Protobuf type {@code hadoop.hdfs.FsyncResponseProto}
@@ -69767,14 +69767,14 @@ public final class ClientNamenodeProtocolProtos {
               break;
             }
             case 10: {
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder subBuilder = null;
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder subBuilder = null;
               if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                subBuilder = vc_.toBuilder();
+                subBuilder = hlc_.toBuilder();
               }
-              vc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.PARSER, extensionRegistry);
+              hlc_ = input.readMessage(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(vc_);
-                vc_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(hlc_);
+                hlc_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000001;
               break;
@@ -69819,53 +69819,53 @@ public final class ClientNamenodeProtocolProtos {
     }
 
     private int bitField0_;
-    // required .hadoop.hdfs.VectorClockProto vc = 1;
-    public static final int VC_FIELD_NUMBER = 1;
-    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_;
+    // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
+    public static final int HLC_FIELD_NUMBER = 1;
+    private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_;
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public boolean hasVc() {
+    public boolean hasHlc() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+      return hlc_;
     }
     /**
-     * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+     * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
      *
      * <pre>
-     * HDFSRS_VC: vector clock
+     * HDFSRS_HLC
      * </pre>
      */
-    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-      return vc_;
+    public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+      return hlc_;
     }
 
     private void initFields() {
-      vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasVc()) {
+      if (!hasHlc()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!getVc().isInitialized()) {
+      if (!getHlc().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -69877,7 +69877,7 @@ public final class ClientNamenodeProtocolProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, vc_);
+        output.writeMessage(1, hlc_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -69890,7 +69890,7 @@ public final class ClientNamenodeProtocolProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, vc_);
+          .computeMessageSize(1, hlc_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -69915,10 +69915,10 @@ public final class ClientNamenodeProtocolProtos {
       org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto other = (org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto) obj;
 
       boolean result = true;
-      result = result && (hasVc() == other.hasVc());
-      if (hasVc()) {
-        result = result && getVc()
-            .equals(other.getVc());
+      result = result && (hasHlc() == other.hasHlc());
+      if (hasHlc()) {
+        result = result && getHlc()
+            .equals(other.getHlc());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -69933,9 +69933,9 @@ public final class ClientNamenodeProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasVc()) {
-        hash = (37 * hash) + VC_FIELD_NUMBER;
-        hash = (53 * hash) + getVc().hashCode();
+      if (hasHlc()) {
+        hash = (37 * hash) + HLC_FIELD_NUMBER;
+        hash = (53 * hash) + getHlc().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -70042,7 +70042,7 @@ public final class ClientNamenodeProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVcFieldBuilder();
+          getHlcFieldBuilder();
         }
       }
       private static Builder create() {
@@ -70051,10 +70051,10 @@ public final class ClientNamenodeProtocolProtos {
 
       public Builder clear() {
         super.clear();
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
@@ -70088,10 +70088,10 @@ public final class ClientNamenodeProtocolProtos {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (vcBuilder_ == null) {
-          result.vc_ = vc_;
+        if (hlcBuilder_ == null) {
+          result.hlc_ = hlc_;
         } else {
-          result.vc_ = vcBuilder_.build();
+          result.hlc_ = hlcBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -70109,19 +70109,19 @@ public final class ClientNamenodeProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto other) {
         if (other == org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos.FsyncResponseProto.getDefaultInstance()) return this;
-        if (other.hasVc()) {
-          mergeVc(other.getVc());
+        if (other.hasHlc()) {
+          mergeHlc(other.getHlc());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasVc()) {
+        if (!hasHlc()) {
           
           return false;
         }
-        if (!getVc().isInitialized()) {
+        if (!getHlc().isInitialized()) {
           
           return false;
         }
@@ -70147,157 +70147,157 @@ public final class ClientNamenodeProtocolProtos {
       }
       private int bitField0_;
 
-      // required .hadoop.hdfs.VectorClockProto vc = 1;
-      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      // required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;
+      private org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> vcBuilder_;
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> hlcBuilder_;
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public boolean hasVc() {
+      public boolean hasHlc() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto getVc() {
-        if (vcBuilder_ == null) {
-          return vc_;
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto getHlc() {
+        if (hlcBuilder_ == null) {
+          return hlc_;
         } else {
-          return vcBuilder_.getMessage();
+          return hlcBuilder_.getMessage();
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder setHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          vc_ = value;
+          hlc_ = value;
           onChanged();
         } else {
-          vcBuilder_.setMessage(value);
+          hlcBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder setVc(
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder builderForValue) {
-        if (vcBuilder_ == null) {
-          vc_ = builderForValue.build();
+      public Builder setHlc(
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder builderForValue) {
+        if (hlcBuilder_ == null) {
+          hlc_ = builderForValue.build();
           onChanged();
         } else {
-          vcBuilder_.setMessage(builderForValue.build());
+          hlcBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder mergeVc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto value) {
-        if (vcBuilder_ == null) {
+      public Builder mergeHlc(org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto value) {
+        if (hlcBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001) &&
-              vc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance()) {
-            vc_ =
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.newBuilder(vc_).mergeFrom(value).buildPartial();
+              hlc_ != org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance()) {
+            hlc_ =
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.newBuilder(hlc_).mergeFrom(value).buildPartial();
           } else {
-            vc_ = value;
+            hlc_ = value;
           }
           onChanged();
         } else {
-          vcBuilder_.mergeFrom(value);
+          hlcBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public Builder clearVc() {
-        if (vcBuilder_ == null) {
-          vc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.getDefaultInstance();
+      public Builder clearHlc() {
+        if (hlcBuilder_ == null) {
+          hlc_ = org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.getDefaultInstance();
           onChanged();
         } else {
-          vcBuilder_.clear();
+          hlcBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder getVcBuilder() {
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder getHlcBuilder() {
         bitField0_ |= 0x00000001;
         onChanged();
-        return getVcFieldBuilder().getBuilder();
+        return getHlcFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
-      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder getVcOrBuilder() {
-        if (vcBuilder_ != null) {
-          return vcBuilder_.getMessageOrBuilder();
+      public org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder getHlcOrBuilder() {
+        if (hlcBuilder_ != null) {
+          return hlcBuilder_.getMessageOrBuilder();
         } else {
-          return vc_;
+          return hlc_;
         }
       }
       /**
-       * <code>required .hadoop.hdfs.VectorClockProto vc = 1;</code>
+       * <code>required .hadoop.hdfs.HybridLogicalClockProto hlc = 1;</code>
        *
        * <pre>
-       * HDFSRS_VC: vector clock
+       * HDFSRS_HLC
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder> 
-          getVcFieldBuilder() {
-        if (vcBuilder_ == null) {
-          vcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProtoOrBuilder>(
-                  vc_,
+          org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder> 
+          getHlcFieldBuilder() {
+        if (hlcBuilder_ == null) {
+          hlcBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto.Builder, org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProtoOrBuilder>(
+                  hlc_,
                   getParentForChildren(),
                   isClean());
-          vc_ = null;
+          hlc_ = null;
         }
-        return vcBuilder_;
+        return hlcBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.hdfs.FsyncResponseProto)
@@ -89657,442 +89657,446 @@ public final class ClientNamenodeProtocolProtos {
       "sProto\"\037\n\035GetServerDefaultsRequestProto\"" +
       "\\\n\036GetServerDefaultsResponseProto\022:\n\016ser" +
       "verDefaults\030\001 \002(\0132\".hadoop.hdfs.FsServer" +
-      "DefaultsProto\"\342\001\n\022CreateRequestProto\022\013\n\003",
+      "DefaultsProto\"\352\001\n\022CreateRequestProto\022\013\n\003",
       "src\030\001 \002(\t\022.\n\006masked\030\002 \002(\0132\036.hadoop.hdfs." +
       "FsPermissionProto\022\022\n\nclientName\030\003 \002(\t\022\022\n" +
       "\ncreateFlag\030\004 \002(\r\022\024\n\014createParent\030\005 \002(\010\022" +
       "\023\n\013replication\030\006 \002(\r\022\021\n\tblockSize\030\007 \002(\004\022" +
-      ")\n\002vc\030\010 \002(\0132\035.hadoop.hdfs.VectorClockPro" +
-      "to\"n\n\023CreateResponseProto\022,\n\002fs\030\001 \001(\0132 ." +
-      "hadoop.hdfs.HdfsFileStatusProto\022)\n\002vc\030\002 " +
-      "\002(\0132\035.hadoop.hdfs.VectorClockProto\"`\n\022Ap" +
-      "pendRequestProto\022\013\n\003src\030\001 \002(\t\022\022\n\nclientN" +
-      "ame\030\002 \002(\t\022)\n\002vc\030\003 \002(\0132\035.hadoop.hdfs.Vect",
-      "orClockProto\"o\n\023AppendResponseProto\022-\n\005b" +
-      "lock\030\001 \001(\0132\036.hadoop.hdfs.LocatedBlockPro" +
-      "to\022)\n\002vc\030\002 \002(\0132\035.hadoop.hdfs.VectorClock" +
-      "Proto\"\273\001\n\032OverwriteBlockRequestProto\022\013\n\003" +
-      "src\030\001 \002(\t\0221\n\010previous\030\002 \001(\0132\037.hadoop.hdf" +
-      "s.ExtendedBlockProto\022\016\n\006bIndex\030\003 \002(\005\022\016\n\006" +
-      "fileId\030\004 \002(\004\022\022\n\nclientName\030\005 \002(\t\022)\n\002vc\030\006" +
-      " \002(\0132\035.hadoop.hdfs.VectorClockProto\"w\n\033O" +
-      "verwriteBlockResponseProto\022-\n\005block\030\001 \001(" +
-      "\0132\036.hadoop.hdfs.LocatedBlockProto\022)\n\002vc\030",
-      "\002 \002(\0132\035.hadoop.hdfs.VectorClockProto\">\n\032" +
-      "SetReplicationRequestProto\022\013\n\003src\030\001 \002(\t\022" +
-      "\023\n\013replication\030\002 \002(\r\"-\n\033SetReplicationRe" +
-      "sponseProto\022\016\n\006result\030\001 \002(\010\"\\\n\031SetPermis" +
-      "sionRequestProto\022\013\n\003src\030\001 \002(\t\0222\n\npermiss" +
-      "ion\030\002 \002(\0132\036.hadoop.hdfs.FsPermissionProt" +
-      "o\"\034\n\032SetPermissionResponseProto\"H\n\024SetOw" +
-      "nerRequestProto\022\013\n\003src\030\001 \002(\t\022\020\n\010username" +
-      "\030\002 \001(\t\022\021\n\tgroupname\030\003 \001(\t\"\027\n\025SetOwnerRes" +
-      "ponseProto\"\216\001\n\030AbandonBlockRequestProto\022",
-      "*\n\001b\030\001 \002(\0132\037.hadoop.hdfs.ExtendedBlockPr" +
-      "oto\022\013\n\003src\030\002 \002(\t\022\016\n\006holder\030\003 \002(\t\022)\n\002vc\030\004" +
-      " \002(\0132\035.hadoop.hdfs.VectorClockProto\"F\n\031A" +
-      "bandonBlockResponseProto\022)\n\002vc\030\001 \002(\0132\035.h" +
-      "adoop.hdfs.VectorClockProto\"\364\001\n\024AddBlock" +
-      "RequestProto\022\013\n\003src\030\001 \002(\t\022\022\n\nclientName\030" +
-      "\002 \002(\t\0221\n\010previous\030\003 \001(\0132\037.hadoop.hdfs.Ex" +
-      "tendedBlockProto\0224\n\014excludeNodes\030\004 \003(\0132\036" +
-      ".hadoop.hdfs.DatanodeInfoProto\022\021\n\006fileId" +
-      "\030\005 \001(\004:\0010\022\024\n\014favoredNodes\030\006 \003(\t\022)\n\002vc\030\007 ",
-      "\002(\0132\035.hadoop.hdfs.VectorClockProto\"q\n\025Ad" +
-      "dBlockResponseProto\022-\n\005block\030\001 \002(\0132\036.had" +
-      "oop.hdfs.LocatedBlockProto\022)\n\002vc\030\002 \002(\0132\035" +
-      ".hadoop.hdfs.VectorClockProto\"\221\002\n!GetAdd" +
+      "1\n\003hlc\030\010 \002(\0132$.hadoop.hdfs.HybridLogical" +
+      "ClockProto\"v\n\023CreateResponseProto\022,\n\002fs\030" +
+      "\001 \001(\0132 .hadoop.hdfs.HdfsFileStatusProto\022" +
+      "1\n\003hlc\030\002 \002(\0132$.hadoop.hdfs.HybridLogical" +
+      "ClockProto\"h\n\022AppendRequestProto\022\013\n\003src\030" +
+      "\001 \002(\t\022\022\n\nclientName\030\002 \002(\t\0221\n\003hlc\030\003 \002(\0132$",
+      ".hadoop.hdfs.HybridLogicalClockProto\"w\n\023" +
+      "AppendResponseProto\022-\n\005block\030\001 \001(\0132\036.had" +
+      "oop.hdfs.LocatedBlockProto\0221\n\003hlc\030\002 \002(\0132" +
+      "$.hadoop.hdfs.HybridLogicalClockProto\"\303\001" +
+      "\n\032OverwriteBlockRequestProto\022\013\n\003src\030\001 \002(" +
+      "\t\0221\n\010previous\030\002 \001(\0132\037.hadoop.hdfs.Extend" +
+      "edBlockProto\022\016\n\006bIndex\030\003 \002(\005\022\016\n\006fileId\030\004" +
+      " \002(\004\022\022\n\nclientName\030\005 \002(\t\0221\n\003hlc\030\006 \002(\0132$." +
+      "hadoop.hdfs.HybridLogicalClockProto\"\177\n\033O" +
+      "verwriteBlockResponseProto\022-\n\005block\030\001 \001(",
+      "\0132\036.hadoop.hdfs.LocatedBlockProto\0221\n\003hlc" +
+      "\030\002 \002(\0132$.hadoop.hdfs.HybridLogicalClockP" +
+      "roto\">\n\032SetReplicationRequestProto\022\013\n\003sr" +
+      "c\030\001 \002(\t\022\023\n\013replication\030\002 \002(\r\"-\n\033SetRepli" +
+      "cationResponseProto\022\016\n\006result\030\001 \002(\010\"\\\n\031S" +
+      "etPermissionRequestProto\022\013\n\003src\030\001 \002(\t\0222\n" +
+      "\npermission\030\002 \002(\0132\036.hadoop.hdfs.FsPermis" +
+      "sionProto\"\034\n\032SetPermissionResponseProto\"" +
+      "H\n\024SetOwnerRequestProto\022\013\n\003src\030\001 \002(\t\022\020\n\010" +
+      "username\030\002 \001(\t\022\021\n\tgroupname\030\003 \001(\t\"\027\n\025Set",
+      "OwnerResponseProto\"\226\001\n\030AbandonBlockReque" +
+      "stProto\022*\n\001b\030\001 \002(\0132\037.hadoop.hdfs.Extende" +
+      "dBlockProto\022\013\n\003src\030\002 \002(\t\022\016\n\006holder\030\003 \002(\t" +
+      "\0221\n\003hlc\030\004 \002(\0132$.hadoop.hdfs.HybridLogica" +
+      "lClockProto\"N\n\031AbandonBlockResponseProto" +
+      "\0221\n\003hlc\030\001 \002(\0132$.hadoop.hdfs.HybridLogica" +
+      "lClockProto\"\374\001\n\024AddBlockRequestProto\022\013\n\003" +
+      "src\030\001 \002(\t\022\022\n\nclientName\030\002 \002(\t\0221\n\010previou" +
+      "s\030\003 \001(\0132\037.hadoop.hdfs.ExtendedBlockProto" +
+      "\0224\n\014excludeNodes\030\004 \003(\0132\036.hadoop.hdfs.Dat",
+      "anodeInfoProto\022\021\n\006fileId\030\005 \001(\004:\0010\022\024\n\014fav" +
+      "oredNodes\030\006 \003(\t\0221\n\003hlc\030\007 \002(\0132$.hadoop.hd" +
+      "fs.HybridLogicalClockProto\"y\n\025AddBlockRe" +
+      "sponseProto\022-\n\005block\030\001 \002(\0132\036.hadoop.hdfs" +
+      ".LocatedBlockProto\0221\n\003hlc\030\002 \002(\0132$.hadoop" +
+      ".hdfs.HybridLogicalClockProto\"\221\002\n!GetAdd" +
       "itionalDatanodeRequestProto\022\013\n\003src\030\001 \002(\t" +
       "\022,\n\003blk\030\002 \002(\0132\037.hadoop.hdfs.ExtendedBloc" +
       "kProto\0221\n\texistings\030\003 \003(\0132\036.hadoop.hdfs." +
-      "DatanodeInfoProto\0220\n\010excludes\030\004 \003(\0132\036.ha" +
+      "DatanodeInfoProto\0220\n\010excludes\030\004 \003(\0132\036.ha",
       "doop.hdfs.DatanodeInfoProto\022\032\n\022numAdditi" +
-      "onalNodes\030\005 \002(\r\022\022\n\nclientName\030\006 \002(\t\022\034\n\024e",
+      "onalNodes\030\005 \002(\r\022\022\n\nclientName\030\006 \002(\t\022\034\n\024e" +
       "xistingStorageUuids\030\007 \003(\t\"S\n\"GetAddition" +
       "alDatanodeResponseProto\022-\n\005block\030\001 \002(\0132\036" +
-      ".hadoop.hdfs.LocatedBlockProto\"\244\001\n\024Compl" +
+      ".hadoop.hdfs.LocatedBlockProto\"\254\001\n\024Compl" +
       "eteRequestProto\022\013\n\003src\030\001 \002(\t\022\022\n\nclientNa" +
       "me\030\002 \002(\t\022-\n\004last\030\003 \001(\0132\037.hadoop.hdfs.Ext" +
-      "endedBlockProto\022\021\n\006fileId\030\004 \001(\004:\0010\022)\n\002vc" +
-      "\030\005 \002(\0132\035.hadoop.hdfs.VectorClockProto\"R\n" +
-      "\025CompleteResponseProto\022\016\n\006result\030\001 \002(\010\022)" +
-      "\n\002vc\030\002 \002(\0132\035.hadoop.hdfs.VectorClockProt" +
-      "o\"M\n\033ReportBadBlocksRequestProto\022.\n\006bloc",
-      "ks\030\001 \003(\0132\036.hadoop.hdfs.LocatedBlockProto" +
-      "\"\036\n\034ReportBadBlocksResponseProto\"Z\n\022Conc" +
-      "atRequestProto\022\013\n\003trg\030\001 \002(\t\022\014\n\004srcs\030\002 \003(" +
-      "\t\022)\n\002vc\030\003 \002(\0132\035.hadoop.hdfs.VectorClockP" +
-      "roto\"@\n\023ConcatResponseProto\022)\n\002vc\030\001 \002(\0132" +
-      "\035.hadoop.hdfs.VectorClockProto\"Y\n\022Rename" +
-      "RequestProto\022\013\n\003src\030\001 \002(\t\022\013\n\003dst\030\002 \002(\t\022)" +
-      "\n\002vc\030\003 \002(\0132\035.hadoop.hdfs.VectorClockProt" +
-      "o\"P\n\023RenameResponseProto\022\016\n\006result\030\001 \002(\010" +
-      "\022)\n\002vc\030\002 \002(\0132\035.hadoop.hdfs.VectorClockPr",
-      "oto\"q\n\023Rename2RequestProto\022\013\n\003src\030\001 \002(\t\022" +
-      "\013\n\003dst\030\002 \002(\t\022\025\n\roverwriteDest\030\003 \002(\010\022)\n\002v" +
-      "c\030\004 \002(\0132\035.hadoop.hdfs.VectorClockProto\"A" +
-      "\n\024Rename2ResponseProto\022)\n\002vc\030\001 \002(\0132\035.had" +
-      "oop.hdfs.VectorClockProto\"_\n\022DeleteReque" +
-      "stProto\022\013\n\003src\030\001 \002(\t\022\021\n\trecursive\030\002 \002(\010\022" +
-      ")\n\002vc\030\003 \002(\0132\035.hadoop.hdfs.VectorClockPro" +
-      "to\"P\n\023DeleteResponseProto\022\016\n\006result\030\001 \002(" +
-      "\010\022)\n\002vc\030\002 \002(\0132\035.hadoop.hdfs.VectorClockP" +
-      "roto\"\222\001\n\022MkdirsRequestProto\022\013\n\003src\030\001 \002(\t",
+      "endedBlockProto\022\021\n\006fileId\030\004 \001(\004:\0010\0221\n\003hl" +
+      "c\030\005 \002(\0132$.hadoop.hdfs.HybridLogicalClock" +
+      "Proto\"Z\n\025CompleteResponseProto\022\016\n\006result",
+      "\030\001 \002(\010\0221\n\003hlc\030\002 \002(\0132$.hadoop.hdfs.Hybrid" +
+      "LogicalClockProto\"M\n\033ReportBadBlocksRequ" +
+      "estProto\022.\n\006blocks\030\001 \003(\0132\036.hadoop.hdfs.L" +
+      "ocatedBlockProto\"\036\n\034ReportBadBlocksRespo" +
+      "nseProto\"b\n\022ConcatRequestProto\022\013\n\003trg\030\001 " +
+      "\002(\t\022\014\n\004srcs\030\002 \003(\t\0221\n\003hlc\030\003 \002(\0132$.hadoop." +
+      "hdfs.HybridLogicalClockProto\"H\n\023ConcatRe" +
+      "sponseProto\0221\n\003hlc\030\001 \002(\0132$.hadoop.hdfs.H" +
+      "ybridLogicalClockProto\"a\n\022RenameRequestP" +
+      "roto\022\013\n\003src\030\001 \002(\t\022\013\n\003dst\030\002 \002(\t\0221\n\003hlc\030\003 ",
+      "\002(\0132$.hadoop.hdfs.HybridLogicalClockProt" +
+      "o\"X\n\023RenameResponseProto\022\016\n\006result\030\001 \002(\010" +
+      "\0221\n\003hlc\030\002 \002(\0132$.hadoop.hdfs.HybridLogica" +
+      "lClockProto\"y\n\023Rename2RequestProto\022\013\n\003sr" +
+      "c\030\001 \002(\t\022\013\n\003dst\030\002 \002(\t\022\025\n\roverwriteDest\030\003 " +
+      "\002(\010\0221\n\003hlc\030\004 \002(\0132$.hadoop.hdfs.HybridLog" +
+      "icalClockProto\"I\n\024Rename2ResponseProto\0221" +
+      "\n\003hlc\030\001 \002(\0132$.hadoop.hdfs.HybridLogicalC" +
+      "lockProto\"g\n\022DeleteRequestProto\022\013\n\003src\030\001" +
+      " \002(\t\022\021\n\trecursive\030\002 \002(\010\0221\n\003hlc\030\003 \002(\0132$.h",
+      "adoop.hdfs.HybridLogicalClockProto\"X\n\023De" +
+      "leteResponseProto\022\016\n\006result\030\001 \002(\010\0221\n\003hlc" +
+      "\030\002 \002(\0132$.hadoop.hdfs.HybridLogicalClockP" +
+      "roto\"\232\001\n\022MkdirsRequestProto\022\013\n\003src\030\001 \002(\t" +
       "\022.\n\006masked\030\002 \002(\0132\036.hadoop.hdfs.FsPermiss" +
-      "ionProto\022\024\n\014createParent\030\003 \002(\010\022)\n\002vc\030\004 \002" +
-      "(\0132\035.hadoop.hdfs.VectorClockProto\"P\n\023Mkd" +
-      "irsResponseProto\022\016\n\006result\030\001 \002(\010\022)\n\002vc\030\002" +
-      " \002(\0132\035.hadoop.hdfs.VectorClockProto\"O\n\026G" +
-      "etListingRequestProto\022\013\n\003src\030\001 \002(\t\022\022\n\nst" +
-      "artAfter\030\002 \002(\014\022\024\n\014needLocation\030\003 \002(\010\"N\n\027" +
-      "GetListingResponseProto\0223\n\007dirList\030\001 \001(\013" +
-      "2\".hadoop.hdfs.DirectoryListingProto\"(\n&" +
-      "GetSnapshottableDirListingRequestProto\"x",
-      "\n\'GetSnapshottableDirListingResponseProt" +
-      "o\022M\n\024snapshottableDirList\030\001 \001(\0132/.hadoop" +
-      ".hdfs.SnapshottableDirectoryListingProto" +
-      "\"c\n!GetSnapshotDiffReportRequestProto\022\024\n" +
-      "\014snapshotRoot\030\001 \002(\t\022\024\n\014fromSnapshot\030\002 \002(" +
-      "\t\022\022\n\ntoSnapshot\030\003 \002(\t\"^\n\"GetSnapshotDiff" +
-      "ReportResponseProto\0228\n\ndiffReport\030\001 \002(\0132" +
-      "$.hadoop.hdfs.SnapshotDiffReportProto\",\n" +
-      "\026RenewLeaseRequestProto\022\022\n\nclientName\030\001 " +
-      "\002(\t\"\031\n\027RenewLeaseResponseProto\";\n\030Recove",
-      "rLeaseRequestProto\022\013\n\003src\030\001 \002(\t\022\022\n\nclien" +
-      "tName\030\002 \002(\t\"+\n\031RecoverLeaseResponseProto" +
-      "\022\016\n\006result\030\001 \002(\010\"\031\n\027GetFsStatusRequestPr" +
-      "oto\"\226\001\n\027GetFsStatsResponseProto\022\020\n\010capac" +
-      "ity\030\001 \002(\004\022\014\n\004used\030\002 \002(\004\022\021\n\tremaining\030\003 \002" +
-      "(\004\022\030\n\020under_replicated\030\004 \002(\004\022\026\n\016corrupt_" +
-      "blocks\030\005 \002(\004\022\026\n\016missing_blocks\030\006 \002(\004\"S\n\035" +
-      "GetDatanodeReportRequestProto\0222\n\004type\030\001 " +
-      "\002(\0162$.hadoop.hdfs.DatanodeReportTypeProt" +
-      "o\"L\n\036GetDatanodeReportResponseProto\022*\n\002d",
-      "i\030\001 \003(\0132\036.hadoop.hdfs.DatanodeInfoProto\"" +
-      "5\n!GetPreferredBlockSizeRequestProto\022\020\n\010" +
-      "filename\030\001 \002(\t\"3\n\"GetPreferredBlockSizeR" +
-      "esponseProto\022\r\n\005bsize\030\001 \002(\004\"c\n\027SetSafeMo" +
-      "deRequestProto\0220\n\006action\030\001 \002(\0162 .hadoop." +
-      "hdfs.SafeModeActionProto\022\026\n\007checked\030\002 \001(" +
-      "\010:\005false\"*\n\030SetSafeModeResponseProto\022\016\n\006" +
-      "result\030\001 \002(\010\"\033\n\031SaveNamespaceRequestProt" +
-      "o\"\034\n\032SaveNamespaceResponseProto\"\027\n\025RollE" +
-      "ditsRequestProto\"0\n\026RollEditsResponsePro",
-      "to\022\026\n\016newSegmentTxId\030\001 \002(\004\"/\n RestoreFai" +
-      "ledStorageRequestProto\022\013\n\003arg\030\001 \002(\t\"3\n!R" +
-      "estoreFailedStorageResponseProto\022\016\n\006resu" +
-      "lt\030\001 \002(\010\"\032\n\030RefreshNodesRequestProto\"\033\n\031" +
-      "RefreshNodesResponseProto\"\035\n\033FinalizeUpg" +
-      "radeRequestProto\"\036\n\034FinalizeUpgradeRespo" +
-      "nseProto\"T\n\032RollingUpgradeRequestProto\0226" +
-      "\n\006action\030\001 \002(\0162&.hadoop.hdfs.RollingUpgr" +
-      "adeActionProto\"\231\001\n\027RollingUpgradeInfoPro" +
-      "to\0226\n\006status\030\001 \002(\0132&.hadoop.hdfs.Rolling",
-      "UpgradeStatusProto\022\021\n\tstartTime\030\002 \002(\004\022\024\n" +
-      "\014finalizeTime\030\003 \002(\004\022\035\n\025createdRollbackIm" +
-      "ages\030\004 \002(\010\"_\n\033RollingUpgradeResponseProt" +
-      "o\022@\n\022rollingUpgradeInfo\030\001 \001(\0132$.hadoop.h" +
-      "dfs.RollingUpgradeInfoProto\"A\n!ListCorru" +
-      "ptFileBlocksRequestProto\022\014\n\004path\030\001 \002(\t\022\016" +
-      "\n\006cookie\030\002 \001(\t\"Z\n\"ListCorruptFileBlocksR" +
-      "esponseProto\0224\n\007corrupt\030\001 \002(\0132#.hadoop.h" +
-      "dfs.CorruptFileBlocksProto\"(\n\024MetaSaveRe" +
-      "questProto\022\020\n\010filename\030\001 \002(\t\"\027\n\025MetaSave",
-      "ResponseProto\"&\n\027GetFileInfoRequestProto" +
-      "\022\013\n\003src\030\001 \002(\t\"H\n\030GetFileInfoResponseProt" +
-      "o\022,\n\002fs\030\001 \001(\0132 .hadoop.hdfs.HdfsFileStat" +
-      "usProto\"\'\n\030IsFileClosedRequestProto\022\013\n\003s" +
-      "rc\030\001 \002(\t\"+\n\031IsFileClosedResponseProto\022\016\n" +
-      "\006result\030\001 \002(\010\"\232\001\n\027CacheDirectiveInfoProt" +
-      "o\022\n\n\002id\030\001 \001(\003\022\014\n\004path\030\002 \001(\t\022\023\n\013replicati" +
-      "on\030\003 \001(\r\022\014\n\004pool\030\004 \001(\t\022B\n\nexpiration\030\005 \001" +
-      "(\0132..hadoop.hdfs.CacheDirectiveInfoExpir" +
-      "ationProto\"G\n!CacheDirectiveInfoExpirati",
-      "onProto\022\016\n\006millis\030\001 \002(\003\022\022\n\nisRelative\030\002 " +
-      "\002(\010\"\202\001\n\030CacheDirectiveStatsProto\022\023\n\013byte" +
-      "sNeeded\030\001 \002(\003\022\023\n\013bytesCached\030\002 \002(\003\022\023\n\013fi" +
-      "lesNeeded\030\003 \002(\003\022\023\n\013filesCached\030\004 \002(\003\022\022\n\n" +
-      "hasExpired\030\005 \002(\010\"g\n\035AddCacheDirectiveReq" +
-      "uestProto\0222\n\004info\030\001 \002(\0132$.hadoop.hdfs.Ca" +
-      "cheDirectiveInfoProto\022\022\n\ncacheFlags\030\002 \001(" +
-      "\r\",\n\036AddCacheDirectiveResponseProto\022\n\n\002i" +
-      "d\030\001 \002(\003\"j\n ModifyCacheDirectiveRequestPr" +
-      "oto\0222\n\004info\030\001 \002(\0132$.hadoop.hdfs.CacheDir",
-      "ectiveInfoProto\022\022\n\ncacheFlags\030\002 \001(\r\"#\n!M" +
-      "odifyCacheDirectiveResponseProto\".\n Remo" +
-      "veCacheDirectiveRequestProto\022\n\n\002id\030\001 \002(\003" +
-      "\"#\n!RemoveCacheDirectiveResponseProto\"g\n" +
-      "\037ListCacheDirectivesRequestProto\022\016\n\006prev" +
-      "Id\030\001 \002(\003\0224\n\006filter\030\002 \002(\0132$.hadoop.hdfs.C" +
-      "acheDirectiveInfoProto\"\204\001\n\030CacheDirectiv" +
-      "eEntryProto\0222\n\004info\030\001 \002(\0132$.hadoop.hdfs." +
-      "CacheDirectiveInfoProto\0224\n\005stats\030\002 \002(\0132%" +
-      ".hadoop.hdfs.CacheDirectiveStatsProto\"l\n",
-      " ListCacheDirectivesResponseProto\0227\n\010ele" +
-      "ments\030\001 \003(\0132%.hadoop.hdfs.CacheDirective" +
-      "EntryProto\022\017\n\007hasMore\030\002 \002(\010\"\204\001\n\022CachePoo" +
-      "lInfoProto\022\020\n\010poolName\030\001 \001(\t\022\021\n\townerNam" +
-      "e\030\002 \001(\t\022\021\n\tgroupName\030\003 \001(\t\022\014\n\004mode\030\004 \001(\005" +
-      "\022\r\n\005limit\030\005 \001(\003\022\031\n\021maxRelativeExpiry\030\006 \001" +
-      "(\003\"\201\001\n\023CachePoolStatsProto\022\023\n\013bytesNeede" +
-      "d\030\001 \002(\003\022\023\n\013bytesCached\030\002 \002(\003\022\026\n\016bytesOve" +
-      "rlimit\030\003 \002(\003\022\023\n\013filesNeeded\030\004 \002(\003\022\023\n\013fil" +
-      "esCached\030\005 \002(\003\"I\n\030AddCachePoolRequestPro",
-      "to\022-\n\004info\030\001 \002(\0132\037.hadoop.hdfs.CachePool" +
-      "InfoProto\"\033\n\031AddCachePoolResponseProto\"L" +
-      "\n\033ModifyCachePoolRequestProto\022-\n\004info\030\001 " +
-      "\002(\0132\037.hadoop.hdfs.CachePoolInfoProto\"\036\n\034" +
-      "ModifyCachePoolResponseProto\"/\n\033RemoveCa" +
-      "chePoolRequestProto\022\020\n\010poolName\030\001 \002(\t\"\036\n" +
-      "\034RemoveCachePoolResponseProto\"2\n\032ListCac" +
-      "hePoolsRequestProto\022\024\n\014prevPoolName\030\001 \002(" +
-      "\t\"a\n\033ListCachePoolsResponseProto\0221\n\007entr" +
-      "ies\030\001 \003(\0132 .hadoop.hdfs.CachePoolEntryPr",
-      "oto\022\017\n\007hasMore\030\002 \002(\010\"u\n\023CachePoolEntryPr" +
-      "oto\022-\n\004info\030\001 \002(\0132\037.hadoop.hdfs.CachePoo" +
-      "lInfoProto\022/\n\005stats\030\002 \002(\0132 .hadoop.hdfs." +
-      "CachePoolStatsProto\"*\n\033GetFileLinkInfoRe" +
-      "questProto\022\013\n\003src\030\001 \002(\t\"L\n\034GetFileLinkIn" +
-      "foResponseProto\022,\n\002fs\030\001 \001(\0132 .hadoop.hdf" +
-      "s.HdfsFileStatusProto\"-\n\035GetContentSumma" +
-      "ryRequestProto\022\014\n\004path\030\001 \002(\t\"S\n\036GetConte" +
-      "ntSummaryResponseProto\0221\n\007summary\030\001 \002(\0132" +
-      " .hadoop.hdfs.ContentSummaryProto\"T\n\024Set",
-      "QuotaRequestProto\022\014\n\004path\030\001 \002(\t\022\026\n\016names" +
-      "paceQuota\030\002 \002(\004\022\026\n\016diskspaceQuota\030\003 \002(\004\"" +
-      "\027\n\025SetQuotaResponseProto\"x\n\021FsyncRequest" +
-      "Proto\022\013\n\003src\030\001 \002(\t\022\016\n\006client\030\002 \002(\t\022\033\n\017la" +
-      "stBlockLength\030\003 \001(\022:\002-1\022)\n\002vc\030\004 \002(\0132\035.ha" +
-      "doop.hdfs.VectorClockProto\"?\n\022FsyncRespo" +
-      "nseProto\022)\n\002vc\030\001 \002(\0132\035.hadoop.hdfs.Vecto" +
-      "rClockProto\"A\n\024SetTimesRequestProto\022\013\n\003s" +
-      "rc\030\001 \002(\t\022\r\n\005mtime\030\002 \002(\004\022\r\n\005atime\030\003 \002(\004\"\027" +
-      "\n\025SetTimesResponseProto\"\200\001\n\031CreateSymlin",
-      "kRequestProto\022\016\n\006target\030\001 \002(\t\022\014\n\004link\030\002 " +
-      "\002(\t\022/\n\007dirPerm\030\003 \002(\0132\036.hadoop.hdfs.FsPer" +
-      "missionProto\022\024\n\014createParent\030\004 \002(\010\"\034\n\032Cr" +
-      "eateSymlinkResponseProto\")\n\031GetLinkTarge" +
-      "tRequestProto\022\014\n\004path\030\001 \002(\t\"0\n\032GetLinkTa" +
-      "rgetResponseProto\022\022\n\ntargetPath\030\001 \001(\t\"h\n" +
-      "\"UpdateBlockForPipelineRequestProto\022.\n\005b" +
-      "lock\030\001 \002(\0132\037.hadoop.hdfs.ExtendedBlockPr" +
-      "oto\022\022\n\nclientName\030\002 \002(\t\"T\n#UpdateBlockFo" +
-      "rPipelineResponseProto\022-\n\005block\030\001 \002(\0132\036.",
-      "hadoop.hdfs.LocatedBlockProto\"\332\001\n\032Update" +
-      "PipelineRequestProto\022\022\n\nclientName\030\001 \002(\t" +
-      "\0221\n\010oldBlock\030\002 \002(\0132\037.hadoop.hdfs.Extende" +
-      "dBlockProto\0221\n\010newBlock\030\003 \002(\0132\037.hadoop.h" +
-      "dfs.ExtendedBlockProto\022.\n\010newNodes\030\004 \003(\013" +
-      "2\034.hadoop.hdfs.DatanodeIDProto\022\022\n\nstorag" +
-      "eIDs\030\005 \003(\t\"\035\n\033UpdatePipelineResponseProt" +
-      "o\"5\n SetBalancerBandwidthRequestProto\022\021\n" +
-      "\tbandwidth\030\001 \002(\003\"#\n!SetBalancerBandwidth" +
-      "ResponseProto\"\"\n GetDataEncryptionKeyReq",
-      "uestProto\"c\n!GetDataEncryptionKeyRespons" +
-      "eProto\022>\n\021dataEncryptionKey\030\001 \001(\0132#.hado" +
-      "op.hdfs.DataEncryptionKeyProto\"H\n\032Create" +
+      "ionProto\022\024\n\014createParent\030\003 \002(\010\0221\n\003hlc\030\004 " +
+      "\002(\0132$.hadoop.hdfs.HybridLogicalClockProt" +
+      "o\"X\n\023MkdirsResponseProto\022\016\n\006result\030\001 \002(\010" +
+      "\0221\n\003hlc\030\002 \002(\0132$.hadoop.hdfs.HybridLogica" +
+      "lClockProto\"O\n\026GetListingRequestProto\022\013\n",
+      "\003src\030\001 \002(\t\022\022\n\nstartAfter\030\002 \002(\014\022\024\n\014needLo" +
+      "cation\030\003 \002(\010\"N\n\027GetListingResponseProto\022" +
+      "3\n\007dirList\030\001 \001(\0132\".hadoop.hdfs.Directory" +
+      "ListingProto\"(\n&GetSnapshottableDirListi" +
+      "ngRequestProto\"x\n\'GetSnapshottableDirLis" +
+      "tingResponseProto\022M\n\024snapshottableDirLis" +
+      "t\030\001 \001(\0132/.hadoop.hdfs.SnapshottableDirec" +
+      "toryListingProto\"c\n!GetSnapshotDiffRepor" +
+      "tRequestProto\022\024\n\014snapshotRoot\030\001 \002(\t\022\024\n\014f" +
+      "romSnapshot\030\002 \002(\t\022\022\n\ntoSnapshot\030\003 \002(\t\"^\n",
+      "\"GetSnapshotDiffReportResponseProto\0228\n\nd" +
+      "iffReport\030\001 \002(\0132$.hadoop.hdfs.SnapshotDi" +
+      "ffReportProto\",\n\026RenewLeaseRequestProto\022" +
+      "\022\n\nclientName\030\001 \002(\t\"\031\n\027RenewLeaseRespons" +
+      "eProto\";\n\030RecoverLeaseRequestProto\022\013\n\003sr" +
+      "c\030\001 \002(\t\022\022\n\nclientName\030\002 \002(\t\"+\n\031RecoverLe" +
+      "aseResponseProto\022\016\n\006result\030\001 \002(\010\"\031\n\027GetF" +
+      "sStatusRequestProto\"\226\001\n\027GetFsStatsRespon" +
+      "seProto\022\020\n\010capacity\030\001 \002(\004\022\014\n\004used\030\002 \002(\004\022" +
+      "\021\n\tremaining\030\003 \002(\004\022\030\n\020under_replicated\030\004",
+      " \002(\004\022\026\n\016corrupt_blocks\030\005 \002(\004\022\026\n\016missing_" +
+      "blocks\030\006 \002(\004\"S\n\035GetDatanodeReportRequest" +
+      "Proto\0222\n\004type\030\001 \002(\0162$.hadoop.hdfs.Datano" +
+      "deReportTypeProto\"L\n\036GetDatanodeReportRe" +
+      "sponseProto\022*\n\002di\030\001 \003(\0132\036.hadoop.hdfs.Da" +
+      "tanodeInfoProto\"5\n!GetPreferredBlockSize" +
+      "RequestProto\022\020\n\010filename\030\001 \002(\t\"3\n\"GetPre" +
+      "ferredBlockSizeResponseProto\022\r\n\005bsize\030\001 " +
+      "\002(\004\"c\n\027SetSafeModeRequestProto\0220\n\006action" +
+      "\030\001 \002(\0162 .hadoop.hdfs.SafeModeActionProto",
+      "\022\026\n\007checked\030\002 \001(\010:\005false\"*\n\030SetSafeModeR" +
+      "esponseProto\022\016\n\006result\030\001 \002(\010\"\033\n\031SaveName" +
+      "spaceRequestProto\"\034\n\032SaveNamespaceRespon" +
+      "seProto\"\027\n\025RollEditsRequestProto\"0\n\026Roll" +
+      "EditsResponseProto\022\026\n\016newSegmentTxId\030\001 \002" +
+      "(\004\"/\n RestoreFailedStorageRequestProto\022\013" +
+      "\n\003arg\030\001 \002(\t\"3\n!RestoreFailedStorageRespo" +
+      "nseProto\022\016\n\006result\030\001 \002(\010\"\032\n\030RefreshNodes" +
+      "RequestProto\"\033\n\031RefreshNodesResponseProt" +
+      "o\"\035\n\033FinalizeUpgradeRequestProto\"\036\n\034Fina",
+      "lizeUpgradeResponseProto\"T\n\032RollingUpgra" +
+      "deRequestProto\0226\n\006action\030\001 \002(\0162&.hadoop." +
+      "hdfs.RollingUpgradeActionProto\"\231\001\n\027Rolli" +
+      "ngUpgradeInfoProto\0226\n\006status\030\001 \002(\0132&.had" +
+      "oop.hdfs.RollingUpgradeStatusProto\022\021\n\tst" +
+      "artTime\030\002 \002(\004\022\024\n\014finalizeTime\030\003 \002(\004\022\035\n\025c" +
+      "reatedRollbackImages\030\004 \002(\010\"_\n\033RollingUpg" +
+      "radeResponseProto\022@\n\022rollingUpgradeInfo\030" +
+      "\001 \001(\0132$.hadoop.hdfs.RollingUpgradeInfoPr" +
+      "oto\"A\n!ListCorruptFileBlocksRequestProto",
+      "\022\014\n\004path\030\001 \002(\t\022\016\n\006cookie\030\002 \001(\t\"Z\n\"ListCo" +
+      "rruptFileBlocksResponseProto\0224\n\007corrupt\030" +
+      "\001 \002(\0132#.hadoop.hdfs.CorruptFileBlocksPro" +
+      "to\"(\n\024MetaSaveRequestProto\022\020\n\010filename\030\001" +
+      " \002(\t\"\027\n\025MetaSaveResponseProto\"&\n\027GetFile" +
+      "InfoRequestProto\022\013\n\003src\030\001 \002(\t\"H\n\030GetFile" +
+      "InfoResponseProto\022,\n\002fs\030\001 \001(\0132 .hadoop.h" +
+      "dfs.HdfsFileStatusProto\"\'\n\030IsFileClosedR" +
+      "equestProto\022\013\n\003src\030\001 \002(\t\"+\n\031IsFileClosed" +
+      "ResponseProto\022\016\n\006result\030\001 \002(\010\"\232\001\n\027CacheD",
+      "irectiveInfoProto\022\n\n\002id\030\001 \001(\003\022\014\n\004path\030\002 " +
+      "\001(\t\022\023\n\013replication\030\003 \001(\r\022\014\n\004pool\030\004 \001(\t\022B" +
+      "\n\nexpiration\030\005 \001(\0132..hadoop.hdfs.CacheDi" +
+      "rectiveInfoExpirationProto\"G\n!CacheDirec" +
+      "tiveInfoExpirationProto\022\016\n\006millis\030\001 \002(\003\022" +
+      "\022\n\nisRelative\030\002 \002(\010\"\202\001\n\030CacheDirectiveSt" +
+      "atsProto\022\023\n\013bytesNeeded\030\001 \002(\003\022\023\n\013bytesCa" +
+      "ched\030\002 \002(\003\022\023\n\013filesNeeded\030\003 \002(\003\022\023\n\013files" +
+      "Cached\030\004 \002(\003\022\022\n\nhasExpired\030\005 \002(\010\"g\n\035AddC" +
+      "acheDirectiveRequestProto\0222\n\004info\030\001 \002(\0132",
+      "$.hadoop.hdfs.CacheDirectiveInfoProto\022\022\n" +
+      "\ncacheFlags\030\002 \001(\r\",\n\036AddCacheDirectiveRe" +
+      "sponseProto\022\n\n\002id\030\001 \002(\003\"j\n ModifyCacheDi" +
+      "rectiveRequestProto\0222\n\004info\030\001 \002(\0132$.hado" +
+      "op.hdfs.CacheDirectiveInfoProto\022\022\n\ncache" +
+      "Flags\030\002 \001(\r\"#\n!ModifyCacheDirectiveRespo" +
+      "nseProto\".\n RemoveCacheDirectiveRequestP" +
+      "roto\022\n\n\002id\030\001 \002(\003\"#\n!RemoveCacheDirective" +
+      "ResponseProto\"g\n\037ListCacheDirectivesRequ" +
+      "estProto\022\016\n\006prevId\030\001 \002(\003\0224\n\006filter\030\002 \002(\013",
+      "2$.hadoop.hdfs.CacheDirectiveInfoProto\"\204" +
+      "\001\n\030CacheDirectiveEntryProto\0222\n\004info\030\001 \002(" +
+      "\0132$.hadoop.hdfs.CacheDirectiveInfoProto\022" +
+      "4\n\005stats\030\002 \002(\0132%.hadoop.hdfs.CacheDirect" +
+      "iveStatsProto\"l\n ListCacheDirectivesResp" +
+      "onseProto\0227\n\010elements\030\001 \003(\0132%.hadoop.hdf" +
+      "s.CacheDirectiveEntryProto\022\017\n\007hasMore\030\002 " +
+      "\002(\010\"\204\001\n\022CachePoolInfoProto\022\020\n\010poolName\030\001" +
+      " \001(\t\022\021\n\townerName\030\002 \001(\t\022\021\n\tgroupName\030\003 \001" +
+      "(\t\022\014\n\004mode\030\004 \001(\005\022\r\n\005limit\030\005 \001(\003\022\031\n\021maxRe",
+      "lativeExpiry\030\006 \001(\003\"\201\001\n\023CachePoolStatsPro" +
+      "to\022\023\n\013bytesNeeded\030\001 \002(\003\022\023\n\013bytesCached\030\002" +
+      " \002(\003\022\026\n\016bytesOverlimit\030\003 \002(\003\022\023\n\013filesNee" +
+      "ded\030\004 \002(\003\022\023\n\013filesCached\030\005 \002(\003\"I\n\030AddCac" +
+      "hePoolRequestProto\022-\n\004info\030\001 \002(\0132\037.hadoo" +
+      "p.hdfs.CachePoolInfoProto\"\033\n\031AddCachePoo" +
+      "lResponseProto\"L\n\033ModifyCachePoolRequest" +
+      "Proto\022-\n\004info\030\001 \002(\0132\037.hadoop.hdfs.CacheP" +
+      "oolInfoProto\"\036\n\034ModifyCachePoolResponseP" +
+      "roto\"/\n\033RemoveCachePoolRequestProto\022\020\n\010p",
+      "oolName\030\001 \002(\t\"\036\n\034RemoveCachePoolResponse" +
+      "Proto\"2\n\032ListCachePoolsRequestProto\022\024\n\014p" +
+      "revPoolName\030\001 \002(\t\"a\n\033ListCachePoolsRespo" +
+      "nseProto\0221\n\007entries\030\001 \003(\0132 .hadoop.hdfs." +
+      "CachePoolEntryProto\022\017\n\007hasMore\030\002 \002(\010\"u\n\023" +
+      "CachePoolEntryProto\022-\n\004info\030\001 \002(\0132\037.hado" +
+      "op.hdfs.CachePoolInfoProto\022/\n\005stats\030\002 \002(" +
+      "\0132 .hadoop.hdfs.CachePoolStatsProto\"*\n\033G" +
+      "etFileLinkInfoRequestProto\022\013\n\003src\030\001 \002(\t\"" +
+      "L\n\034GetFileLinkInfoResponseProto\022,\n\002fs\030\001 ",
+      "\001(\0132 .hadoop.hdfs.HdfsFileStatusProto\"-\n" +
+      "\035GetContentSummaryRequestProto\022\014\n\004path\030\001" +
+      " \002(\t\"S\n\036GetContentSummaryResponseProto\0221" +
+      "\n\007summary\030\001 \002(\0132 .hadoop.hdfs.ContentSum" +
+      "maryProto\"T\n\024SetQuotaRequestProto\022\014\n\004pat" +
+      "h\030\001 \002(\t\022\026\n\016namespaceQuota\030\002 \002(\004\022\026\n\016disks" +
+      "paceQuota\030\003 \002(\004\"\027\n\025SetQuotaResponseProto" +
+      "\"\200\001\n\021FsyncRequestProto\022\013\n\003src\030\001 \002(\t\022\016\n\006c" +
+      "lient\030\002 \002(\t\022\033\n\017lastBlockLength\030\003 \001(\022:\002-1" +
+      "\0221\n\003hlc\030\004 \002(\0132$.hadoop.hdfs.HybridLogica",
+      "lClockProto\"G\n\022FsyncResponseProto\0221\n\003hlc" +
+      "\030\001 \002(\0132$.hadoop.hdfs.HybridLogicalClockP" +
+      "roto\"A\n\024SetTimesRequestProto\022\013\n\003src\030\001 \002(" +
+      "\t\022\r\n\005mtime\030\002 \002(\004\022\r\n\005atime\030\003 \002(\004\"\027\n\025SetTi" +
+      "mesResponseProto\"\200\001\n\031CreateSymlinkReques" +
+      "tProto\022\016\n\006target\030\001 \002(\t\022\014\n\004link\030\002 \002(\t\022/\n\007" +
+      "dirPerm\030\003 \002(\0132\036.hadoop.hdfs.FsPermission" +
+      "Proto\022\024\n\014createParent\030\004 \002(\010\"\034\n\032CreateSym" +
+      "linkResponseProto\")\n\031GetLinkTargetReques" +
+      "tProto\022\014\n\004path\030\001 \002(\t\"0\n\032GetLinkTargetRes",
+      "ponseProto\022\022\n\ntargetPath\030\001 \001(\t\"h\n\"Update" +
+      "BlockForPipelineRequestProto\022.\n\005block\030\001 " +
+      "\002(\0132\037.hadoop.hdfs.ExtendedBlockProto\022\022\n\n" +
+      "clientName\030\002 \002(\t\"T\n#UpdateBlockForPipeli" +
+      "neResponseProto\022-\n\005block\030\001 \002(\0132\036.hadoop." +
+      "hdfs.LocatedBlockProto\"\332\001\n\032UpdatePipelin" +
+      "eRequestProto\022\022\n\nclientName\030\001 \002(\t\0221\n\010old" +
+      "Block\030\002 \002(\0132\037.hadoop.hdfs.ExtendedBlockP" +
+      "roto\0221\n\010newBlock\030\003 \002(\0132\037.hadoop.hdfs.Ext" +
+      "endedBlockProto\022.\n\010newNodes\030\004 \003(\0132\034.hado",
+      "op.hdfs.DatanodeIDProto\022\022\n\nstorageIDs\030\005 " +
+      "\003(\t\"\035\n\033UpdatePipelineResponseProto\"5\n Se" +
+      "tBalancerBandwidthRequestProto\022\021\n\tbandwi" +
+      "dth\030\001 \002(\003\"#\n!SetBalancerBandwidthRespons" +
+      "eProto\"\"\n GetDataEncryptionKeyRequestPro" +
+      "to\"c\n!GetDataEncryptionKeyResponseProto\022" +
+      ">\n\021dataEncryptionKey\030\001 \001(\0132#.hadoop.hdfs" +
+      ".DataEncryptionKeyProto\"H\n\032CreateSnapsho" +
+      "tRequestProto\022\024\n\014snapshotRoot\030\001 \002(\t\022\024\n\014s" +
+      "napshotName\030\002 \001(\t\"3\n\033CreateSnapshotRespo",
+      "nseProto\022\024\n\014snapshotPath\030\001 \002(\t\"d\n\032Rename" +
       "SnapshotRequestProto\022\024\n\014snapshotRoot\030\001 \002" +
-      "(\t\022\024\n\014snapshotName\030\002 \001(\t\"3\n\033CreateSnapsh" +
-      "otResponseProto\022\024\n\014snapshotPath\030\001 \002(\t\"d\n" +
-      "\032RenameSnapshotRequestProto\022\024\n\014snapshotR" +
-      "oot\030\001 \002(\t\022\027\n\017snapshotOldName\030\002 \002(\t\022\027\n\017sn" +
-      "apshotNewName\030\003 \002(\t\"\035\n\033RenameSnapshotRes" +
-      "ponseProto\"1\n\031AllowSnapshotRequestProto\022",
-      "\024\n\014snapshotRoot\030\001 \002(\t\"\034\n\032AllowSnapshotRe" +
-      "sponseProto\"4\n\034DisallowSnapshotRequestPr" +
-      "oto\022\024\n\014snapshotRoot\030\001 \002(\t\"\037\n\035DisallowSna" +
-      "pshotResponseProto\"H\n\032DeleteSnapshotRequ" +
-      "estProto\022\024\n\014snapshotRoot\030\001 \002(\t\022\024\n\014snapsh" +
-      "otName\030\002 \002(\t\"\035\n\033DeleteSnapshotResponsePr" +
-      "oto*8\n\017CreateFlagProto\022\n\n\006CREATE\020\001\022\r\n\tOV" +
-      "ERWRITE\020\002\022\n\n\006APPEND\020\004*6\n\027DatanodeReportT" +
-      "ypeProto\022\007\n\003ALL\020\001\022\010\n\004LIVE\020\002\022\010\n\004DEAD\020\003*O\n" +
-      "\023SafeModeActionProto\022\022\n\016SAFEMODE_LEAVE\020\001",
-      "\022\022\n\016SAFEMODE_ENTER\020\002\022\020\n\014SAFEMODE_GET\020\003*?" +
-      "\n\031RollingUpgradeActionProto\022\t\n\005QUERY\020\001\022\t" +
-      "\n\005START\020\002\022\014\n\010FINALIZE\020\003*\033\n\016CacheFlagProt" +
-      "o\022\t\n\005FORCE\020\0012\3577\n\026ClientNamenodeProtocol\022" +
-      "l\n\021getBlockLocations\022*.hadoop.hdfs.GetBl" +
-      "ockLocationsRequestProto\032+.hadoop.hdfs.G" +
-      "etBlockLocationsResponseProto\022t\n\031getBloc" +
-      "kLocationsNoCreate\022*.hadoop.hdfs.GetBloc" +
-      "kLocationsRequestProto\032+.hadoop.hdfs.Get" +
-      "BlockLocationsResponseProto\022l\n\021getServer",
-      "Defaults\022*.hadoop.hdfs.GetServerDefaults" +
-      "RequestProto\032+.hadoop.hdfs.GetServerDefa" +
-      "ultsResponseProto\022K\n\006create\022\037.hadoop.hdf" +
-      "s.CreateRequestProto\032 .hadoop.hdfs.Creat" +
-      "eResponseProto\022K\n\006append\022\037.hadoop.hdfs.A" +
-      "ppendRequestProto\032 .hadoop.hdfs.AppendRe" +
-      "sponseProto\022c\n\016overwriteBlock\022\'.hadoop.h" +
-      "dfs.OverwriteBlockRequestProto\032(.hadoop." +
-      "hdfs.OverwriteBlockResponseProto\022c\n\016setR" +
-      "eplication\022\'.hadoop.hdfs.SetReplicationR",
-      "equestProto\032(.hadoop.hdfs.SetReplication" +
-      "ResponseProto\022`\n\rsetPermission\022&.hadoop." +
-      "hdfs.SetPermissionRequestProto\032\'.hadoop." +
-      "hdfs.SetPermissionResponseProto\022Q\n\010setOw" +
-      "ner\022!.hadoop.hdfs.SetOwnerRequestProto\032\"" +
-      ".hadoop.hdfs.SetOwnerResponseProto\022]\n\014ab" +
-      "andonBlock\022%.hadoop.hdfs.AbandonBlockReq" +
-      "uestProto\032&.hadoop.hdfs.AbandonBlockResp" +
-      "onseProto\022Q\n\010addBlock\022!.hadoop.hdfs.AddB" +
-      "lockRequestProto\032\".hadoop.hdfs.AddBlockR",
-      "esponseProto\022x\n\025getAdditionalDatanode\022.." +
-      "hadoop.hdfs.GetAdditionalDatanodeRequest" +
-      "Proto\032/.hadoop.hdfs.GetAdditionalDatanod" +
-      "eResponseProto\022Q\n\010complete\022!.hadoop.hdfs" +
-      ".CompleteRequestProto\032\".hadoop.hdfs.Comp" +
-      "leteResponseProto\022f\n\017reportBadBlocks\022(.h" +
-      "adoop.hdfs.ReportBadBlocksRequestProto\032)" +
-      ".hadoop.hdfs.ReportBadBlocksResponseProt" +
-      "o\022K\n\006concat\022\037.hadoop.hdfs.ConcatRequestP" +
-      "roto\032 .hadoop.hdfs.ConcatResponseProto\022K",
-      "\n\006rename\022\037.hadoop.hdfs.RenameRequestProt" +
-      "o\032 .hadoop.hdfs.RenameResponseProto\022N\n\007r" +
-      "ename2\022 .hadoop.hdfs.Rename2RequestProto" +
-      "\032!.hadoop.hdfs.Rename2ResponseProto\022K\n\006d" +
-      "elete\022\037.hadoop.hdfs.DeleteRequestProto\032 " +
-      ".hadoop.hdfs.DeleteResponseProto\022K\n\006mkdi" +
-      "rs\022\037.hadoop.hdfs.MkdirsRequestProto\032 .ha" +
-      "doop.hdfs.MkdirsResponseProto\022W\n\ngetList" +
-      "ing\022#.hadoop.hdfs.GetListingRequestProto" +
-      "\032$.hadoop.hdfs.GetListingResponseProto\022W",
-      "\n\nrenewLease\022#.hadoop.hdfs.RenewLeaseReq" +
-      "uestProto\032$.hadoop.hdfs.RenewLeaseRespon" +
-      "seProto\022]\n\014recoverLease\022%.hadoop.hdfs.Re" +
-      "coverLeaseRequestProto\032&.hadoop.hdfs.Rec" +
-      "overLeaseResponseProto\022X\n\ngetFsStats\022$.h" +
-      "adoop.hdfs.GetFsStatusRequestProto\032$.had" +
-      "oop.hdfs.GetFsStatsResponseProto\022l\n\021getD" +
-      "atanodeReport\022*.hadoop.hdfs.GetDatanodeR" +
-      "eportRequestProto\032+.hadoop.hdfs.GetDatan" +
-      "odeReportResponseProto\022x\n\025getPreferredBl",
-      "ockSize\022..hadoop.hdfs.GetPreferredBlockS" +
-      "izeRequestProto\032/.hadoop.hdfs.GetPreferr" +
-      "edBlockSizeResponseProto\022Z\n\013setSafeMode\022" +
-      "$.hadoop.hdfs.SetSafeModeRequestProto\032%." +
-      "hadoop.hdfs.SetSafeModeResponseProto\022`\n\r" +
-      "saveNamespace\022&.hadoop.hdfs.SaveNamespac" +
-      "eRequestProto\032\'.hadoop.hdfs.SaveNamespac" +
-      "eResponseProto\022T\n\trollEdits\022\".hadoop.hdf" +
-      "s.RollEditsRequestProto\032#.hadoop.hdfs.Ro" +
-      "llEditsResponseProto\022u\n\024restoreFailedSto",
-      "rage\022-.hadoop.hdfs.RestoreFailedStorageR" +
-      "equestProto\032..hadoop.hdfs.RestoreFailedS" +
-      "torageResponseProto\022]\n\014refreshNodes\022%.ha" +
-      "doop.hdfs.RefreshNodesRequestProto\032&.had" +
-      "oop.hdfs.RefreshNodesResponseProto\022f\n\017fi" +
-      "nalizeUpgrade\022(.hadoop.hdfs.FinalizeUpgr" +
-      "adeRequestProto\032).hadoop.hdfs.FinalizeUp" +
-      "gradeResponseProto\022c\n\016rollingUpgrade\022\'.h" +
-      "adoop.hdfs.RollingUpgradeRequestProto\032(." +
-      "hadoop.hdfs.RollingUpgradeResponseProto\022",
-      "x\n\025listCorruptFileBlocks\022..hadoop.hdfs.L" +
-      "istCorruptFileBlocksRequestProto\032/.hadoo" +
-      "p.hdfs.ListCorruptFileBlocksResponseProt" +
-      "o\022Q\n\010metaSave\022!.hadoop.hdfs.MetaSaveRequ" +
-      "estProto\032\".hadoop.hdfs.MetaSaveResponseP" +
-      "roto\022Z\n\013getFileInfo\022$.hadoop.hdfs.GetFil" +
-      "eInfoRequestProto\032%.hadoop.hdfs.GetFileI" +
-      "nfoResponseProto\022l\n\021addCacheDirective\022*." +
-      "hadoop.hdfs.AddCacheDirectiveRequestProt" +
-      "o\032+.hadoop.hdfs.AddCacheDirectiveRespons",
-      "eProto\022u\n\024modifyCacheDirective\022-.hadoop." +
-      "hdfs.ModifyCacheDirectiveRequestProto\032.." +
-      "hadoop.hdfs.ModifyCacheDirectiveResponse" +
-      "Proto\022u\n\024removeCacheDirective\022-.hadoop.h" +
-      "dfs.RemoveCacheDirectiveRequestProto\032..h" +
-      "adoop.hdfs.RemoveCacheDirectiveResponseP" +
-      "roto\022r\n\023listCacheDirectives\022,.hadoop.hdf" +
-      "s.ListCacheDirectivesRequestProto\032-.hado" +
-      "op.hdfs.ListCacheDirectivesResponseProto" +
-      "\022]\n\014addCachePool\022%.hadoop.hdfs.AddCacheP",
-      "oolRequestProto\032&.hadoop.hdfs.AddCachePo" +
-      "olResponseProto\022f\n\017modifyCachePool\022(.had" +
-      "oop.hdfs.ModifyCachePoolRequestProto\032).h" +
-      "adoop.hdfs.ModifyCachePoolResponseProto\022" +
-      "f\n\017removeCachePool\022(.hadoop.hdfs.RemoveC" +
-      "achePoolRequestProto\032).hadoop.hdfs.Remov" +
-      "eCachePoolResponseProto\022c\n\016listCachePool" +
-      "s\022\'.hadoop.hdfs.ListCachePoolsRequestPro" +
-      "to\032(.hadoop.hdfs.ListCachePoolsResponseP" +
-      "roto\022f\n\017getFileLinkInfo\022(.hadoop.hdfs.Ge",
-      "tFileLinkInfoRequestProto\032).hadoop.hdfs." +
-      "GetFileLinkInfoResponseProto\022l\n\021getConte" +
-      "ntSummary\022*.hadoop.hdfs.GetContentSummar" +
-      "yRequestProto\032+.hadoop.hdfs.GetContentSu" +
-      "mmaryResponseProto\022Q\n\010setQuota\022!.hadoop." +
-      "hdfs.SetQuotaRequestProto\032\".hadoop.hdfs." +
-      "SetQuotaResponseProto\022H\n\005fsync\022\036.hadoop." +
-      "hdfs.FsyncRequestProto\032\037.hadoop.hdfs.Fsy" +
-      "ncResponseProto\022Q\n\010setTimes\022!.hadoop.hdf" +
-      "s.SetTimesRequestProto\032\".hadoop.hdfs.Set",
-      "TimesResponseProto\022`\n\rcreateSymlink\022&.ha" +
-      "doop.hdfs.CreateSymlinkRequestProto\032\'.ha" +
-      "doop.hdfs.CreateSymlinkResponseProto\022`\n\r" +
-      "getLinkTarget\022&.hadoop.hdfs.GetLinkTarge" +
-      "tRequestProto\032\'.hadoop.hdfs.GetLinkTarge" +
-      "tResponseProto\022{\n\026updateBlockForPipeline" +
-      "\022/.hadoop.hdfs.UpdateBlockForPipelineReq" +
-      "uestProto\0320.hadoop.hdfs.UpdateBlockForPi" +
-      "pelineResponseProto\022c\n\016updatePipeline\022\'." +
-      "hadoop.hdfs.UpdatePipelineRequestProto\032(",
-      ".hadoop.hdfs.UpdatePipelineResponseProto" +
-      "\022s\n\022getDelegationToken\022-.hadoop.common.G" +
-      "etDelegationTokenRequestProto\032..hadoop.c" +
-      "ommon.GetDelegationTokenResponseProto\022y\n" +
-      "\024renewDelegationToken\022/.hadoop.common.Re" +
-      "newDelegationTokenRequestProto\0320.hadoop." +
-      "common.RenewDelegationTokenResponseProto" +
-      "\022|\n\025cancelDelegationToken\0220.hadoop.commo" +
-      "n.CancelDelegationTokenRequestProto\0321.ha" +
-      "doop.common.CancelDelegationTokenRespons",
-      "eProto\022u\n\024setBalancerBandwidth\022-.hadoop." +
-      "hdfs.SetBalancerBandwidthRequestProto\032.." +
-      "hadoop.hdfs.SetBalancerBandwidthResponse" +
-      "Proto\022u\n\024getDataEncryptionKey\022-.hadoop.h" +
-      "dfs.GetDataEncryptionKeyRequestProto\032..h" +
-      "adoop.hdfs.GetDataEncryptionKeyResponseP" +
-      "roto\022c\n\016createSnapshot\022\'.hadoop.hdfs.Cre" +
-      "ateSnapshotRequestProto\032(.hadoop.hdfs.Cr" +
-      "eateSnapshotResponseProto\022c\n\016renameSnaps" +
-      "hot\022\'.hadoop.hdfs.RenameSnapshotRequestP",
-      "roto\032(.hadoop.hdfs.RenameSnapshotRespons" +
-      "eProto\022`\n\rallowSnapshot\022&.hadoop.hdfs.Al" +
-      "lowSnapshotRequestProto\032\'.hadoop.hdfs.Al" +
-      "lowSnapshotResponseProto\022i\n\020disallowSnap" +
-      "shot\022).hadoop.hdfs.DisallowSnapshotReque" +
-      "stProto\032*.hadoop.hdfs.DisallowSnapshotRe" +
-      "sponseProto\022\207\001\n\032getSnapshottableDirListi" +
-      "ng\0223.hadoop.hdfs.GetSnapshottableDirList" +
-      "ingRequestProto\0324.hadoop.hdfs.GetSnapsho" +
-      "ttableDirListingResponseProto\022c\n\016deleteS",
-      "napshot\022\'.hadoop.hdfs.DeleteSnapshotRequ" +
-      "estProto\032(.hadoop.hdfs.DeleteSnapshotRes" +
-      "ponseProto\022x\n\025getSnapshotDiffReport\022..ha" +
-      "doop.hdfs.GetSnapshotDiffReportRequestPr" +
-      "oto\032/.hadoop.hdfs.GetSnapshotDiffReportR" +
-      "esponseProto\022]\n\014isFileClosed\022%.hadoop.hd" +
-      "fs.IsFileClosedRequestProto\032&.hadoop.hdf" +
-      "s.IsFileClosedResponseProto\022i\n\020modifyAcl" +
-      "Entries\022).hadoop.hdfs.ModifyAclEntriesRe" +
-      "questProto\032*.hadoop.hdfs.ModifyAclEntrie",
-      "sResponseProto\022i\n\020removeAclEntries\022).had" +
-      "oop.hdfs.RemoveAclEntriesRequestProto\032*." +
-      "hadoop.hdfs.RemoveAclEntriesResponseProt" +
-      "o\022i\n\020removeDefaultAcl\022).hadoop.hdfs.Remo" +
-      "veDefaultAclRequestProto\032*.hadoop.hdfs.R" +
-      "emoveDefaultAclResponseProto\022T\n\tremoveAc" +
-      "l\022\".hadoop.hdfs.RemoveAclRequestProto\032#." +
-      "hadoop.hdfs.RemoveAclResponseProto\022K\n\006se" +
-      "tAcl\022\037.hadoop.hdfs.SetAclRequestProto\032 ." +
-      "hadoop.hdfs.SetAclResponseProto\022]\n\014getAc",
-      "lStatus\022%.hadoop.hdfs.GetAclStatusReques" +
-      "tProto\032&.hadoop.hdfs.GetAclStatusRespons" +
-      "eProtoBK\n%org.apache.hadoop.hdfs.protoco" +
-      "l.protoB\034ClientNamenodeProtocolProtos\210\001\001" +
-      "\240\001\001"
+      "(\t\022\027\n\017snapshotOldName\030\002 \002(\t\022\027\n\017snapshotN" +
+      "ewName\030\003 \002(\t\"\035\n\033RenameSnapshotResponsePr" +
+      "oto\"1\n\031AllowSnapshotRequestProto\022\024\n\014snap" +
+      "shotRoot\030\001 \002(\t\"\034\n\032AllowSnapshotResponseP" +
+      "roto\"4\n\034DisallowSnapshotRequestProto\022\024\n\014" +
+      "snapshotRoot\030\001 \002(\t\"\037\n\035DisallowSnapshotRe" +
+      "sponseProto\"H\n\032DeleteSnapshotRequestProt" +
+      "o\022\024\n\014snapshotRoot\030\001 \002(\t\022\024\n\014snapshotName\030",
+      "\002 \002(\t\"\035\n\033DeleteSnapshotResponseProto*8\n\017" +
+      "CreateFlagProto\022\n\n\006CREATE\020\001\022\r\n\tOVERWRITE" +
+      "\020\002\022\n\n\006APPEND\020\004*6\n\027DatanodeReportTypeProt" +
+      "o\022\007\n\003ALL\020\001\022\010\n\004LIVE\020\002\022\010\n\004DEAD\020\003*O\n\023SafeMo" +
+      "deActionProto\022\022\n\016SAFEMODE_LEAVE\020\001\022\022\n\016SAF" +
+      "EMODE_ENTER\020\002\022\020\n\014SAFEMODE_GET\020\003*?\n\031Rolli" +
+      "ngUpgradeActionProto\022\t\n\005QUERY\020\001\022\t\n\005START" +
+      "\020\002\022\014\n\010FINALIZE\020\003*\033\n\016CacheFlagProto\022\t\n\005FO" +
+      "RCE\020\0012\3577\n\026ClientNamenodeProtocol\022l\n\021getB" +
+      "lockLocations\022*.hadoop.hdfs.GetBlockLoca",
+      "tionsRequestProto\032+.hadoop.hdfs.GetBlock" +
+      "LocationsResponseProto\022t\n\031getBlockLocati" +
+      "onsNoCreate\022*.hadoop.hdfs.GetBlockLocati" +
+      "onsRequestProto\032+.hadoop.hdfs.GetBlockLo" +
+      "cationsResponseProto\022l\n\021getServerDefault" +
+      "s\022*.hadoop.hdfs.GetServerDefaultsRequest" +
+      "Proto\032+.hadoop.hdfs.GetServerDefaultsRes" +
+      "ponseProto\022K\n\006create\022\037.hadoop.hdfs.Creat" +
+      "eRequestProto\032 .hadoop.hdfs.CreateRespon" +
+      "seProto\022K\n\006append\022\037.hadoop.hdfs.AppendRe",
+      "questProto\032 .hadoop.hdfs.AppendResponseP" +
+      "roto\022c\n\016overwriteBlock\022\'.hadoop.hdfs.Ove" +
+      "rwriteBlockRequestProto\032(.hadoop.hdfs.Ov" +
+      "erwriteBlockResponseProto\022c\n\016setReplicat" +
+      "ion\022\'.hadoop.hdfs.SetReplicationRequestP" +
+      "roto\032(.hadoop.hdfs.SetReplicationRespons" +
+      "eProto\022`\n\rsetPermission\022&.hadoop.hdfs.Se" +
+      "tPermissionRequestProto\032\'.hadoop.hdfs.Se" +
+      "tPermissionResponseProto\022Q\n\010setOwner\022!.h" +
+      "adoop.hdfs.SetOwnerRequestProto\032\".hadoop",
+      ".hdfs.SetOwnerResponseProto\022]\n\014abandonBl" +
+      "ock\022%.hadoop.hdfs.AbandonBlockRequestPro" +
+      "to\032&.hadoop.hdfs.AbandonBlockResponsePro" +
+      "to\022Q\n\010addBlock\022!.hadoop.hdfs.AddBlockReq" +
+      "uestProto\032\".hadoop.hdfs.AddBlockResponse" +
+      "Proto\022x\n\025getAdditionalDatanode\022..hadoop." +
+      "hdfs.GetAdditionalDatanodeRequestProto\032/" +
+      ".hadoop.hdfs.GetAdditionalDatanodeRespon" +
+      "seProto\022Q\n\010complete\022!.hadoop.hdfs.Comple" +
+      "teRequestProto\032\".hadoop.hdfs.CompleteRes",
+      "ponseProto\022f\n\017reportBadBlocks\022(.hadoop.h" +
+      "dfs.ReportBadBlocksRequestProto\032).hadoop" +
+      ".hdfs.ReportBadBlocksResponseProto\022K\n\006co" +
+      "ncat\022\037.hadoop.hdfs.ConcatRequestProto\032 ." +
+      "hadoop.hdfs.ConcatResponseProto\022K\n\006renam" +
+      "e\022\037.hadoop.hdfs.RenameRequestProto\032 .had" +
+      "oop.hdfs.RenameResponseProto\022N\n\007rename2\022" +
+      " .hadoop.hdfs.Rename2RequestProto\032!.hado" +
+      "op.hdfs.Rename2ResponseProto\022K\n\006delete\022\037" +
+      ".hadoop.hdfs.DeleteRequestProto\032 .hadoop",
+      ".hdfs.DeleteResponseProto\022K\n\006mkdirs\022\037.ha" +
+      "doop.hdfs.MkdirsRequestProto\032 .hadoop.hd" +
+      "fs.MkdirsResponseProto\022W\n\ngetListing\022#.h" +
+      "adoop.hdfs.GetListingRequestProto\032$.hado" +
+      "op.hdfs.GetListingResponseProto\022W\n\nrenew" +
+      "Lease\022#.hadoop.hdfs.RenewLeaseRequestPro" +
+      "to\032$.hadoop.hdfs.RenewLeaseResponseProto" +
+      "\022]\n\014recoverLease\022%.hadoop.hdfs.RecoverLe" +
+      "aseRequestProto\032&.hadoop.hdfs.RecoverLea" +
+      "seResponseProto\022X\n\ngetFsStats\022$.hadoop.h",
+      "dfs.GetFsStatusRequestProto\032$.hadoop.hdf" +
+      "s.GetFsStatsResponseProto\022l\n\021getDatanode" +
+      "Report\022*.hadoop.hdfs.GetDatanodeReportRe" +
+      "questProto\032+.hadoop.hdfs.GetDatanodeRepo" +
+      "rtResponseProto\022x\n\025getPreferredBlockSize" +
+      "\022..hadoop.hdfs.GetPreferredBlockSizeRequ" +
+      "estProto\032/.hadoop.hdfs.GetPreferredBlock" +
+      "SizeResponseProto\022Z\n\013setSafeMode\022$.hadoo" +
+      "p.hdfs.SetSafeModeRequestProto\032%.hadoop." +
+      "hdfs.SetSafeModeResponseProto\022`\n\rsaveNam",
+      "espace\022&.hadoop.hdfs.SaveNamespaceReques" +
+      "tProto\032\'.hadoop.hdfs.SaveNamespaceRespon" +
+      "seProto\022T\n\trollEdits\022\".hadoop.hdfs.RollE" +
+      "ditsRequestProto\032#.hadoop.hdfs.RollEdits" +
+      "ResponseProto\022u\n\024restoreFailedStorage\022-." +
+      "hadoop.hdfs.RestoreFailedStorageRequestP" +
+      "roto\032..hadoop.hdfs.RestoreFailedStorageR" +
+      "esponseProto\022]\n\014refreshNodes\022%.hadoop.hd" +
+      "fs.RefreshNodesRequestProto\032&.hadoop.hdf" +
+      "s.RefreshNodesResponseProto\022f\n\017finalizeU",
+      "pgrade\022(.hadoop.hdfs.FinalizeUpgradeRequ" +
+      "estProto\032).hadoop.hdfs.FinalizeUpgradeRe" +
+      "sponseProto\022c\n\016rollingUpgrade\022\'.hadoop.h" +
+      "dfs.RollingUpgradeRequestProto\032(.hadoop." +
+      "hdfs.RollingUpgradeResponseProto\022x\n\025list" +
+      "CorruptFileBlocks\022..hadoop.hdfs.ListCorr" +
+      "uptFileBlocksRequestProto\032/.hadoop.hdfs." +
+      "ListCorruptFileBlocksResponseProto\022Q\n\010me" +
+      "taSave\022!.hadoop.hdfs.MetaSaveRequestProt" +
+      "o\032\".hadoop.hdfs.MetaSaveResponseProto\022Z\n",
+      "\013getFileInfo\022$.hadoop.hdfs.GetFileInfoRe" +
+      "questProto\032%.hadoop.hdfs.GetFileInfoResp" +
+      "onseProto\022l\n\021addCacheDirective\022*.hadoop." +
+      "hdfs.AddCacheDirectiveRequestProto\032+.had" +
+      "oop.hdfs.AddCacheDirectiveResponseProto\022" +
+      "u\n\024modifyCacheDirective\022-.hadoop.hdfs.Mo" +
+      "difyCacheDirectiveRequestProto\032..hadoop." +
+      "hdfs.ModifyCacheDirectiveResponseProto\022u" +
+      "\n\024removeCacheDirective\022-.hadoop.hdfs.Rem" +
+      "oveCacheDirectiveRequestProto\032..hadoop.h",
+      "dfs.RemoveCacheDirectiveResponseProto\022r\n" +
+      "\023listCacheDirectives\022,.hadoop.hdfs.ListC" +
+      "acheDirectivesRequestProto\032-.hadoop.hdfs" +
+      ".ListCacheDirectivesResponseProto\022]\n\014add" +
+      "CachePool\022%.hadoop.hdfs.AddCachePoolRequ" +
+      "estProto\032&.hadoop.hdfs.AddCachePoolRespo" +
+      "nseProto\022f\n\017modifyCachePool\022(.hadoop.hdf" +
+      "s.ModifyCachePoolRequestProto\032).hadoop.h" +
+      "dfs.ModifyCachePoolResponseProto\022f\n\017remo" +
+      "veCachePool\022(.hadoop.hdfs.RemoveCachePoo",
+      "lRequestProto\032).hadoop.hdfs.RemoveCacheP" +
+      "oolResponseProto\022c\n\016listCachePools\022\'.had" +
+      "oop.hdfs.ListCachePoolsRequestProto\032(.ha" +
+      "doop.hdfs.ListCachePoolsResponseProto\022f\n" +
+      "\017getFileLinkInfo\022(.hadoop.hdfs.GetFileLi" +
+      "nkInfoRequestProto\032).hadoop.hdfs.GetFile" +
+      "LinkInfoResponseProto\022l\n\021getContentSumma" +
+      "ry\022*.hadoop.hdfs.GetContentSummaryReques" +
+      "tProto\032+.hadoop.hdfs.GetContentSummaryRe" +
+      "sponseProto\022Q\n\010setQuota\022!.hadoop.hdfs.Se",
+      "tQuotaRequestProto\032\".hadoop.hdfs.SetQuot" +
+      "aResponseProto\022H\n\005fsync\022\036.hadoop.hdfs.Fs" +
+      "yncRequestProto\032\037.hadoop.hdfs.FsyncRespo" +
+      "nseProto\022Q\n\010setTimes\022!.hadoop.hdfs.SetTi" +
+      "mesRequestProto\032\".hadoop.hdfs.SetTimesRe" +
+      "sponseProto\022`\n\rcreateSymlink\022&.hadoop.hd" +
+      "fs.CreateSymlinkRequestProto\032\'.hadoop.hd" +
+      "fs.CreateSymlinkResponseProto\022`\n\rgetLink" +
+      "Target\022&.hadoop.hdfs.GetLinkTargetReques" +
+      "tProto\032\'.hadoop.hdfs.GetLinkTargetRespon",
+      "seProto\022{\n\026updateBlockForPipeline\022/.hado" +
+      "op.hdfs.UpdateBlockForPipelineRequestPro" +
+      "to\0320.hadoop.hdfs.UpdateBlockForPipelineR" +
+      "esponseProto\022c\n\016updatePipeline\022\'.hadoop." +
+      "hdfs.UpdatePipelineRequestProto\032(.hadoop" +
+      ".hdfs.UpdatePipelineResponseProto\022s\n\022get" +
+      "DelegationToken\022-.hadoop.common.GetDeleg" +
+      "ationTokenRequestProto\032..hadoop.common.G" +
+      "etDelegationTokenResponseProto\022y\n\024renewD" +
+      "elegationToken\022/.hadoop.common.RenewDele",
+      "gationTokenRequestProto\0320.hadoop.common." +
+      "RenewDelegationTokenResponseProto\022|\n\025can" +
+      "celDelegationToken\0220.hadoop.common.Cance" +
+      "lDelegationTokenRequestProto\0321.hadoop.co" +
+      "mmon.CancelDelegationTokenResponseProto\022" +
+      "u\n\024setBalancerBandwidth\022-.hadoop.hdfs.Se" +
+      "tBalancerBandwidthRequestProto\032..hadoop." +
+      "hdfs.SetBalancerBandwidthResponseProto\022u" +
+      "\n\024getDataEncryptionKey\022-.hadoop.hdfs.Get" +
+      "DataEncryptionKeyRequestProto\032..hadoop.h",
+      "dfs.GetDataEncryptionKeyResponseProto\022c\n" +
+      "\016createSnapshot\022\'.hadoop.hdfs.CreateSnap" +
+      "shotRequestProto\032(.hadoop.hdfs.CreateSna" +
+      "pshotResponseProto\022c\n\016renameSnapshot\022\'.h" +
+      "adoop.hdfs.RenameSnapshotRequestProto\032(." +
+      "hadoop.hdfs.RenameSnapshotResponseProto\022" +
+      "`\n\rallowSnapshot\022&.hadoop.hdfs.AllowSnap" +
+      "shotRequestProto\032\'.hadoop.hdfs.AllowSnap" +
+      "shotResponseProto\022i\n\020disallowSnapshot\022)." +
+      "hadoop.hdfs.DisallowSnapshotRequestProto",
+      "\032*.hadoop.hdfs.DisallowSnapshotResponseP" +
+      "roto\022\207\001\n\032getSnapshottableDirListing\0223.ha" +
+      "doop.hdfs.GetSnapshottableDirListingRequ" +
+      "estProto\0324.hadoop.hdfs.GetSnapshottableD" +
+      "irListingResponseProto\022c\n\016deleteSnapshot" +
+      "\022\'.hadoop.hdfs.DeleteSnapshotRequestProt" +
+      "o\032(.hadoop.hdfs.DeleteSnapshotResponsePr" +
+      "oto\022x\n\025getSnapshotDiffReport\022..hadoop.hd" +
+      "fs.GetSnapshotDiffReportRequestProto\032/.h" +
+      "adoop.hdfs.GetSnapshotDiffReportResponse",
+      "Proto\022]\n\014isFileClosed\022%.hadoop.hdfs.IsFi" +
+      "leClosedRequestProto\032&.hadoop.hdfs.IsFil" +
+      "eClosedResponseProto\022i\n\020modifyAclEntries" +
+      "\022).hadoop.hdfs.ModifyAclEntriesRequestPr" +
+      "oto\032*.hadoop.hdfs.ModifyAclEntriesRespon" +
+      "seProto\022i\n\020removeAclEntries\022).hadoop.hdf" +
+      "s.RemoveAclEntriesRequestProto\032*.hadoop." +
+      "hdfs.RemoveAclEntriesResponseProto\022i\n\020re" +
+      "moveDefaultAcl\022).hadoop.hdfs.RemoveDefau" +
+      "ltAclRequestProto\032*.hadoop.hdfs.RemoveDe",
+      "faultAclResponseProto\022T\n\tremoveAcl\022\".had" +
+      "oop.hdfs.RemoveAclRequestProto\032#.hadoop." +
+      "hdfs.RemoveAclResponseProto\022K\n\006setAcl\022\037." +
+      "hadoop.hdfs.SetAclRequestProto\032 .hadoop." +
+      "hdfs.SetAclResponseProto\022]\n\014getAclStatus" +
+      "\022%.hadoop.hdfs.GetAclStatusRequestProto\032" +
+      "&.hadoop.hdfs.GetAclStatusResponseProtoB" +
+      "K\n%org.apache.hadoop.hdfs.protocol.proto" +
+      "B\034ClientNamenodeProtocolProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -90128,37 +90132,37 @@ public final class ClientNamenodeProtocolProtos {
           internal_static_hadoop_hdfs_CreateRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_CreateRequestProto_descriptor,
-              new java.lang.String[] { "Src", "Masked", "ClientName", "CreateFlag", "CreateParent", "Replication", "BlockSize", "Vc", });
+              new java.lang.String[] { "Src", "Masked", "ClientName", "CreateFlag", "CreateParent", "Replication", "BlockSize", "Hlc", });
           internal_static_hadoop_hdfs_CreateResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(5);
           internal_static_hadoop_hdfs_CreateResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_CreateResponseProto_descriptor,
-              new java.lang.String[] { "Fs", "Vc", });
+              new java.lang.String[] { "Fs", "Hlc", });
           internal_static_hadoop_hdfs_AppendRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(6);
           internal_static_hadoop_hdfs_AppendRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_AppendRequestProto_descriptor,
-              new java.lang.String[] { "Src", "ClientName", "Vc", });
+              new java.lang.String[] { "Src", "ClientName", "Hlc", });
           internal_static_hadoop_hdfs_AppendResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(7);
           internal_static_hadoop_hdfs_AppendResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_AppendResponseProto_descriptor,
-              new java.lang.String[] { "Block", "Vc", });
+              new java.lang.String[] { "Block", "Hlc", });
           internal_static_hadoop_hdfs_OverwriteBlockRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(8);
           internal_static_hadoop_hdfs_OverwriteBlockRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_OverwriteBlockRequestProto_descriptor,
-              new java.lang.String[] { "Src", "Previous", "BIndex", "FileId", "ClientName", "Vc", });
+              new java.lang.String[] { "Src", "Previous", "BIndex", "FileId", "ClientName", "Hlc", });
           internal_static_hadoop_hdfs_OverwriteBlockResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(9);
           internal_static_hadoop_hdfs_OverwriteBlockResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_OverwriteBlockResponseProto_descriptor,
-              new java.lang.String[] { "Block", "Vc", });
+              new java.lang.String[] { "Block", "Hlc", });
           internal_static_hadoop_hdfs_SetReplicationRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(10);
           internal_static_hadoop_hdfs_SetReplicationRequestProto_fieldAccessorTable = new
@@ -90200,25 +90204,25 @@ public final class ClientNamenodeProtocolProtos {
           internal_static_hadoop_hdfs_AbandonBlockRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_AbandonBlockRequestProto_descriptor,
-              new java.lang.String[] { "B", "Src", "Holder", "Vc", });
+              new java.lang.String[] { "B", "Src", "Holder", "Hlc", });
           internal_static_hadoop_hdfs_AbandonBlockResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(17);
           internal_static_hadoop_hdfs_AbandonBlockResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_AbandonBlockResponseProto_descriptor,
-              new java.lang.String[] { "Vc", });
+              new java.lang.String[] { "Hlc", });
           internal_static_hadoop_hdfs_AddBlockRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(18);
           internal_static_hadoop_hdfs_AddBlockRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_AddBlockRequestProto_descriptor,
-              new java.lang.String[] { "Src", "ClientName", "Previous", "ExcludeNodes", "FileId", "FavoredNodes", "Vc", });
+              new java.lang.String[] { "Src", "ClientName", "Previous", "ExcludeNodes", "FileId", "FavoredNodes", "Hlc", });
           internal_static_hadoop_hdfs_AddBlockResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(19);
           internal_static_hadoop_hdfs_AddBlockResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_AddBlockResponseProto_descriptor,
-              new java.lang.String[] { "Block", "Vc", });
+              new java.lang.String[] { "Block", "Hlc", });
           internal_static_hadoop_hdfs_GetAdditionalDatanodeRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(20);
           internal_static_hadoop_hdfs_GetAdditionalDatanodeRequestProto_fieldAccessorTable = new
@@ -90236,13 +90240,13 @@ public final class ClientNamenodeProtocolProtos {
           internal_static_hadoop_hdfs_CompleteRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_CompleteRequestProto_descriptor,
-              new java.lang.String[] { "Src", "ClientName", "Last", "FileId", "Vc", });
+              new java.lang.String[] { "Src", "ClientName", "Last", "FileId", "Hlc", });
           internal_static_hadoop_hdfs_CompleteResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(23);
           internal_static_hadoop_hdfs_CompleteResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_CompleteResponseProto_descriptor,
-              new java.lang.String[] { "Result", "Vc", });
+              new java.lang.String[] { "Result", "Hlc", });
           internal_static_hadoop_hdfs_ReportBadBlocksRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(24);
           internal_static_hadoop_hdfs_ReportBadBlocksRequestProto_fieldAccessorTable = new
@@ -90260,61 +90264,61 @@ public final class ClientNamenodeProtocolProtos {
           internal_static_hadoop_hdfs_ConcatRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_ConcatRequestProto_descriptor,
-              new java.lang.String[] { "Trg", "Srcs", "Vc", });
+              new java.lang.String[] { "Trg", "Srcs", "Hlc", });
           internal_static_hadoop_hdfs_ConcatResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(27);
           internal_static_hadoop_hdfs_ConcatResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_ConcatResponseProto_descriptor,
-              new java.lang.String[] { "Vc", });
+              new java.lang.String[] { "Hlc", });
           internal_static_hadoop_hdfs_RenameRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(28);
           internal_static_hadoop_hdfs_RenameRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_RenameRequestProto_descriptor,
-              new java.lang.String[] { "Src", "Dst", "Vc", });
+              new java.lang.String[] { "Src", "Dst", "Hlc", });
           internal_static_hadoop_hdfs_RenameResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(29);
           internal_static_hadoop_hdfs_RenameResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_RenameResponseProto_descriptor,
-              new java.lang.String[] { "Result", "Vc", });
+              new java.lang.String[] { "Result", "Hlc", });
           internal_static_hadoop_hdfs_Rename2RequestProto_descriptor =
             getDescriptor().getMessageTypes().get(30);
           internal_static_hadoop_hdfs_Rename2RequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_Rename2RequestProto_descriptor,
-              new java.lang.String[] { "Src", "Dst", "OverwriteDest", "Vc", });
+              new java.lang.String[] { "Src", "Dst", "OverwriteDest", "Hlc", });
           internal_static_hadoop_hdfs_Rename2ResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(31);
           internal_static_hadoop_hdfs_Rename2ResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_Rename2ResponseProto_descriptor,
-              new java.lang.String[] { "Vc", });
+              new java.lang.String[] { "Hlc", });
           internal_static_hadoop_hdfs_DeleteRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(32);
           internal_static_hadoop_hdfs_DeleteRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_DeleteRequestProto_descriptor,
-              new java.lang.String[] { "Src", "Recursive", "Vc", });
+              new java.lang.String[] { "Src", "Recursive", "Hlc", });
           internal_static_hadoop_hdfs_DeleteResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(33);
           internal_static_hadoop_hdfs_DeleteResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_DeleteResponseProto_descriptor,
-              new java.lang.String[] { "Result", "Vc", });
+              new java.lang.String[] { "Result", "Hlc", });
           internal_static_hadoop_hdfs_MkdirsRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(34);
           internal_static_hadoop_hdfs_MkdirsRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_MkdirsRequestProto_descriptor,
-              new java.lang.String[] { "Src", "Masked", "CreateParent", "Vc", });
+              new java.lang.String[] { "Src", "Masked", "CreateParent", "Hlc", });
           internal_static_hadoop_hdfs_MkdirsResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(35);
           internal_static_hadoop_hdfs_MkdirsResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_MkdirsResponseProto_descriptor,
-              new java.lang.String[] { "Result", "Vc", });
+              new java.lang.String[] { "Result", "Hlc", });
           internal_static_hadoop_hdfs_GetListingRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(36);
           internal_static_hadoop_hdfs_GetListingRequestProto_fieldAccessorTable = new
@@ -90728,13 +90732,13 @@ public final class ClientNamenodeProtocolProtos {
           internal_static_hadoop_hdfs_FsyncRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_FsyncRequestProto_descriptor,
-              new java.lang.String[] { "Src", "Client", "LastBlockLength", "Vc", });
+              new java.lang.String[] { "Src", "Client", "LastBlockLength", "Hlc", });
           internal_static_hadoop_hdfs_FsyncResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(105);
           internal_static_hadoop_hdfs_FsyncResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_hdfs_FsyncResponseProto_descriptor,
-              new java.lang.String[] { "Vc", });
+              new java.lang.String[] { "Hlc", });
           internal_static_hadoop_hdfs_SetTimesRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(106);
           internal_static_hadoop_hdfs_SetTimesRequestProto_fieldAccessorTable = new

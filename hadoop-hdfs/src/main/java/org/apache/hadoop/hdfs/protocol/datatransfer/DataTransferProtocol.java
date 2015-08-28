@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs.protocol.datatransfer;
 
 import java.io.IOException;
 
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -31,7 +32,8 @@ import org.apache.hadoop.hdfs.server.datanode.CachingStrategy;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.DataChecksum;
 
-import edu.cornell.cs.sa.VectorClock;
+//import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * Transfer data to/from datanode using a streaming protocol.
@@ -101,7 +103,7 @@ public interface DataTransferProtocol {
       final long offset,
       //}
       //HDFSRS_VC
-      final VectorClock mvc
+      final HybridLogicalClock mhlc
       //}
       ) throws IOException;
 
@@ -121,22 +123,13 @@ public interface DataTransferProtocol {
       final String clientName,
       final DatanodeInfo[] targets) throws IOException;
 
-//  public void snapshotI1(final long rtc, final String bpid) throws IOException;
+  
   /**
    * @param rtc
-   * @param nnrank rank of the namenode
-   * @param nnver version of the namenode
    * @param bpid
    * @throws IOException
    */
-  public void snapshotI1(final long rtc, final int nnrank, final long nnver, final String bpid) throws IOException;
-  /**
-   * @param rtc
-   * @param eid version for the corresponding datanode
-   * @param bpid
-   * @throws IOException
-   */
-  public void snapshotI2(final long rtc, final long eid, final String bpid) throws IOException;
+  public void snapshot(final long rtc, final String bpid) throws IOException;
   
   /**
    * Request short circuit access file descriptors from a DataNode.
@@ -182,7 +175,7 @@ public interface DataTransferProtocol {
       final Token<BlockTokenIdentifier> blockToken,
       final String delHint,
       final DatanodeInfo source,
-      final VectorClock mvc/*HDFSRS_VC*/) throws IOException;
+      final HybridLogicalClock mhlc) throws IOException;
 
   /**
    * Copy a block. 

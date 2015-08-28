@@ -1,7 +1,5 @@
 package edu.cornell.cs.sa;
 
-import java.io.*;
-import java.util.*;
 import edu.cornell.cs.blog.*;
 
 public class HybridLogicalClock implements Comparable<HybridLogicalClock>
@@ -47,6 +45,11 @@ public class HybridLogicalClock implements Comparable<HybridLogicalClock>
       c = 0;
   }
   
+  synchronized public HybridLogicalClock tickCopy(){
+    tick();
+    return new HybridLogicalClock(this);
+  }
+  
   synchronized public void tickOnRecv(HybridLogicalClock mhlc) {
     long previous_r = r;
     long rtc = JNIBlog.readLocalRTC();
@@ -62,6 +65,17 @@ public class HybridLogicalClock implements Comparable<HybridLogicalClock>
       c = 0;
     mhlc.r = r;
     mhlc.c = c;
+  }
+  
+  synchronized public HybridLogicalClock tickOnRecvCopy(HybridLogicalClock mhlc){
+    tickOnRecv(mhlc);
+    return new HybridLogicalClock(this);
+  }
+  
+  synchronized public void tickOnRecvWriteBack(HybridLogicalClock mhlc){
+    tickOnRecv(mhlc);
+    mhlc.c = this.c;
+    mhlc.r = this.r;
   }
   
   synchronized public void mockTick(long rtc) {

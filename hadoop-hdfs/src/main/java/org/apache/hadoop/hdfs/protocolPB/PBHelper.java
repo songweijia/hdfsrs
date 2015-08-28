@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs.protocolPB;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -134,13 +135,13 @@ import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.FsPermissionProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.FsServerDefaultsProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HdfsFileStatusProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HdfsFileStatusProto.FileType;
+import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HybridLogicalClockProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlockProto.Builder;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.LocatedBlocksProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.NamenodeCommandProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.NamenodeRegistrationProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.NamenodeRegistrationProto.NamenodeRoleProto;
-import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto.VectorClockEntry;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.NamespaceInfoProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.RecoveringBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.RemoteEditLogManifestProto;
@@ -154,7 +155,7 @@ import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.SnapshottableDirectorySt
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.StorageInfoProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.StorageTypeProto;
 import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.StorageUuidsProto;
-import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto;
+//import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.VectorClockProto;
 import org.apache.hadoop.hdfs.protocol.proto.JournalProtocolProtos.JournalInfoProto;
 import org.apache.hadoop.hdfs.security.token.block.BlockKey;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier;
@@ -200,13 +201,14 @@ import org.apache.hadoop.security.proto.SecurityProtos.TokenProto;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.DataChecksum;
 
-import com.google.common.base.Preconditions;
+//import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Shorts;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
+//import edu.cornell.cs.sa.VectorClock;
 
 /**
  * Utilities for converting protobuf classes to and from implementation classes
@@ -995,14 +997,16 @@ public class PBHelper {
     }
 
     int action = DatanodeProtocol.DNA_UNKNOWN;
-    VectorClock mvc = null; /*HDFSRS_VC*/
+    //VectorClock mvc = null; /*HDFSRS_VC*/
+    HybridLogicalClock hlc = null; //HDFSRS_HLC
     switch (blkCmd.getAction()) {
     case TRANSFER:
       action = DatanodeProtocol.DNA_TRANSFER;
       break;
     case INVALIDATE:
       action = DatanodeProtocol.DNA_INVALIDATE;
-      mvc = convert(blkCmd.getMvc());
+//      mvc = convert(blkCmd.getMvc());
+      hlc = convert(blkCmd.getMhlc());
       break;
     case SHUTDOWN:
       action = DatanodeProtocol.DNA_SHUTDOWN;
@@ -1011,7 +1015,7 @@ public class PBHelper {
       throw new AssertionError("Unknown action type: " + blkCmd.getAction());
     }
     return new BlockCommand(action, blkCmd.getBlockPoolId(), blocks, targets,
-        targetStorageIDs, mvc/*HDFSRS_VC*/);
+        targetStorageIDs, hlc/*HDFSRS_HLC*/);
   }
 
   public static BlockIdCommand convert(BlockIdCommandProto blkIdCmd) {
@@ -2117,21 +2121,38 @@ public class PBHelper {
   }
   
   ////HDFSRS_VC: helper for vector clock
+/*
   public static VectorClock convert(VectorClockProto vcp){
       VectorClock vc = new VectorClock();
-      for(VectorClockProto.VectorClockEntry vce : vcp.getEntryList())
-    	  vc.vc.put(vce.getRank(),vce.getVc());
+      int i=0;
+      for(long vce : vcp.getEntryList())
+    	  vc.vcs[i++]=vce;
       return vc;
   }
   
   public static VectorClockProto convert(VectorClock vc){
 	  VectorClockProto.Builder vcp = VectorClockProto.newBuilder();
 	  
-	  for(int rank : vc.vc.keySet())
-		  vcp.addEntry(VectorClockEntry.newBuilder().setRank(rank).setVc(vc.vc.get(rank)));
+	  for(long vcv: vc.vcs)
+		  vcp.addEntry(vcv);
 	  
 	  return vcp.build();
   }
+*/
   ////HDFSRS_VC
+  ////HDFSRS_HLC
+  public static HybridLogicalClock convert(HybridLogicalClockProto hlcp){
+    HybridLogicalClock hlc = new HybridLogicalClock();
+    hlc.r = hlcp.getR();
+    hlc.c = hlcp.getC();
+    return hlc;
+  }
+  public static HybridLogicalClockProto convert(HybridLogicalClock hlc){
+    HybridLogicalClockProto.Builder hlcp = HybridLogicalClockProto.newBuilder();
+    hlcp.setR(hlc.r);
+    hlcp.setC(hlc.c);
+    return hlcp.build();
+  }
+  ////HDFSRS_HLC
 }
 

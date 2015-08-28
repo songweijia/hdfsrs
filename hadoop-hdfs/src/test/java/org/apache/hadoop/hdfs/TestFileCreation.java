@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hdfs;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_DEFAULT;
+
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
@@ -84,7 +85,7 @@ import org.apache.hadoop.util.Time;
 import org.apache.log4j.Level;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * This class tests various cases during file creation.
@@ -99,12 +100,12 @@ public class TestFileCreation {
     ((Log4JLogger)DFSClient.LOG).getLogger().setLevel(Level.ALL);
   }
 
-  static VectorClock vc = new VectorClock();
-  static VectorClock copyVC(){
-	  return new VectorClock(vc);
+  static HybridLogicalClock hlc = new HybridLogicalClock();
+  static HybridLogicalClock copyHLC(){
+      return new HybridLogicalClock(hlc);
   }
-  static void tickOn(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  static void tickOn(HybridLogicalClock mhlc){
+      hlc.tickOnRecv(mhlc);
   }
 
 
@@ -1138,11 +1139,11 @@ public class TestFileCreation {
         switch (method) {
         case DIRECT_NN_RPC:
           try {
-            VectorClock mvc;
+            HybridLogicalClock mhlc;
             nnrpc.create(pathStr, new FsPermission((short)0755), "client",
                 new EnumSetWritable<CreateFlag>(EnumSet.of(CreateFlag.CREATE)),
-                true, (short)1, 128*1024*1024L, mvc=copyVC());
-            tickOn(mvc);
+                true, (short)1, 128*1024*1024L, mhlc=copyHLC());
+            tickOn(mhlc);
             fail("Should have thrown exception when creating '"
                 + pathStr + "'" + " by " + method);
           } catch (InvalidPathException ipe) {
@@ -1198,10 +1199,10 @@ public class TestFileCreation {
       createFile(dfs, f, 3);
       long someOtherFileId = -1;
       try {
-        VectorClock mvc;
+        HybridLogicalClock mhlc;
         cluster.getNameNodeRpc()
-            .complete(f.toString(), client.clientName, null, someOtherFileId, mvc=copyVC());
-        tickOn(mvc);
+            .complete(f.toString(), client.clientName, null, someOtherFileId, mhlc=copyHLC());
+        tickOn(mhlc);
         fail();
       } catch(FileNotFoundException fnf) {
         FileSystem.LOG.info("Caught Expected FileNotFoundException: ", fnf);

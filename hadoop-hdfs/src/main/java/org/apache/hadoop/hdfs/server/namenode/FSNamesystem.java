@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_DEFAULT;
+
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_DEFAULT;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY;
@@ -190,7 +191,6 @@ import org.apache.hadoop.hdfs.protocol.SnapshottableDirectoryStatus;
 import org.apache.hadoop.hdfs.protocol.datatransfer.ReplaceDatanodeOnFailure;
 import org.apache.hadoop.hdfs.protocol.datatransfer.Sender;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.BlockOpResponseProto;
-import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpResponseSnapshotI1Proto;
 import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.AccessMode;
@@ -286,7 +286,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import edu.cornell.cs.blog.JNIBlog;
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /***************************************************
  * FSNamesystem does the actual bookkeeping work for the
@@ -7162,7 +7162,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   
   final int timeout = 3000;
   
-  private void sendToDNs(String bpid,long rtc,VectorClock nnvc) throws IOException {
+  private void sendToDNs(String bpid,long rtc) throws IOException {
   	List<DatanodeDescriptor> dnList = 
   			blockManager.getDatanodeManager().getDatanodeListForReport(DatanodeReportType.LIVE);
   	
@@ -7175,62 +7175,28 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   		Socket s = socketFactory.createSocket();
   		s.connect(NetUtils.createSocketAddr(dd.getXferAddr(false)));
   		s.setSoTimeout(timeout);
-      s.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
+  		if(HdfsConstants.getDataSocketSize() > 0)
+  		  s.setSendBufferSize(HdfsConstants.getDataSocketSize());
       
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
           NetUtils.getOutputStream(s, timeout),
           HdfsConstants.SMALL_BUFFER_SIZE));
-      new Sender(out).snapshotI1(rtc, NameNode.myrank, nnvc.GetVectorClockValue(NameNode.myrank), bpid);
+      new Sender(out).snapshot(rtc, bpid);
       s.shutdownOutput();
       clients.add(s);
   	}
-  	
-  	
-  	VectorClock [] vcs = new VectorClock[clients.size()+1];
-  	vcs[0] = new VectorClock(nnvc);
-  	int pos = 1;
-    //STEP I.2: collect vector clock report and calculate
-    for (Socket s : clients) {
-      DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
-    	try{
-        OpResponseSnapshotI1Proto res = OpResponseSnapshotI1Proto.parseFrom(PBHelper.vintPrefixed(in));
-        rankToSockAddr.put(res.getMyrank(), s.getRemoteSocketAddress());
-        //COLLECT VectorClock
-        vcs[pos++] = PBHelper.convert(res.getVc());
-    	}finally{
-        IOUtils.closeStream(in);
-        IOUtils.closeSocket(s);
-    	}
-    }
-    VectorClock cut = (VectorClock)vcs[0].getCausallyConsistentClock(vcs);
-    clients.clear();
-    
-    //STEP I.3: snapshot command
-    for (Map.Entry<Integer, SocketAddress> e: rankToSockAddr.entrySet()){
-    	Socket s  =socketFactory.createSocket();
-    	s.connect(e.getValue());
-  		s.setSoTimeout(timeout);
-      s.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
 
-      DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
-      		NetUtils.getOutputStream(s,timeout),
-      		HdfsConstants.SMALL_BUFFER_SIZE));
-      
-    	new Sender(out).snapshotI2(rtc, cut.vc.get(e.getKey()), bpid);
-    	s.shutdownOutput();
-    	clients.add(s);
-    }
     for (Socket s : clients) {
       DataInputStream in = new DataInputStream(NetUtils.getInputStream(s));
-    	try{
+      try{
         BlockOpResponseProto response = BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(in));
         if (SUCCESS != response.getStatus()) {
           throw new IOException("Failed to add a datanode:" + s.getInetAddress().getHostAddress());
         }
-    	}finally{
+      }finally{
         IOUtils.closeStream(in);
         IOUtils.closeSocket(s);
-    	}
+      }
     }
   }
   
@@ -7247,8 +7213,6 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     writeLock();
     //long timestamp = Time.now();
     long timestamp = JNIBlog.readLocalRTC();
-//    long nneid = NameNode.vc.vc.get(NameNode.myrank);
-    VectorClock nnvc = new VectorClock(NameNode.vc);
     try {
       checkOperation(OperationCategory.WRITE);
       checkNameNodeSafeMode("Cannot create snapshot for " + snapshotRoot);
@@ -7257,7 +7221,6 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
       }
 
       if (snapshotName == null || snapshotName.isEmpty()) {
-//        snapshotName = Snapshot.generateDefaultSnapshotName();
         snapshotName = ""+timestamp;
       }
       if(snapshotName != null){
@@ -7282,7 +7245,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
 //    Map<DatanodeInfo, List<ExtendedBlock>> blks = new HashMap<DatanodeInfo, List<ExtendedBlock>>();
 //    getBlocks(srcRoot, blks);
     
-    sendToDNs(this.blockPoolId, timestamp, nnvc);
+    sendToDNs(this.blockPoolId, timestamp);
 
     if (auditLog.isInfoEnabled() && isExternalInvocation()) {
       logAuditEvent(true, "createSnapshot", snapshotRoot, snapshotPath, null);

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import java.io.File;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,7 +46,7 @@ import org.apache.hadoop.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /** Test if a datanode can correctly upgrade itself */
 public class TestDatanodeRestart {
@@ -92,7 +93,7 @@ public class TestDatanodeRestart {
   private void testRbwReplicas(MiniDFSCluster cluster, boolean isCorrupt) 
   throws IOException {
     FSDataOutputStream out = null;
-    VectorClock vc = new VectorClock();
+    HybridLogicalClock hlc = new HybridLogicalClock();
     FileSystem fs = cluster.getFileSystem();
     final Path src = new Path("/test.txt");
     try {
@@ -129,7 +130,7 @@ public class TestDatanodeRestart {
       } else {
         Assert.assertEquals(fileLen, replica.getNumBytes());
       }
-      dataset(dn).invalidate(bpid, new Block[]{replica}, vc/*HDFSRS_VC*/);
+      dataset(dn).invalidate(bpid, new Block[]{replica}, hlc/*HDFSRS_HLC*/);
     } finally {
       IOUtils.closeStream(out);
       if (fs.exists(src)) {

@@ -38,9 +38,7 @@ public enum Op {
   REQUEST_SHORT_CIRCUIT_FDS((byte)87),
   RELEASE_SHORT_CIRCUIT_FDS((byte)88),
   REQUEST_SHORT_CIRCUIT_SHM((byte)89),
-  REQUEST_SNAPSHOT((byte)90),
-  REQUEST_SNAPSHOT_I1((byte)91),
-  REQUEST_SNAPSHOT_I2((byte)92);
+  REQUEST_SNAPSHOT((byte)90);
 
   /** The code for this operation. */
   public final byte code;

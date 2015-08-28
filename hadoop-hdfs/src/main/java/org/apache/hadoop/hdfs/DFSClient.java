@@ -18,6 +18,8 @@
 package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
+
+
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BYTES_PER_CHECKSUM_KEY;
@@ -195,7 +197,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.net.InetAddresses;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /********************************************************
  * DFSClient can connect to a Hadoop Filesystem and 
@@ -242,16 +244,15 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       new DFSHedgedReadMetrics();
   private static ThreadPoolExecutor HEDGED_READ_THREAD_POOL;
   
-  //HDFSRS_VC: vector clock
-  private static VectorClock vc = 
-		  new VectorClock();//Client does not do tick
-  static public VectorClock getCopyOfVectorClock(){
-	  return new VectorClock(vc);
+  //HDFSRS_HLC
+  private static HybridLogicalClock hlc = new HybridLogicalClock();
+  public static HybridLogicalClock tickAndCopy(){
+    return DFSClient.hlc.tickCopy();
   }
-  static void tickOnMessage(VectorClock mvc){
-	  vc.tickOnRecv(mvc);
+  public static void tickOnRecv(HybridLogicalClock mhlc){
+    DFSClient.hlc.tickOnRecv(mhlc);
   }
-  //HDFSRS_VC
+  //HDFSRS_HLC
   
   /**
    * DFSClient configuration 
@@ -1573,9 +1574,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       int buffersize, Progressable progress) throws IOException {
     LocatedBlock lastBlock = null;
     try {
-    	VectorClock mvc = DFSClient.getCopyOfVectorClock();//HDFSRS_VC
-      lastBlock = namenode.append(src, clientName, mvc);
-      DFSClient.tickOnMessage(mvc); //HDFSRS_VC
+      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy(); // HDFSRS_HLC
+      lastBlock = namenode.append(src, clientName, mhlc);
+      DFSClient.hlc.tickOnRecv(mhlc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      FileNotFoundException.class,
@@ -1650,9 +1651,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public boolean rename(String src, String dst) throws IOException {
     checkOpen();
     try {
-      VectorClock mvc = getCopyOfVectorClock(); // HDFSRS_VC
-      boolean bRet = namenode.rename(src, dst, mvc);
-      tickOnMessage(mvc); // HDFSRS_VC
+      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      boolean bRet = namenode.rename(src, dst, mhlc);
+      DFSClient.hlc.tickOnRecv(mhlc);
       return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
@@ -1670,9 +1671,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public void concat(String trg, String [] srcs) throws IOException {
     checkOpen();
     try {
-      VectorClock mvc = DFSClient.getCopyOfVectorClock();
-      namenode.concat(trg, srcs, mvc);
-      DFSClient.tickOnMessage(mvc);
+      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      namenode.concat(trg, srcs, mhlc);
+      DFSClient.hlc.tickOnRecv(mhlc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      UnresolvedPathException.class,
@@ -1687,9 +1688,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       throws IOException {
     checkOpen();
     try {
-      VectorClock mvc = getCopyOfVectorClock();
-      namenode.rename2(src, dst, mvc, options);
-      tickOnMessage(mvc);
+      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      namenode.rename2(src, dst, mhlc, options);
+      DFSClient.hlc.tickOnRecv(mhlc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      DSQuotaExceededException.class,
@@ -1709,9 +1710,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   @Deprecated
   public boolean delete(String src) throws IOException {
     checkOpen();
-    VectorClock mvc = DFSClient.getCopyOfVectorClock();
-    boolean bRet = namenode.delete(src, true, mvc);
-    DFSClient.tickOnMessage(mvc);
+    HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+    boolean bRet = namenode.delete(src, true, mhlc);
+    DFSClient.hlc.tickOnRecv(mhlc);
     return bRet;
   }
 
@@ -1725,10 +1726,10 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public boolean delete(String src, boolean recursive) throws IOException {
     checkOpen();
     try {
-        VectorClock mvc = DFSClient.getCopyOfVectorClock();
-        boolean bRet = namenode.delete(src, recursive, mvc);
-        DFSClient.tickOnMessage(mvc);
-    	return bRet;
+      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      boolean bRet = namenode.delete(src, recursive, mhlc);
+      DFSClient.hlc.tickOnRecv(mhlc);
+      return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      FileNotFoundException.class,
@@ -2578,9 +2579,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       LOG.debug(src + ": masked=" + absPermission);
     }
     try {
-      VectorClock mvc = getCopyOfVectorClock(); // HDFSRS_VC
-      boolean bRet = namenode.mkdirs(src, absPermission, createParent, mvc);
-      tickOnMessage(mvc); // HDFSRS_VC
+      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      boolean bRet = namenode.mkdirs(src, absPermission, createParent, mhlc);
+      DFSClient.hlc.tickOnRecv(mhlc);
       return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,

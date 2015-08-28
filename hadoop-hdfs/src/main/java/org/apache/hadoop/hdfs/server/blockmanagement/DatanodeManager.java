@@ -1340,13 +1340,14 @@ public class DatanodeManager {
               maxTransfers);
         if (pendingList != null) {
           cmds.add(new BlockCommand(DatanodeProtocol.DNA_TRANSFER, blockPoolId,
-              pendingList,null/*HDFSRS_VC:we dont use data node transfer*/));
+              pendingList,null/*HDFSRS_HLC:we dont use data node transfer*/));
         }
         //check block invalidation
         Block[] blks = nodeinfo.getInvalidateBlocks(blockInvalidateLimit);
         if (blks != null) {
+          NameNode.hlc.tick();
           cmds.add(new BlockCommand(DatanodeProtocol.DNA_INVALIDATE,
-              blockPoolId, blks, NameNode.vc));
+              blockPoolId, blks, NameNode.hlc));
         }
         boolean sendingCachingCommands = false;
         long nowMs = Time.monotonicNow();

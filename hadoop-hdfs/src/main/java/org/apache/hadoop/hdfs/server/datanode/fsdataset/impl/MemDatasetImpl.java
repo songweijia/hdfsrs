@@ -1,6 +1,7 @@
 package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +49,7 @@ import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 import org.apache.hadoop.util.DiskChecker.DiskOutOfSpaceException;
 
 import edu.cornell.cs.blog.JNIBlog;
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 @InterfaceAudience.Private
 class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
@@ -1056,20 +1057,15 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     if (meta != null) return meta.getOutputStream((int)seekOffset);
     return null;
   }
-  
-//  public void snapshot(long timestamp, ExtendedBlock[] blks)
-  public VectorClock snapshotI1(long rtc,int nnrank, long nneid, String bpid)
+
+  @Override
+  public void snapshot(long rtc, String bpid)
       throws IOException {
-  	return memManager.since(bpid, nnrank, nneid, rtc);
-  }
-  
-  public void snapshotI2(long rtc, long eid, String bpid)
-  throws IOException{
-  	memManager.snapshot(bpid, rtc, eid);
+  	memManager.snapshot(bpid, rtc);
   }
   
   @Override
-  public Replica createTemporary(ExtendedBlock b, VectorClock mvc)
+  public Replica createTemporary(ExtendedBlock b, HybridLogicalClock mhlc)
 	throws IOException {
 	MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
     if (meta != null) {
@@ -1077,26 +1073,26 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       " already exists and thus cannot be created.");
     }
     // create a new block
-    meta = memManager.createBlock(b.getBlockPoolId(), b.getBlockId(), b.getGenerationStamp(), mvc);
+    meta = memManager.createBlock(b.getBlockPoolId(), b.getBlockId(), b.getGenerationStamp(), mhlc);
     meta.setState(ReplicaState.TEMPORARY);
     return meta;
   }
 
   @Override
-  public Replica createRbw(ExtendedBlock b, VectorClock mvc) throws IOException {
+  public Replica createRbw(ExtendedBlock b, HybridLogicalClock mhlc) throws IOException {
     MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
     if (meta != null) {
       throw new ReplicaAlreadyExistsException("Block " + b +
       " already exists and thus cannot be created.");
     }
     // create a new block
-    meta = memManager.createBlock(b.getBlockPoolId(), b.getBlockId(), b.getGenerationStamp(), mvc);
+    meta = memManager.createBlock(b.getBlockPoolId(), b.getBlockId(), b.getGenerationStamp(), mhlc);
     meta.setState(ReplicaState.RBW);
     return meta;
   }
 
   @Override
-  public void invalidate(String bpid, Block[] invalidBlks, VectorClock mvc)
+  public void invalidate(String bpid, Block[] invalidBlks, HybridLogicalClock mhlc)
 	throws IOException {
     final List<String> errors = new ArrayList<String>();
     for (int i = 0; i < invalidBlks.length; i++) {
@@ -1120,7 +1116,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
             replicaState == ReplicaState.RUR) {
           v.decDfsUsed(bpid, info.getNumBytes());
         }
-        memManager.deleteBlock(bpid, invalidBlks[i].getBlockId(), mvc);
+        memManager.deleteBlock(bpid, invalidBlks[i].getBlockId(), mhlc);
       }
     }
     if (!errors.isEmpty()) {

@@ -18,6 +18,8 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.ERROR;
+
+
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.ERROR_ACCESS_TOKEN;
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.ERROR_INVALID;
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.ERROR_UNSUPPORTED;
@@ -62,7 +64,6 @@ import org.apache.hadoop.hdfs.protocol.datatransfer.Sender;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.BlockOpResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ClientReadStatusProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumResponseProto;
-import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpResponseSnapshotI1Proto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ReadOpChecksumInfoProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ReleaseShortCircuitAccessResponseProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ShortCircuitShmResponseProto;
@@ -87,7 +88,7 @@ import org.apache.hadoop.util.DataChecksum;
 import com.google.common.net.InetAddresses;
 import com.google.protobuf.ByteString;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 
 /**
@@ -574,7 +575,7 @@ class DataXceiver extends Receiver implements Runnable {
       final long offset,
       //}
       //HDFSRS_VC{
-      final VectorClock mvc
+      final HybridLogicalClock mhlc
       //}
       ) throws IOException {
     previousOpClientName = clientname;
@@ -638,14 +639,14 @@ class DataXceiver extends Receiver implements Runnable {
               peer.getLocalAddressString(),
               stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
               clientname, srcDataNode, datanode, requestedChecksum,
-              offset/*HDFSRS_RWAPI*/, mvc/*HDFSRS_VC*/);
+              offset/*HDFSRS_RWAPI*/, mhlc/*HDFSRS_VC*/);
         } else {
           blockReceiver = new BlockReceiver(block, in, 
               peer.getRemoteAddressString(),
               peer.getLocalAddressString(),
               stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
               clientname, srcDataNode, datanode, requestedChecksum,
-              cachingStrategy,offset/*HDFSRS_RWAPI*/,mvc/*HDFSRS_VC*/);
+              cachingStrategy,offset/*HDFSRS_RWAPI*/,mhlc/*HDFSRS_VC*/);
         }
         storageUuid = blockReceiver.getStorageUuid();
       } else {
@@ -672,7 +673,8 @@ class DataXceiver extends Receiver implements Runnable {
                       (HdfsServerConstants.WRITE_TIMEOUT_EXTENSION * targets.length);
           NetUtils.connect(mirrorSock, mirrorTarget, timeoutValue);
           mirrorSock.setSoTimeout(timeoutValue);
-          mirrorSock.setSendBufferSize(HdfsConstants.DEFAULT_DATA_SOCKET_SIZE);
+          if(HdfsConstants.getDataSocketSize() > 0)
+            mirrorSock.setSendBufferSize(HdfsConstants.getDataSocketSize());
           
           OutputStream unbufMirrorOut = NetUtils.getOutputStream(mirrorSock,
               writeTimeout);
@@ -696,7 +698,7 @@ class DataXceiver extends Receiver implements Runnable {
               clientname, targets, srcDataNode, stage, pipelineSize,
               minBytesRcvd, maxBytesRcvd, latestGenerationStamp, requestedChecksum,
               cachingStrategy,offset/*HDFSRS_RWAPI:add offset*/,
-              mvc/*HDFSRS_VC: we just transfer it to downstream, but we don't have down stream so far. */); 
+              mhlc/*HDFSRS_VC: we just transfer it to downstream, but we don't have down stream so far. */); 
 
           mirrorOut.flush();
 
@@ -807,9 +809,8 @@ class DataXceiver extends Receiver implements Runnable {
     datanode.metrics.addWriteBlockOp(elapsed());
     datanode.metrics.incrWritesFromClient(peer.isLocal());
   }
-/*
+
   @Override
-//  public void snapshot(final long timestamp, final ExtendedBlock[] blks) throws IOException {
   public void snapshot(final long timestamp, String bpid) throws IOException {
     updateCurrentThreadName(Op.REQUEST_SNAPSHOT + " " + timestamp);
 
@@ -822,40 +823,8 @@ class DataXceiver extends Receiver implements Runnable {
       IOUtils.closeStream(out);
     }
   }
-*/
-  @Override
-  public void snapshotI1(final long rtc, final int nnrank, final long nneid, final String bpid)
-  throws IOException{
-  	updateCurrentThreadName(Op.REQUEST_SNAPSHOT_I1 + " " + rtc);
-  	
-  	final DataOutputStream out = new DataOutputStream(getOutputStream());
-  	try{
-  		VectorClock vc = datanode.data.snapshotI1(rtc, nnrank, nneid, bpid);
-  		OpResponseSnapshotI1Proto proto = OpResponseSnapshotI1Proto.newBuilder()
-  				.setVc(PBHelper.convert(vc))
-  				.setMyrank(vc.pid).build();
-  		proto.writeDelimitedTo(out);
-  		out.flush();
-  	} finally{
-  		IOUtils.closeStream(out);
-  	}
-  }
-  
- 
-  @Override
-  public void snapshotI2(final long rtc, final long eid, final String bpid)
-  throws IOException{
-  	updateCurrentThreadName(Op.REQUEST_SNAPSHOT_I2 + " " + rtc);
-  	
-  	final DataOutputStream out = new DataOutputStream(getOutputStream());
-  	try{
-  		datanode.data.snapshotI2(rtc, eid, bpid);
-  		writeResponse(Status.SUCCESS, null, out);
-  	} finally{
-  		IOUtils.closeStream(out);
-  	}
-  }
-  
+
+
   @Override
   public void transferBlock(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,
@@ -1010,7 +979,7 @@ class DataXceiver extends Receiver implements Runnable {
       final Token<BlockTokenIdentifier> blockToken,
       final String delHint,
       final DatanodeInfo proxySource,
-      final VectorClock mvc/*HDFSRS_VC*/) throws IOException {
+      final HybridLogicalClock mhlc/*HDFSRS_VC*/) throws IOException {
     updateCurrentThreadName("Replacing block " + block + " from " + delHint);
 
     /* read header */

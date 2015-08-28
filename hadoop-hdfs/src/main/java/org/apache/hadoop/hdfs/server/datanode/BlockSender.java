@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import java.io.BufferedInputStream;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileDescriptor;
@@ -48,7 +49,7 @@ import org.apache.hadoop.util.DataChecksum;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
  * Reads a block from the disk and sends it to a recipient.
@@ -155,9 +156,9 @@ class BlockSender implements java.io.Closeable {
   
   protected long lastCacheDropOffset;
   
-  ///HDFSRS_VC
-  final protected VectorClock myVC;
-  //HDFSRS_VC
+  ///HDFSRS_HLC
+  final protected HybridLogicalClock hlc;
+  //HDFSRS_HLC
   
   @VisibleForTesting
   static long CACHE_DROP_INTERVAL_BYTES = 1024 * 1024; // 1MB
@@ -169,7 +170,7 @@ class BlockSender implements java.io.Closeable {
   
   
   BlockSender(ExtendedBlock block, DataNode datanode, String clientTraceFmt,
-  		VectorClock myVC) throws IOException {
+  		HybridLogicalClock hlc) throws IOException {
     this.block = block;
     this.clientTraceFmt = clientTraceFmt;
     this.datanode = datanode;
@@ -178,7 +179,7 @@ class BlockSender implements java.io.Closeable {
     this.checksumSize = checksum.getChecksumSize();
     this.chunkSize = checksum.getBytesPerChecksum();
     ///HDFSRS_VC
-   	this.myVC = myVC;
+   	this.hlc = hlc;
     ///HDFSRS_VC
   }
   
@@ -199,10 +200,10 @@ class BlockSender implements java.io.Closeable {
               boolean corruptChecksumOk, boolean verifyChecksum,
               boolean sendChecksum, DataNode datanode, String clientTraceFmt,
               CachingStrategy cachingStrategy,
-              VectorClock myVC)
+              HybridLogicalClock hlc)
       throws IOException {
     ///HDFSRS_VC
-   	this.myVC = myVC;
+   	this.hlc = hlc;
     ///HDFSRS_VC
 
     try {
@@ -526,7 +527,7 @@ class BlockSender implements java.io.Closeable {
     // C = checksums
     // D? = data, if transferTo is false.
     
-    int headerLen = writePacketHeader(pkt, dataLen, packetLen, this.myVC/*HDFSRS_VC*/);
+    int headerLen = writePacketHeader(pkt, dataLen, packetLen, this.hlc);
     
     // Per above, the header doesn't start at the beginning of the
     // buffer
@@ -819,11 +820,11 @@ class BlockSender implements java.io.Closeable {
    * Write packet header into {@code pkt},
    * return the length of the header written.
    */
-  int writePacketHeader(ByteBuffer pkt, int dataLen, int packetLen, VectorClock mvc) {
+  int writePacketHeader(ByteBuffer pkt, int dataLen, int packetLen, HybridLogicalClock mhlc) {
     pkt.clear();
     // both syncBlock and syncPacket are false
     PacketHeader header = new PacketHeader(packetLen, offset, seqno,
-        (dataLen == 0), dataLen, false, mvc/*HDFSRS_VC*/);
+        (dataLen == 0), dataLen, false, mhlc);
     
     int size = header.getSerializedSize();
     pkt.position(PacketHeader.PKT_MAX_HEADER_LEN - size);

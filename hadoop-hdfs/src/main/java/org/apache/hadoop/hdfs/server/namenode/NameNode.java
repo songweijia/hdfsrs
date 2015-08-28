@@ -18,11 +18,12 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-import edu.cornell.cs.sa.VectorClock;
+import edu.cornell.cs.sa.HybridLogicalClock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -281,8 +282,9 @@ public class NameNode implements NameNodeStatusMXBean {
   /**
    * HDFSRS_VC: myrank, which is used as key in vector clock
    */
-  static public int myrank;
-  static public VectorClock vc;
+//  static public int myrank;
+//  static public VectorClock vc;
+  static public HybridLogicalClock hlc;
   //HDFSRS_VC
   
   
@@ -586,14 +588,13 @@ public class NameNode implements NameNodeStatusMXBean {
     pauseMonitor.start();
 
     /**
-     * HDFSRS_VC:set vector clock
+     * HDFSRS_HLC:initialize HybridLogicalClock
      */
-    if(vc == null){
-      myrank = conf.getInt(DFS_VCPID,0);
-      myrank = (myrank<<2)+1;
-      vc = new VectorClock(myrank);
+    if(hlc == null){
+      hlc = new HybridLogicalClock();
+      hlc.tick();
     }
-    //HDFSRS_VC
+    //HDFSRS_HLC
     
     startCommonServices(conf);
   }
