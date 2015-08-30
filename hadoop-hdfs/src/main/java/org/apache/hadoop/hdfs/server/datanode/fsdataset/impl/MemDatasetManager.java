@@ -347,6 +347,16 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
  * @throws IOException
  */
   void snapshot(String bpid, long rtc)throws IOException{
-	  poolMap.get(bpid).blog.createSnapshot(rtc);
+    PoolData pd = null;
+    synchronized(poolMap){
+      pd = poolMap.get(bpid);
+      if(pd == null){
+        pd = newPoolData();
+        poolMap.put(bpid, pd);
+      }
+    }
+    synchronized(pd){
+      pd.blog.createSnapshot(rtc);
+    }
   }
 }
