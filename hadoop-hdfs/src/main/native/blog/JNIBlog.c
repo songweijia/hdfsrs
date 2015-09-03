@@ -807,7 +807,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
   } else {
     log_pos = length / 2;
     cur_value = log_pos / 2;
-    while ((log[log_pos].r > rtc) || (log[log_pos+1].r <= rtc)) {
+//    while ((log[log_pos].r > rtc) || (log[log_pos+1].r <= rtc)) {
+    while ((log[log_pos].r > rtc) || ((log_pos+1 < length) &&(log[log_pos+1].r <= rtc))) {
       if (log[log_pos].r > rtc)
         log_pos -= cur_value;
       else
