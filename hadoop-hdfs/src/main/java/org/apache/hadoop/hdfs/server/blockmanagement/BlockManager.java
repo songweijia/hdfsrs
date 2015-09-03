@@ -943,18 +943,18 @@ public class BlockManager {
 
       final LocatedBlock lastlb;
       final boolean isComplete;
-      if (!inSnapshot) {
+//      if (!inSnapshot) {
         final BlockInfo last = blocks[blocks.length - 1];
         final long lastPos = last.isComplete()?
             fileSizeExcludeBlocksUnderConstruction - last.getNumBytes()
             : fileSizeExcludeBlocksUnderConstruction;
         lastlb = createLocatedBlock(last, lastPos, mode);
         isComplete = last.isComplete();
-      } else {
-        lastlb = createLocatedBlock(blocks,
-            fileSizeExcludeBlocksUnderConstruction, mode);
-        isComplete = true;
-      }
+//      } else {
+//        lastlb = createLocatedBlock(blocks,
+//            fileSizeExcludeBlocksUnderConstruction, mode);
+//        isComplete = true;
+//      }
       return new LocatedBlocks(
           fileSizeExcludeBlocksUnderConstruction, isFileUnderConstruction,
           locatedblocks, lastlb, isComplete);

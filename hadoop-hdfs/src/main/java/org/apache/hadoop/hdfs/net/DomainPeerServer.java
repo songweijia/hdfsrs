@@ -48,7 +48,8 @@ public class DomainPeerServer implements PeerServer {
 
   @Override
   public void setReceiveBufferSize(int size) throws IOException {
-    sock.setAttribute(DomainSocket.RECEIVE_BUFFER_SIZE, size);
+    if(size!=0)
+      sock.setAttribute(DomainSocket.RECEIVE_BUFFER_SIZE, size);
   }
 
   @Override

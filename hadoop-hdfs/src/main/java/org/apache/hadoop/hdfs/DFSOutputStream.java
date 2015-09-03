@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import edu.cornell.cs.blog.JNIBlog;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.fs.CanSetDropBehind;
 import org.apache.hadoop.fs.CreateFlag;
@@ -1673,6 +1674,7 @@ public class DFSOutputStream extends FSOutputSummer
     sock.setSoTimeout(timeout);
     if(HdfsConstants.getDataSocketSize() > 0)
       sock.setSendBufferSize(HdfsConstants.getDataSocketSize());
+    sock.setTcpNoDelay(true);
     if(DFSClient.LOG.isDebugEnabled()) {
       DFSClient.LOG.debug("Send buf size " + sock.getSendBufferSize());
     }

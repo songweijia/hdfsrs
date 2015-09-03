@@ -33,6 +33,7 @@ import org.apache.hadoop.hdfs.util.DataTransferThrottler;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.net.SocketOutputStream;
+import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager.MemBlockMeta;
 
 import edu.cornell.cs.sa.HybridLogicalClock;
 
@@ -93,10 +94,10 @@ class MemBlockSender extends BlockSender {
       throws IOException {
     super(block, datanode, clientTraceFmt, myHLC);
     try {
-      final Replica replica;
+      final MemBlockMeta replica;
       final long replicaVisibleLength;
       synchronized(datanode.data) { 
-        replica = getReplica(block, datanode);
+        replica = (MemBlockMeta)getReplica(block, datanode);
         replicaVisibleLength = replica.getVisibleLength();
       }
 
@@ -117,7 +118,7 @@ class MemBlockSender extends BlockSender {
       length = length < 0 ? replicaVisibleLength : length;
 
       // end is either last byte on memory
-      long end = replica.getBytesOnDisk();
+      long end = replica.getBytesOnDisk(block.getLocalBlock().getLongSid());
       if (startOffset < 0 || startOffset > end
           || (length + startOffset) > end) {
         String msg = " Offset " + startOffset + " and length " + length
@@ -208,6 +209,7 @@ class MemBlockSender extends BlockSender {
     
     int dataOff = checksumOff + checksumDataLen;
     if (!transferTo) { // normal transfer
+System.out.println("readFully:"+dataOff+" "+dataLen+" "+endOffset+" "+offset); //DEBUG
       IOUtils.readFully(blockIn, buf, dataOff, dataLen);
     }
     

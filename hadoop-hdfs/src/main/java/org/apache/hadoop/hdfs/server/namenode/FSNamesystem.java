@@ -1774,16 +1774,18 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
             dir.setTimes(src, inode, -1, now, false, iip.getLatestSnapshotId());
           }
         }
-        final long fileSize = iip.isSnapshot() ?
-            inode.computeFileSize(iip.getPathSnapshotId())
-            : inode.computeFileSizeNotIncludingLastUcBlock();
+//      final long fileSize = iip.isSnapshot() ?
+//            inode.computeFileSize(iip.getPathSnapshotId())
+//            : inode.computeFileSizeNotIncludingLastUcBlock();
+        final long fileSize = inode.computeFileSizeNotIncludingLastUcBlock();
         boolean isUc = inode.isUnderConstruction();
-        if (iip.isSnapshot()) {
+/*        if (iip.isSnapshot()) {
           // if src indicates a snapshot file, we need to make sure the returned
           // blocks do not exceed the size of the snapshot file.
           length = Math.min(length, fileSize - offset);
           isUc = false;
         }
+*/
         
         //HDFSRS_RWAPI{
         if(createNew == false && 
@@ -7177,6 +7179,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
   		s.setSoTimeout(timeout);
   		if(HdfsConstants.getDataSocketSize() > 0)
   		  s.setSendBufferSize(HdfsConstants.getDataSocketSize());
+                s.setTcpNoDelay(true);
       
       DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
           NetUtils.getOutputStream(s, timeout),
