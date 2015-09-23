@@ -1,0 +1,782 @@
+2015-09-12 13:37:33,903 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: STARTUP_MSG: 
+/************************************************************
+STARTUP_MSG: Starting DataNode
+STARTUP_MSG:   host = compute29/128.84.139.25
+STARTUP_MSG:   args = []
+STARTUP_MSG:   version = 2.4.1
+STARTUP_MSG:   classpath = /home/weijia/opt/hadoop-crtc/etc/hadoop:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-configuration-1.6.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jasper-runtime-5.5.23.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/junit-4.8.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/protobuf-java-2.5.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-cli-1.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-compress-1.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-beanutils-core-1.8.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/zookeeper-3.4.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/log4j-1.2.17.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/activation-1.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-net-3.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jsch-0.1.42.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/paranamer-2.3.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jackson-core-asl-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/slf4j-log4j12-1.7.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jsr305-1.3.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/snappy-java-1.0.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jettison-1.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/avro-1.7.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jaxb-impl-2.2.3-1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jersey-server-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/hadoop-annotations-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-digester-1.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jackson-xc-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-io-2.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-logging-1.1.3.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jersey-json-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jetty-6.1.26.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/netty-3.6.2.Final.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jetty-util-6.1.26.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-collections-3.2.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-beanutils-1.7.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-lang-2.6.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-math3-3.1.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/servlet-api-2.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/stax-api-1.0-2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jackson-jaxrs-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/asm-3.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-codec-1.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jsp-api-2.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jasper-compiler-5.5.23.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/java-xmlbuilder-0.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jersey-core-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-httpclient-3.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/commons-el-1.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/httpclient-4.2.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/httpcore-4.2.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/xz-1.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jaxb-api-2.2.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/mockito-all-1.8.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/slf4j-api-1.7.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/guava-11.0.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jackson-mapper-asl-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/jets3t-0.9.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/hadoop-auth-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/lib/xmlenc-0.52.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/hadoop-common-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/hadoop-common-2.4.1-tests.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/common/hadoop-nfs-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jasper-runtime-5.5.23.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/protobuf-java-2.5.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/commons-cli-1.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/commons-daemon-1.0.13.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/log4j-1.2.17.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jackson-core-asl-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jsr305-1.3.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jersey-server-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/commons-io-2.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/commons-logging-1.1.3.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jetty-6.1.26.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/netty-3.6.2.Final.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jetty-util-6.1.26.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/commons-lang-2.6.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/servlet-api-2.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/asm-3.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/commons-codec-1.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jsp-api-2.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jersey-core-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/commons-el-1.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/guava-11.0.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/jackson-mapper-asl-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/lib/xmlenc-0.52.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/hadoop-hdfs-2.4.1-tests.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/hadoop-hdfs-nfs-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/hdfs/hadoop-hdfs-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/protobuf-java-2.5.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/javax.inject-1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/commons-cli-1.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jersey-client-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/commons-compress-1.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/zookeeper-3.4.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/log4j-1.2.17.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/activation-1.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jackson-core-asl-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jersey-guice-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jsr305-1.3.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jettison-1.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jaxb-impl-2.2.3-1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jersey-server-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jackson-xc-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/commons-io-2.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/guice-3.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/commons-logging-1.1.3.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jersey-json-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jetty-6.1.26.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jetty-util-6.1.26.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/commons-collections-3.2.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/commons-lang-2.6.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/servlet-api-2.5.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/stax-api-1.0-2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/guice-servlet-3.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jackson-jaxrs-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/asm-3.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/leveldbjni-all-1.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/commons-codec-1.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jline-0.9.94.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jersey-core-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/commons-httpclient-3.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/xz-1.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jaxb-api-2.2.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/aopalliance-1.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/guava-11.0.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/lib/jackson-mapper-asl-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-applications-unmanaged-am-launcher-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-server-nodemanager-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-client-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-server-applicationhistoryservice-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-server-web-proxy-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-server-tests-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-server-common-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-applications-distributedshell-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-common-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-api-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/yarn/hadoop-yarn-server-resourcemanager-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/protobuf-java-2.5.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/javax.inject-1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/commons-compress-1.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/log4j-1.2.17.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/paranamer-2.3.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/jackson-core-asl-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/jersey-guice-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/snappy-java-1.0.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/avro-1.7.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/jersey-server-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/hadoop-annotations-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/commons-io-2.4.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/guice-3.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/netty-3.6.2.Final.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/guice-servlet-3.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/asm-3.2.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/junit-4.10.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/jersey-core-1.9.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/xz-1.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/aopalliance-1.0.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/hamcrest-core-1.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/lib/jackson-mapper-asl-1.8.8.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-client-core-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-client-app-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.4.1-tests.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-client-shuffle-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-client-hs-plugins-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-client-hs-2.4.1.jar:/home/weijia/opt/hadoop-crtc/share/hadoop/mapreduce/hadoop-mapreduce-client-common-2.4.1.jar:/contrib/capacity-scheduler/*.jar:/contrib/capacity-scheduler/*.jar:/contrib/capacity-scheduler/*.jar
+STARTUP_MSG:   build = Unknown -r Unknown; compiled by 'weijia' on 2015-09-04T12:33Z
+STARTUP_MSG:   java = 1.7.0_67
+************************************************************/
+2015-09-12 13:37:33,923 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: registered UNIX signal handlers for [TERM, HUP, INT]
+2015-09-12 13:37:35,117 INFO org.apache.hadoop.metrics2.impl.MetricsConfig: loaded properties from hadoop-metrics2.properties
+2015-09-12 13:37:35,238 INFO org.apache.hadoop.metrics2.impl.MetricsSystemImpl: Scheduled snapshot period at 10 second(s).
+2015-09-12 13:37:35,238 INFO org.apache.hadoop.metrics2.impl.MetricsSystemImpl: DataNode metrics system started
+2015-09-12 13:37:35,244 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Configured hostname is compute29
+2015-09-12 13:37:35,246 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Starting DataNode with maxLockedMemory = 0
+2015-09-12 13:37:35,433 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Opened streaming server at /0.0.0.0:50010
+2015-09-12 13:37:35,439 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Balancing bandwith is 1048576 bytes/s
+2015-09-12 13:37:35,587 INFO org.mortbay.log: Logging to org.slf4j.impl.Log4jLoggerAdapter(org.mortbay.log) via org.mortbay.log.Slf4jLog
+2015-09-12 13:37:35,595 INFO org.apache.hadoop.http.HttpRequestLog: Http request log for http.requests.datanode is not defined
+2015-09-12 13:37:35,617 INFO org.apache.hadoop.http.HttpServer2: Added global filter 'safety' (class=org.apache.hadoop.http.HttpServer2$QuotingInputFilter)
+2015-09-12 13:37:35,622 INFO org.apache.hadoop.http.HttpServer2: Added filter static_user_filter (class=org.apache.hadoop.http.lib.StaticUserWebFilter$StaticUserFilter) to context datanode
+2015-09-12 13:37:35,622 INFO org.apache.hadoop.http.HttpServer2: Added filter static_user_filter (class=org.apache.hadoop.http.lib.StaticUserWebFilter$StaticUserFilter) to context logs
+2015-09-12 13:37:35,622 INFO org.apache.hadoop.http.HttpServer2: Added filter static_user_filter (class=org.apache.hadoop.http.lib.StaticUserWebFilter$StaticUserFilter) to context static
+2015-09-12 13:37:35,658 INFO org.apache.hadoop.http.HttpServer2: addJerseyResourcePackage: packageName=org.apache.hadoop.hdfs.server.datanode.web.resources;org.apache.hadoop.hdfs.web.resources, pathSpec=/webhdfs/v1/*
+2015-09-12 13:37:35,665 INFO org.apache.hadoop.http.HttpServer2: Jetty bound to port 50075
+2015-09-12 13:37:35,665 INFO org.mortbay.log: jetty-6.1.26
+2015-09-12 13:37:36,100 INFO org.mortbay.log: Started SelectChannelConnector@0.0.0.0:50075
+2015-09-12 13:37:36,406 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: dnUserName = weijia
+2015-09-12 13:37:36,407 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: supergroup = supergroup
+2015-09-12 13:37:36,487 INFO org.apache.hadoop.ipc.CallQueueManager: Using callQueue class java.util.concurrent.LinkedBlockingQueue
+2015-09-12 13:37:36,518 INFO org.apache.hadoop.ipc.Server: Starting Socket Reader #1 for port 50020
+2015-09-12 13:37:36,569 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Opened IPC server at /0.0.0.0:50020
+2015-09-12 13:37:36,592 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Refresh request received for nameservices: null
+2015-09-12 13:37:36,638 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Starting BPOfferServices for nameservices: <default>
+2015-09-12 13:37:36,654 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Block pool <registering> (Datanode Uuid unassigned) service to compute30/128.84.139.26:50090 starting to offer service
+2015-09-12 13:37:36,661 INFO org.apache.hadoop.ipc.Server: IPC Server Responder: starting
+2015-09-12 13:37:36,661 INFO org.apache.hadoop.ipc.Server: IPC Server listener on 50020: starting
+2015-09-12 13:37:36,928 INFO org.apache.hadoop.hdfs.server.common.Storage: Data-node version: -55 and name-node layout version: -56
+2015-09-12 13:37:36,960 INFO org.apache.hadoop.hdfs.server.common.Storage: Lock on /home/weijia/opt/hadoop/data/dn/in_use.lock acquired by nodename 16271@compute29
+2015-09-12 13:37:36,963 INFO org.apache.hadoop.hdfs.server.common.Storage: Storage directory /home/weijia/opt/hadoop/data/dn is not formatted
+2015-09-12 13:37:36,963 INFO org.apache.hadoop.hdfs.server.common.Storage: Formatting ...
+2015-09-12 13:37:37,289 INFO org.apache.hadoop.hdfs.server.common.Storage: Analyzing storage directories for bpid BP-988194909-128.84.139.26-1442079445266
+2015-09-12 13:37:37,290 INFO org.apache.hadoop.hdfs.server.common.Storage: Locking is disabled
+2015-09-12 13:37:37,291 INFO org.apache.hadoop.hdfs.server.common.Storage: Storage directory /home/weijia/opt/hadoop/data/dn/current/BP-988194909-128.84.139.26-1442079445266 is not formatted.
+2015-09-12 13:37:37,291 INFO org.apache.hadoop.hdfs.server.common.Storage: Formatting ...
+2015-09-12 13:37:37,291 INFO org.apache.hadoop.hdfs.server.common.Storage: Formatting block pool BP-988194909-128.84.139.26-1442079445266 directory /home/weijia/opt/hadoop/data/dn/current/BP-988194909-128.84.139.26-1442079445266/current
+2015-09-12 13:37:37,311 INFO org.apache.hadoop.hdfs.server.common.Storage: Restored 0 block files from trash.
+2015-09-12 13:37:37,320 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Setting up storage: nsid=1244662223;bpid=BP-988194909-128.84.139.26-1442079445266;lv=-55;nsInfo=lv=-56;cid=CID-3b62488f-5a72-4415-8bfa-3be44fe7e097;nsid=1244662223;c=0;bpid=BP-988194909-128.84.139.26-1442079445266;dnuuid=null
+2015-09-12 13:37:37,334 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Generated and persisted new Datanode UUID 3e31355b-a89e-4f50-9e3a-e5e1380f302b
+2015-09-12 13:37:37,353 INFO org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetImpl: Registered FSDatasetState MBean
+2015-09-12 13:37:37,360 INFO org.apache.hadoop.hdfs.server.datanode.DirectoryScanner: Periodic Directory Tree Verification scan starting at 1442091166360 with interval 21600000
+2015-09-12 13:37:37,361 INFO org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetImpl: Adding block pool BP-988194909-128.84.139.26-1442079445266
+2015-09-12 13:37:37,366 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Block pool BP-988194909-128.84.139.26-1442079445266 (Datanode Uuid null) service to compute30/128.84.139.26:50090 beginning handshake with NN
+2015-09-12 13:37:37,390 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Block pool Block pool BP-988194909-128.84.139.26-1442079445266 (Datanode Uuid null) service to compute30/128.84.139.26:50090 successfully registered with NN
+2015-09-12 13:37:37,390 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: For namenode compute30/128.84.139.26:50090 using DELETEREPORT_INTERVAL of 300000 msec  BLOCKREPORT_INTERVAL of 21600000msec CACHEREPORT_INTERVAL of 10000msec Initial delay: 0msec; heartBeatInterval=3000
+2015-09-12 13:37:37,465 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Namenode Block pool BP-988194909-128.84.139.26-1442079445266 (Datanode Uuid 3e31355b-a89e-4f50-9e3a-e5e1380f302b) service to compute30/128.84.139.26:50090 trying to claim ACTIVE state with txid=1
+2015-09-12 13:37:37,465 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Acknowledging ACTIVE Namenode Block pool BP-988194909-128.84.139.26-1442079445266 (Datanode Uuid 3e31355b-a89e-4f50-9e3a-e5e1380f302b) service to compute30/128.84.139.26:50090
+2015-09-12 13:37:37,514 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Sent 1 blockreports 0 blocks total. Took 2 msec to generate and 47 msecs for RPC and NN processing.  Got back commands org.apache.hadoop.hdfs.server.protocol.FinalizeCommand@5504b2ab
+2015-09-12 13:37:37,514 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Got finalize command for block pool BP-988194909-128.84.139.26-1442079445266
+2015-09-12 13:37:37,525 INFO org.apache.hadoop.util.GSet: Computing capacity for map BlockMap
+2015-09-12 13:37:37,525 INFO org.apache.hadoop.util.GSet: VM type       = 64-bit
+2015-09-12 13:37:37,527 INFO org.apache.hadoop.util.GSet: 0.5% max memory 958.5 MB = 4.8 MB
+2015-09-12 13:37:37,527 INFO org.apache.hadoop.util.GSet: capacity      = 2^19 = 524288 entries
+2015-09-12 13:37:37,528 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Periodic Block Verification Scanner initialized with interval 504 hours for block pool BP-988194909-128.84.139.26-1442079445266
+2015-09-12 13:37:37,532 WARN org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Could not open verfication log. Verification times are not stored.
+2015-09-12 13:37:37,532 INFO org.apache.hadoop.hdfs.server.datanode.DataBlockScanner: Added bpid=BP-988194909-128.84.139.26-1442079445266 to blockPoolScannerMap, new size=1
+2015-09-12 13:37:55,206 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741838[-1]_1015 src: /128.84.139.27:50532 dest: /128.84.139.25:50010
+2015-09-12 13:37:55,455 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 62351 1719 45 16777216
+2015-09-12 13:37:55,483 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 24773 49 2483 16777216
+2015-09-12 13:37:55,510 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 21557 47 5709 16777216
+2015-09-12 13:37:55,538 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19687 47 8159 16777216
+2015-09-12 13:37:55,539 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 936 30 0 0
+2015-09-12 13:37:55,539 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:127 ms
+2015-09-12 13:37:55,570 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50532, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741838[-1]_1015, duration: 177385335
+2015-09-12 13:37:55,570 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741838[-1]_1015, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:37:55,571 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:415 ms
+2015-09-12 13:37:55,812 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741840[-1]_1017 src: /128.84.139.27:50534 dest: /128.84.139.25:50010
+2015-09-12 13:37:55,886 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 72059 94 25 16777216
+2015-09-12 13:37:55,915 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26188 44 2952 16777216
+2015-09-12 13:37:55,944 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 24460 96 3384 16777216
+2015-09-12 13:37:55,972 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 23159 49 4874 16777216
+2015-09-12 13:37:55,973 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1217 30 0 0
+2015-09-12 13:37:55,973 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:140 ms
+2015-09-12 13:37:56,001 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50534, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741840[-1]_1017, duration: 186456592
+2015-09-12 13:37:56,003 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741840[-1]_1017, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:37:56,004 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:192 ms
+2015-09-12 13:37:57,363 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741840[-1]_1017 - may be due to race with write
+2015-09-12 13:37:57,364 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741838[-1]_1015 - may be due to race with write
+2015-09-12 13:37:57,785 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741847[-1]_1024 src: /128.84.139.27:50541 dest: /128.84.139.25:50010
+2015-09-12 13:37:57,883 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 96883 211 43 16777216
+2015-09-12 13:37:57,918 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 33686 41 27 16777216
+2015-09-12 13:37:57,963 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 45304 37 41 16777216
+2015-09-12 13:37:58,018 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54092 34 21 16777216
+2015-09-12 13:37:58,019 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1227 27 0 0
+2015-09-12 13:37:58,019 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:211 ms
+2015-09-12 13:37:58,047 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50541, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741847[-1]_1024, duration: 260545458
+2015-09-12 13:37:58,048 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741847[-1]_1024, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:37:58,048 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:264 ms
+2015-09-12 13:37:59,139 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741853[-1]_1030 src: /128.84.139.27:50547 dest: /128.84.139.25:50010
+2015-09-12 13:37:59,226 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 85066 66 50 16777216
+2015-09-12 13:37:59,255 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26470 46 2717 16777216
+2015-09-12 13:37:59,283 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 23522 45 3794 16777216
+2015-09-12 13:37:59,311 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 22208 45 5755 16777216
+2015-09-12 13:37:59,312 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1289 31 0 0
+2015-09-12 13:37:59,313 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:150 ms
+2015-09-12 13:37:59,340 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50547, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741853[-1]_1030, duration: 198883882
+2015-09-12 13:37:59,341 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741853[-1]_1030, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:37:59,341 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:202 ms
+2015-09-12 13:38:00,864 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741861[-1]_1038 src: /128.84.139.27:50555 dest: /128.84.139.25:50010
+2015-09-12 13:38:00,942 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 76829 43 24 16777216
+2015-09-12 13:38:00,972 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 22235 42 6946 16777216
+2015-09-12 13:38:00,999 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18694 64 8502 16777216
+2015-09-12 13:38:01,027 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17976 45 9881 16777216
+2015-09-12 13:38:01,029 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 963 30 0 0
+2015-09-12 13:38:01,029 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:129 ms
+2015-09-12 13:38:01,057 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50555, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741861[-1]_1038, duration: 190499040
+2015-09-12 13:38:01,057 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741861[-1]_1038, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:01,058 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:194 ms
+2015-09-12 13:38:02,058 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741867[-1]_1044 src: /128.84.139.27:50561 dest: /128.84.139.25:50010
+2015-09-12 13:38:02,105 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 45405 45 33 16777216
+2015-09-12 13:38:02,135 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 21346 41 8470 16777216
+2015-09-12 13:38:02,164 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18799 51 9706 16777216
+2015-09-12 13:38:02,192 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19026 51 8931 16777216
+2015-09-12 13:38:02,193 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 795 30 0 0
+2015-09-12 13:38:02,193 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:97 ms
+2015-09-12 13:38:02,222 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50561, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741867[-1]_1044, duration: 161631218
+2015-09-12 13:38:02,222 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741867[-1]_1044, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:02,223 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:165 ms
+2015-09-12 13:38:02,364 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741847[-1]_1024 - may be due to race with write
+2015-09-12 13:38:02,365 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741861[-1]_1038 - may be due to race with write
+2015-09-12 13:38:02,365 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741853[-1]_1030 - may be due to race with write
+2015-09-12 13:38:02,365 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741867[-1]_1044 - may be due to race with write
+2015-09-12 13:38:03,036 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741872[-1]_1049 src: /128.84.139.27:50566 dest: /128.84.139.25:50010
+2015-09-12 13:38:03,121 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 83902 60 27 16777216
+2015-09-12 13:38:03,175 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53339 40 40 16777216
+2015-09-12 13:38:03,229 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53390 39 17 16777216
+2015-09-12 13:38:03,282 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53376 40 19 16777216
+2015-09-12 13:38:03,283 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1117 27 0 0
+2015-09-12 13:38:03,284 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:236 ms
+2015-09-12 13:38:03,312 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50566, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741872[-1]_1049, duration: 273547485
+2015-09-12 13:38:03,312 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741872[-1]_1049, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:03,313 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:277 ms
+2015-09-12 13:38:04,402 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741877[-1]_1054 src: /128.84.139.27:50571 dest: /128.84.139.25:50010
+2015-09-12 13:38:04,495 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 91770 59 25 16777216
+2015-09-12 13:38:04,524 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 28149 36 770 16777216
+2015-09-12 13:38:04,552 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 28290 38 27 16777216
+2015-09-12 13:38:04,581 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27875 41 387 16777216
+2015-09-12 13:38:04,582 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1250 31 0 0
+2015-09-12 13:38:04,582 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:162 ms
+2015-09-12 13:38:04,610 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50571, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741877[-1]_1054, duration: 206251271
+2015-09-12 13:38:04,610 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741877[-1]_1054, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:04,611 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:210 ms
+2015-09-12 13:38:04,842 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741879[-1]_1056 src: /128.84.139.27:50573 dest: /128.84.139.25:50010
+2015-09-12 13:38:04,927 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 84193 45 28 16777216
+2015-09-12 13:38:04,956 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 25081 45 3604 16777216
+2015-09-12 13:38:04,984 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19938 42 7525 16777216
+2015-09-12 13:38:05,012 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17424 47 10597 16777216
+2015-09-12 13:38:05,013 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1190 31 0 0
+2015-09-12 13:38:05,013 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:140 ms
+2015-09-12 13:38:05,041 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50573, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741879[-1]_1056, duration: 197512294
+2015-09-12 13:38:05,042 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741879[-1]_1056, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:05,042 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:201 ms
+2015-09-12 13:38:05,054 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741880[-1]_1057 src: /128.84.139.27:50574 dest: /128.84.139.25:50010
+2015-09-12 13:38:05,137 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 82087 45 23 16777216
+2015-09-12 13:38:05,167 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 23519 44 6171 16777216
+2015-09-12 13:38:05,194 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19652 40 7690 16777216
+2015-09-12 13:38:05,223 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19114 45 8819 16777216
+2015-09-12 13:38:05,224 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1238 29 0 0
+2015-09-12 13:38:05,224 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:138 ms
+2015-09-12 13:38:05,252 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50574, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741880[-1]_1057, duration: 196886591
+2015-09-12 13:38:05,253 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741880[-1]_1057, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:05,254 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:201 ms
+2015-09-12 13:38:05,493 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741882[-1]_1059 src: /128.84.139.27:50576 dest: /128.84.139.25:50010
+2015-09-12 13:38:05,581 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 87623 44 53 16777216
+2015-09-12 13:38:05,610 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 28274 40 377 16777216
+2015-09-12 13:38:05,638 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26736 40 716 16777216
+2015-09-12 13:38:05,666 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26250 43 1897 16777216
+2015-09-12 13:38:05,668 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1200 32 0 0
+2015-09-12 13:38:05,668 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:156 ms
+2015-09-12 13:38:05,696 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50576, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741882[-1]_1059, duration: 201118619
+2015-09-12 13:38:05,696 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741882[-1]_1059, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:05,696 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:204 ms
+2015-09-12 13:38:06,424 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741886[-1]_1063 src: /128.84.139.27:50580 dest: /128.84.139.25:50010
+2015-09-12 13:38:06,491 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 65418 43 32 16777216
+2015-09-12 13:38:06,529 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 37732 42 26 16777216
+2015-09-12 13:38:06,562 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 32722 41 24 16777216
+2015-09-12 13:38:06,596 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 33641 41 25 16777216
+2015-09-12 13:38:06,597 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1229 31 0 0
+2015-09-12 13:38:06,597 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:148 ms
+2015-09-12 13:38:06,625 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50580, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741886[-1]_1063, duration: 199177417
+2015-09-12 13:38:06,626 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741886[-1]_1063, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:06,626 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:202 ms
+2015-09-12 13:38:07,365 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741877[-1]_1054 - may be due to race with write
+2015-09-12 13:38:07,366 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741879[-1]_1056 - may be due to race with write
+2015-09-12 13:38:07,366 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741882[-1]_1059 - may be due to race with write
+2015-09-12 13:38:07,366 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741872[-1]_1049 - may be due to race with write
+2015-09-12 13:38:07,366 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741880[-1]_1057 - may be due to race with write
+2015-09-12 13:38:07,367 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741886[-1]_1063 - may be due to race with write
+2015-09-12 13:38:08,555 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741897[-1]_1074 src: /128.84.139.27:50591 dest: /128.84.139.25:50010
+2015-09-12 13:38:08,677 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 120103 44 23 16777216
+2015-09-12 13:38:08,705 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 22156 49 5961 16777216
+2015-09-12 13:38:08,734 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18508 54 10738 16777216
+2015-09-12 13:38:08,762 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19108 50 8404 16777216
+2015-09-12 13:38:08,763 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 818 29 0 0
+2015-09-12 13:38:08,763 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:109 ms
+2015-09-12 13:38:08,792 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50591, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741897[-1]_1074, duration: 234296027
+2015-09-12 13:38:08,792 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741897[-1]_1074, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:08,793 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:237 ms
+2015-09-12 13:38:08,806 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741898[-1]_1075 src: /128.84.139.27:50592 dest: /128.84.139.25:50010
+2015-09-12 13:38:08,879 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 71395 49 28 16777216
+2015-09-12 13:38:08,933 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54024 56 20 16777216
+2015-09-12 13:38:08,988 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54239 36 23 16777216
+2015-09-12 13:38:09,041 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53756 38 20 16777216
+2015-09-12 13:38:09,043 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 827 28 0 0
+2015-09-12 13:38:09,043 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:230 ms
+2015-09-12 13:38:09,071 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50592, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741898[-1]_1075, duration: 262614616
+2015-09-12 13:38:09,071 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741898[-1]_1075, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:09,071 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:265 ms
+2015-09-12 13:38:09,081 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741899[-1]_1076 src: /128.84.139.27:50593 dest: /128.84.139.25:50010
+2015-09-12 13:38:09,165 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 82238 70 31 16777216
+2015-09-12 13:38:09,219 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53627 50 23 16777216
+2015-09-12 13:38:09,272 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53288 49 21 16777216
+2015-09-12 13:38:09,335 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 62105 49 23 16777216
+2015-09-12 13:38:09,336 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1182 42 0 0
+2015-09-12 13:38:09,336 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:243 ms
+2015-09-12 13:38:09,364 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50593, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741899[-1]_1076, duration: 281416932
+2015-09-12 13:38:09,365 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741899[-1]_1076, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:09,365 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:284 ms
+2015-09-12 13:38:09,373 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741900[-1]_1077 src: /128.84.139.27:50594 dest: /128.84.139.25:50010
+2015-09-12 13:38:09,452 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 78024 44 26 16777216
+2015-09-12 13:38:09,492 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 39141 63 299 16777216
+2015-09-12 13:38:09,531 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 31819 46 7051 16777216
+2015-09-12 13:38:09,568 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 28772 68 8177 16777216
+2015-09-12 13:38:09,569 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1124 41 0 0
+2015-09-12 13:38:09,569 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:164 ms
+2015-09-12 13:38:09,598 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50594, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741900[-1]_1077, duration: 223090026
+2015-09-12 13:38:09,598 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741900[-1]_1077, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:09,598 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:226 ms
+2015-09-12 13:38:10,561 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741906[-1]_1083 src: /128.84.139.27:50600 dest: /128.84.139.25:50010
+2015-09-12 13:38:10,618 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 56776 44 27 16777216
+2015-09-12 13:38:10,647 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 20822 42 7614 16777216
+2015-09-12 13:38:10,675 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18545 44 9001 16777216
+2015-09-12 13:38:10,703 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17517 45 10495 16777216
+2015-09-12 13:38:10,704 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 869 31 0 0
+2015-09-12 13:38:10,704 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:106 ms
+2015-09-12 13:38:10,732 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50600, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741906[-1]_1083, duration: 169830505
+2015-09-12 13:38:10,733 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741906[-1]_1083, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:10,733 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:173 ms
+2015-09-12 13:38:12,367 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741900[-1]_1077 - may be due to race with write
+2015-09-12 13:38:12,367 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741899[-1]_1076 - may be due to race with write
+2015-09-12 13:38:12,368 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741897[-1]_1074 - may be due to race with write
+2015-09-12 13:38:12,368 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741898[-1]_1075 - may be due to race with write
+2015-09-12 13:38:12,368 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741906[-1]_1083 - may be due to race with write
+2015-09-12 13:38:13,367 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741920[-1]_1097 src: /128.84.139.27:50614 dest: /128.84.139.25:50010
+2015-09-12 13:38:13,663 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 294682 64 35 16777216
+2015-09-12 13:38:13,716 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53370 40 26 16777216
+2015-09-12 13:38:13,770 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53529 42 22 16777216
+2015-09-12 13:38:13,824 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53247 41 26 16777216
+2015-09-12 13:38:13,825 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 677 26 0 0
+2015-09-12 13:38:13,825 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:447 ms
+2015-09-12 13:38:13,853 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50614, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741920[-1]_1097, duration: 484200266
+2015-09-12 13:38:13,854 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741920[-1]_1097, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:13,854 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:488 ms
+2015-09-12 13:38:14,875 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741926[-1]_1103 src: /128.84.139.27:50620 dest: /128.84.139.25:50010
+2015-09-12 13:38:14,964 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 87220 45 21 16777216
+2015-09-12 13:38:14,996 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 31665 39 27 16777216
+2015-09-12 13:38:15,026 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 30440 38 25 16777216
+2015-09-12 13:38:15,057 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 30777 38 25 16777216
+2015-09-12 13:38:15,059 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1358 32 0 0
+2015-09-12 13:38:15,059 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:167 ms
+2015-09-12 13:38:15,087 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50620, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741926[-1]_1103, duration: 209413220
+2015-09-12 13:38:15,087 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741926[-1]_1103, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:15,088 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:213 ms
+2015-09-12 13:38:15,515 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741929[-1]_1106 src: /128.84.139.27:50623 dest: /128.84.139.25:50010
+2015-09-12 13:38:15,564 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 47594 49 43 16777216
+2015-09-12 13:38:15,594 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 20519 41 9431 16777216
+2015-09-12 13:38:15,622 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18883 44 8675 16777216
+2015-09-12 13:38:15,650 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17626 47 10551 16777216
+2015-09-12 13:38:15,651 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 856 31 0 0
+2015-09-12 13:38:15,651 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:99 ms
+2015-09-12 13:38:15,681 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50623, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741929[-1]_1106, duration: 163747406
+2015-09-12 13:38:15,681 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741929[-1]_1106, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:15,682 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:167 ms
+2015-09-12 13:38:15,864 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741931[-1]_1108 src: /128.84.139.27:50625 dest: /128.84.139.25:50010
+2015-09-12 13:38:15,947 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 82208 46 25 16777216
+2015-09-12 13:38:16,001 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54015 36 21 16777216
+2015-09-12 13:38:16,056 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54115 33 20 16777216
+2015-09-12 13:38:16,110 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54105 34 25 16777216
+2015-09-12 13:38:16,112 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1346 27 0 0
+2015-09-12 13:38:16,112 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:242 ms
+2015-09-12 13:38:16,140 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50625, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741931[-1]_1108, duration: 274246704
+2015-09-12 13:38:16,140 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741931[-1]_1108, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:16,141 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:278 ms
+2015-09-12 13:38:16,984 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741936[-1]_1113 src: /128.84.139.27:50630 dest: /128.84.139.25:50010
+2015-09-12 13:38:17,035 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 49891 45 29 16777216
+2015-09-12 13:38:17,064 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 20401 53 8040 16777216
+2015-09-12 13:38:17,092 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19412 53 8680 16777216
+2015-09-12 13:38:17,120 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18266 56 9189 16777216
+2015-09-12 13:38:17,120 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 672 31 0 0
+2015-09-12 13:38:17,121 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:99 ms
+2015-09-12 13:38:17,149 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50630, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741936[-1]_1113, duration: 163128959
+2015-09-12 13:38:17,149 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741936[-1]_1113, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:17,149 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:166 ms
+2015-09-12 13:38:17,344 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741938[-1]_1115 src: /128.84.139.27:50632 dest: /128.84.139.25:50010
+2015-09-12 13:38:17,369 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741929[-1]_1106 - may be due to race with write
+2015-09-12 13:38:17,369 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741926[-1]_1103 - may be due to race with write
+2015-09-12 13:38:17,374 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741920[-1]_1097 - may be due to race with write
+2015-09-12 13:38:17,375 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741931[-1]_1108 - may be due to race with write
+2015-09-12 13:38:17,375 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741936[-1]_1113 - may be due to race with write
+2015-09-12 13:38:17,404 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 59182 48 28 16777216
+2015-09-12 13:38:17,458 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54207 40 23 16777216
+2015-09-12 13:38:17,513 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54210 32 20 16777216
+2015-09-12 13:38:17,567 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54187 31 19 16777216
+2015-09-12 13:38:17,568 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 986 26 0 0
+2015-09-12 13:38:17,568 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:218 ms
+2015-09-12 13:38:17,596 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50632, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741938[-1]_1115, duration: 250775928
+2015-09-12 13:38:17,597 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741938[-1]_1115, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:17,597 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:254 ms
+2015-09-12 13:38:17,607 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741939[-1]_1116 src: /128.84.139.27:50633 dest: /128.84.139.25:50010
+2015-09-12 13:38:17,696 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 86975 45 28 16777216
+2015-09-12 13:38:17,725 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 29138 41 27 16777216
+2015-09-12 13:38:17,755 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 29348 43 29 16777216
+2015-09-12 13:38:17,783 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27750 42 654 16777216
+2015-09-12 13:38:17,784 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1121 32 0 0
+2015-09-12 13:38:17,785 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:159 ms
+2015-09-12 13:38:17,812 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50633, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741939[-1]_1116, duration: 202795563
+2015-09-12 13:38:17,813 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741939[-1]_1116, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:17,813 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:206 ms
+2015-09-12 13:38:18,047 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741941[-1]_1118 src: /128.84.139.27:50635 dest: /128.84.139.25:50010
+2015-09-12 13:38:18,135 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 86252 44 48 16777216
+2015-09-12 13:38:18,189 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53769 40 22 16777216
+2015-09-12 13:38:18,243 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53308 65 48 16777216
+2015-09-12 13:38:18,296 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 51957 41 19 16777216
+2015-09-12 13:38:18,297 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 841 28 0 0
+2015-09-12 13:38:18,297 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:236 ms
+2015-09-12 13:38:18,324 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50635, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741941[-1]_1118, duration: 275247096
+2015-09-12 13:38:18,324 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741941[-1]_1118, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:18,325 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:278 ms
+2015-09-12 13:38:18,973 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741944[-1]_1121 src: /128.84.139.27:50638 dest: /128.84.139.25:50010
+2015-09-12 13:38:19,060 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 86197 63 25 16777216
+2015-09-12 13:38:19,114 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53868 37 29 16777216
+2015-09-12 13:38:19,168 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53986 35 28 16777216
+2015-09-12 13:38:19,223 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53977 34 21 16777216
+2015-09-12 13:38:19,224 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1024 25 0 0
+2015-09-12 13:38:19,224 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:240 ms
+2015-09-12 13:38:19,252 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50638, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741944[-1]_1121, duration: 277695574
+2015-09-12 13:38:19,253 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741944[-1]_1121, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:19,253 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:281 ms
+2015-09-12 13:38:19,556 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741946[-1]_1123 src: /128.84.139.27:50640 dest: /128.84.139.25:50010
+2015-09-12 13:38:19,649 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 92448 45 51 16777216
+2015-09-12 13:38:19,679 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27861 45 1913 16777216
+2015-09-12 13:38:19,708 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27259 45 791 16777216
+2015-09-12 13:38:19,736 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26880 45 1117 16777216
+2015-09-12 13:38:19,737 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1002 30 0 0
+2015-09-12 13:38:19,737 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:164 ms
+2015-09-12 13:38:19,765 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50640, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741946[-1]_1123, duration: 207266157
+2015-09-12 13:38:19,765 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741946[-1]_1123, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:19,765 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:210 ms
+2015-09-12 13:38:19,778 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741947[-1]_1124 src: /128.84.139.27:50641 dest: /128.84.139.25:50010
+2015-09-12 13:38:19,864 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 84296 50 33 16777216
+2015-09-12 13:38:19,893 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 25623 47 3472 16777216
+2015-09-12 13:38:19,922 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 20796 46 7598 16777216
+2015-09-12 13:38:19,951 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18656 45 9950 16777216
+2015-09-12 13:38:19,952 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1107 31 0 0
+2015-09-12 13:38:19,952 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:143 ms
+2015-09-12 13:38:19,980 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50641, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741947[-1]_1124, duration: 200014860
+2015-09-12 13:38:19,981 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741947[-1]_1124, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:19,981 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:203 ms
+2015-09-12 13:38:19,990 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741948[-1]_1125 src: /128.84.139.27:50642 dest: /128.84.139.25:50010
+2015-09-12 13:38:20,075 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 84545 47 31 16777216
+2015-09-12 13:38:20,130 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53935 63 26 16777216
+2015-09-12 13:38:20,184 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54134 34 20 16777216
+2015-09-12 13:38:20,238 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54177 35 20 16777216
+2015-09-12 13:38:20,240 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1009 27 0 0
+2015-09-12 13:38:20,240 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:239 ms
+2015-09-12 13:38:20,268 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50642, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741948[-1]_1125, duration: 276450963
+2015-09-12 13:38:20,269 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741948[-1]_1125, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:20,269 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:280 ms
+2015-09-12 13:38:20,498 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741950[-1]_1127 src: /128.84.139.27:50644 dest: /128.84.139.25:50010
+2015-09-12 13:38:20,586 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 86247 50 24 16777216
+2015-09-12 13:38:20,640 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53974 41 22 16777216
+2015-09-12 13:38:20,694 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53804 42 22 16777216
+2015-09-12 13:38:20,749 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54045 35 19 16777216
+2015-09-12 13:38:20,750 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1147 25 0 0
+2015-09-12 13:38:20,750 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:241 ms
+2015-09-12 13:38:20,778 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50644, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741950[-1]_1127, duration: 277943713
+2015-09-12 13:38:20,779 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741950[-1]_1127, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:20,779 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:281 ms
+2015-09-12 13:38:21,018 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741952[-1]_1129 src: /128.84.139.27:50646 dest: /128.84.139.25:50010
+2015-09-12 13:38:21,085 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 65491 47 31 16777216
+2015-09-12 13:38:21,114 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27475 42 1381 16777216
+2015-09-12 13:38:21,143 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 22214 48 6138 16777216
+2015-09-12 13:38:21,172 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17035 47 12083 16777216
+2015-09-12 13:38:21,173 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1090 30 0 0
+2015-09-12 13:38:21,173 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:122 ms
+2015-09-12 13:38:21,202 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50646, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741952[-1]_1129, duration: 181669334
+2015-09-12 13:38:21,202 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741952[-1]_1129, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:21,202 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:184 ms
+2015-09-12 13:38:21,401 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741954[-1]_1131 src: /128.84.139.27:50648 dest: /128.84.139.25:50010
+2015-09-12 13:38:21,471 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 68923 49 29 16777216
+2015-09-12 13:38:21,502 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 31041 44 28 16777216
+2015-09-12 13:38:21,531 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26632 46 1719 16777216
+2015-09-12 13:38:21,560 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 22818 48 5489 16777216
+2015-09-12 13:38:21,561 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1123 31 0 0
+2015-09-12 13:38:21,561 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:136 ms
+2015-09-12 13:38:21,589 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50648, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741954[-1]_1131, duration: 186050885
+2015-09-12 13:38:21,589 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741954[-1]_1131, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:21,590 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:189 ms
+2015-09-12 13:38:21,613 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741955[-1]_1132 src: /128.84.139.27:50649 dest: /128.84.139.25:50010
+2015-09-12 13:38:21,669 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 55557 51 35 16777216
+2015-09-12 13:38:21,699 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27558 43 1465 16777216
+2015-09-12 13:38:21,727 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 23984 45 4387 16777216
+2015-09-12 13:38:21,756 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19950 46 8466 16777216
+2015-09-12 13:38:21,757 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1069 31 0 0
+2015-09-12 13:38:21,757 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:117 ms
+2015-09-12 13:38:21,785 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50649, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741955[-1]_1132, duration: 170922910
+2015-09-12 13:38:21,786 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741955[-1]_1132, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:21,786 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:174 ms
+2015-09-12 13:38:21,795 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741956[-1]_1133 src: /128.84.139.27:50650 dest: /128.84.139.25:50010
+2015-09-12 13:38:21,861 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 63973 54 31 16777216
+2015-09-12 13:38:21,890 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26417 46 2333 16777216
+2015-09-12 13:38:21,918 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 20147 46 7787 16777216
+2015-09-12 13:38:21,946 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18853 47 9200 16777216
+2015-09-12 13:38:21,948 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1595 27 0 0
+2015-09-12 13:38:21,948 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:123 ms
+2015-09-12 13:38:21,975 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50650, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741956[-1]_1133, duration: 178156347
+2015-09-12 13:38:21,976 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741956[-1]_1133, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:21,976 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:181 ms
+2015-09-12 13:38:22,375 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741952[-1]_1129 - may be due to race with write
+2015-09-12 13:38:22,376 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741938[-1]_1115 - may be due to race with write
+2015-09-12 13:38:22,386 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741956[-1]_1133 - may be due to race with write
+2015-09-12 13:38:22,386 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741939[-1]_1116 - may be due to race with write
+2015-09-12 13:38:22,386 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741944[-1]_1121 - may be due to race with write
+2015-09-12 13:38:22,387 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741954[-1]_1131 - may be due to race with write
+2015-09-12 13:38:22,387 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741941[-1]_1118 - may be due to race with write
+2015-09-12 13:38:22,387 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741948[-1]_1125 - may be due to race with write
+2015-09-12 13:38:22,387 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741946[-1]_1123 - may be due to race with write
+2015-09-12 13:38:22,387 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741947[-1]_1124 - may be due to race with write
+2015-09-12 13:38:22,388 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741950[-1]_1127 - may be due to race with write
+2015-09-12 13:38:22,388 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741955[-1]_1132 - may be due to race with write
+2015-09-12 13:38:22,973 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741962[-1]_1139 src: /128.84.139.27:50656 dest: /128.84.139.25:50010
+2015-09-12 13:38:23,057 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 83369 60 35 16777216
+2015-09-12 13:38:23,087 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26712 45 2385 16777216
+2015-09-12 13:38:23,115 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 23654 48 4133 16777216
+2015-09-12 13:38:23,144 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 21822 49 6746 16777216
+2015-09-12 13:38:23,145 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1163 30 0 0
+2015-09-12 13:38:23,145 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:149 ms
+2015-09-12 13:38:23,173 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50656, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741962[-1]_1139, duration: 198701762
+2015-09-12 13:38:23,174 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741962[-1]_1139, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:23,174 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:202 ms
+2015-09-12 13:38:23,184 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741963[-1]_1140 src: /128.84.139.27:50657 dest: /128.84.139.25:50010
+2015-09-12 13:38:23,277 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 91950 53 35 16777216
+2015-09-12 13:38:23,332 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54109 44 21 16777216
+2015-09-12 13:38:23,386 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54054 37 21 16777216
+2015-09-12 13:38:23,421 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 23830 70 11025 16777216
+2015-09-12 13:38:23,422 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 826 30 0 0
+2015-09-12 13:38:23,423 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:218 ms
+2015-09-12 13:38:23,451 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50657, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741963[-1]_1140, duration: 265314715
+2015-09-12 13:38:23,452 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741963[-1]_1140, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:23,452 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:268 ms
+2015-09-12 13:38:24,813 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741969[-1]_1146 src: /128.84.139.27:50663 dest: /128.84.139.25:50010
+2015-09-12 13:38:24,880 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 66019 55 31 16777216
+2015-09-12 13:38:24,909 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19743 47 8690 16777216
+2015-09-12 13:38:24,937 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17230 49 10931 16777216
+2015-09-12 13:38:24,966 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17316 52 11088 16777216
+2015-09-12 13:38:24,967 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 889 30 0 0
+2015-09-12 13:38:24,967 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:111 ms
+2015-09-12 13:38:24,996 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50663, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741969[-1]_1146, duration: 180560623
+2015-09-12 13:38:24,996 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741969[-1]_1146, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:24,996 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:183 ms
+2015-09-12 13:38:25,007 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741970[-1]_1147 src: /128.84.139.27:50664 dest: /128.84.139.25:50010
+2015-09-12 13:38:25,081 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 73161 73 33 16777216
+2015-09-12 13:38:25,135 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54005 39 22 16777216
+2015-09-12 13:38:25,190 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54234 35 22 16777216
+2015-09-12 13:38:25,244 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54167 38 14 16777216
+2015-09-12 13:38:25,245 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 695 26 0 0
+2015-09-12 13:38:25,245 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:229 ms
+2015-09-12 13:38:25,274 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50664, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741970[-1]_1147, duration: 265113966
+2015-09-12 13:38:25,274 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741970[-1]_1147, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:25,274 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:268 ms
+2015-09-12 13:38:26,538 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741977[-1]_1154 src: /128.84.139.27:50671 dest: /128.84.139.25:50010
+2015-09-12 13:38:26,615 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 75421 74 34 16777216
+2015-09-12 13:38:26,669 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53991 38 42 16777216
+2015-09-12 13:38:26,723 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54178 34 20 16777216
+2015-09-12 13:38:26,778 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54127 33 19 16777216
+2015-09-12 13:38:26,779 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 716 25 0 0
+2015-09-12 13:38:26,779 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:232 ms
+2015-09-12 13:38:26,807 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50671, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741977[-1]_1154, duration: 267062019
+2015-09-12 13:38:26,808 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741977[-1]_1154, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:26,808 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:270 ms
+2015-09-12 13:38:26,973 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741979[-1]_1156 src: /128.84.139.27:50673 dest: /128.84.139.25:50010
+2015-09-12 13:38:27,059 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 84963 97 32 16777216
+2015-09-12 13:38:27,089 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26262 51 3336 16777216
+2015-09-12 13:38:27,118 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 24777 74 3833 16777216
+2015-09-12 13:38:27,147 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26130 50 2745 16777216
+2015-09-12 13:38:27,148 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1177 31 0 0
+2015-09-12 13:38:27,149 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:154 ms
+2015-09-12 13:38:27,177 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50673, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741979[-1]_1156, duration: 202331939
+2015-09-12 13:38:27,177 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741979[-1]_1156, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:27,178 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:206 ms
+2015-09-12 13:38:27,388 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741963[-1]_1140 - may be due to race with write
+2015-09-12 13:38:27,389 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741979[-1]_1156 - may be due to race with write
+2015-09-12 13:38:27,398 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741962[-1]_1139 - may be due to race with write
+2015-09-12 13:38:27,398 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741970[-1]_1147 - may be due to race with write
+2015-09-12 13:38:27,398 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741969[-1]_1146 - may be due to race with write
+2015-09-12 13:38:27,399 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741977[-1]_1154 - may be due to race with write
+2015-09-12 13:38:29,230 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073741990[-1]_1167 src: /128.84.139.27:50684 dest: /128.84.139.25:50010
+2015-09-12 13:38:29,305 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 73460 51 32 16777216
+2015-09-12 13:38:29,349 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 43797 50 23 16777216
+2015-09-12 13:38:29,403 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54288 36 21 16777216
+2015-09-12 13:38:29,458 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54304 36 19 16777216
+2015-09-12 13:38:29,459 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 637 25 0 0
+2015-09-12 13:38:29,459 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:217 ms
+2015-09-12 13:38:29,487 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50684, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073741990[-1]_1167, duration: 255644244
+2015-09-12 13:38:29,488 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073741990[-1]_1167, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:29,488 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:259 ms
+2015-09-12 13:38:31,516 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742001[-1]_1178 src: /128.84.139.27:50695 dest: /128.84.139.25:50010
+2015-09-12 13:38:31,607 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 89770 54 32 16777216
+2015-09-12 13:38:31,639 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 31915 44 27 16777216
+2015-09-12 13:38:31,682 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 42698 39 22 16777216
+2015-09-12 13:38:31,737 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54024 39 21 16777216
+2015-09-12 13:38:31,738 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 966 26 0 0
+2015-09-12 13:38:31,738 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:206 ms
+2015-09-12 13:38:31,766 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50695, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742001[-1]_1178, duration: 247835449
+2015-09-12 13:38:31,767 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742001[-1]_1178, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:31,767 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:251 ms
+2015-09-12 13:38:32,399 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742001[-1]_1178 - may be due to race with write
+2015-09-12 13:38:32,399 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073741990[-1]_1167 - may be due to race with write
+2015-09-12 13:38:32,641 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742006[-1]_1183 src: /128.84.139.27:50700 dest: /128.84.139.25:50010
+2015-09-12 13:38:32,716 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 73211 48 31 16777216
+2015-09-12 13:38:32,769 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53379 45 24 16777216
+2015-09-12 13:38:32,823 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53333 54 26 16777216
+2015-09-12 13:38:32,877 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53662 53 25 16777216
+2015-09-12 13:38:32,878 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 964 27 0 0
+2015-09-12 13:38:32,878 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:226 ms
+2015-09-12 13:38:32,906 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50700, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742006[-1]_1183, duration: 263156694
+2015-09-12 13:38:32,907 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742006[-1]_1183, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:32,907 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:266 ms
+2015-09-12 13:38:36,904 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742024[-1]_1201 src: /128.84.139.27:50718 dest: /128.84.139.25:50010
+2015-09-12 13:38:36,977 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 71997 59 30 16777216
+2015-09-12 13:38:37,031 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53978 90 26 16777216
+2015-09-12 13:38:37,086 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54410 35 21 16777216
+2015-09-12 13:38:37,140 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54243 34 21 16777216
+2015-09-12 13:38:37,141 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 410 25 0 0
+2015-09-12 13:38:37,141 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:232 ms
+2015-09-12 13:38:37,170 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50718, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742024[-1]_1201, duration: 263832597
+2015-09-12 13:38:37,170 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742024[-1]_1201, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:37,170 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:267 ms
+2015-09-12 13:38:37,404 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742006[-1]_1183 - may be due to race with write
+2015-09-12 13:38:37,404 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742024[-1]_1201 - may be due to race with write
+2015-09-12 13:38:39,522 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742035[-1]_1212 src: /128.84.139.27:50729 dest: /128.84.139.25:50010
+2015-09-12 13:38:39,609 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 85410 54 42 16777216
+2015-09-12 13:38:39,663 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53540 46 24 16777216
+2015-09-12 13:38:39,716 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53342 45 22 16777216
+2015-09-12 13:38:39,770 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54012 61 109 16777216
+2015-09-12 13:38:39,772 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1086 26 0 0
+2015-09-12 13:38:39,772 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:238 ms
+2015-09-12 13:38:39,800 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50729, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742035[-1]_1212, duration: 276078145
+2015-09-12 13:38:39,800 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742035[-1]_1212, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:39,800 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:279 ms
+2015-09-12 13:38:40,007 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742037[-1]_1214 src: /128.84.139.27:50731 dest: /128.84.139.25:50010
+2015-09-12 13:38:40,090 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 81651 52 31 16777216
+2015-09-12 13:38:40,144 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54002 36 24 16777216
+2015-09-12 13:38:40,199 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54307 38 24 16777216
+2015-09-12 13:38:40,253 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54149 35 20 16777216
+2015-09-12 13:38:40,254 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 993 27 0 0
+2015-09-12 13:38:40,255 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:237 ms
+2015-09-12 13:38:40,283 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50731, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742037[-1]_1214, duration: 273790798
+2015-09-12 13:38:40,283 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742037[-1]_1214, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:40,284 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:277 ms
+2015-09-12 13:38:40,579 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742039[-1]_1216 src: /128.84.139.27:50733 dest: /128.84.139.25:50010
+2015-09-12 13:38:40,651 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 71343 54 34 16777216
+2015-09-12 13:38:40,681 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 29749 40 26 16777216
+2015-09-12 13:38:40,709 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 25439 57 2251 16777216
+2015-09-12 13:38:40,737 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 20596 56 6712 16777216
+2015-09-12 13:38:40,738 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 916 29 0 0
+2015-09-12 13:38:40,738 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:134 ms
+2015-09-12 13:38:40,765 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50733, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742039[-1]_1216, duration: 184643616
+2015-09-12 13:38:40,765 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742039[-1]_1216, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:40,766 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:188 ms
+2015-09-12 13:38:41,904 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742046[-1]_1223 src: /128.84.139.27:50740 dest: /128.84.139.25:50010
+2015-09-12 13:38:41,958 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 52130 52 76 16777216
+2015-09-12 13:38:41,986 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 22125 52 6024 16777216
+2015-09-12 13:38:42,014 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18277 49 9835 16777216
+2015-09-12 13:38:42,043 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17982 51 10115 16777216
+2015-09-12 13:38:42,044 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 868 30 0 0
+2015-09-12 13:38:42,044 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:104 ms
+2015-09-12 13:38:42,072 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50740, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742046[-1]_1223, duration: 166079150
+2015-09-12 13:38:42,073 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742046[-1]_1223, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:42,073 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:169 ms
+2015-09-12 13:38:42,410 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742035[-1]_1212 - may be due to race with write
+2015-09-12 13:38:42,410 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742037[-1]_1214 - may be due to race with write
+2015-09-12 13:38:42,416 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742039[-1]_1216 - may be due to race with write
+2015-09-12 13:38:42,416 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742046[-1]_1223 - may be due to race with write
+2015-09-12 13:38:42,807 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742051[-1]_1228 src: /128.84.139.27:50745 dest: /128.84.139.25:50010
+2015-09-12 13:38:42,872 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 63200 52 34 16777216
+2015-09-12 13:38:42,900 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 23747 45 4356 16777216
+2015-09-12 13:38:42,928 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17478 54 10482 16777216
+2015-09-12 13:38:42,956 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17253 69 10859 16777216
+2015-09-12 13:38:42,958 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 867 30 0 0
+2015-09-12 13:38:42,958 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:113 ms
+2015-09-12 13:38:42,986 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50745, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742051[-1]_1228, duration: 176718982
+2015-09-12 13:38:42,986 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742051[-1]_1228, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:42,987 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:180 ms
+2015-09-12 13:38:43,007 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742052[-1]_1229 src: /128.84.139.27:50746 dest: /128.84.139.25:50010
+2015-09-12 13:38:43,060 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 51127 56 33 16777216
+2015-09-12 13:38:43,088 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 19065 51 8755 16777216
+2015-09-12 13:38:43,116 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17518 53 10420 16777216
+2015-09-12 13:38:43,144 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 17427 51 10632 16777216
+2015-09-12 13:38:43,145 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 659 31 0 0
+2015-09-12 13:38:43,145 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:100 ms
+2015-09-12 13:38:43,174 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50746, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742052[-1]_1229, duration: 164227016
+2015-09-12 13:38:43,174 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742052[-1]_1229, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:43,174 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:167 ms
+2015-09-12 13:38:43,585 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742055[-1]_1232 src: /128.84.139.27:50749 dest: /128.84.139.25:50010
+2015-09-12 13:38:43,665 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 79266 55 37 16777216
+2015-09-12 13:38:43,720 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54218 45 23 16777216
+2015-09-12 13:38:43,773 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53220 53 23 16777216
+2015-09-12 13:38:43,889 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 115654 57 27 16777216
+2015-09-12 13:38:43,890 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 889 41 0 0
+2015-09-12 13:38:43,891 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:295 ms
+2015-09-12 13:38:43,918 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50749, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742055[-1]_1232, duration: 331262773
+2015-09-12 13:38:43,918 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742055[-1]_1232, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:43,918 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:334 ms
+2015-09-12 13:38:44,156 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742057[-1]_1234 src: /128.84.139.27:50751 dest: /128.84.139.25:50010
+2015-09-12 13:38:44,250 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 92437 55 65 16777216
+2015-09-12 13:38:44,303 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53316 47 25 16777216
+2015-09-12 13:38:44,357 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53638 48 25 16777216
+2015-09-12 13:38:44,411 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53352 53 20 16777216
+2015-09-12 13:38:44,412 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 641 37 0 0
+2015-09-12 13:38:44,412 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:246 ms
+2015-09-12 13:38:44,440 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50751, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742057[-1]_1234, duration: 281612807
+2015-09-12 13:38:44,440 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742057[-1]_1234, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:44,440 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:284 ms
+2015-09-12 13:38:46,059 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742064[-1]_1241 src: /128.84.139.27:50758 dest: /128.84.139.25:50010
+2015-09-12 13:38:46,143 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 82779 56 35 16777216
+2015-09-12 13:38:46,197 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54193 48 23 16777216
+2015-09-12 13:38:46,252 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54200 44 22 16777216
+2015-09-12 13:38:46,306 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54145 37 21 16777216
+2015-09-12 13:38:46,307 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 825 25 0 0
+2015-09-12 13:38:46,307 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:238 ms
+2015-09-12 13:38:46,336 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50758, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742064[-1]_1241, duration: 274709834
+2015-09-12 13:38:46,336 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742064[-1]_1241, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:46,336 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:278 ms
+2015-09-12 13:38:46,630 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742066[-1]_1243 src: /128.84.139.27:50760 dest: /128.84.139.25:50010
+2015-09-12 13:38:46,690 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 58545 47 29 16777216
+2015-09-12 13:38:46,718 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 25568 58 2169 16777216
+2015-09-12 13:38:46,745 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 20096 58 7063 16777216
+2015-09-12 13:38:46,773 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18404 58 9095 16777216
+2015-09-12 13:38:46,774 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 832 31 0 0
+2015-09-12 13:38:46,774 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:112 ms
+2015-09-12 13:38:46,802 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50760, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742066[-1]_1243, duration: 169765334
+2015-09-12 13:38:46,802 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742066[-1]_1243, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:46,802 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:172 ms
+2015-09-12 13:38:47,013 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742068[-1]_1245 src: /128.84.139.27:50762 dest: /128.84.139.25:50010
+2015-09-12 13:38:47,074 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 59930 51 33 16777216
+2015-09-12 13:38:47,102 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 26294 54 1288 16777216
+2015-09-12 13:38:47,130 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 23088 58 4361 16777216
+2015-09-12 13:38:47,158 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 18611 59 9099 16777216
+2015-09-12 13:38:47,159 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 778 29 0 0
+2015-09-12 13:38:47,159 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:116 ms
+2015-09-12 13:38:47,186 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50762, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742068[-1]_1245, duration: 171276603
+2015-09-12 13:38:47,186 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742068[-1]_1245, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:47,186 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:173 ms
+2015-09-12 13:38:47,196 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742069[-1]_1246 src: /128.84.139.27:50763 dest: /128.84.139.25:50010
+2015-09-12 13:38:47,278 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 81216 54 33 16777216
+2015-09-12 13:38:47,332 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53489 48 22 16777216
+2015-09-12 13:38:47,386 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53661 48 22 16777216
+2015-09-12 13:38:47,417 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742051[-1]_1228 - may be due to race with write
+2015-09-12 13:38:47,417 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742064[-1]_1241 - may be due to race with write
+2015-09-12 13:38:47,425 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742052[-1]_1229 - may be due to race with write
+2015-09-12 13:38:47,425 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742055[-1]_1232 - may be due to race with write
+2015-09-12 13:38:47,425 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742057[-1]_1234 - may be due to race with write
+2015-09-12 13:38:47,426 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742068[-1]_1245 - may be due to race with write
+2015-09-12 13:38:47,426 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742066[-1]_1243 - may be due to race with write
+2015-09-12 13:38:47,440 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53415 40 18 16777216
+2015-09-12 13:38:47,440 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 686 26 0 0
+2015-09-12 13:38:47,441 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:238 ms
+2015-09-12 13:38:47,468 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50763, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742069[-1]_1246, duration: 270615276
+2015-09-12 13:38:47,469 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742069[-1]_1246, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:47,469 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:274 ms
+2015-09-12 13:38:47,476 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742070[-1]_1247 src: /128.84.139.27:50764 dest: /128.84.139.25:50010
+2015-09-12 13:38:47,560 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 83171 76 32 16777216
+2015-09-12 13:38:47,614 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53564 50 49 16777216
+2015-09-12 13:38:47,668 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53862 47 23 16777216
+2015-09-12 13:38:47,722 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53605 47 21 16777216
+2015-09-12 13:38:47,723 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 725 25 0 0
+2015-09-12 13:38:47,723 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:239 ms
+2015-09-12 13:38:47,750 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50764, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742070[-1]_1247, duration: 272860867
+2015-09-12 13:38:47,751 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742070[-1]_1247, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:47,751 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:276 ms
+2015-09-12 13:38:48,048 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742072[-1]_1249 src: /128.84.139.27:50766 dest: /128.84.139.25:50010
+2015-09-12 13:38:48,141 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 92455 77 31 16777216
+2015-09-12 13:38:48,195 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53943 37 24 16777216
+2015-09-12 13:38:48,250 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54275 34 22 16777216
+2015-09-12 13:38:48,304 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53949 34 21 16777216
+2015-09-12 13:38:48,305 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 971 26 0 0
+2015-09-12 13:38:48,305 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:248 ms
+2015-09-12 13:38:48,333 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50766, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742072[-1]_1249, duration: 284023200
+2015-09-12 13:38:48,334 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742072[-1]_1249, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:48,334 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:287 ms
+2015-09-12 13:38:48,625 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742074[-1]_1251 src: /128.84.139.27:50768 dest: /128.84.139.25:50010
+2015-09-12 13:38:48,690 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 64084 47 28 16777216
+2015-09-12 13:38:48,722 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 31683 40 25 16777216
+2015-09-12 13:38:48,751 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 29425 44 29 16777216
+2015-09-12 13:38:48,780 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27628 46 898 16777216
+2015-09-12 13:38:48,781 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 936 31 0 0
+2015-09-12 13:38:48,781 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:136 ms
+2015-09-12 13:38:48,809 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50768, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742074[-1]_1251, duration: 182826323
+2015-09-12 13:38:48,810 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742074[-1]_1251, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:48,810 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:186 ms
+2015-09-12 13:38:50,253 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742081[-1]_1258 src: /128.84.139.27:50775 dest: /128.84.139.25:50010
+2015-09-12 13:38:50,627 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 372769 57 53 16777216
+2015-09-12 13:38:50,682 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54019 39 25 16777216
+2015-09-12 13:38:50,736 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54111 37 28 16777216
+2015-09-12 13:38:50,790 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54154 35 23 16777216
+2015-09-12 13:38:50,791 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 958 25 0 0
+2015-09-12 13:38:50,791 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:530 ms
+2015-09-12 13:38:50,819 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50775, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742081[-1]_1258, duration: 564423756
+2015-09-12 13:38:50,820 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742081[-1]_1258, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:50,820 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:567 ms
+2015-09-12 13:38:51,048 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742083[-1]_1260 src: /128.84.139.27:50777 dest: /128.84.139.25:50010
+2015-09-12 13:38:51,142 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 93469 74 32 16777216
+2015-09-12 13:38:51,197 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54165 35 22 16777216
+2015-09-12 13:38:51,251 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54229 34 21 16777216
+2015-09-12 13:38:51,305 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54115 40 20 16777216
+2015-09-12 13:38:51,307 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 1011 26 0 0
+2015-09-12 13:38:51,307 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:250 ms
+2015-09-12 13:38:51,335 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50777, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742083[-1]_1260, duration: 285249596
+2015-09-12 13:38:51,335 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742083[-1]_1260, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:51,335 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:288 ms
+2015-09-12 13:38:52,426 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742072[-1]_1249 - may be due to race with write
+2015-09-12 13:38:52,427 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742069[-1]_1246 - may be due to race with write
+2015-09-12 13:38:52,431 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742070[-1]_1247 - may be due to race with write
+2015-09-12 13:38:52,431 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742083[-1]_1260 - may be due to race with write
+2015-09-12 13:38:52,431 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742074[-1]_1251 - may be due to race with write
+2015-09-12 13:38:52,432 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742081[-1]_1258 - may be due to race with write
+2015-09-12 13:38:53,356 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742092[-1]_1269 src: /128.84.139.27:50786 dest: /128.84.139.25:50010
+2015-09-12 13:38:53,449 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 91864 56 22 16777216
+2015-09-12 13:38:53,504 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 53847 84 24 16777216
+2015-09-12 13:38:53,558 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54230 39 21 16777216
+2015-09-12 13:38:53,613 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 54164 38 20 16777216
+2015-09-12 13:38:53,613 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 685 27 0 0
+2015-09-12 13:38:53,614 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:247 ms
+2015-09-12 13:38:53,642 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50786, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742092[-1]_1269, duration: 283599561
+2015-09-12 13:38:53,642 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742092[-1]_1269, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:53,642 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:286 ms
+2015-09-12 13:38:54,071 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742095[-1]_1272 src: /128.84.139.27:50789 dest: /128.84.139.25:50010
+2015-09-12 13:38:54,147 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 75182 57 36 16777216
+2015-09-12 13:38:54,177 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 29550 48 27 16777216
+2015-09-12 13:38:54,206 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27234 60 1257 16777216
+2015-09-12 13:38:54,234 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 25243 60 2573 16777216
+2015-09-12 13:38:54,235 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 898 31 0 0
+2015-09-12 13:38:54,235 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:142 ms
+2015-09-12 13:38:54,263 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50789, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742095[-1]_1272, duration: 190603989
+2015-09-12 13:38:54,264 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742095[-1]_1272, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:54,264 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:194 ms
+2015-09-12 13:38:54,488 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742097[-1]_1274 src: /128.84.139.27:50791 dest: /128.84.139.25:50010
+2015-09-12 13:38:54,558 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 69286 55 34 16777216
+2015-09-12 13:38:54,592 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 33657 48 27 16777216
+2015-09-12 13:38:54,623 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 30401 49 26 16777216
+2015-09-12 13:38:54,652 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 28446 49 27 16777216
+2015-09-12 13:38:54,653 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 992 31 0 0
+2015-09-12 13:38:54,653 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:144 ms
+2015-09-12 13:38:54,681 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50791, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742097[-1]_1274, duration: 191656775
+2015-09-12 13:38:54,682 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742097[-1]_1274, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:54,682 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:195 ms
+2015-09-12 13:38:54,693 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: Receiving BP-988194909-128.84.139.26-1442079445266:blk_1073742098[-1]_1275 src: /128.84.139.27:50792 dest: /128.84.139.25:50010
+2015-09-12 13:38:54,765 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 70377 55 34 16777216
+2015-09-12 13:38:54,800 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 34803 46 25 16777216
+2015-09-12 13:38:54,830 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 30402 49 27 16777216
+2015-09-12 13:38:54,859 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 27716 54 81 16777216
+2015-09-12 13:38:54,860 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: EXP0911 922 31 0 0
+2015-09-12 13:38:54,860 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: MemBlockReceiver: packet receive time:148 ms
+2015-09-12 13:38:54,888 INFO org.apache.hadoop.hdfs.server.datanode.DataNode.clienttrace: src: /128.84.139.27:50792, dest: /128.84.139.25:50010, bytes: 67108864, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_236640182_1, offset: 0, srvID: 3e31355b-a89e-4f50-9e3a-e5e1380f302b, blockid: BP-988194909-128.84.139.26-1442079445266:blk_1073742098[-1]_1275, duration: 192998753
+2015-09-12 13:38:54,888 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: PacketResponder: BP-988194909-128.84.139.26-1442079445266:blk_1073742098[-1]_1275, type=LAST_IN_PIPELINE, downstreams=0:[] terminating
+2015-09-12 13:38:54,889 INFO org.apache.hadoop.hdfs.server.datanode.DataNode: CQDEBUG: write block elapsed time:196 ms
+2015-09-12 13:38:57,432 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742092[-1]_1269 - may be due to race with write
+2015-09-12 13:38:57,432 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742097[-1]_1274 - may be due to race with write
+2015-09-12 13:38:57,437 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742095[-1]_1272 - may be due to race with write
+2015-09-12 13:38:57,437 INFO org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceScanner: Verification failed for BP-988194909-128.84.139.26-1442079445266:blk_1073742098[-1]_1275 - may be due to race with write

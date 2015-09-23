@@ -6,5 +6,5 @@ set ylabel "Cumulative Frequency"
 set logscale x 10
 
 plot \
-  "crtc_20_60.cdf" u 1:2 title "FFFS" with lines, \
-  "org_20_60.cdf" u 1:2 title "HDFS" with lines
+  "crtc_20_60.cdf" u 1:2 title "FFFS" with lines lc rgb "red", \
+  "org_20_60.cdf" u 1:2 title "HDFS" with lines lc rgb "blue"

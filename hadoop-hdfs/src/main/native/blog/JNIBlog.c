@@ -462,7 +462,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
   int page_id, page_offset, read_length, cur_length;
   char *page_data;
   int64_t *log_id;
-  
+//struct timeval tv1,tv2,tv3;
+//gettimeofday(&tv1,NULL);  
   // Find the corresponding block.
   filesystem = get_filesystem(env, thisObj);
   if (snapshotId == -1) {
@@ -498,7 +499,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
       return -1;
     }
   }
-
+//gettimeofday(&tv2,NULL);
+int cnt=1;
   // In case the data you ask is not written return an error.
   if (blkOfst >= block->length) {
     fprintf(stderr, "Read Block: Block %ld is not written at %d byte.\n", blockId, blkOfst);
@@ -519,21 +521,31 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
   cur_length = filesystem->page_size - page_offset;
   if (cur_length >= read_length) {
     (*env)->SetByteArrayRegion(env, buf, bufOfst, read_length, (jbyte*) page_data);
-    return read_length;
-  }
+//    return read_length;
+  }else{
   (*env)->SetByteArrayRegion(env, buf, bufOfst, cur_length, (jbyte*) page_data);
   page_id++;
   while (1) {
+//struct timeval t1,t2;
+//gettimeofday(&t1,NULL);
+    cnt++;
     page_data = block->pages[page_id]->data;
     if (cur_length + filesystem->page_size >= read_length) {
         (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, read_length - cur_length, (jbyte*) page_data);
-        return read_length;
+        break;//return read_length;
     }
     (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, filesystem->page_size, (jbyte*) page_data);
+//fprintf(stdout, "set: off=%d,len=%ld\n",bufOfst + cur_length, filesystem->page_size);
     cur_length += filesystem->page_size;
     page_id++;
+//gettimeofday(&t2,NULL);
+// fprintf(stdout, "%ldus\n", (t2.tv_sec-t1.tv_sec)*1000000+t2.tv_usec-t1.tv_usec);
   }
-  
+  }
+//gettimeofday(&tv3,NULL);
+//  long search=(tv2.tv_sec-tv1.tv_sec)*1000000+tv2.tv_usec-tv1.tv_usec;
+//  long copy=(tv3.tv_sec-tv2.tv_sec)*1000000+tv3.tv_usec-tv2.tv_usec;
+//  fprintf(stdout, "readBlock %ld %ld [%d,%d,%d]\n",search,copy,blkOfst,read_length,cnt);
   return read_length;
 }
 
@@ -613,6 +625,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   int64_t log_pos;
   char *pdata;
   int i;
+  char *allData=NULL;
+  int adp=0; // next usagable page in allData.
+#define ADP	(adp*filesystem->page_size)
+#define IADP	(adp++)
+#define MALLOCPAGE (void*)(allData+(filesystem->page_size*adp++))
   
   // Find the corresponding block.
   filesystem = get_filesystem(env, thisObj);
@@ -624,7 +641,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     return -1;
   }
   MAP_UNLOCK(block, filesystem->block_map, blockId);
-  
+
   // In case you cannot write in the required offset.
   if (blkOfst > block->length) {
     fprintf(stderr, "Write Block: Block %ld cannot be written at byte %d.\n", blockId, blkOfst);
@@ -644,8 +661,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   last_page = (block_offset + length - 1) / filesystem->page_size;
   page_offset = block_offset % filesystem->page_size;
   new_pages_length = last_page - first_page + 1;
-  new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
-  new_pages[0].data = (char *) malloc(filesystem->page_size*sizeof(char));
+  allData = (char*) malloc(filesystem->page_size*sizeof(char)*(new_pages_length+1));
+  //new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
+  new_pages = (page_t*)MALLOCPAGE;
+  
+  //new_pages[0].data = (char *) malloc(filesystem->page_size*sizeof(char));
+  new_pages[0].data = (char*)MALLOCPAGE;
   for (i = 0; i < page_offset; i++)
     new_pages[0].data[i] = block->pages[first_page]->data[i];
   if (first_page == last_page) {
@@ -679,7 +700,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
 #endif
     buffer_offset += write_length;
     for (i = 1; i < new_pages_length-1; i++) {
-      new_pages[i].data = (char *) malloc(filesystem->page_size*sizeof(char));
+      //new_pages[i].data = (char *) malloc(filesystem->page_size*sizeof(char));
+      new_pages[i].data = (char *)MALLOCPAGE;
       write_length = filesystem->page_size;
       pdata = new_pages[i].data;
 #ifdef SECOND_EXPERIMENT
@@ -695,7 +717,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
 #endif
       buffer_offset += write_length;
     }
-    new_pages[new_pages_length-1].data =  (char *) malloc(filesystem->page_size*sizeof(char));
+    //new_pages[new_pages_length-1].data =  (char *) malloc(filesystem->page_size*sizeof(char));
+    new_pages[new_pages_length-1].data =  (char *)MALLOCPAGE;
     write_length = (int) bufOfst + (int) length - buffer_offset;
     pdata = new_pages[new_pages_length-1].data;
 #ifdef SECOND_EXPERIMENT
@@ -734,7 +757,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   }
   for (i = 0; i < new_pages_length; i++)
     block->pages[first_page+i] = new_pages + i;
-  
+
+
   // Create log entry.
   pthread_rwlock_wrlock(&(filesystem->lock));
   check_and_increase_log_length(filesystem);
@@ -756,8 +780,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, filesystem->log+log_pos);
 #ifdef PERF_WRITE
-  gettimeofday(&tv1,NULL);
-  t_tick+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
+  gettimeofday(&tv2,NULL);
+  t_tick=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
 #endif//PERF_WRITE
 #endif
 #endif
@@ -768,9 +792,28 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
 #ifdef PERF_WRITE
   gettimeofday(&tv2,NULL);
   t_tot+=(tv2.tv_usec-tv_base.tv_usec+(1<<20))%(1<<20);
-  printf("%ld %ld %ld\n",t_tot,t_copy,t_tick);
-  fflush(stdout);
+  printf("%ld %ld %ld %d\n",t_tot-(t_copy+t_tick),t_copy,t_tick,length);
+// fflush(stdout);
 #endif//PERF_WRITE
+/*
+#define PRINT_TIMEDIFF(tag,to,from) { \
+  long delta = ((to).tv_sec - (from).tv_sec)*1000000 + (to).tv_usec - (from).tv_usec; \
+  printf("%s %ld\n", tag, delta); \
+ }
+PRINT_TIMEDIFF("L(blk):",tv1,tv_base);
+PRINT_TIMEDIFF("R(blk):",tv2,tv1);
+PRINT_TIMEDIFF("C(dat):",tv3,tv2);
+PRINT_TIMEDIFF("L(log):",tv4,tv3);
+PRINT_TIMEDIFF("R(log):",tv5,tv4);
+*/
+/*
+printf("b  %ld.%ld\n",tv_base.tv_sec,tv_base.tv_usec);
+printf("bl %ld.%ld\n",tv1.tv_sec,tv1.tv_usec);
+printf("bc %ld.%ld\n",tv2.tv_sec,tv2.tv_usec);
+printf("ec %ld.%ld\n",tv3.tv_sec,tv3.tv_usec);
+printf("fl %ld.%ld\n",tv4.tv_sec,tv4.tv_usec);
+printf("e  %ld.%ld\n",tv5.tv_sec,tv5.tv_usec);
+*/
   return 0;
 }
 

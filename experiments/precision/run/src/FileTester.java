@@ -1,5 +1,6 @@
 import java.io.PrintStream;
 import java.io.IOException;
+import java.io.*;
 import java.util.Random;
 import java.util.List;
 import java.util.Vector;
@@ -54,6 +55,58 @@ public class FileTester extends Configured implements Tool {
     ps.print(args[0]);
     ps.close();
     fsos.close();
+  }
+
+static class WriteThread implements Runnable{
+    
+    FileSystem fs;
+    String path;
+    long size;
+
+    WriteThread(FileSystem fs, String path, long size)
+    {
+      this.fs=fs;
+      this.path=path;
+      this.size=size;
+    }
+
+    @Override 
+    public void run(){
+    try{
+    FSDataOutputStream fsos = fs.create(new Path(path));
+    byte [] buf = new byte[4096];
+    long i;
+    long start = System.currentTimeMillis();
+    //for(i=0;i<4096;i++)buf[i]=(byte)'a';
+    for(i=0;i<(size/4096);i++){
+      fsos.write(buf,0,4096);
+    }
+    fsos.close();
+    long end = System.currentTimeMillis();
+System.out.println("s "+path+" "
+  +start+":"
+  +end+" "
+  +(end-start));
+    }catch(IOException ioe){
+      //do nothing
+      System.out.println(ioe);
+      ioe.printStackTrace();
+    }
+  }
+}
+
+  void write(FileSystem fs,String path,long nGB,int nTh)
+  {
+    Thread ths[] = new Thread[nTh];
+    for(int i=0;i<nTh;i++){
+      ths[i] = new Thread(new WriteThread(fs,path+i,nGB<<30));
+      ths[i].start();
+    }
+    for(int i=0;i<nTh;i++){
+      try{
+        ths[i].join();
+      }catch(InterruptedException ie){}
+    }
   }
 
   void write1g(FileSystem fs, String path, int bfsz)
@@ -140,7 +193,10 @@ public class FileTester extends Configured implements Tool {
     long st = System.currentTimeMillis();//JNIBlog.readLocalRTC();
     int curc = 0;
     while(curc < count){
+      long sts = System.nanoTime();
       fs.createSnapshot(new Path(path));
+      long ets = System.nanoTime();
+      System.out.println((double)(ets-sts)/1000000);
       curc++;
       while(/*JNIBlog.readLocalRTC()*/System.currentTimeMillis()<(st+curc*msInt)){
         try{Thread.sleep(1);}catch(InterruptedException ie){}
@@ -148,24 +204,53 @@ public class FileTester extends Configured implements Tool {
     }
   }
 
+/*
   void read(FileSystem fs,String path)
   throws IOException{
     //read one
     read("R1",fs,path);
     //read two
     read("R2",fs,path);
-  }
+  }*/
 
-  void read(String tag,FileSystem fs,String path)
+  void read(FileSystem fs,String path)
   throws IOException{
-    long start_ts,end_ts;
+    long start_ts,end_ts,len=0;
+    int nRead;
     ByteBuffer bb = ByteBuffer.allocate(65536);
     FSDataInputStream fsis = fs.open(new Path(path));
-    start_ts = System.nanoTime();
-    while(fsis.read(bb)!=0)bb.clear();
-    end_ts = System.nanoTime();
+    for(int i=0;i<1;i++){
+      fsis.seek(0);
+      len=0;
+      start_ts = System.nanoTime();
+      while((nRead=fsis.read(bb))>0){
+        len+=nRead;
+        bb.clear();
+      };
+      end_ts = System.nanoTime();
+      System.out.println(((double)len/(end_ts - start_ts)));
+    }
     fsis.close();
-    System.out.println(tag+":"+(end_ts - start_ts));
+  }
+  
+  void readspeed(FileSystem fs,String path)
+  throws IOException{
+    long start_ts,end_ts,len=0;
+    int nRead;
+    ByteBuffer bb = ByteBuffer.allocate(65536);
+    long start = System.currentTimeMillis();
+    FSDataInputStream fsis = fs.open(new Path(path));
+      fsis.seek(0);
+      len=0;
+      start_ts = System.nanoTime();
+      while((nRead=fsis.read(bb))>0){
+        len+=nRead;
+        bb.clear();
+      };
+      end_ts = System.nanoTime();
+    long end = System.currentTimeMillis();
+    System.out.println("read: "+start+" "+end+" "+(end_ts - start_ts)/1000/1000);
+    fsis.close();
   }
 
   void addTimestamp(long ts,byte[] buf){
@@ -290,12 +375,72 @@ public class FileTester extends Configured implements Tool {
     return lRet;
   }
 
+  int getFileLen(FileSystem fs, String file)
+  throws IOException {
+    FSDataInputStream in = null;
+    try{
+      ByteBuffer bb = ByteBuffer.allocate(128*1024);
+      if(!fs.exists(new Path(file)))return 0;
+      in = fs.open(new Path(file));
+      int len = in.read(bb);
+      if(len<0)len=0;
+      in.close();
+      return len;
+    }catch(IOException ioe){
+      return 0;
+    }finally{
+      if(in!=null)in.close();
+    }
+  }
+
+  void getMiss(FileSystem fs, String fn, int snapfl, long snap)
+  throws IOException{
+    FileReader fr = new FileReader(fn);
+    BufferedReader br = new BufferedReader(fr);
+    br.skip(snapfl);
+    while(true){
+      String line = br.readLine();
+      if(line == null)return;
+      long ts = Long.parseLong(line.split(" ")[0]);
+      long delta = snap - ts;
+      if(delta >= 0)System.out.println("M "+snap+" "+delta);
+      else break;
+    }
+  }
+
+  void getInconsis(FileSystem fs, String fn, int snapfl, long snap)
+  throws IOException{
+    if(snapfl<=0)return;
+
+    FileReader fr = new FileReader(fn);
+    BufferedReader br = new BufferedReader(fr);
+    int pos = 0;
+    while(true){
+      if(pos >= snapfl)break;
+      String line = br.readLine();
+      pos += line.length()+1;
+      if(line == null)return;
+      long ts = Long.parseLong(line.split(" ")[0]);
+      long delta = snap - ts;
+      if(delta < 0)System.out.println("I "+snap+" "+delta);
+    }
+  }
+
   void analyzesnap(FileSystem fs, String path)
   throws IOException{
     // STEP 1: get snapshot/timestamp list
     List<Long> lSnap = getSnapshots(fs);
     // STEP 2: get the real start/end timestamp for each file.
-    List<FileTuple> lFile = getFiles(fs,path);
+    for (long snap:lSnap){
+      System.err.println(snap);
+      for(FileStatus stat: fs.listStatus(new Path(path))){
+        String fn = stat.getPath().getName();
+        int snapfl = getFileLen(fs,"/.snapshot/"+snap+path+"/"+fn);
+        getMiss(fs,fn,snapfl,snap);
+        getInconsis(fs,fn,snapfl,snap);
+      }
+    }
+/*    List<FileTuple> lFile = getFiles(fs,path);
     // STEP 3: spit data
     for(long snap: lSnap){
       for(FileTuple ft: lFile){
@@ -315,6 +460,7 @@ public class FileTester extends Configured implements Tool {
         System.out.println(ft.name+" "+snap+" "+delta);
       }
     }
+*/
   }
 
   @Override
@@ -334,7 +480,8 @@ public class FileTester extends Configured implements Tool {
         "\tpmuwrite <path> <pmuid> <recordsize> <duration>\n"+
         "\tread <path>\n"+
         "\tanalyzesnap <path>\n"+
-        "\tr105");
+        "\twrite <path> <nGB> <nTh>\n"+
+        "\tr109");
       return -1;
     }
     if("append".equals(args[0]))
@@ -351,12 +498,16 @@ public class FileTester extends Configured implements Tool {
       this.snapshot(fs,args[1],Long.parseLong(args[2]),Integer.parseInt(args[3]));
     else if("read".equals(args[0]))
       this.read(fs,args[1]);
+    else if("readspeed".equals(args[0]))
+      this.readspeed(fs,args[1]);
     else if("timewrite".equals(args[0]))
       this.timewrite(fs,args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]));
     else if("pmuwrite".equals(args[0]))
       this.pmuwrite(fs,args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]),Integer.parseInt(args[4]));
     else if("analyzesnap".equals(args[0]))
       this.analyzesnap(fs,args[1]);
+    else if("write".equals(args[0]))
+      this.write(fs,args[1],Long.parseLong(args[2]),Integer.parseInt(args[3]));
     else
       throw new Exception("invalid command:"+args[0]);
     return 0;

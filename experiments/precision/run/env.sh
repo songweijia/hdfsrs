@@ -5,7 +5,7 @@ export PATH=$PATH:$JAVA_HOME/bin
 
 #nodes="fsfs1 fsfs2 fsfs3 fsfs4 fsfs5"
 #nodes="fsfs1 fsfs2 fsfs3 fsfs4"
-nodes="compute27 compute28 compute29 compute30"
+nodes="compute26 compute28 compute29 compute30"
 master=compute30
 hdfsrs_pkg="hadoop-2.4.1-src/hadoop-dist/target/hadoop-2.4.1.tar.gz"
 #workspace=/local/weijia/

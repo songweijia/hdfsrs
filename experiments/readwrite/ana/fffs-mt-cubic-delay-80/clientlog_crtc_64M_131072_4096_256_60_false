@@ -1,0 +1,31 @@
+stopping yarn daemons
+stopping resourcemanager
+compute30: stopping nodemanager
+compute27: stopping nodemanager
+compute28: stopping nodemanager
+compute29: stopping nodemanager
+no proxyserver to stop
+Stopping namenodes on [compute30]
+compute30: stopping namenode
+compute30: stopping datanode
+compute27: stopping datanode
+compute29: stopping datanode
+compute28: stopping datanode
+Stopping secondary namenodes [0.0.0.0]
+0.0.0.0: no secondarynamenode to stop
+Formatting using clusterid: CID-ec45fe46-0af1-4173-b3e2-38081b9d00cc
+Starting namenodes on [compute30]
+compute30: starting namenode, logging to /home/weijia/opt/hadoop-crtc/logs/hadoop-weijia-namenode-compute30.out
+compute30: starting datanode, logging to /home/weijia/opt/hadoop-crtc/logs/hadoop-weijia-datanode-compute30.out
+compute27: starting datanode, logging to /home/weijia/opt/hadoop-crtc/logs/hadoop-weijia-datanode-compute27.out
+compute28: starting datanode, logging to /home/weijia/opt/hadoop-crtc/logs/hadoop-weijia-datanode-compute28.out
+compute29: starting datanode, logging to /home/weijia/opt/hadoop-crtc/logs/hadoop-weijia-datanode-compute29.out
+starting yarn daemons
+starting resourcemanager, logging to /home/weijia/opt/hadoop-crtc/logs/yarn-weijia-resourcemanager-compute30.out
+compute30: starting nodemanager, logging to /home/weijia/opt/hadoop-crtc/logs/yarn-weijia-nodemanager-compute30.out
+compute27: starting nodemanager, logging to /home/weijia/opt/hadoop-crtc/logs/yarn-weijia-nodemanager-compute27.out
+compute29: starting nodemanager, logging to /home/weijia/opt/hadoop-crtc/logs/yarn-weijia-nodemanager-compute29.out
+compute28: starting nodemanager, logging to /home/weijia/opt/hadoop-crtc/logs/yarn-weijia-nodemanager-compute28.out
+Allowing snaphot on / succeeded
+availableProcessors=32
+freeMemory=1398195264

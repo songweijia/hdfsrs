@@ -458,6 +458,7 @@ public class TestDFSIO implements Tool {
         int curSize = (bufferSize < nrRemaining) ? bufferSize : (int)nrRemaining;
         addTimestamp(buffer);
         out.write(buffer, 0, curSize);
+//throttler: try{Thread.sleep(100);}catch(Exception e){}
         reporter.setStatus("writing " + name + "@" + 
                            (totalSize - nrRemaining) + "/" + totalSize 
                            + " ::host = " + hostName);

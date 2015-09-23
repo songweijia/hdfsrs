@@ -1,0 +1,376 @@
+15/09/17 14:37:10 INFO fs.TestDFSIO: TestDFSIO.1.7
+15/09/17 14:37:10 INFO fs.TestDFSIO: nrFiles = 10
+15/09/17 14:37:10 INFO fs.TestDFSIO: nrBytes (MB) = 1.0
+15/09/17 14:37:10 INFO fs.TestDFSIO: bufferSize = 1000000
+15/09/17 14:37:10 INFO fs.TestDFSIO: baseDir = /benchmarks/TestDFSIO
+15/09/17 14:37:11 INFO fs.TestDFSIO: creating control file: 1048576 bytes, 10 files
+15/09/17 14:37:12 INFO fs.TestDFSIO: created control files for: 10 files
+15/09/17 14:37:12 INFO Configuration.deprecation: session.id is deprecated. Instead, use dfs.metrics.session-id
+15/09/17 14:37:12 INFO jvm.JvmMetrics: Initializing JVM Metrics with processName=JobTracker, sessionId=
+15/09/17 14:37:12 INFO jvm.JvmMetrics: Cannot initialize JVM Metrics with processName=JobTracker, sessionId= - already initialized
+15/09/17 14:37:13 INFO mapred.FileInputFormat: Total input paths to process : 10
+15/09/17 14:37:13 INFO mapreduce.JobSubmitter: number of splits:10
+15/09/17 14:37:13 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_local1498345547_0001
+15/09/17 14:37:13 WARN conf.Configuration: file:/home/weijia/opt/hadoop/tmp/mapred/staging/weijia1498345547/.staging/job_local1498345547_0001/job.xml:an attempt to override final parameter: mapreduce.job.end-notification.max.retry.interval;  Ignoring.
+15/09/17 14:37:13 WARN conf.Configuration: file:/home/weijia/opt/hadoop/tmp/mapred/staging/weijia1498345547/.staging/job_local1498345547_0001/job.xml:an attempt to override final parameter: mapreduce.job.end-notification.max.attempts;  Ignoring.
+15/09/17 14:37:14 WARN conf.Configuration: file:/home/weijia/opt/hadoop/tmp/mapred/local/localRunner/weijia/job_local1498345547_0001/job_local1498345547_0001.xml:an attempt to override final parameter: mapreduce.job.end-notification.max.retry.interval;  Ignoring.
+15/09/17 14:37:14 WARN conf.Configuration: file:/home/weijia/opt/hadoop/tmp/mapred/local/localRunner/weijia/job_local1498345547_0001/job_local1498345547_0001.xml:an attempt to override final parameter: mapreduce.job.end-notification.max.attempts;  Ignoring.
+15/09/17 14:37:14 INFO mapreduce.Job: The url to track the job: http://localhost:8080/
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: OutputCommitter set in config null
+15/09/17 14:37:14 INFO mapreduce.Job: Running job: job_local1498345547_0001
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: OutputCommitter is org.apache.hadoop.mapred.FileOutputCommitter
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Waiting for map tasks
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000000_0
+15/09/17 14:37:14 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:14 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_0:0+112
+15/09/17 14:37:14 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:14 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:14 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:14 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:14 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:14 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:14 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:14 INFO fs.TestDFSIO: Exec time = 39
+15/09/17 14:37:14 INFO fs.TestDFSIO: IO rate = 25.641026
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:14 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:14 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufend = 71; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:14 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:14 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000000_0 is done. And is in the process of committing
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: finished test_io_0 ::host = compute31
+15/09/17 14:37:14 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000000_0' done.
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000000_0
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000001_0
+15/09/17 14:37:14 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:14 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_1:0+112
+15/09/17 14:37:14 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:14 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:14 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:14 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:14 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:14 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:14 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:14 INFO fs.TestDFSIO: Exec time = 45
+15/09/17 14:37:14 INFO fs.TestDFSIO: IO rate = 22.222221
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:14 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:14 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufend = 70; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:14 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:14 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000001_0 is done. And is in the process of committing
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: finished test_io_1 ::host = compute31
+15/09/17 14:37:14 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000001_0' done.
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000001_0
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000002_0
+15/09/17 14:37:14 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:14 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_2:0+112
+15/09/17 14:37:14 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:14 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:14 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:14 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:14 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:14 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:14 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:14 INFO fs.TestDFSIO: Exec time = 45
+15/09/17 14:37:14 INFO fs.TestDFSIO: IO rate = 22.222221
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:14 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:14 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufend = 70; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:14 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:14 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000002_0 is done. And is in the process of committing
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: finished test_io_2 ::host = compute31
+15/09/17 14:37:14 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000002_0' done.
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000002_0
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000003_0
+15/09/17 14:37:14 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:14 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_3:0+112
+15/09/17 14:37:14 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:14 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:14 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:14 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:14 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:14 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:14 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:14 INFO fs.TestDFSIO: Exec time = 51
+15/09/17 14:37:14 INFO fs.TestDFSIO: IO rate = 19.607843
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:14 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:14 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufend = 71; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:14 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:14 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000003_0 is done. And is in the process of committing
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: finished test_io_3 ::host = compute31
+15/09/17 14:37:14 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000003_0' done.
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000003_0
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000004_0
+15/09/17 14:37:14 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:14 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_4:0+112
+15/09/17 14:37:14 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:14 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:14 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:14 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:14 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:14 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:14 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:14 INFO fs.TestDFSIO: Exec time = 73
+15/09/17 14:37:14 INFO fs.TestDFSIO: IO rate = 13.69863
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:14 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:14 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufend = 70; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:14 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:14 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000004_0 is done. And is in the process of committing
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: finished test_io_4 ::host = compute31
+15/09/17 14:37:14 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000004_0' done.
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000004_0
+15/09/17 14:37:14 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000005_0
+15/09/17 14:37:14 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:14 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_5:0+112
+15/09/17 14:37:14 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:14 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:14 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:14 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:14 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:14 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:14 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:15 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:15 INFO mapreduce.Job: Job job_local1498345547_0001 running in uber mode : false
+15/09/17 14:37:15 INFO mapreduce.Job:  map 100% reduce 0%
+15/09/17 14:37:15 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:15 INFO fs.TestDFSIO: Exec time = 51
+15/09/17 14:37:15 INFO fs.TestDFSIO: IO rate = 19.607843
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:15 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:15 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufend = 71; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:15 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:15 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000005_0 is done. And is in the process of committing
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: finished test_io_5 ::host = compute31
+15/09/17 14:37:15 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000005_0' done.
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000005_0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000006_0
+15/09/17 14:37:15 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:15 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_6:0+112
+15/09/17 14:37:15 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:15 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:15 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:15 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:15 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:15 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:15 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:15 INFO fs.TestDFSIO: Exec time = 50
+15/09/17 14:37:15 INFO fs.TestDFSIO: IO rate = 20.0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:15 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:15 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufend = 68; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:15 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:15 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000006_0 is done. And is in the process of committing
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: finished test_io_6 ::host = compute31
+15/09/17 14:37:15 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000006_0' done.
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000006_0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000007_0
+15/09/17 14:37:15 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:15 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_7:0+112
+15/09/17 14:37:15 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:15 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:15 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:15 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:15 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:15 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:15 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:15 INFO fs.TestDFSIO: Exec time = 50
+15/09/17 14:37:15 INFO fs.TestDFSIO: IO rate = 20.0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:15 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:15 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufend = 68; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:15 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:15 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000007_0 is done. And is in the process of committing
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: finished test_io_7 ::host = compute31
+15/09/17 14:37:15 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000007_0' done.
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000007_0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000008_0
+15/09/17 14:37:15 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:15 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_8:0+112
+15/09/17 14:37:15 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:15 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:15 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:15 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:15 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:15 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:15 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:15 INFO fs.TestDFSIO: Exec time = 50
+15/09/17 14:37:15 INFO fs.TestDFSIO: IO rate = 20.0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:15 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:15 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufend = 68; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:15 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:15 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000008_0 is done. And is in the process of committing
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: finished test_io_8 ::host = compute31
+15/09/17 14:37:15 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000008_0' done.
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000008_0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_m_000009_0
+15/09/17 14:37:15 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:15 INFO mapred.MapTask: Processing split: hdfs://compute30:50090/benchmarks/TestDFSIO/io_control/in_file_test_io_9:0+112
+15/09/17 14:37:15 INFO mapred.MapTask: numReduceTasks: 1
+15/09/17 14:37:15 INFO mapred.MapTask: Map output collector class = org.apache.hadoop.mapred.MapTask$MapOutputBuffer
+15/09/17 14:37:15 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+15/09/17 14:37:15 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+15/09/17 14:37:15 INFO mapred.MapTask: soft limit at 83886080
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+15/09/17 14:37:15 INFO fs.TestDFSIO: out = org.apache.hadoop.hdfs.client.HdfsDataOutputStream
+15/09/17 14:37:15 INFO fs.TestDFSIO: Number of bytes processed = 1048576
+15/09/17 14:37:15 INFO fs.TestDFSIO: Exec time = 50
+15/09/17 14:37:15 INFO fs.TestDFSIO: IO rate = 20.0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: 
+15/09/17 14:37:15 INFO mapred.MapTask: Starting flush of map output
+15/09/17 14:37:15 INFO mapred.MapTask: Spilling map output
+15/09/17 14:37:15 INFO mapred.MapTask: bufstart = 0; bufend = 68; bufvoid = 104857600
+15/09/17 14:37:15 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214380(104857520); length = 17/6553600
+15/09/17 14:37:15 INFO mapred.MapTask: Finished spill 0
+15/09/17 14:37:15 INFO mapred.Task: Task:attempt_local1498345547_0001_m_000009_0 is done. And is in the process of committing
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: finished test_io_9 ::host = compute31
+15/09/17 14:37:15 INFO mapred.Task: Task 'attempt_local1498345547_0001_m_000009_0' done.
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_m_000009_0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: map task executor complete.
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Waiting for reduce tasks
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Starting task: attempt_local1498345547_0001_r_000000_0
+15/09/17 14:37:15 INFO mapred.Task:  Using ResourceCalculatorProcessTree : [ ]
+15/09/17 14:37:15 INFO mapred.ReduceTask: Using ShuffleConsumerPlugin: org.apache.hadoop.mapreduce.task.reduce.Shuffle@7d45beec
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: MergerManager: memoryLimit=362964576, maxSingleShuffleLimit=90741144, mergeThreshold=239556624, ioSortFactor=10, memToMemMergeOutputsThreshold=10
+15/09/17 14:37:15 INFO reduce.EventFetcher: attempt_local1498345547_0001_r_000000_0 Thread started: EventFetcher for fetching Map Completion Events
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000002_0 decomp: 82 len: 86 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 82 bytes from map-output for attempt_local1498345547_0001_m_000002_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 82, inMemoryMapOutputs.size() -> 1, commitMemory -> 0, usedMemory ->82
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000008_0 decomp: 80 len: 84 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 80 bytes from map-output for attempt_local1498345547_0001_m_000008_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 80, inMemoryMapOutputs.size() -> 2, commitMemory -> 82, usedMemory ->162
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000001_0 decomp: 82 len: 86 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 82 bytes from map-output for attempt_local1498345547_0001_m_000001_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 82, inMemoryMapOutputs.size() -> 3, commitMemory -> 162, usedMemory ->244
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000005_0 decomp: 83 len: 87 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 83 bytes from map-output for attempt_local1498345547_0001_m_000005_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 83, inMemoryMapOutputs.size() -> 4, commitMemory -> 244, usedMemory ->327
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000006_0 decomp: 80 len: 84 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 80 bytes from map-output for attempt_local1498345547_0001_m_000006_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 80, inMemoryMapOutputs.size() -> 5, commitMemory -> 327, usedMemory ->407
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000009_0 decomp: 80 len: 84 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 80 bytes from map-output for attempt_local1498345547_0001_m_000009_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 80, inMemoryMapOutputs.size() -> 6, commitMemory -> 407, usedMemory ->487
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000004_0 decomp: 82 len: 86 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 82 bytes from map-output for attempt_local1498345547_0001_m_000004_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 82, inMemoryMapOutputs.size() -> 7, commitMemory -> 487, usedMemory ->569
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000007_0 decomp: 80 len: 84 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 80 bytes from map-output for attempt_local1498345547_0001_m_000007_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 80, inMemoryMapOutputs.size() -> 8, commitMemory -> 569, usedMemory ->649
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000000_0 decomp: 83 len: 87 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 83 bytes from map-output for attempt_local1498345547_0001_m_000000_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 83, inMemoryMapOutputs.size() -> 9, commitMemory -> 649, usedMemory ->732
+15/09/17 14:37:15 INFO reduce.LocalFetcher: localfetcher#1 about to shuffle output of map attempt_local1498345547_0001_m_000003_0 decomp: 83 len: 87 to MEMORY
+15/09/17 14:37:15 INFO reduce.InMemoryMapOutput: Read 83 bytes from map-output for attempt_local1498345547_0001_m_000003_0
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: closeInMemoryFile -> map-output of size: 83, inMemoryMapOutputs.size() -> 10, commitMemory -> 732, usedMemory ->815
+15/09/17 14:37:15 INFO reduce.EventFetcher: EventFetcher is interrupted.. Returning
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: 10 / 10 copied.
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: finalMerge called with 10 in-memory map-outputs and 0 on-disk map-outputs
+15/09/17 14:37:15 INFO mapred.Merger: Merging 10 sorted segments
+15/09/17 14:37:15 INFO mapred.Merger: Down to the last merge-pass, with 10 segments left of total size: 725 bytes
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: Merged 10 segments, 815 bytes to disk to satisfy reduce memory limit
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: Merging 1 files, 801 bytes from disk
+15/09/17 14:37:15 INFO reduce.MergeManagerImpl: Merging 0 segments, 0 bytes from memory into reduce
+15/09/17 14:37:15 INFO mapred.Merger: Merging 1 sorted segments
+15/09/17 14:37:15 INFO mapred.Merger: Down to the last merge-pass, with 1 segments left of total size: 788 bytes
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: 10 / 10 copied.
+15/09/17 14:37:15 INFO fs.AccumulatingReducer: Starting AccumulatingReducer on compute31
+15/09/17 14:37:15 INFO mapred.Task: Task:attempt_local1498345547_0001_r_000000_0 is done. And is in the process of committing
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: 10 / 10 copied.
+15/09/17 14:37:15 INFO mapred.Task: Task attempt_local1498345547_0001_r_000000_0 is allowed to commit now
+15/09/17 14:37:15 INFO output.FileOutputCommitter: Saved output of task 'attempt_local1498345547_0001_r_000000_0' to hdfs://compute30:50090/benchmarks/TestDFSIO/io_write/_temporary/0/task_local1498345547_0001_r_000000
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: finished l:time ::host = compute31 > reduce
+15/09/17 14:37:15 INFO mapred.Task: Task 'attempt_local1498345547_0001_r_000000_0' done.
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: Finishing task: attempt_local1498345547_0001_r_000000_0
+15/09/17 14:37:15 INFO mapred.LocalJobRunner: reduce task executor complete.
+15/09/17 14:37:16 INFO mapreduce.Job:  map 100% reduce 100%
+15/09/17 14:37:16 INFO mapreduce.Job: Job job_local1498345547_0001 completed successfully
+15/09/17 14:37:16 INFO mapreduce.Job: Counters: 38
+	File System Counters
+		FILE: Number of bytes read=16435699
+		FILE: Number of bytes written=19044056
+		FILE: Number of read operations=0
+		FILE: Number of large read operations=0
+		FILE: Number of write operations=0
+		HDFS: Number of bytes read=7280
+		HDFS: Number of bytes written=68169834
+		HDFS: Number of read operations=242
+		HDFS: Number of large read operations=0
+		HDFS: Number of write operations=221
+	Map-Reduce Framework
+		Map input records=10
+		Map output records=50
+		Map output bytes=695
+		Map output materialized bytes=855
+		Input split bytes=1240
+		Combine input records=0
+		Combine output records=0
+		Reduce input groups=5
+		Reduce shuffle bytes=855
+		Reduce input records=50
+		Reduce output records=5
+		Spilled Records=100
+		Shuffled Maps =10
+		Failed Shuffles=0
+		Merged Map outputs=10
+		GC time elapsed (ms)=189
+		CPU time spent (ms)=0
+		Physical memory (bytes) snapshot=0
+		Virtual memory (bytes) snapshot=0
+		Total committed heap usage (bytes)=5647630336
+	Shuffle Errors
+		BAD_ID=0
+		CONNECTION=0
+		IO_ERROR=0
+		WRONG_LENGTH=0
+		WRONG_MAP=0
+		WRONG_REDUCE=0
+	File Input Format Counters 
+		Bytes Read=1120
+	File Output Format Counters 
+		Bytes Written=74
+15/09/17 14:37:16 INFO fs.TestDFSIO: ----- TestDFSIO ----- : write
+15/09/17 14:37:16 INFO fs.TestDFSIO:            Date & time: Thu Sep 17 14:37:16 EDT 2015
+15/09/17 14:37:16 INFO fs.TestDFSIO:        Number of files: 10
+15/09/17 14:37:16 INFO fs.TestDFSIO: Total MBytes processed: 10.0
+15/09/17 14:37:16 INFO fs.TestDFSIO:      Throughput mb/sec: 19.841269841269842
+15/09/17 14:37:16 INFO fs.TestDFSIO: Average IO rate mb/sec: 20.299978256225586
+15/09/17 14:37:16 INFO fs.TestDFSIO:  IO rate std deviation: 2.8427615012551475
+15/09/17 14:37:16 INFO fs.TestDFSIO:     Test exec time sec: 3.404
+15/09/17 14:37:16 INFO fs.TestDFSIO: 
