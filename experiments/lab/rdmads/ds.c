@@ -251,6 +251,11 @@ printf("l_psn=%d\n",ibcon.l_psn);
   //change to RTS
   qp_change_state_rts(ibcon.qp,&ibcon);
 
+/////////////////////////////////////////////////////
+// use completion queue
+  TEST_NZ(ibv_req_notify_cq(ibcon.scq,0),"Could not request notify from sending completion queue, ibv_req_notify_cq");
+/////////////////////////////////////////////////////
+
   // read command: a fixed-length byte array: byte[MAX_PAGE]
   recv(connfd,(void*)&req.page_flags,MAX_PAGE,MSG_WAITALL);
   int i=0;
@@ -277,6 +282,12 @@ printf("l_psn=%d\n",ibcon.l_psn);
   TEST_NZ(ibv_post_send(ibcon.qp,&wr,&bad_wr),"ibv_post_send failed. This is bad mkay");
   int ne;
   struct ibv_wc wc;
+//////////////////////////////////////////////////////////
+// wait on completion queue
+  void *cq_ctxt;
+  TEST_NZ(ibv_get_cq_event(ibcon.ch,&ibcon.scq,&cq_ctxt),"ibv_get_cq_event failed");
+  ibv_ack_cq_events(ibcon.scq,1);
+//////////////////////////////////////////////////////////
   do{
     ne = ibv_poll_cq(ibcon.scq,100,&wc);
   }while(ne==0);
