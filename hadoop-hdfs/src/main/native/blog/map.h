@@ -19,7 +19,7 @@ typedef struct NAME##_map_t {                                                   
  * Initialize and allocate all the appropriate structures.                                       
  * Return 0 for success and -1 otherwise.
  */                                                                                             \
-MAP_TYPE(NAME) *NAME##_map_initialize();                                                        \
+BLOG_MAP_TYPE(NAME) *NAME##_map_initialize();                                                        \
                                                                                                 \
 /**
  * Release all memory occupied by the map.
@@ -38,7 +38,7 @@ int NAME##_map_create(NAME##_map_t *map, int64_t id);                           
  * Return 0 for success.
  * Return -1 if entry already exists.
  */                                                                                             \
-int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, int64_t id, TYPE* value);                  \
+int NAME##_map_create_and_write(BLOG_MAP_TYPE(NAME) *map, int64_t id, TYPE* value);                  \
                                                                                                 \
 /**
  * Delete a map entry.
@@ -64,7 +64,7 @@ int NAME##_map_read(NAME##_map_t *map, int64_t id, TYPE **value);               
 /**
  * Get map length.
  */                                                                                             \
-int64_t NAME##_map_length(MAP_TYPE(NAME) *map);                                                 \
+int64_t NAME##_map_length(BLOG_MAP_TYPE(NAME) *map);                                                 \
                                                                                                 \
 /**
  * Get all the keys in the dictionary.
@@ -84,13 +84,13 @@ int NAME##_map_unlock(NAME##_map_t *map, int64_t id);
 #define ENTRY_TYPE(NAME)                                                                        \
 NAME##_entry_t
 
-#define MAP_TYPE(NAME)                                                                          \
+#define BLOG_MAP_TYPE(NAME)                                                                          \
 NAME##_map_t
 
 #define MAP_DEFINE(NAME,TYPE,SIZE)                                                                  \
                                                                                                     \
-MAP_TYPE(NAME) *NAME##_map_initialize() {                                                           \
-  MAP_TYPE(NAME) *map = (MAP_TYPE(NAME) *) malloc(SIZE*sizeof(MAP_TYPE(NAME)));                     \
+BLOG_MAP_TYPE(NAME) *NAME##_map_initialize() {                                                           \
+  BLOG_MAP_TYPE(NAME) *map = (BLOG_MAP_TYPE(NAME) *) malloc(SIZE*sizeof(BLOG_MAP_TYPE(NAME)));                     \
   int64_t i;                                                                                        \
                                                                                                     \
   for (i = 0; i < SIZE; i++) {                                                                      \
@@ -104,7 +104,7 @@ MAP_TYPE(NAME) *NAME##_map_initialize() {                                       
   return map;                                                                                       \
 }                                                                                                   \
                                                                                                     \
-void NAME##_map_destroy(MAP_TYPE(NAME) *map) {                                                      \
+void NAME##_map_destroy(BLOG_MAP_TYPE(NAME) *map) {                                                      \
   int64_t i;                                                                                        \
                                                                                                     \
   for (i = 0; i < SIZE; i++) {                                                                      \
@@ -115,11 +115,11 @@ void NAME##_map_destroy(MAP_TYPE(NAME) *map) {                                  
   free(map);                                                                                        \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_create(MAP_TYPE(NAME) *map, int64_t id) {                                            \
+int NAME##_map_create(BLOG_MAP_TYPE(NAME) *map, int64_t id) {                                            \
   return NAME##_map_create_and_write(map, id, NULL);                                                \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, int64_t id, TYPE* value) {                     \
+int NAME##_map_create_and_write(BLOG_MAP_TYPE(NAME) *map, int64_t id, TYPE* value) {                     \
   int64_t hash = id % SIZE;                                                                         \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
   ENTRY_TYPE(NAME) *last_entry = NULL;                                                              \
@@ -143,7 +143,7 @@ int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, int64_t id, TYPE* value) { 
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_delete(MAP_TYPE(NAME) *map, int64_t id) {                                            \
+int NAME##_map_delete(BLOG_MAP_TYPE(NAME) *map, int64_t id) {                                            \
   int64_t hash = id % SIZE;                                                                         \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
   ENTRY_TYPE(NAME) *last_entry = NULL;                                                              \
@@ -166,7 +166,7 @@ int NAME##_map_delete(MAP_TYPE(NAME) *map, int64_t id) {                        
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_write(MAP_TYPE(NAME) *map, int64_t id, TYPE *value) {                                \
+int NAME##_map_write(BLOG_MAP_TYPE(NAME) *map, int64_t id, TYPE *value) {                                \
   int64_t hash = id % SIZE;                                                                         \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
                                                                                                     \
@@ -180,7 +180,7 @@ int NAME##_map_write(MAP_TYPE(NAME) *map, int64_t id, TYPE *value) {            
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_read(MAP_TYPE(NAME) *map, int64_t id, TYPE **value) {                                \
+int NAME##_map_read(BLOG_MAP_TYPE(NAME) *map, int64_t id, TYPE **value) {                                \
   int64_t hash = id % SIZE;                                                                         \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
                                                                                                     \
@@ -194,7 +194,7 @@ int NAME##_map_read(MAP_TYPE(NAME) *map, int64_t id, TYPE **value) {            
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int64_t NAME##_map_length(MAP_TYPE(NAME) *map) {                                                    \
+int64_t NAME##_map_length(BLOG_MAP_TYPE(NAME) *map) {                                                    \
   ENTRY_TYPE(NAME) *entry;                                                                          \
   int64_t length, i;                                                                                \
                                                                                                     \
@@ -209,7 +209,7 @@ int64_t NAME##_map_length(MAP_TYPE(NAME) *map) {                                
   return length;                                                                                    \
 }                                                                                                   \
                                                                                                     \
-int64_t *NAME##_map_get_ids(MAP_TYPE(NAME) *map, int64_t length) {                                  \
+int64_t *NAME##_map_get_ids(BLOG_MAP_TYPE(NAME) *map, int64_t length) {                                  \
   ENTRY_TYPE(NAME) *entry;                                                                          \
   int64_t *ids = (int64_t *) malloc(length*sizeof(int64_t));                                        \
   int64_t index = 0;                                                                                \

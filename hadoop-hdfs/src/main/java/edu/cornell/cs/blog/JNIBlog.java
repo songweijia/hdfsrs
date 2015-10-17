@@ -29,9 +29,10 @@ public class JNIBlog {
    * @param rank - rank of the current node
    * @param blockSize - block size for each block
    * @param pageSize - page size
+   * @param persPath - initialize it
    * @return error code, 0 for success.
    */
-  public native int initialize(int blockSize, int pageSize);
+  public native int initialize(int blockSize, int pageSize, String persPath);
   
   /**
    * destroy the blog
