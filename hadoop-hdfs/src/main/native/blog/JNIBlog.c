@@ -10,56 +10,59 @@
 #include "JNIBlog.h"
 #include "types.h"
 
+// Define hash tables that are going to be used in the DataNode.
 MAP_DEFINE(block, block_t, BLOCK_MAP_SIZE);
-MAP_DEFINE(log, int64_t, LOG_MAP_SIZE);
+MAP_DEFINE(log, uint64_t, LOG_MAP_SIZE);
 MAP_DEFINE(snapshot, snapshot_t, SNAPSHOT_MAP_SIZE);
 
-static void * blog_writer_routine(void * param);
-static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd);
-static int do_snap_flush(BlogWriterCtxt * bwc);
+// Define files for storing persistent data.
+#define BLOGFILE "blog._dat"
+#define PAGEFILE "page._dat"
+#define SNAPFILE "snap._dat"
+#define MAX_FNLEN (strlen(BLOGFILE)+strlen(PAGEFILE)+strlen(SNAPFILE))
 
-void print_page(page_t *page)
+static void print_page(page_t *page)
 {
   printf("%s\n", page->data);
 }
 
-void print_log(log_t *log)
+static void print_log(log_t *log)
 {
-  int i;
+  int32_t i;
   
-  printf("Block ID: %ld\n", log->block_id);
-  printf("Block Length: %d\n", log->block_length);
-  printf("Starting Page: %d\n", log->page_id);
-  printf("Number of Pages: %d\n", log->nr_pages);
-  for (i = 0; i < log->nr_pages; i++) {
-    printf("Page %d:\n", log->page_id + i);
-    print_page(log->pages + i);
-  }
-  printf("HLC Value: (%ld,%ld)\n", log->r, log->c);
+  printf("Block ID: %"PRIu64"\n", log->block_id);
+  printf("Block Length: %"PRIu64"\n", log->block_length);
+  printf("Pages Offset: %"PRId32"\n", log->pages_offset);
+  printf("Pages Length: %"PRIu32"\n", log->pages_length);
   if (log->previous != -1)
-    printf("Previous: %ld\n", log->previous);
+    printf("Previous: %"PRIu64"\n", log->previous);
+  printf("HLC Value: (%"PRIu64",%"PRIu64")\n", log->r, log->c);
+  for (i = 0; i < log->pages_length; i++) {
+    printf("Page %"PRId32":\n", log->pages_offset + i);
+    print_page(log->data + i);
+  }
 }
 
-void print_block(block_t *block, int page_size)
+static void print_block(block_t *block, int page_size)
 {
-  int i = 0;
+  uint32_t i = 0;
 
-  printf("Length: %d\n", block->length);
-  printf("Capacity: %d\n", block->cap);
+  printf("Length: %"PRIu32"\n", block->length);
+  printf("Capacity: %"PRIu32"\n", block->cap);
+  printf("Last Log Entry: %"PRIu64"\n", block->last_entry);
   if (block->length != 0) {
     for (i = 0; i <= (block->length - 1) / page_size; i++) {
-      printf("Page %d\n", i);
+      printf("Page %"PRIu32"\n", i);
       print_page(block->pages[i]);
     }
   }
-  printf("Last Log Entry: %ld\n", block->last_entry);
 }
 
-void print_snapshot(snapshot_t *snapshot, log_t *log, int page_size)
+static void print_snapshot(snapshot_t *snapshot, log_t *log, int page_size)
 {
   block_t *block;
-  int64_t *ids;
-  int64_t length, i;
+  uint64_t *ids;
+  uint64_t length, i;
   
   printf("Blocks:\n");
   for (i = 0; i < BLOCK_MAP_SIZE; i++)
@@ -80,13 +83,13 @@ void print_snapshot(snapshot_t *snapshot, log_t *log, int page_size)
   free(ids);
 }
 
-void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
+static void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
 {
   block_t *block;
   snapshot_t *snapshot;
-  int64_t *ids;
-  int64_t length, i;
-  int64_t *log_id;
+  uint64_t *ids;
+  uint64_t length, i;
+  uint64_t *log_id;
   
   pthread_rwlock_rdlock(&filesystem->lock);
   
@@ -132,8 +135,8 @@ void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
       fprintf(stderr, "Print Filesystem: Something is wrong with LOG_MAP_GET_IDS or LOG_MAP_READ\n");
       return;
     }
-    printf("RTC: %ld\n", ids[i]);
-    printf("Last Log Entry: %ld\n", *log_id);
+    printf("RTC: %"PRIu64"\n", ids[i]);
+    printf("Last Log Entry: %"PRIu64"\n", *log_id);
     print_snapshot(snapshot, filesystem->log, filesystem->page_size);
     printf("\n");
     MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
@@ -146,7 +149,7 @@ void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
   printf("Log Capacity: %zu\n", filesystem->log_cap);
   printf("Log Length: %zu\n", filesystem->log_length);
   for (i = 0; i < filesystem->log_length; i++) {
-    printf("Log %ld\n", i);
+    printf("Log %"PRIu64"\n", i);
     print_log(filesystem->log + i);
     printf("\n");
   }
@@ -154,13 +157,13 @@ void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
   pthread_rwlock_unlock(&filesystem->lock);
 }
 
-block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *snapshot, int64_t last_log_entry,
-                                         int64_t block_id) {
+block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *snapshot, uint64_t last_log_entry,
+                                         uint64_t block_id) {
   log_t *log = filesystem->log;
   log_t *cur_log;
   block_t *block;
-  int64_t log_id;
-  int i, nr_unfilled_pages;
+  uint64_t log_id;
+  uint32_t nr_unfilled_pages, i;
   
   MAP_LOCK(block, snapshot->block_map, block_id, 'w');
   if (MAP_CREATE(block, snapshot->block_map, block_id) == -1) {
@@ -179,12 +182,12 @@ block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *s
   log_id = last_log_entry;
   while ((log_id >= 0) && (log[log_id].block_id != block_id))
     log_id--;
-  if (log_id == -1 || log[log_id].page_id == -2) {
+  if (log_id == -1 || log[log_id].pages_offset == -2) {
     block->length = 0;
     block->cap = -1;
     block->pages = NULL;
     block->last_entry = -1;
-  } else if (log[log_id].page_id == -1) {
+  } else if (log[log_id].pages_offset == -1) {
     block->length = 0;
     block->cap = 0;
     block->pages = NULL;
@@ -201,10 +204,10 @@ block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *s
     cur_log = log + log_id;
     nr_unfilled_pages = block->cap;
     while (cur_log != NULL && nr_unfilled_pages > 0) {
-      for (i = 0; i < cur_log->nr_pages; i++) {
-        if (block->pages[cur_log->page_id + i] == NULL) {
+      for (i = 0; i < cur_log->pages_length; i++) {
+        if (block->pages[cur_log->pages_offset + i] == NULL) {
           nr_unfilled_pages--;
-          block->pages[cur_log->page_id + i] = cur_log->pages + i;
+          block->pages[cur_log->pages_offset + i] = cur_log->data + i;
         }
       }
       if (cur_log->previous != -1)
@@ -225,7 +228,7 @@ block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *s
   return block;
 }
 
-void check_and_increase_log_length(filesystem_t *filesystem)
+static void check_and_increase_log_length(filesystem_t *filesystem)
 {
   if (filesystem->log_length == filesystem->log_cap) {
     filesystem->log = (log_t *) realloc(filesystem->log, filesystem->log_cap*2*sizeof(log_t));
@@ -237,7 +240,7 @@ void check_and_increase_log_length(filesystem_t *filesystem)
   }
 }
 
-int64_t read_local_rtc()
+static int64_t read_local_rtc()
 {
   struct timeval tv;
   int64_t rtc;
@@ -247,7 +250,7 @@ int64_t read_local_rtc()
   return rtc;
 }
 
-void update_log_clock(JNIEnv *env, jobject hlc, log_t *log) {
+static void update_log_clock(JNIEnv *env, jobject hlc, log_t *log) {
   jclass hlcClass = (*env)->GetObjectClass(env, hlc);
   jfieldID rfield = (*env)->GetFieldID(env, hlcClass, "r", "J");
   jfieldID cfield = (*env)->GetFieldID(env, hlcClass, "c", "J");
@@ -256,7 +259,7 @@ void update_log_clock(JNIEnv *env, jobject hlc, log_t *log) {
   log->c = (*env)->GetLongField(env, hlc, cfield);
 }
 
-void tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jobject mhlc)
+static void tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jobject mhlc)
 {
   jclass hlcClass = (*env)->GetObjectClass(env, hlc);
   jmethodID mid = (*env)->GetMethodID(env, hlcClass, "tickOnRecv", "(Ledu/cornell/cs/sa/HybridLogicalClock;)V");
@@ -268,7 +271,7 @@ void tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jobject mhlc)
   (*env)->CallObjectMethod(env, hlc, mid, mhlc);
 }
 
-void mock_tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jlong rtc)
+static void mock_tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jlong rtc)
 {
   jclass hlcClass = (*env)->GetObjectClass(env, hlc);
   jmethodID mid = (*env)->GetMethodID(env, hlcClass, "mockTick", "(J)V");
@@ -280,7 +283,7 @@ void mock_tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jlong rtc)
   (*env)->CallObjectMethod(env, hlc, mid, rtc);
 }
 
-filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
+static filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
 {
   jclass thisCls = (*env)->GetObjectClass(env,thisObj);
   jfieldID fid = (*env)->GetFieldID(env,thisCls,"jniData","J");
@@ -288,7 +291,7 @@ filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
   return (filesystem_t *) (*env)->GetLongField(env, thisObj, fid);
 }
 
-jobject get_hybrid_logical_clock(JNIEnv *env, jobject thisObj)
+static jobject get_hybrid_logical_clock(JNIEnv *env, jobject thisObj)
 {
   jclass thisCls = (*env)->GetObjectClass(env,thisObj);
   jfieldID fid = (*env)->GetFieldID(env,thisCls,"hlc","Ledu/cornell/cs/sa/HybridLogicalClock;");
@@ -296,9 +299,328 @@ jobject get_hybrid_logical_clock(JNIEnv *env, jobject thisObj)
   return (*env)->GetObjectField(env, thisObj, fid);
 }
 
-int file_exist(const char * filename){
+static int file_exists(const char * filename){
   struct stat buffer;
+
   return(stat(filename, &buffer)==0);
+}
+
+
+/* flush a log entry to disk
+ * entry layout:
+ * 0) int reserved padding
+ * 2) int block_length
+ * 3) int page_id
+ * 4) int nr_pages
+ * 1) int64 block_id
+ * 5) int64 previous
+ * 6) int64 r
+ * 7) int64 c
+ */
+static int do_blog_flush_entry(blog_writer_ctxt_t *bwc)
+{
+  disk_log_t dle;
+  const struct log *pmle = &(bwc->fs->log[bwc->next_entry]);
+  int i;
+
+  // 1 - convert log entry to disk format
+  dle.block_id = pmle->block_id;
+  dle.previous = pmle->previous;
+  dle.r = pmle->r;
+  dle.c = pmle->c;
+  dle.block_length = pmle->block_length;
+  dle.pages_offset = pmle->pages_offset;
+  dle.pages_length = pmle->pages_length;
+  // 2 - write pages and return
+  for (i = 0; i < dle.pages_length; i++) {
+    if(bwc->fs->page_size != write(bwc->page_fd, pmle->data[i], bwc->fs->page_size)) {
+      fprintf(stderr, "Write page failed: logid=%ld.\n", bwc->next_entry);
+      print_log(&bwc->fs->log[bwc->next_entry]);
+      return -2;
+    }
+  }
+  // 3 - write log to log file
+  if (sizeof(dle) != write(bwc->log_fd, &dle,sizeof(dle))) {
+      fprintf(stderr, "Write log entry failed: logid=%ld.\n", bwc->next_entry);
+      print_log(&bwc->fs->log[bwc->next_entry]);
+      return -1;
+  }
+  bwc->next_entry++;
+  return 0;
+}
+
+/*
+ * do_blog_fulsh()
+ * PARAM bwc:  blog_writer_ctxt_t
+ */
+static int do_blog_flush(blog_writer_ctxt_t *bwc)
+{
+  //DISCUSS: do we need to lock the log to disable the log reallocation?
+  // It seems that read should be OK, because "filesystem->log" is updated
+  // immediately. let's just copy the logentry as soon as possible.
+  if (bwc->next_entry < bwc->fs->log_length) {
+    // We do not flush to the end of the log to avoid
+    // keeping it busy when many writes are undergoing...
+    long flushTo = bwc->fs->log_length;
+    
+    while (bwc->next_entry < flushTo)
+      if (do_blog_flush_entry(bwc) != 0)
+        return -1;
+  }
+  return 0;
+}
+
+/*
+ * snapshot file format:
+ * [rtc][eid][rtc][eid][rtc][eid]...
+ */
+static int do_snap_flush(blog_writer_ctxt_t *bwc)
+{
+  // STEP 1 get snapshot list
+  uint64_t len = MAP_LENGTH(log, bwc->fs->log_map);
+  uint64_t *ids = MAP_GET_IDS(log, bwc->fs->log_map, len);
+  uint64_t *peid;
+  uint64_t i;
+  
+  // STEP 2 write to file
+  for (i = 0; i < len; i++) {
+    if (MAP_READ(log,bwc->fs->log_map, ids[i], &peid) != 0) {
+      fprintf(stderr, "Print Filesystem: can not read eid of snapshot @%ld,\n",ids[i]);
+      free(ids);
+      return -1;
+    };
+    write(bwc->snap_fd, &ids[i], sizeof(int64_t));
+    write(bwc->snap_fd, peid, sizeof(int64_t));
+  }
+  free(ids);
+  return 0;
+}
+
+/*
+ * blog_writer_routine()
+ * PARAM param: the blog writer context
+ * RETURN: the 
+ */
+static void * blog_writer_routine(void * param)
+{
+  blog_writer_ctxt_t *bwc = (blog_writer_ctxt_t*) param;
+  long time_next_write = 0;
+  struct timeval tv;
+
+  while(bwc->alive){
+    // STEP 1 - test if a flush is required.
+    gettimeofday(&tv,NULL);
+    if(time_next_write < tv.tv_sec) {
+      usleep(1000000l);
+      continue;
+    } else {
+      time_next_write += bwc->int_sec;
+    }
+
+    // STEP 2 - flush
+    do_blog_flush(bwc);
+  }
+  do_blog_flush(bwc);
+  do_snap_flush(bwc);
+  return param;
+}
+
+#define loadBlogReturn(x) \
+{ \
+  if(plog!=(void*)-1) \
+    munmap(plog,log_stat.st_size); \
+  if(ppage!=(void*)-1) \
+    munmap(ppage,page_stat.st_size); \
+  if(psnap!=(void*)-1) \
+    munmap(psnap,snap_stat.st_size); \
+  return (x); \
+}
+/*
+ *  0 - success
+ * -1 - create log_map entry error
+ * -2 - create snapshot_map entry error
+ */
+int do_load_snapshot(filesystem_t *fs, int64_t rtc, int64_t eid)
+{
+  int64_t *peid = (int64_t *) malloc(sizeof(int64_t));
+  snapshot_t * snapshot = NULL;
+  
+  *peid = eid;
+  // log_map
+  if(MAP_CREATE(log, fs->log_map, rtc)){
+    fprintf(stderr, "Error load snapshot:rtc=%ld\n", rtc);
+    return -1;
+  }
+  if(MAP_WRITE(log, fs->log_map, rtc, peid)){
+    fprintf(stderr, "Error load snapshot:rtc=%ld\n", rtc);
+    return -1;
+  }
+  // snapshot_map
+  if (MAP_CREATE(snapshot, fs->snapshot_map, eid)) {
+    if (MAP_READ(snapshot, fs->snapshot_map, eid, &snapshot)) {
+      fprintf(stderr, "Error load snapshot:eid=%ld\n", eid);
+      return -2;
+    }
+    snapshot->ref_count++;
+    return 0;
+  } else {
+    snapshot = (snapshot_t*)malloc(sizeof(snapshot_t));
+    snapshot->block_map = MAP_INITIALIZE(block);
+    if (snapshot->block_map == NULL) {
+      fprintf(stderr, "Create Snapshot for eid=%ld: cannot allocate block map\n",eid);
+      return -2;
+    }
+    snapshot->ref_count = 1;
+    if (MAP_WRITE(snapshot, fs->snapshot_map, eid, snapshot)) {
+      fprintf(stderr, "Create Snapshot %ld: cannot write to map\n", eid);
+      return -2;
+    }
+    return 0;
+  }
+}
+
+/*
+ * loadBlog()
+ * PARAM fs: file system structure
+ * PARAM log_fd: log file
+ * PARAM page_fd: page file
+ * RETURN VALUES: 
+ *    0 for succeed.
+ *   -1 for "log file is corrupted", 
+ *   -2 for "page file is correupted".
+ *   -3 for "block operation".
+ */
+static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
+{
+  struct stat log_stat, page_stat, snap_stat;
+  void *plog = (void*)-1, * ppage = (void*)-1, * psnap = (void*)-1;
+  disk_log_t *pdle; // disk log entry
+  void *pp, *page_mem;
+  page_t *pages;
+  block_t *block;
+  uint64_t *pse; // snapshot entry
+  uint64_t log_pos;
+  int i;
+
+  // STEP 1 mmap files
+  if (fstat(log_fd, &log_stat)) {
+    fprintf(stderr, "call fstat on log file descriptor failed");
+    loadBlogReturn(-1);
+  }
+  if (fstat(page_fd, &page_stat)) {
+    fprintf(stderr, "call fstat on page file descriptor failed");
+    loadBlogReturn(-2);
+  }
+  if (fstat(snap_fd, &snap_stat)) {
+    fprintf(stderr, "call fstat on snapshot file descriptor failed");
+    loadBlogReturn(-2);
+  }
+  if ((plog = mmap(NULL,log_stat.st_size,PROT_READ,MAP_SHARED,log_fd,0)) == (void*) -1) {
+    fprintf(stderr, "call mmap on log file descriptor failed");
+    loadBlogReturn(-1);
+  }
+  if ((ppage = mmap(NULL,page_stat.st_size,PROT_READ,MAP_SHARED,page_fd,0)) == (void*) -1) {
+    fprintf(stderr, "call mmap on page file descriptor failed");
+    loadBlogReturn(-2);
+  }
+  if ((psnap = mmap(NULL,snap_stat.st_size,PROT_READ,MAP_SHARED,page_fd,0)) == (void*) -1) {
+    fprintf(stderr, "call mmap on snap file descriptor failed");
+    loadBlogReturn(-2);
+  }
+  
+  // STEP 2 replay log;
+  pdle = (disk_log_t*)plog;
+  pp = ppage;
+  pthread_rwlock_wrlock(&(fs->lock));
+  while (((void*) (pdle + 1)) <= (plog + log_stat.st_size)) {//NOTE: this is gcc extension!!!
+    /// STEP 2.1 - log entry
+    page_mem = NULL;
+    pages = NULL;
+    // skip createBlock or deleteBlock
+    if (pdle->pages_offset != -1 && pdle->pages_offset != -2) {
+      // allocate page memory
+      page_mem = malloc(fs->page_size*(pdle->pages_length+1));
+      pages = (page_t*) page_mem;
+      // load page data
+      if (pp + fs->page_size*pdle->pages_length > ppage + page_stat.st_size) {
+        fprintf(stderr, "not enough pages exists!");
+        loadBlogReturn(-2);
+      }
+      memcpy(page_mem + fs->page_size, pp, fs->page_size*pdle->pages_length);
+      for (i = 0; i < pdle->pages_offset; i++)
+        pages[i].data = (char*) (page_mem + fs->page_size*(i+1));
+      pp += fs->page_size * pdle->pages_length;
+    }
+    
+    check_and_increase_log_length(fs);
+    log_pos = fs->log_length;
+    fs->log[log_pos].block_id = pdle->block_id;
+    fs->log[log_pos].block_length = pdle->block_length;
+    fs->log[log_pos].pages_offset = pdle->pages_offset;
+    fs->log[log_pos].pages_length = pdle->pages_length;
+    fs->log[log_pos].data = pages;
+    fs->log[log_pos].previous = pdle->previous;
+    fs->log_length += 1;
+    //UPDATE Block MAP
+    block=NULL;
+    switch(pdle->pages_offset) {
+    case -1: // CREATE BLOCK
+      if(MAP_CREATE(block, fs->block_map, pdle->block_id)==-1){
+        fprintf(stderr, "failed in create block during initialization: blockid=%ld.\n", pdle->block_id);
+        loadBlogReturn(-3);
+      }
+      block = (block_t*)malloc(sizeof(block_t));
+      block->length = 0;
+      block->cap = 0;
+      block->pages = NULL;
+      block->last_entry = log_pos;
+      if(MAP_WRITE(block, fs->block_map, pdle->block_id, block)!=0){
+        fprintf(stderr, "failed in create block during initialization: blockid=%ld.\n", pdle->block_id);
+        loadBlogReturn(-3);
+      }
+      break;
+    case -2: // DELETE BLOCK
+      if(MAP_DELETE(block, fs->block_map, pdle->block_id)==-1){
+        fprintf(stderr, "failed in delete block during initialization: blockid=%ld.\n", pdle->block_id);
+        loadBlogReturn(-3);
+      }
+      break;
+    default: // WRITE BLOCK
+      {
+        block_t *block;
+        if (MAP_READ(block, fs->block_map, pdle->block_id, &block) != 0) {
+          fprintf(stderr, "failed in read from block during initialization: blockid=%ld.\n", pdle->block_id);
+          loadBlogReturn(-3);
+        }
+        block->length = pdle->block_length;
+        block->cap = 1;
+        while (block->cap < ((pdle->block_length+fs->page_size-1) / fs->page_size))
+          block->cap=block->cap<<1;
+        block->pages = (page_t **)realloc(block->pages,block->cap*sizeof(page_t*));
+        for (i = 0; i < pdle->pages_length; i++)
+          block->pages[pdle->pages_offset+i] = ((page_t*)page_mem) + i;
+        block->last_entry = log_pos;
+      }
+      break;
+    }
+    pdle++;
+  }
+  pthread_rwlock_unlock(&(fs->lock));
+
+  if ((void*)pdle != plog + log_stat.st_size) {
+      fprintf(stderr,"log file is corrupted.\n");
+    loadBlogReturn(-1);
+  }
+
+  // STEP 3 load snapshots
+  pse = (int64_t*)psnap;
+  int nsnap = (snap_stat.st_size/sizeof(int64_t)/2);
+  while (nsnap--) {
+    int64_t rtc = *pse++;
+    int64_t eid = *pse++;
+    do_load_snapshot(fs,rtc,eid);
+  }
+  loadBlogReturn(0);
 }
 
 /*
@@ -317,7 +639,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   jmethodID cid = (*env)->GetMethodID(env, hlc_class, "<init>", "()V");
   jobject hlc_object = (*env)->NewObject(env, hlc_class, cid);
   filesystem_t *filesystem;
-  int i;
+  char *fullpath;
+  int log_fd, page_fd, snap_fd;
   
   filesystem = (filesystem_t *) malloc (sizeof(filesystem_t));
   if (filesystem == NULL) {
@@ -352,25 +675,19 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
   (*env)->SetLongField(env, thisObj, long_id, (int64_t) filesystem);
   
-  // load blog and snap
-#define BLOGFILE "blog._dat"
-#define PAGEFILE "page._dat"
-#define SNAPFILE "snap._dat"
-#define MAX_FNLEN (strlen(BLOGFILE)+strlen(PAGEFILE)+strlen(SNAPFILE))
-
-  char *fullpath = (char*)malloc(strlen(pp)+MAX_FNLEN+1);
+  fullpath = (char*) malloc(strlen(pp)+MAX_FNLEN+1);
   sprintf(fullpath,"%s/%s",pp,BLOGFILE);
-  if(file_exist(fullpath)){
-    int log_fd = open(fullpath, O_RDONLY);
+  if (file_exist(fullpath)) {
+    log_fd = open(fullpath, O_RDONLY);
     sprintf(fullpath, "%s/%s",pp,PAGEFILE);
-    int page_fd = open(fullpath, O_RDONLY);
+    page_fd = open(fullpath, O_RDONLY);
     sprintf(fullpath, "%s/%s",pp,SNAPFILE);
-    int snap_fd = open(fullpath, O_RDONLY);
-    if(log_fd == -1 || page_fd == -1 || snap_fd == -1){
+    snap_fd = open(fullpath, O_RDONLY);
+    if (log_fd == -1 || page_fd == -1 || snap_fd == -1) {
       fprintf(stderr,"Cannot open data node files, exit...\n");
       exit(1);
     }
-    if(loadBlog(filesystem, log_fd, page_fd, snap_fd)){
+    if (loadBlog(filesystem, log_fd, page_fd, snap_fd)) {
       fprintf(stderr,"Fail to read data node files, exit...\n");
       exit(1);
     }
@@ -394,7 +711,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->bwc.alive = 1; // alive.
   
   //start blog writer thread
-  if(pthread_create(&filesystem->writerThd, NULL, blog_writer_routine, (void*)&filesystem->bwc)){
+  if (pthread_create(&filesystem->writer_thrd, NULL, blog_writer_routine, (void*)&filesystem->bwc)) {
     fprintf(stderr,"CANNOT create blogWriter thread, exit\n");
     exit(1);
   }
@@ -413,7 +730,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
 {
   filesystem_t *filesystem;
   block_t *new_block;
-  int64_t log_pos;
+  uint64_t log_pos;
   jobject hlc;
   
   // Create a new block.
@@ -432,9 +749,9 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   log_pos = filesystem->log_length;
   filesystem->log[log_pos].block_id = blockId;
   filesystem->log[log_pos].block_length = 0;
-  filesystem->log[log_pos].page_id = -1;
-  filesystem->log[log_pos].nr_pages = 0;
-  filesystem->log[log_pos].pages = NULL;
+  filesystem->log[log_pos].pages_offset = -1;
+  filesystem->log[log_pos].pages_length = 0;
+  filesystem->log[log_pos].data = NULL;
   filesystem->log[log_pos].previous = -1;
   hlc = get_hybrid_logical_clock(env, thisObj);
   tick_hybrid_logical_clock(env, hlc, mhlc);
@@ -467,11 +784,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId)
 {
   filesystem_t *filesystem;
-  int block_pos;
+  uint32_t block_pos;
   block_t *cur_block;
   block_t *last_block = NULL;
   block_t *new_block;
-  int64_t log_pos;
+  uint64_t log_pos;
   
   // Find the corresponding block. In case you did not find it return an error.
   filesystem = get_filesystem(env, thisObj);
@@ -489,9 +806,9 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   log_pos = filesystem->log_length;
   filesystem->log[log_pos].block_id = blockId;
   filesystem->log[log_pos].block_length = 0;
-  filesystem->log[log_pos].page_id = -2;
-  filesystem->log[log_pos].nr_pages = 0;
-  filesystem->log[log_pos].pages = NULL;
+  filesystem->log[log_pos].pages_offset = -2;
+  filesystem->log[log_pos].pages_length = 0;
+  filesystem->log[log_pos].data = NULL;
   filesystem->log[log_pos].previous = cur_block->last_entry;
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, filesystem->log+log_pos);
@@ -524,11 +841,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
   filesystem_t *filesystem;
   snapshot_t *snapshot;
   block_t *block;
-  int page_id, page_offset, read_length, cur_length;
+  uint32_t page_id, page_offset, read_length, cur_length;
   char *page_data;
-  int64_t *log_id;
-//struct timeval tv1,tv2,tv3;
-//gettimeofday(&tv1,NULL);  
+  uint64_t *log_id;
+  int cnt;
+  
+  //struct timeval tv1,tv2,tv3;
+  //gettimeofday(&tv1,NULL);  
+  
   // Find the corresponding block.
   filesystem = get_filesystem(env, thisObj);
   if (snapshotId == -1) {
@@ -564,8 +884,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
       return -1;
     }
   }
-//gettimeofday(&tv2,NULL);
-int cnt=1;
+  //gettimeofday(&tv2,NULL);
+  cnt=1;
   // In case the data you ask is not written return an error.
   if (blkOfst >= block->length) {
     fprintf(stderr, "Read Block: Block %ld is not written at %d byte.\n", blockId, blkOfst);
@@ -586,31 +906,31 @@ int cnt=1;
   cur_length = filesystem->page_size - page_offset;
   if (cur_length >= read_length) {
     (*env)->SetByteArrayRegion(env, buf, bufOfst, read_length, (jbyte*) page_data);
-//    return read_length;
-  }else{
-  (*env)->SetByteArrayRegion(env, buf, bufOfst, cur_length, (jbyte*) page_data);
-  page_id++;
-  while (1) {
-//struct timeval t1,t2;
-//gettimeofday(&t1,NULL);
-    cnt++;
-    page_data = block->pages[page_id]->data;
-    if (cur_length + filesystem->page_size >= read_length) {
+    // return read_length;
+  } else {
+    (*env)->SetByteArrayRegion(env, buf, bufOfst, cur_length, (jbyte*) page_data);
+    page_id++;
+    while (1) {
+      //struct timeval t1,t2;
+      //gettimeofday(&t1,NULL);
+      cnt++;
+      page_data = block->pages[page_id]->data;
+      if (cur_length + filesystem->page_size >= read_length) {
         (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, read_length - cur_length, (jbyte*) page_data);
         break;//return read_length;
+      }
+      (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, filesystem->page_size, (jbyte*) page_data);
+      //fprintf(stdout, "set: off=%d,len=%ld\n",bufOfst + cur_length, filesystem->page_size);
+      cur_length += filesystem->page_size;
+      page_id++;
+      //gettimeofday(&t2,NULL);
+      // fprintf(stdout, "%ldus\n", (t2.tv_sec-t1.tv_sec)*1000000+t2.tv_usec-t1.tv_usec);
     }
-    (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, filesystem->page_size, (jbyte*) page_data);
-//fprintf(stdout, "set: off=%d,len=%ld\n",bufOfst + cur_length, filesystem->page_size);
-    cur_length += filesystem->page_size;
-    page_id++;
-//gettimeofday(&t2,NULL);
-// fprintf(stdout, "%ldus\n", (t2.tv_sec-t1.tv_sec)*1000000+t2.tv_usec-t1.tv_usec);
   }
-  }
-//gettimeofday(&tv3,NULL);
-//  long search=(tv2.tv_sec-tv1.tv_sec)*1000000+tv2.tv_usec-tv1.tv_usec;
-//  long copy=(tv3.tv_sec-tv2.tv_sec)*1000000+tv3.tv_usec-tv2.tv_usec;
-//  fprintf(stdout, "readBlock %ld %ld [%d,%d,%d]\n",search,copy,blkOfst,read_length,cnt);
+  //gettimeofday(&tv3,NULL);
+  //  long search=(tv2.tv_sec-tv1.tv_sec)*1000000+tv2.tv_usec-tv1.tv_usec;
+  //  long copy=(tv3.tv_sec-tv2.tv_sec)*1000000+tv3.tv_usec-tv2.tv_usec;
+  //  fprintf(stdout, "readBlock %ld %ld [%d,%d,%d]\n",search,copy,blkOfst,read_length,cnt);
   return read_length;
 }
 
@@ -625,7 +945,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes
   filesystem_t *filesystem;
   snapshot_t *snapshot;
   block_t *block;
-  int64_t *log_id;
+  uint64_t *log_id;
   
   // Find the corresponding block.
   filesystem = get_filesystem(env, thisObj);
@@ -830,9 +1150,9 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   log_pos = filesystem->log_length;
   filesystem->log[log_pos].block_id = blockId;
   filesystem->log[log_pos].block_length = block->length;
-  filesystem->log[log_pos].page_id = first_page;
-  filesystem->log[log_pos].nr_pages = new_pages_length;
-  filesystem->log[log_pos].pages = new_pages;
+  filesystem->log[log_pos].pages_offset = first_page;
+  filesystem->log[log_pos].pages_length = new_pages_length;
+  filesystem->log[log_pos].data = new_pages;
   filesystem->log[log_pos].previous = block->last_entry;
 #ifdef SECOND_EXPERIMENT
 #else
@@ -858,27 +1178,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   gettimeofday(&tv2,NULL);
   t_tot+=(tv2.tv_usec-tv_base.tv_usec+(1<<20))%(1<<20);
   printf("%ld %ld %ld %d\n",t_tot-(t_copy+t_tick),t_copy,t_tick,length);
-// fflush(stdout);
+  // fflush(stdout);
 #endif//PERF_WRITE
-/*
-#define PRINT_TIMEDIFF(tag,to,from) { \
-  long delta = ((to).tv_sec - (from).tv_sec)*1000000 + (to).tv_usec - (from).tv_usec; \
-  printf("%s %ld\n", tag, delta); \
- }
-PRINT_TIMEDIFF("L(blk):",tv1,tv_base);
-PRINT_TIMEDIFF("R(blk):",tv2,tv1);
-PRINT_TIMEDIFF("C(dat):",tv3,tv2);
-PRINT_TIMEDIFF("L(log):",tv4,tv3);
-PRINT_TIMEDIFF("R(log):",tv5,tv4);
-*/
-/*
-printf("b  %ld.%ld\n",tv_base.tv_sec,tv_base.tv_usec);
-printf("bl %ld.%ld\n",tv1.tv_sec,tv1.tv_usec);
-printf("bc %ld.%ld\n",tv2.tv_sec,tv2.tv_usec);
-printf("ec %ld.%ld\n",tv3.tv_sec,tv3.tv_usec);
-printf("fl %ld.%ld\n",tv4.tv_sec,tv4.tv_usec);
-printf("e  %ld.%ld\n",tv5.tv_sec,tv5.tv_usec);
-*/
   return 0;
 }
 
@@ -915,8 +1216,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
   } else {
     log_pos = length / 2;
     cur_value = log_pos / 2;
-//    while ((log[log_pos].r > rtc) || (log[log_pos+1].r <= rtc)) {
-    while ((log[log_pos].r > rtc) || ((log_pos+1 < length) &&(log[log_pos+1].r <= rtc))) {
+    while ((log[log_pos].r > rtc) || ((log_pos+1 < length) && (log[log_pos+1].r <= rtc))) {
       if (log[log_pos].r > rtc)
         log_pos -= cur_value;
       else
@@ -984,326 +1284,12 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
   (JNIEnv *env, jobject thisObj)
 {
   //TODO: release all memory data? currently we leave it for OS.
-  //: kill blogWriter
+  // kill blog writer
   filesystem_t *fs;
+  void * ret;
+  
   fs = get_filesystem(env,thisObj);
   fs->bwc.alive = 0;
-  void * ret;
-  if(pthread_join(fs->writerThd, &ret)){
+  if(pthread_join(fs->writer_thrd, &ret))
     fprintf(stderr,"waiting for blogWriter thread error...disk data may be corrupted\n");
-  }
-}
-
-static DiskLog * getLogEntryDiskFormat(const struct log * pmle){
-
-  // 2 - convert
-}
-
-/* flush a log entry to disk
- * entry layout:
- * 0) int reserved padding
- * 2) int block_length
- * 3) int page_id
- * 4) int nr_pages
- * 1) int64 block_id
- * 5) int64 previous
- * 6) int64 r
- * 7) int64 c
- */
-static int do_blog_flush_entry(BlogWriterCtxt *bwc){
-  DiskLog dle;
-  const struct log *pmle = &(bwc->fs->log[bwc->next_entry]);
-  int i;
-
-  // 1 - make sure we have enough space
-  bwc->fs->log[bwc->next_entry].nr_pages;
-  // 2 - convert log entry to disk format
-  dle.block_id = pmle->block_id;
-  dle.previous = pmle->previous;
-  dle.r = pmle->r;
-  dle.c = pmle->c;
-  dle.block_length = pmle->block_length;
-  dle.page_id = pmle->page_id;
-  dle.nr_pages = pmle->nr_pages;
-  // 3 - write pages and return
-  for(i=0;i<dle.nr_pages;i++){
-    if(bwc->fs->page_size != write(bwc->page_fd,pmle->pages[i],bwc->fs->page_size)) { // flush page
-      fprintf(stderr, "Write page failed: logid=%ld.\n", bwc->next_entry);
-      print_log(&bwc->fs->log[bwc->next_entry]);
-      return -2;
-    }
-  }
-  // 4 - write log to log file
-  if(sizeof(dle) != write(bwc->log_fd,&dle,sizeof(dle))){
-      fprintf(stderr, "Write log entry failed: logid=%ld.\n", bwc->next_entry);
-      print_log(&bwc->fs->log[bwc->next_entry]);
-      return -1;
-  }
-  bwc->next_entry ++;
-  return 0;
-}
-
-/*
- * do_blog_fulsh()
- * PARAM bwc:  BlogWriterCtxt
- */
-static int do_blog_flush(BlogWriterCtxt *bwc){
-  //DISCUSS: do we need to lock the log to disable the log reallocation?
-  // It seems that read should be OK, because "filesystem->log" is updated
-  // immediately. let's just copy the logentry as soon as possible.
-  if(bwc->next_entry < bwc->fs->log_length){
-    // We do not flush to the end of the log to avoid
-    // keeping it busy when many writes are undergoing...
-    long flushTo = bwc->fs->log_length;
-    while(bwc->next_entry < flushTo){
-      if(do_blog_flush_entry(bwc)!=0)
-        return -1;
-    }
-  }
-  return 0;
-}
-
-/*
- * snapshot file format:
- * [rtc][eid][rtc][eid][rtc][eid]...
- */
-static int do_snap_flush(BlogWriterCtxt *bwc){
-  // STEP 1 get snapshot list
-  int64_t len = MAP_LENGTH(log,bwc->fs->log_map);
-  int64_t* ids = MAP_GET_IDS(log,bwc->fs->log_map,len);
-  // STEP 2 write to file
-  long l;
-  for(l=0;l<len;l++){
-    int64_t *peid; // log entry id
-    if(MAP_READ(log,bwc->fs->log_map, ids[l], &peid) != 0) {
-      fprintf(stderr, "Print Filesystem: can not read eid of snapshot @%ld,\n",ids[l]);
-      free(ids);
-      return -1;
-    };
-    write(bwc->snap_fd,&ids[l],sizeof(int64_t));
-    write(bwc->snap_fd,peid,sizeof(int64_t));
-  }
-  free(ids);
-  return 0;
-}
-
-/*
- * blog_writer_routine()
- * PARAM param: the blog writer context
- * RETURN: the 
- */
-static void * blog_writer_routine(void * param){
-  BlogWriterCtxt *bwc = (BlogWriterCtxt*)param;
-  long timeNextWrite = 0; // time for next write;
-  struct timeval tv;
-
-  while(bwc->alive){
-    // STEP 1 - test if a flush is required.
-    gettimeofday(&tv,NULL);
-    if(timeNextWrite < tv.tv_sec + bwc->int_sec){
-      usleep(1000000l);
-      continue;
-    }else
-      timeNextWrite += bwc->int_sec;
-
-    // STEP 2 - flush
-    do_blog_flush(bwc);
-  }
-  do_blog_flush(bwc);
-  do_snap_flush(bwc);
-  return param;
-}
-
-/*
- *  0 - success
- * -1 - create log_map entry error
- * -2 - create snapshot_map entry error
- */
-int do_load_snapshot(filesystem_t *fs, int64_t rtc, int64_t eid){
-  int64_t *peid = (int64_t *)malloc(sizeof(int64_t));
-  snapshot_t * snapshot = NULL;
-  *peid = eid;
-
-  // log_map
-  if(MAP_CREATE(log, fs->log_map, rtc)){
-    fprintf(stderr, "Error load snapshot:rtc=%ld\n", rtc);
-    return -1;
-  }
-  if(MAP_WRITE(log, fs->log_map, rtc, peid)){
-    fprintf(stderr, "Error load snapshot:rtc=%ld\n", rtc);
-    return -1;
-  }
-  // snapshot_map
-  if(MAP_CREATE(snapshot, fs->snapshot_map, eid)){
-    if(MAP_READ(snapshot, fs->snapshot_map, eid, &snapshot)){
-      fprintf(stderr, "Error load snapshot:eid=%ld\n", eid);
-      return -2;
-    }
-    snapshot->ref_count++;
-    return 0;
-  }else{ // new snapshot
-    snapshot = (snapshot_t*)malloc(sizeof(snapshot_t));
-    snapshot->block_map = MAP_INITIALIZE(block);
-    if(snapshot->block_map == NULL){
-      fprintf(stderr, "Create Snapshot for eid=%ld: cannot allocate block map\n",eid);
-      return -2;
-    }
-    snapshot->ref_count = 1;
-    if(MAP_WRITE(snapshot, fs->snapshot_map, eid, snapshot)){
-      fprintf(stderr, "Create Snapshot %ld: cannot write to map\n", eid);
-      return -2;
-    }
-    return 0;
-  }
-}
-
-/*
- * loadBlog()
- * PARAM fs: file system structure
- * PARAM log_fd: log file
- * PARAM page_fd: page file
- * RETURN VALUES: 
- *    0 for succeed.
- *   -1 for "log file is corrupted", 
- *   -2 for "page file is correupted".
- *   -3 for "block operation".
- */
-static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd){
-  struct stat log_stat,page_stat,snap_stat;
-  void * plog = (void*)-1, * ppage = (void*)-1, * psnap = (void*)-1;
-  DiskLog * pdle; // disk log entry
-  void * pp; // pages
-  int64_t *pse; // snapshot entry
-  
-#define loadBlogReturn(x) \
-{ \
-  if(plog!=(void*)-1) \
-    munmap(plog,log_stat.st_size); \
-  if(ppage!=(void*)-1) \
-    munmap(ppage,page_stat.st_size); \
-  if(psnap!=(void*)-1) \
-    munmap(psnap,snap_stat.st_size); \
-  return (x); \
-}
-  // STEP 1 mmap files
-  if(fstat(log_fd, &log_stat)){
-    fprintf(stderr, "call fstat on log file descriptor failed");
-    loadBlogReturn(-1);
-  }
-  if(fstat(page_fd, &page_stat)){
-    fprintf(stderr, "call fstat on page file descriptor failed");
-    loadBlogReturn(-2);
-  }
-  if(fstat(snap_fd, &snap_stat)){
-    fprintf(stderr, "call fstat on snapshot file descriptor failed");
-    loadBlogReturn(-2);
-  }
-  if((plog = mmap(NULL,log_stat.st_size,PROT_READ,MAP_SHARED,log_fd,0))==(void*)-1){
-    fprintf(stderr, "call mmap on log file descriptor failed");
-    loadBlogReturn(-1);
-  };
-  if((ppage = mmap(NULL,page_stat.st_size,PROT_READ,MAP_SHARED,page_fd,0))==(void*)-1){
-    fprintf(stderr, "call mmap on page file descriptor failed");
-    loadBlogReturn(-2);
-  };
-  if((psnap = mmap(NULL,snap_stat.st_size,PROT_READ,MAP_SHARED,page_fd,0))==(void*)-1){
-    fprintf(stderr, "call mmap on snap file descriptor failed");
-    loadBlogReturn(-2);
-  };
-  
-  // STEP 2 replay log;
-  pdle = (DiskLog*)plog;
-  pp = ppage;
-  pthread_rwlock_wrlock(&(fs->lock));
-  while(((void*)(pdle + 1)) <= (plog + log_stat.st_size)){//NOTE: this is gcc extension!!!
-    /// STEP 2.1 - log entry
-    void * page_mem = NULL;
-    page_t *pages = NULL;
-    // skip createBlock or deleteBlock
-    if(pdle->page_id != -1 && pdle->page_id != -2){ 
-      int i;
-      // allocate page memory
-      page_mem = malloc(fs->page_size*(pdle->nr_pages+1));
-      pages = (page_t*)page_mem;
-      // load page data
-      if(pp+fs->page_size*pdle->nr_pages > ppage+page_stat.st_size){
-        fprintf(stderr, "not enough pages exists!");
-        loadBlogReturn(-2);
-      }
-      memcpy(page_mem+fs->page_size,pp,fs->page_size*pdle->nr_pages);
-      for(i=0;i<pdle->nr_pages;i++)
-        pages[i].data = (char*)(page_mem+fs->page_size*(i+1));
-      pp += fs->page_size*pdle->nr_pages;
-    }
-    
-    check_and_increase_log_length(fs);
-    long log_pos = fs->log_length;
-    fs->log[log_pos].block_id = pdle->block_id;
-    fs->log[log_pos].block_length = pdle->block_length;
-    fs->log[log_pos].page_id = pdle->page_id;
-    fs->log[log_pos].nr_pages = pdle->nr_pages;
-    fs->log[log_pos].pages = pages;
-    fs->log[log_pos].previous = pdle->previous;
-    fs->log_length += 1;
-    //UPDATE Block MAP
-    switch(pdle->page_id){
-    block_t *block=NULL;
-    case -1: // CREATE BLOCK
-      if(MAP_CREATE(block, fs->block_map, pdle->block_id)==-1){
-        fprintf(stderr, "failed in create block during initialization: blockid=%ld.\n", pdle->block_id);
-        loadBlogReturn(-3);
-      }
-      block = (block_t*)malloc(sizeof(block_t));
-      block->length = 0;
-      block->cap = 0;
-      block->pages = NULL;
-      block->last_entry = log_pos;
-      if(MAP_WRITE(block, fs->block_map, pdle->block_id, block)!=0){
-        fprintf(stderr, "failed in create block during initialization: blockid=%ld.\n", pdle->block_id);
-        loadBlogReturn(-3);
-      }
-      break;
-    case -2: // DELETE BLOCK
-      if(MAP_DELETE(block, fs->block_map, pdle->block_id)==-1){
-        fprintf(stderr, "failed in delete block during initialization: blockid=%ld.\n", pdle->block_id);
-        loadBlogReturn(-3);
-      }
-      break;
-    default: // WRITE BLOCK
-      {
-        int i;
-        block_t *block;
-        if(MAP_READ(block, fs->block_map, pdle->block_id, &block)!=0){
-          fprintf(stderr, "failed in read from block during initialization: blockid=%ld.\n", pdle->block_id);
-          loadBlogReturn(-3);
-        }
-        block->length = pdle->block_length;
-        block->cap = 1;
-        while(block->cap < ((pdle->block_length+fs->page_size-1)/fs->page_size))
-          block->cap=block->cap<<1;
-        block->pages = (page_t **)realloc(block->pages,block->cap*sizeof(page_t*));
-        for(i=0;i<pdle->nr_pages;i++)
-          block->pages[pdle->page_id+i]=((page_t*)page_mem)+i;
-        block->last_entry = log_pos;
-      }
-      break;
-    }
-    pdle++;
-  }
-  pthread_rwlock_unlock(&(fs->lock));
-
-  if((void*)pdle != plog + log_stat.st_size){
-      fprintf(stderr,"log file is corrupted.\n");
-    loadBlogReturn(-1);
-  }
-
-  // STEP 3 load snapshots
-  pse = (int64_t*)psnap;
-  int nsnap = (snap_stat.st_size/sizeof(int64_t)/2);
-  while(nsnap--){
-    int64_t rtc = *pse++;
-    int64_t eid = *pse++;
-    do_load_snapshot(fs,rtc,eid);
-  }
-  loadBlogReturn(0);
 }
