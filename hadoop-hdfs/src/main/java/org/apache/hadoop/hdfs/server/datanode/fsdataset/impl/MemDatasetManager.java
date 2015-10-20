@@ -4,6 +4,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_MEMBLOCK_PAGESIZE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_MEMBLOCK_PAGESIZE;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +39,7 @@ public class MemDatasetManager {
   private final long capacity;
   private final long blocksize; 
   private final int pagesize;
+  private final String perspath; // the path for persistent files
 
   
   public class MemBlockMeta extends Block implements Replica {
@@ -234,6 +236,11 @@ public class MemDatasetManager {
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
     this.poolMap = new HashMap<String, PoolData>();
+    String[] dataDirs = conf.getTrimmedStrings(DFS_DATANODE_DATA_DIR_KEY);
+    if(dataDirs.length > 0)
+      this.perspath = dataDirs[0];
+    else
+      this.perspath = "/tmp" // the default persistent path is in /tmp
 //    this.diskMaps = new HashMap<ExtendedBlockId, String>();
   }
   
@@ -258,12 +265,12 @@ MemBlockMeta get(String bpid, long blockId) {
     return (pd==null)?null:pd.blockMaps.get(blockId);
   }
   
-  private PoolData newPoolData(){
+  private PoolData newPoolData(String bpid){
   	PoolData pd;
   	pd = new PoolData();
     pd.blockMaps = new HashMap<Long,MemBlockMeta>();
     pd.blog = new JNIBlog();
-    pd.blog.initialize((int)blocksize, pagesize);
+    pd.blog.initialize((int)blocksize, pagesize, this.perspath);
     return pd;
   }
 
