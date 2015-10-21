@@ -53,7 +53,7 @@ public class MemDatasetManager {
       synchronized(poolMap){
         pd = poolMap.get(bpid);
         if(pd==null){
-      	  pd = newPoolData();
+      	  pd = newPoolData(bpid);
       	  poolMap.put(bpid, pd);
         }
       }
@@ -240,7 +240,7 @@ public class MemDatasetManager {
     if(dataDirs.length > 0)
       this.perspath = dataDirs[0];
     else
-      this.perspath = "/tmp" // the default persistent path is in /tmp
+      this.perspath = "/tmp"; // the default persistent path is in /tmp
 //    this.diskMaps = new HashMap<ExtendedBlockId, String>();
   }
   
@@ -287,7 +287,7 @@ MemBlockMeta get(String bpid, long blockId) {
   	synchronized(poolMap){
   		pd = poolMap.get(bpid);
       if(pd == null){
-      	pd = newPoolData();
+      	pd = newPoolData(bpid);
       	poolMap.put(bpid, pd);
       }
   	}
@@ -358,7 +358,7 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
     synchronized(poolMap){
       pd = poolMap.get(bpid);
       if(pd == null){
-        pd = newPoolData();
+        pd = newPoolData(bpid);
         poolMap.put(bpid, pd);
       }
     }
