@@ -75,7 +75,7 @@ struct disk_log {
  */
 struct block {
   uint32_t length;
-  uint32_t cap;
+  int32_t cap;
   uint64_t last_entry;
   page_t **pages;
 };

@@ -201,7 +201,8 @@ public class JNIBlog {
       writeLine("There is a problem here.");
   }
   
-  static public void writeLine(String str) {
+  static public void writeLine(String str)
+  {
     System.out.println(str);
     System.out.flush();
   }
@@ -210,7 +211,8 @@ public class JNIBlog {
    * Test stub
    * @param args
    */
-  public static void main(String[] args) throws InterruptedException{
+  public static void main(String[] args) throws InterruptedException
+  {
     JNIBlog bl = new JNIBlog();
     HybridLogicalClock mhlc = new HybridLogicalClock();
     long rtc;

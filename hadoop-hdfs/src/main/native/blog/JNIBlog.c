@@ -111,7 +111,7 @@ static void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
       fprintf(stderr, "Print Filesystem: Something is wrong with BLOCK_MAP_GET_IDS or BLOCK_MAP_READ\n");
       return;
     }
-    printf("Block ID: %ld\n", ids[i]);
+    printf("Block ID: %"PRIu64"\n", ids[i]);
     print_block(block, filesystem->page_size);
     printf("\n");
   }
@@ -181,9 +181,9 @@ block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *s
   
   block = (block_t *) malloc(sizeof(block_t));
   log_id = last_log_entry;
-  while ((log_id >= 0) && (log[log_id].block_id != block_id))
+  while ((log_id > 0) && (log[log_id].block_id != block_id))
     log_id--;
-  if (log_id == -1 || log[log_id].pages_offset == -2) {
+  if (log[log_id].block_id != block_id || log[log_id].pages_offset == -2) {
     block->length = 0;
     block->cap = -1;
     block->pages = NULL;
@@ -192,7 +192,7 @@ block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *s
     block->length = 0;
     block->cap = 0;
     block->pages = NULL;
-    block->last_entry = -1;
+    block->last_entry = log_id;
   } else {
     block->length = log[log_id].block_length;
     if (block->length == 0)
@@ -848,8 +848,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
   
   //struct timeval tv1,tv2,tv3;
   //gettimeofday(&tv1,NULL);  
-fprintf(stderr, "READBLOCK,bid=%ld,rtc=%ld\n",blockId,snapshotId);
-fflush(stderr);
   // Find the corresponding block.
   filesystem = get_filesystem(env, thisObj);
   if (snapshotId == -1) {
@@ -862,8 +860,6 @@ fflush(stderr);
     }
     MAP_UNLOCK(block, filesystem->block_map, blockId);
   } else {
-fprintf(stderr, "READBLOCK,snapshotId=%ld\n",snapshotId);
-fflush(stderr);
     MAP_LOCK(log, filesystem->log_map, snapshotId, 'r');
     if (MAP_READ(log, filesystem->log_map, snapshotId, &log_id) == -1) {
       MAP_UNLOCK(log, filesystem->log_map, snapshotId);
@@ -871,8 +867,6 @@ fflush(stderr);
       fprintf(stderr, "Read Block: Snapshot with id %ld is not present.\n", snapshotId);
       return -2;
     }
-fprintf(stderr, "READBLOCK,log_id=%lu\n",*log_id);
-fflush(stderr);
     MAP_LOCK(snapshot, filesystem->snapshot_map, *log_id, 'r');
     MAP_UNLOCK(log, filesystem->log_map, snapshotId);
     if (MAP_READ(snapshot, filesystem->snapshot_map, *log_id, &snapshot) == -1) {
@@ -884,8 +878,6 @@ fflush(stderr);
     MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
     block = find_or_allocate_snapshot_block(filesystem, snapshot, *log_id, blockId);
     // If block did not exist at this point.
-fprintf(stderr, "after looking for the block:%ld,block->cap=%d\n",blockId,block->cap);
-fflush(stderr);
     if (block->cap == -1) {
       fprintf(stderr, "Read Block: Block with id %ld is not present at snapshot with rtc %ld.\n", blockId, snapshotId);
       return -1;
