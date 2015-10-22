@@ -695,11 +695,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   // start write thread.
   filesystem->bwc.fs = filesystem;
   sprintf(fullpath, "%s/%s",pp,BLOGFILE);
-  filesystem->bwc.log_fd = open(fullpath, O_APPEND|O_CREAT);
+  filesystem->bwc.log_fd = open(fullpath, O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
   sprintf(fullpath, "%s/%s",pp,PAGEFILE);
-  filesystem->bwc.page_fd = open(fullpath, O_APPEND|O_CREAT);
+  filesystem->bwc.page_fd = open(fullpath, O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
   sprintf(fullpath, "%s/%s",pp,SNAPFILE);
-  filesystem->bwc.snap_fd = open(fullpath, O_APPEND|O_CREAT);
+  filesystem->bwc.snap_fd = open(fullpath, O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
   if(filesystem->bwc.log_fd == -1 || 
      filesystem->bwc.page_fd == -1 || 
      filesystem->bwc.snap_fd == -1){
