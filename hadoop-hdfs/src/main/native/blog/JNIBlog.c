@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -301,7 +302,6 @@ static jobject get_hybrid_logical_clock(JNIEnv *env, jobject thisObj)
 
 static int file_exists(const char * filename){
   struct stat buffer;
-
   return(stat(filename, &buffer)==0);
 }
 
@@ -333,7 +333,7 @@ static int do_blog_flush_entry(blog_writer_ctxt_t *bwc)
   dle.pages_length = pmle->pages_length;
   // 2 - write pages and return
   for (i = 0; i < dle.pages_length; i++) {
-    if(bwc->fs->page_size != write(bwc->page_fd, pmle->data[i], bwc->fs->page_size)) {
+    if(bwc->fs->page_size != write(bwc->page_fd, pmle->data[i].data, bwc->fs->page_size)) {
       fprintf(stderr, "Write page failed: logid=%ld.\n", bwc->next_entry);
       print_log(&bwc->fs->log[bwc->next_entry]);
       return -2;
@@ -677,7 +677,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   
   fullpath = (char*) malloc(strlen(pp)+MAX_FNLEN+1);
   sprintf(fullpath,"%s/%s",pp,BLOGFILE);
-  if (file_exist(fullpath)) {
+  if (file_exists(fullpath)) {
     log_fd = open(fullpath, O_RDONLY);
     sprintf(fullpath, "%s/%s",pp,PAGEFILE);
     page_fd = open(fullpath, O_RDONLY);
@@ -695,11 +695,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   // start write thread.
   filesystem->bwc.fs = filesystem;
   sprintf(fullpath, "%s/%s",pp,BLOGFILE);
-  filesystem->bwc.log_fd = open(fullpath, O_APPEND);
+  filesystem->bwc.log_fd = open(fullpath, O_APPEND|O_CREAT);
   sprintf(fullpath, "%s/%s",pp,PAGEFILE);
-  filesystem->bwc.page_fd = open(fullpath, O_APPEND);
+  filesystem->bwc.page_fd = open(fullpath, O_APPEND|O_CREAT);
   sprintf(fullpath, "%s/%s",pp,SNAPFILE);
-  filesystem->bwc.snap_fd = open(fullpath, O_APPEND);
+  filesystem->bwc.snap_fd = open(fullpath, O_APPEND|O_CREAT);
   if(filesystem->bwc.log_fd == -1 || 
      filesystem->bwc.page_fd == -1 || 
      filesystem->bwc.snap_fd == -1){
