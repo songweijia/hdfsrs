@@ -226,5 +226,6 @@ public class JNIBlog {
     writeLine(bl.hlc.toString());
     bl.testRead();
     bl.testSnapshot(rtc);
+    bl.destroy();
   }
 }

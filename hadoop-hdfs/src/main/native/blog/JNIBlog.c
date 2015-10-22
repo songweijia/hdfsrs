@@ -848,7 +848,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
   
   //struct timeval tv1,tv2,tv3;
   //gettimeofday(&tv1,NULL);  
-  
+fprintf(stderr, "READBLOCK,bid=%ld,rtc=%ld\n",blockId,snapshotId);
+fflush(stderr);
   // Find the corresponding block.
   filesystem = get_filesystem(env, thisObj);
   if (snapshotId == -1) {
@@ -861,6 +862,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
     }
     MAP_UNLOCK(block, filesystem->block_map, blockId);
   } else {
+fprintf(stderr, "READBLOCK,snapshotId=%ld\n",snapshotId);
+fflush(stderr);
     MAP_LOCK(log, filesystem->log_map, snapshotId, 'r');
     if (MAP_READ(log, filesystem->log_map, snapshotId, &log_id) == -1) {
       MAP_UNLOCK(log, filesystem->log_map, snapshotId);
@@ -868,17 +871,21 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
       fprintf(stderr, "Read Block: Snapshot with id %ld is not present.\n", snapshotId);
       return -2;
     }
+fprintf(stderr, "READBLOCK,log_id=%lu\n",*log_id);
+fflush(stderr);
     MAP_LOCK(snapshot, filesystem->snapshot_map, *log_id, 'r');
     MAP_UNLOCK(log, filesystem->log_map, snapshotId);
     if (MAP_READ(snapshot, filesystem->snapshot_map, *log_id, &snapshot) == -1) {
       MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
       // In case you did not find the snapshot return an error.
       fprintf(stderr, "Read Block: Something is wrong with readBlock.\n");
-      return -3;
+      return -4;
     }
     MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
     block = find_or_allocate_snapshot_block(filesystem, snapshot, *log_id, blockId);
     // If block did not exist at this point.
+fprintf(stderr, "after looking for the block:%ld,block->cap=%d\n",blockId,block->cap);
+fflush(stderr);
     if (block->cap == -1) {
       fprintf(stderr, "Read Block: Block with id %ld is not present at snapshot with rtc %ld.\n", blockId, snapshotId);
       return -1;
