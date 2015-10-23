@@ -413,8 +413,6 @@ static void * blog_writer_routine(void * param)
   struct timeval tv;
 
   while(bwc->alive){
-printf("[blog_writer_routine]loop\n");
-fflush(stdout);
     // STEP 1 - test if a flush is required.
     gettimeofday(&tv,NULL);
     if(time_next_write < tv.tv_sec) {
@@ -562,8 +560,9 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
         loadBlogReturn(-2);
       }
       memcpy(page_mem + fs->page_size, pp, fs->page_size*pdle->pages_length);
-      for (i = 0; i < pdle->pages_offset; i++)
+      for (i = 0; i < pdle->pages_length; i++){
         pages[i].data = (char*) (page_mem + fs->page_size*(i+1));
+      }
       pp += fs->page_size * pdle->pages_length;
     }
     
@@ -612,8 +611,9 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
         while (block->cap < ((pdle->block_length+fs->page_size-1) / fs->page_size))
           block->cap=block->cap<<1;
         block->pages = (page_t **)realloc(block->pages,block->cap*sizeof(page_t*));
-        for (i = 0; i < pdle->pages_length; i++)
+        for (i = 0; i < pdle->pages_length; i++){
           block->pages[pdle->pages_offset+i] = ((page_t*)page_mem) + i;
+        }
         block->last_entry = log_pos;
       }
       break;
