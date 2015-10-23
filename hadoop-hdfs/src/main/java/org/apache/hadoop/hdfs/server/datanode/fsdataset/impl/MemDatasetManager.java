@@ -6,6 +6,7 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_MEMBLOCK_PAGESIZE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_MEMBLOCK_PAGESIZE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -270,6 +271,10 @@ MemBlockMeta get(String bpid, long blockId) {
   	pd = new PoolData();
     pd.blockMaps = new HashMap<Long,MemBlockMeta>();
     pd.blog = new JNIBlog();
+    // If path does not exists, create it firs.
+    File fPers = new File(this.perspath);
+    if(fPers.exists()&&fPers.isFile())fPers.delete();
+    if(!fPers.exists())fPers.mkdir();
     pd.blog.initialize((int)blocksize, pagesize, this.perspath);
     return pd;
   }
