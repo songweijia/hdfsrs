@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "JNIBlog.h"
 #include "types.h"
@@ -340,10 +341,10 @@ static int do_blog_flush_entry(blog_writer_ctxt_t *bwc)
     }
   }
   // 3 - write log to log file
-  if (sizeof(dle) != write(bwc->log_fd, &dle,sizeof(dle))) {
-      fprintf(stderr, "Write log entry failed: logid=%ld.\n", bwc->next_entry);
-      print_log(&bwc->fs->log[bwc->next_entry]);
-      return -1;
+  if(sizeof(dle) != write(bwc->log_fd, &dle,sizeof(dle))){
+    fprintf(stderr, "Write log entry failed: logid=%ld.\n", bwc->next_entry);
+    print_log(&bwc->fs->log[bwc->next_entry]);
+    return -1;
   }
   bwc->next_entry++;
   return 0;
@@ -367,6 +368,10 @@ static int do_blog_flush(blog_writer_ctxt_t *bwc)
       if (do_blog_flush_entry(bwc) != 0)
         return -1;
   }
+  // flush to persistent layer
+  fsync(bwc->log_fd);
+  fsync(bwc->page_fd);
+  fsync(bwc->snap_fd);
   return 0;
 }
 
@@ -408,6 +413,8 @@ static void * blog_writer_routine(void * param)
   struct timeval tv;
 
   while(bwc->alive){
+printf("[blog_writer_routine]loop\n");
+fflush(stdout);
     // STEP 1 - test if a flush is required.
     gettimeofday(&tv,NULL);
     if(time_next_write < tv.tv_sec) {
@@ -418,10 +425,18 @@ static void * blog_writer_routine(void * param)
     }
 
     // STEP 2 - flush
-    do_blog_flush(bwc);
+    if(do_blog_flush(bwc)){
+      fprintf(stderr,"Cannot flush blog to persistent storage.\n");
+      return param;
+    }
   }
-  do_blog_flush(bwc);
-  do_snap_flush(bwc);
+  if(do_blog_flush(bwc)){
+    fprintf(stderr,"Cannot flush blog to persistent storage.\n");
+    return param;
+  }
+  if(do_snap_flush(bwc)){
+    fprintf(stderr,"Cannot flush blog to persistent storage.\n");
+  }
   return param;
 }
 
@@ -691,15 +706,19 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
       fprintf(stderr,"Fail to read data node files, exit...\n");
       exit(1);
     }
+    close(log_fd);
+    close(page_fd);
+    close(snap_fd);
   }
   // start write thread.
   filesystem->bwc.fs = filesystem;
   sprintf(fullpath, "%s/%s",pp,BLOGFILE);
-  filesystem->bwc.log_fd = open(fullpath, O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
+  filesystem->bwc.log_fd = open(fullpath, O_RDWR|O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
   sprintf(fullpath, "%s/%s",pp,PAGEFILE);
-  filesystem->bwc.page_fd = open(fullpath, O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
+  filesystem->bwc.page_fd = open(fullpath, O_RDWR|O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
   sprintf(fullpath, "%s/%s",pp,SNAPFILE);
-  filesystem->bwc.snap_fd = open(fullpath, O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
+  filesystem->bwc.snap_fd = open(fullpath, O_RDWR|O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
+
   if(filesystem->bwc.log_fd == -1 || 
      filesystem->bwc.page_fd == -1 || 
      filesystem->bwc.snap_fd == -1){
@@ -1291,4 +1310,9 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
   fs->bwc.alive = 0;
   if(pthread_join(fs->writer_thrd, &ret))
     fprintf(stderr,"waiting for blogWriter thread error...disk data may be corrupted\n");
+
+  // close files
+  if(fs->bwc.log_fd!=-1){close(fs->bwc.log_fd),fs->bwc.log_fd=-1;}
+  if(fs->bwc.page_fd!=-1){close(fs->bwc.log_fd),fs->bwc.page_fd=-1;}
+  if(fs->bwc.snap_fd!=-1){close(fs->bwc.log_fd),fs->bwc.snap_fd=-1;}
 }
