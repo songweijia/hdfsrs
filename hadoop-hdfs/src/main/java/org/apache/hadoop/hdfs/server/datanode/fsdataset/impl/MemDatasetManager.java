@@ -272,10 +272,13 @@ MemBlockMeta get(String bpid, long blockId) {
     pd.blockMaps = new HashMap<Long,MemBlockMeta>();
     pd.blog = new JNIBlog();
     // If path does not exists, create it firs.
-    File fPers = new File(this.perspath);
+    File fPers = new File(this.perspath+System.getProperty("file.separator")+"pers-"+bpid);
     if(fPers.exists()&&fPers.isFile())fPers.delete();
-    if(!fPers.exists())fPers.mkdir();
-    pd.blog.initialize((int)blocksize, pagesize, this.perspath);
+    if(!fPers.exists()){
+      if(fPers.mkdir()==false)
+        LOG.error("Initialize Blog: cannot create path:" + fPers.getAbsolutePath());
+    }
+    pd.blog.initialize((int)blocksize, pagesize, fPers.getAbsolutePath());
     return pd;
   }
 
