@@ -415,11 +415,11 @@ static void * blog_writer_routine(void * param)
   while(bwc->alive){
     // STEP 1 - test if a flush is required.
     gettimeofday(&tv,NULL);
-    if(time_next_write < tv.tv_sec) {
+    if(time_next_write > tv.tv_sec) {
       usleep(1000000l);
       continue;
     } else {
-      time_next_write += bwc->int_sec;
+      time_next_write = tv.tv_sec bwc->int_sec;
     }
 
     // STEP 2 - flush
