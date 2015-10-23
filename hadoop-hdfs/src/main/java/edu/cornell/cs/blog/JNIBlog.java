@@ -216,9 +216,10 @@ public class JNIBlog {
     JNIBlog bl = new JNIBlog();
     HybridLogicalClock mhlc = new HybridLogicalClock();
     long rtc;
-  ///*  
+  
     writeLine("Begin Initialize.");
     bl.initialize(1024*1024, 1024, "testbpid");
+/*
     writeLine(bl.hlc.toString());
     bl.testBlockCreation(mhlc);
     writeLine(bl.hlc.toString());
@@ -226,10 +227,10 @@ public class JNIBlog {
     writeLine(bl.hlc.toString());
     rtc = bl.testWrite(mhlc);
     writeLine(bl.hlc.toString());
-//*/
+*/
     bl.testRead();
 //    bl.testSnapshot(rtc);
-//    bl.testSnapshot(1445565264239l);
+    bl.testSnapshot(1445569148646l);
 //    bl.destroy();
   }
 }

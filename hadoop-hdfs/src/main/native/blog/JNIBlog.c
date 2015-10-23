@@ -536,7 +536,7 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
     fprintf(stderr, "call mmap on page file descriptor failed");
     loadBlogReturn(-2);
   }
-  if ((psnap = mmap(NULL,snap_stat.st_size,PROT_READ,MAP_SHARED,page_fd,0)) == (void*) -1) {
+  if ((psnap = mmap(NULL,snap_stat.st_size,PROT_READ,MAP_SHARED,snap_fd,0)) == (void*) -1) {
     fprintf(stderr, "call mmap on snap file descriptor failed");
     loadBlogReturn(-2);
   }
@@ -633,7 +633,10 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
   while (nsnap--) {
     int64_t rtc = *pse++;
     int64_t eid = *pse++;
-    do_load_snapshot(fs,rtc,eid);
+    if(do_load_snapshot(fs,rtc,eid)){
+      fprintf(stderr,"load snapshot failed for rtc=%ld,eid=%ld!\n",rtc,eid);
+      loadBlogReturn(-1);
+    };
   }
   loadBlogReturn(0);
 }
