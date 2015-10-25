@@ -207,7 +207,7 @@ public class Block implements Writable, Comparable<Block> {
     this.blockId = in.readLong();
     this.numBytes = in.readLong();
     this.generationStamp = in.readLong();
-    this.sid = in.readInt();
+    this.sid = in.readLong();
     if (numBytes < 0) {
       throw new IOException("Unexpected block size: " + numBytes);
     }
@@ -223,7 +223,7 @@ public class Block implements Writable, Comparable<Block> {
   // Read only the identifier part of the block
   public void readId(DataInput in) throws IOException {
     this.blockId = in.readLong();
-    this.sid = in.readInt();
+    this.sid = in.readLong();
     this.generationStamp = in.readLong();
   }
 
