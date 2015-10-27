@@ -401,6 +401,20 @@ static int do_snap_flush(blog_writer_ctxt_t *bwc)
   return 0;
 }
 
+static int do_bmap_flush(blog_writer_ctxt_t *bwc)
+{
+  // STEP 1 get "this"
+  jclass thisCls = (*bwc->env)->GetObjectClass(bwc->env, bwc->thisObj);
+  jmethodID mid = (*bwc->env)->GetMethodID(bwc->env,thisCls,"flushBlockMap", "()V");
+  if (mid == NULL) {
+    perror("Error");
+    exit(-1);
+  }
+  // STEP 2 call flush()
+  (*bwc->env)->CallVoidMethod(bwc->env, bwc->thisObj, mid);
+  return 0;
+}
+
 /*
  * blog_writer_routine()
  * PARAM param: the blog writer context
@@ -419,7 +433,7 @@ static void * blog_writer_routine(void * param)
       usleep(1000000l);
       continue;
     } else {
-      time_next_write = tv.tv_sec bwc->int_sec;
+      time_next_write = tv.tv_sec + bwc->int_sec;
     }
 
     // STEP 2 - flush
@@ -433,7 +447,10 @@ static void * blog_writer_routine(void * param)
     return param;
   }
   if(do_snap_flush(bwc)){
-    fprintf(stderr,"Cannot flush blog to persistent storage.\n");
+    fprintf(stderr,"Cannot flush snapshot to persistent storage.\n");
+  }
+  if(do_bmap_flush(bwc)){
+    fprintf(stderr,"Cannot flush block map to persistent storage.\n");
   }
   return param;
 }
@@ -731,6 +748,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->bwc.next_entry = filesystem->log_length;
   filesystem->bwc.int_sec = 60; // every minutes
   filesystem->bwc.alive = 1; // alive.
+  filesystem->bwc.env = env; // java environment
+  filesystem->bwc.thisObj = thisObj; // java this object
   
   //start blog writer thread
   if (pthread_create(&filesystem->writer_thrd, NULL, blog_writer_routine, (void*)&filesystem->bwc)) {

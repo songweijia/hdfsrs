@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <inttypes.h>
+#include <jni.h>
 
 #include "map.h"
 
@@ -110,6 +111,8 @@ struct blog_writer_ctxt{
   uint32_t int_sec; 
   uint64_t next_entry;
   uint32_t alive;
+  JNIEnv *env;
+  jobject thisObj;
 };
 
 /**
