@@ -315,7 +315,7 @@ public class JNIBlog {
     long rtc;
   
     writeLine("Begin Initialize.");
-    bl.initialize(1024*1024, 1024, "testbpid");
+    bl.initialize(null,null,1024*1024, 1024, "testbpid");
 /*
     writeLine(bl.hlc.toString());
     bl.testBlockCreation(mhlc);

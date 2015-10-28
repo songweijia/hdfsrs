@@ -426,6 +426,14 @@ static void * blog_writer_routine(void * param)
   long time_next_write = 0;
   struct timeval tv;
 
+  JavaVM *jvm;
+  int gotVM = (*bwc->env)->GetJavaVM(bwc->env,&jvm);
+  if((*jvm)->AttachCurrentThread(jvm, (void*)&(bwc->env), NULL) > 0){
+    fprintf(stderr,"blog_writer_routine:cannot attach current thread to JVM\n");
+    fflush(stderr);
+    return NULL;
+  }
+
   while(bwc->alive){
     // STEP 1 - test if a flush is required.
     gettimeofday(&tv,NULL);
@@ -435,11 +443,13 @@ static void * blog_writer_routine(void * param)
     } else {
       time_next_write = tv.tv_sec + bwc->int_sec;
     }
-
     // STEP 2 - flush
     if(do_blog_flush(bwc)){
       fprintf(stderr,"Cannot flush blog to persistent storage.\n");
       return param;
+    }
+    if(do_bmap_flush(bwc)){
+      fprintf(stderr,"Cannot flush block map to persistent storage.\n");
     }
   }
   if(do_blog_flush(bwc)){
@@ -749,7 +759,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->bwc.int_sec = 60; // every minutes
   filesystem->bwc.alive = 1; // alive.
   filesystem->bwc.env = env; // java environment
-  filesystem->bwc.thisObj = thisObj; // java this object
+  filesystem->bwc.thisObj = (*env)->NewGlobalRef(env, thisObj); // java this object
   
   //start blog writer thread
   if (pthread_create(&filesystem->writer_thrd, NULL, blog_writer_routine, (void*)&filesystem->bwc)) {
