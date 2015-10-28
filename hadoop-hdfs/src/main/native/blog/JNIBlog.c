@@ -566,10 +566,6 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
     fprintf(stderr, "call mmap on page file descriptor failed");
     loadBlogReturn(-2);
   }
-  if ((psnap = mmap(NULL,snap_stat.st_size,PROT_READ,MAP_SHARED,snap_fd,0)) == (void*) -1) {
-    fprintf(stderr, "call mmap on snap file descriptor failed");
-    loadBlogReturn(-3);
-  }
   
   // STEP 2 replay log;
   pdle = (disk_log_t*)plog;
@@ -661,6 +657,10 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
   // skip empty snapshot
   if(snap_stat.st_size == 0) return 0;
   // else continue ...
+  if ((psnap = mmap(NULL,snap_stat.st_size,PROT_READ,MAP_SHARED,snap_fd,0)) == (void*) -1) {
+    fprintf(stderr, "call mmap on snap file descriptor failed");
+    loadBlogReturn(-3);
+  }
   pse = (int64_t*)psnap;
   int nsnap = (snap_stat.st_size/sizeof(int64_t)/2);
   while (nsnap--) {
