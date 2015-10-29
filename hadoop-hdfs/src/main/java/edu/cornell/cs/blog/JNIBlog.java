@@ -53,6 +53,12 @@ public class JNIBlog {
     initialize((int)blockSize, pageSize, persPath);
     // LOAD blockmap
     loadBlockMap();
+    Runtime.getRuntime().addShutdownHook(new Thread(){
+      @Override
+      public void run(){
+        JNIBlog.this.destroy();
+      }
+    });
   }
   
   // write the block map to disk
