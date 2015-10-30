@@ -106,7 +106,7 @@ public class JNIBlog {
         long gen = dis.readLong();
         boolean del = dis.readBoolean();
         ReplicaState rs = ReplicaState.getState(dis.readInt());
-        MemBlockMeta mbm = dsmgr.new MemBlockMeta(bpid, gen, bid, rs);
+        MemBlockMeta mbm = dsmgr.new MemBlockMeta(this, gen, bid, rs);
         if(del)mbm.delete();
         this.blockMaps.put(bid, mbm);
       }

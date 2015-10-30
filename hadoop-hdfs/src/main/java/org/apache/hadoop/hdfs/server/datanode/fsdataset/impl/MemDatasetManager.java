@@ -69,6 +69,14 @@ public class MemDatasetManager {
       this.isDeleted = false;
     }
     
+    public MemBlockMeta(JNIBlog blog, long genStamp, long blockId, ReplicaState state) {
+      super(blockId,(int)JNIBlog.CURRENT_SNAPSHOT_ID,0l,genStamp);
+      this.blog = blog;
+      this.blockId = blockId;
+      this.state = state;
+      this.isDeleted = false;
+    }
+    
     public boolean isDeleted(){
     	return isDeleted;
     }
