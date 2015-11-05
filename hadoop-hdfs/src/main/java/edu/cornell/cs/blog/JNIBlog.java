@@ -201,6 +201,60 @@ public class JNIBlog {
   public HashMap<Long,MemBlockMeta> blockMaps;
   //////////////////////////////////////////////////////////////////////
   
+  //////////////////////////////////////////////////////////////////////
+  // The interface for RDMA access library
+  public static class RBPBuffer{
+    public long handle; // handle to the RDMABufferPool
+    public long offset; // offset of this RBPBuffer in RDMABufferPool
+    public long length; // length of this buffer.
+  }
+  /**
+   * function: initialize an RDMA Buffer Pool.
+   * @param size - size of the buffer tool, should be a power of 2. recommended value: (1l<<30)
+   * @param alignment - alignment for the buffer allocation. This prevents external segmentation
+   * @return handle of the RDMA Block Pool
+   * @throws Exception
+   */
+  static public native long rbpInitialize(long size, long alignment) throws Exception;
+  /**
+   * function: destroy the RDMA buffer Pool.
+   * @param size - size of the buffer tool
+   * @throws Exception
+   */
+  static public native void rbpDestroy(long hRDMABufferPool) throws Exception;
+  /**
+   * function: allocate a buffer.
+   * @param size - buffer size
+   * @return allocated Buffer
+   * @throws Exception
+   */
+  static public native RBPBuffer rbpAllocateBuffer(long size) throws Exception;
+  /**
+   * function: release a buffer.
+   * @param buf
+   * @throws Exception
+   */
+  static public native void rbpReleaseBuffer(RBPBuffer buf) throws Exception;
+  /**
+   * function: connect to RDMA datanode
+   * @rbpBuffer handle of the buffer
+   * @param hostIp
+   * @param port
+   * @throws Exception
+   */
+  static public native void rbpConnect(long rbpBuffer, int hostIp, int port) throws Exception;
+  
+  /**
+   * function: do RDMA Write, this is called by the DataNode.
+   * @param clientIp
+   * @param offset
+   * @param length
+   * @param pageList
+   * @throws Exception
+   */
+  static public native void rbpRDMAWrite(int clientIp, long offset, long length, long []pageList) throws Exception;
+  
+  //////////////////////////////////////////////////////////////////////
   // Tests.
   public void testBlockCreation(HybridLogicalClock mhlc)
   {

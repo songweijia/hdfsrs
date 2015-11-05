@@ -1354,3 +1354,64 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
   if(fs->bwc.page_fd!=-1){close(fs->bwc.log_fd),fs->bwc.page_fd=-1;}
   if(fs->bwc.snap_fd!=-1){close(fs->bwc.log_fd),fs->bwc.snap_fd=-1;}
 }
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpInitialize
+ * Signature: (JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize
+  (JNIEnv *env, jclass thisCls, jlong size, jlong alignment){
+  //TODO
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpDestroy
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
+  //TODO
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpAllocateBuffer
+ * Signature: (J)Ledu/cornell/cs/blog/JNIBlog/RBPBuffer;
+ */
+JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBuffer
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
+  //TODO
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpReleaseBuffer
+ * Signature: (Ledu/cornell/cs/blog/JNIBlog/RBPBuffer;)V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
+  (JNIEnv *env, jclass thisCls, jobject rbpBuffer){
+  //TODO
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpConnect
+ * Signature: (JII)V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jint hostIp, jint port){
+  //TODO
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpRDMAWrite
+ * Signature: (IJJ[J)V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
+  (JNIEnv *env, jclass thisCls, jint clientIp, jlong offset, jlong length, jlongArray pageList){
+  //TODO
+}
+
