@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <infiniband/verbs.h>
-#include <map.h>
+#include "map.h"
 
   ////////////////////////////////////////////////
  // Definition of structures.                  //
@@ -64,6 +64,7 @@ struct rdma_conn {
   uint32_t                l_rkey,r_rkey;
   uint64_t                l_vaddr,r_vaddr;
 };
+#define RDMA_WRID	(3)
 
   ////////////////////////////////////////////////
  // Definition of RDMA PRIMITIVES.             //
@@ -122,10 +123,10 @@ extern int allocateBuffer(RDMACtxt *ctxt, void **buf);
  * -4  bug:could not find buffer
  */
 extern int releaseBuffer(RDMACtxt *ctxt, const void *buf);
-/* connect(): connect the client context to a blog context.
+/* rdmaConnect(): connect the client context to a blog context.
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized client context
- * hostip:  the ip address of blog context(datanode)
+ * hostip:  the ip address of blog context(datanode), the value is decided by sockaddr_in.sin_addr.s_addr, please refer to "man 7 ip"
  * port:    the port where blog daemon thread is listening on
  * RETURN VALUE
  * 0 for success
@@ -134,9 +135,9 @@ extern int releaseBuffer(RDMACtxt *ctxt, const void *buf);
  * -3  lock error
  * -4  buffer is being allocated
  */
-extern int connect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
+extern int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
 /*
- * disconnect(): disconnect the client context from a blog context.
+ * rdmaDisconnect(): disconnect the client context from a blog context.
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized client context.
  * hostip:  the ip address of blog context(datanode), hostip==0 means all connected blog contexts
@@ -145,7 +146,7 @@ extern int connect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
  * 0 for success
  * others for failure
  */
-extern int disconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
+extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
 /* rdmaWrite(): write a list of pages using RDMA.
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized blog context.
@@ -161,5 +162,9 @@ extern int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vad
  // Definition of internal tools               //
 ////////////////////////////////////////////////
 inline int isBlogCtxt(const RDMACtxt * ctxt){return (ctxt->bitmap==NULL);}
+/*
+ * get int ip from string.
+ */
+inline const uint32_t getip(const char* ipstr){return (const uint32_t)inet_addr(ipstr);}
 
 #endif//__INFINIBANDRDMA_H__

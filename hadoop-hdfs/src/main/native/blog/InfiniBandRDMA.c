@@ -4,7 +4,11 @@
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <errno.h>
-#include <InfiniBandRDAM.h>
+#include <netdb.h>
+#include <pthread.h>
+#include <infiniband/verbs.h>
+#include <sys/stat.h>
+#include "InfiniBandRDMA.h"
 
   ////////////////////////////////////////////////
  // Internal tools.                            //
@@ -18,7 +22,7 @@ static int die(const char *reason){
   return -1;
 }
 
-#define MAP_DEFINE(con,RDMAConnection);
+MAP_DEFINE(con,RDMAConnection,10);
 
 #define MAX_SQE (100)
 
@@ -69,14 +73,14 @@ static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
 
 static void setibcfg(char *ibcfg, RDMAConnection *conn){
   sprintf(ibcfg, "%04x:%06x:%06x:%08x:%016Lx",
-    conn->l_lid, conn->l_qpn, conn->l_psn, conn->l_rkey, conn->l_vaddr);
+    conn->l_lid, conn->l_qpn, conn->l_psn, conn->l_rkey, (unsigned long long)conn->l_vaddr);
 }
 
 static void destroyRDMAConn(RDMAConnection *conn){
   if(conn->scq)ibv_destroy_cq(conn->scq);
   if(conn->rcq)ibv_destroy_cq(conn->rcq);
   if(conn->qp)ibv_destroy_qp(conn->qp);
-  if(conn->comp_channel)ibv_destroy_comp_channel(conn->ch);
+  if(conn->ch)ibv_destroy_comp_channel(conn->ch);
 }
 
   ////////////////////////////////////////////////
@@ -113,7 +117,7 @@ static void* blog_rdma_daemon_routine(void* param){
     uint64_t cipkey = (uint64_t)clientip;
     int bDup;
     // STEP 4 - if this is included in map
-    MAP_LOCK(con, ctxt->con_map, cipkey, "r");
+    MAP_LOCK(con, ctxt->con_map, cipkey, 'r');
     RDMAConnection *rdmaConn = NULL, *readConn = NULL;
     bDup = (MAP_READ(con, ctxt->con_map, cipkey, &readConn)==0);
     MAP_UNLOCK(con, ctxt->con_map, cipkey);
@@ -140,7 +144,7 @@ static void* blog_rdma_daemon_routine(void* param){
         .max_inline_data = 0
       }
     };
-    TEST_Z(ramdConn->qp=ibv_create_qp(ctxt->pd,&qp_init_attr),"Could not create queue pair, ibv_create_qp");
+    TEST_Z(rdmaConn->qp=ibv_create_qp(ctxt->pd,&qp_init_attr),"Could not create queue pair, ibv_create_qp");
     qp_change_state_init(rdmaConn->qp,rdmaConn->port);
     struct ibv_port_attr port_attr;
     TEST_Z(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could not get port attributes, ibv_query_port");
@@ -163,7 +167,7 @@ static void* blog_rdma_daemon_routine(void* param){
       return NULL;
     }
     int parsed = sscanf(msg, "%x:%x:%x:%x:%Lx",
-    &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,&rdmaConn->r_vaddr);
+    &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,(long long unsigned*)&rdmaConn->r_vaddr);
     if(parsed!=5){
       fprintf(stderr, "Could not parse message from peer.");
       return NULL;
@@ -171,8 +175,8 @@ static void* blog_rdma_daemon_routine(void* param){
     /// change pair to RTS
     qp_change_state_rts(rdmaConn->qp,rdmaConn);
     // STEP 7 Put the connection to map.
-    MAP_LOCK(con, ctxt->con_map, cipkey, "w");
-    if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, &rdmaConn)==0){
+    MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
+    if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, rdmaConn)==0){
       MAP_UNLOCK(con, ctxt->con_map, cipkey);
       close(connfd);
       destroyRDMAConn(rdmaConn);
@@ -189,7 +193,7 @@ int initializeContext(
   const uint32_t psz,   // pool size
   const uint32_t align, // alignment
   const uint16_t port){ // port number
-  ibv_device_attr dev_attr;
+  struct ibv_device_attr dev_attr;
   // client/blog test
   int bClient = (port==0);
   // initialize sizes and counters
@@ -222,13 +226,13 @@ int initializeContext(
   ctxt->max_cq  = dev_attr.max_cq;
   ctxt->max_cqe = dev_attr.max_cqe;
   // initialize mutex lock
-  TEST_Z(pthread_mutex_init(&ctxt->lock,NULL));
+  TEST_Z(pthread_mutex_init(&ctxt->lock,NULL), "Could not initialize context mutex");
   // con_map
   TEST_NZ(ctxt->con_map = MAP_INITIALIZE(con), "Could not initialize RDMA connection map");
   if(bClient){
     // client: bitmap
-    TEST_NZ(ctxt->bitmap = (uint8_t*)malloc(RDMA_CTXT_BYTES_BITMAP(c)));
-    memset(ctxt->bitmap, 0, RDMA_CTXT_BYTES_BITMAP(c));
+    TEST_NZ(ctxt->bitmap = (uint8_t*)malloc(RDMA_CTXT_BYTES_BITMAP(ctxt)), "Could not allocate ctxt bitmap");
+    memset(ctxt->bitmap, 0, RDMA_CTXT_BYTES_BITMAP(ctxt));
   }else{
     // blog: daemon thread
     TEST_Z(pthread_create(&ctxt->daemon, NULL,
@@ -253,13 +257,13 @@ int destroyContext(RDMACtxt *ctxt){
   }
   // STEP 2 - destroy Context
   if(ctxt->mr)ibv_dereg_mr(ctxt->mr);
-  if(ctxt->pd)ibv_alloc_pd(ctxt->pd);
+  if(ctxt->pd)ibv_dealloc_pd(ctxt->pd);
   if(ctxt->ctxt)ibv_close_device(ctxt->ctxt);
-  if(pool)free(pool);
-  if(port){//blog
+  if(ctxt->pool)free(ctxt->pool);
+  if(ctxt->port){//blog
     pthread_kill(ctxt->daemon, 9);
   }else{//client
-    free(bitmap);
+    free(ctxt->bitmap);
   }
   return 0;
 }
@@ -272,7 +276,7 @@ int allocatePageArray(RDMACtxt *ctxt, void **pages, int num){
   }
   // STEP 2 allocate pages
   if(num>RDMA_CTXT_NFPAGE(ctxt)){//we don't have enough space
-    fprintf(stderr,"allocatePageArray():Could not allocate %d pages, because we have only %d pages left.\n",num,RDMA_CTXT_NFPAGE(ctxt));
+    fprintf(stderr,"allocatePageArray():Could not allocate %d pages, because we have only %ld pages left.\n",num,RDMA_CTXT_NFPAGE(ctxt));
     return -2;
   }
   if(pthread_mutex_lock(&ctxt->lock)!=0){
@@ -282,11 +286,11 @@ int allocatePageArray(RDMACtxt *ctxt, void **pages, int num){
 
   if(num>RDMA_CTXT_NFPAGE(ctxt)){//we don't have enough pages
     pthread_mutex_unlock(&ctxt->lock);
-    fprintf(stderr,"allocatePageArray():Could not allocate %d pages, because we have only %d pages left.\n",num);
+    fprintf(stderr,"allocatePageArray():Could not allocate %d pages, because we have only %ld pages left.\n",num,RDMA_CTXT_NFPAGE(ctxt));
     return -2;
   }
 
-  &pages = ctxt->pool + (ctxt->cnt << ctxt->align);
+  *pages = ctxt->pool + (ctxt->cnt << ctxt->align);
   ctxt->cnt += num;
   
   if(pthread_mutex_unlock(&ctxt->lock)!=0){
@@ -304,7 +308,7 @@ int allocateBuffer(RDMACtxt *ctxt, void **buf){
   }
   // STEP 2 test if we have enough space
   if(!RDMA_CTXT_NFBUF(ctxt)){//we don't have enough space
-    fprintf(stderr,"allocateBuffer():Could not allocate buffer because we have %d pages left.\n",RDMA_CTXT_NFPAGE(ctxt));
+    fprintf(stderr,"allocateBuffer():Could not allocate buffer because we have %ld pages left.\n",RDMA_CTXT_NFPAGE(ctxt));
     return -2;
   }
   
@@ -315,7 +319,7 @@ int allocateBuffer(RDMACtxt *ctxt, void **buf){
 
   if(!RDMA_CTXT_NFBUF(ctxt)){//we don't have enough space
     pthread_mutex_unlock(&ctxt->lock);
-    fprintf(stderr,"allocateBuffer():Could not allocate buffer because we have %d pages left.\n",RDMA_CTXT_NFPAGE(ctxt));
+    fprintf(stderr,"allocateBuffer():Could not allocate buffer because we have %ld pages left.\n",RDMA_CTXT_NFPAGE(ctxt));
     return -2;
   }
 
@@ -323,24 +327,24 @@ int allocateBuffer(RDMACtxt *ctxt, void **buf){
   uint32_t nbyte,nbit;
   /// 3.1 find the byte
   for(nbyte=0;nbyte<RDMA_CTXT_BYTES_BITMAP(ctxt);nbyte++){
-    if(bitmap[nbyte]==0xff || 
-      (ctxt->psz-ctxt->align == 2 && bitmap[nbyte] == 0xf0) ||
-      (ctxt->psz-ctxt->align == 1 && bitmap[nbyte] == 0xc0) ||
-      (ctxt->psz-ctxt->align == 0 && bitmap[nbyte] == 0xa0))
+    if(ctxt->bitmap[nbyte]==0xff || 
+      (ctxt->psz-ctxt->align == 2 && ctxt->bitmap[nbyte] == 0xf0) ||
+      (ctxt->psz-ctxt->align == 1 && ctxt->bitmap[nbyte] == 0xc0) ||
+      (ctxt->psz-ctxt->align == 0 && ctxt->bitmap[nbyte] == 0xa0))
       continue;
   }
   if(nbyte==RDMA_CTXT_BYTES_BITMAP(ctxt)){
     pthread_mutex_unlock(&ctxt->lock);
-    fprintf(stderr,"allocateBuffer():Could not allocate buffer: we should have %d pages left buf found none [type I].\n",RDMA_CTXT_NFPAGE(ctxt));
+    fprintf(stderr,"allocateBuffer():Could not allocate buffer: we should have %ld pages left buf found none [type I].\n",RDMA_CTXT_NFPAGE(ctxt));
     return -4;
   }
   /// 3.2 find the bit
   nbit=RDMA_CTXT_BITS_BITMAP(ctxt)&0xf;
   while(--nbit >= 0)
-    if((0x1<<nbit)&bitmap[nbyte])continue;
+    if((0x1<<nbit)&ctxt->bitmap[nbyte])continue;
   if(nbit<0){
     pthread_mutex_unlock(&ctxt->lock);
-    fprintf(stderr,"allocateBuffer():Could not allocate buffer: we should have %d pages left buf found none [type II].\n",RDMA_CTXT_NFPAGE(ctxt));
+    fprintf(stderr,"allocateBuffer():Could not allocate buffer: we should have %ld pages left buf found none [type II].\n",RDMA_CTXT_NFPAGE(ctxt));
     return -4;
   }
   *buf = ctxt->pool+(8*nbyte+(8-nbit))*RDMA_CTXT_BUF_SIZE(ctxt);
@@ -361,11 +365,11 @@ int releaseBuffer(RDMACtxt *ctxt, const void *buf){
   }
   // STEP 2 validate buf address
   uint32_t nbyte,nbit;
-  nbyte = ((buf-pool)/RDMA_CTXT_BUF_SIZE(ctxt))>>3;
-  nbit  = ((buf-pool)/RDMA_CTXT_BUF_SIZE(ctxt))&7;
-  if(((uint64_t)(buf-pool))%RDMA_CTXT_BUF_SIZE(ctxt)!=0 ||
-      buf<pool ||
-      buf>=pool+RDMA_CTXT_POOL_SIZE(ctxt)){
+  nbyte = ((buf-ctxt->pool)/RDMA_CTXT_BUF_SIZE(ctxt))>>3;
+  nbit  = ((buf-ctxt->pool)/RDMA_CTXT_BUF_SIZE(ctxt))&7;
+  if(((uint64_t)(buf-ctxt->pool))%RDMA_CTXT_BUF_SIZE(ctxt)!=0 ||
+      buf<ctxt->pool ||
+      buf>=ctxt->pool+RDMA_CTXT_POOL_SIZE(ctxt)){
     fprintf(stderr,"releaseBuffer():invalid buf pointer=%p\n",buf);
     return -2;
   }
@@ -385,5 +389,159 @@ int releaseBuffer(RDMACtxt *ctxt, const void *buf){
     fprintf(stderr,"releaseBuffer():Could not release lock.");
     return -3;
   }
+  return 0;
+}
+
+int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
+  // STEP 0: if connection exists?
+  const uint64_t cipkey = (const uint64_t)hostip;
+  int bDup;
+  MAP_LOCK(con, ctxt->con_map, cipkey, 'r' );
+  RDMAConnection *rdmaConn = NULL, *readConn = NULL;
+  bDup = (MAP_READ(con,ctxt->con_map,cipkey,&readConn)==0);
+  MAP_UNLOCK(con, ctxt->con_map, cipkey);
+  if(bDup){
+    fprintf(stderr,"Cannot connect because the connection is established already.");
+    return -1; // the connection exists already.
+  }
+  // STEP 1: connect to server
+  struct sockaddr_in svraddr;
+  int connfd = socket(AF_INET, SOCK_STREAM, 0);
+  bzero((char*)&svraddr,sizeof(svraddr));
+  svraddr.sin_family = AF_INET;
+  svraddr.sin_port = htons(port);
+  svraddr.sin_addr.s_addr = hostip;
+  if(connect(connfd,(const struct sockaddr *)&svraddr,sizeof(svraddr))<0){
+    fprintf(stderr,"cannot connect to server:%x:%d\n",hostip,port);
+    return -2;
+  }
+  // STEP 2: setup connection
+  rdmaConn = (RDMAConnection*)malloc(sizeof(RDMAConnection));
+  rdmaConn->scq  = NULL;
+  rdmaConn->rcq  = NULL;
+  rdmaConn->qp   = NULL;
+  rdmaConn->ch   = NULL;
+  rdmaConn->port = 1; // always use 1?
+  TEST_Z(rdmaConn->ch=ibv_create_comp_channel(ctxt->ctxt),"Could not create completion channel, ibv_create_comp_channel");
+  TEST_Z(rdmaConn->rcq=ibv_create_cq(ctxt->ctxt,1,NULL,NULL,0),"Could not create receive completion queue, ibv_create_cq");
+  TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_SQE,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
+  struct ibv_qp_init_attr qp_init_attr = {
+    .send_cq = rdmaConn->scq,
+    .recv_cq = rdmaConn->rcq,
+    .qp_type = IBV_QPT_RC,
+    .cap = {
+      .max_send_wr = 1, // actuall the client does not send
+      .max_recv_wr = MAX_SQE, // MAX_SQE must less than ctxt->max_cqe
+      .max_send_sge = 1,
+      .max_recv_sge = ctxt->max_sge,
+      .max_inline_data = 0
+    }
+  };
+  TEST_Z(rdmaConn->qp=ibv_create_qp(ctxt->pd,&qp_init_attr),"Could not create queue pair for read, ibv_create_qp");
+  qp_change_state_init(rdmaConn->qp,rdmaConn->port);
+  struct ibv_port_attr port_attr;
+  TEST_Z(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could get port attributes, ibv_query_port");
+  rdmaConn->l_lid = port_attr.lid;
+  rdmaConn->l_qpn = rdmaConn->qp->qp_num;
+  rdmaConn->l_psn = lrand48() & 0xffffff;
+  rdmaConn->l_rkey = ctxt->mr->rkey;
+  rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
+  char msg[sizeof "0000:000000:000000:00000000:0000000000000000"];
+  // STEP 3: exchange the RDMA info
+  //// client --> server | connection string
+  setibcfg(msg,rdmaConn);
+  if(write(connfd,msg, sizeof msg)!=sizeof msg){
+    perror("Could not send ibcfg to peer");
+    return -3;
+  }
+  //// server --> client | connection string | put connection to map
+  if(read(connfd, msg, sizeof msg)!=sizeof msg){
+    perror("Could not receive ibcfg from peer.");
+    return -4;
+  }
+  int parsed = sscanf(msg, "%x:%x:%x:%x:%Lx", &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,(long long unsigned*)&rdmaConn->r_vaddr);
+  if(parsed!=5){
+    fprintf(stderr, "Could not parse message from peer.");
+    return -5;
+  }
+  close(connfd);
+  /// change pair to RTR
+  qp_change_state_rtr(rdmaConn->qp,rdmaConn);
+  // STEP 4: setup the RDMA map
+  MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
+  if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, rdmaConn)==0){
+    MAP_UNLOCK(con, ctxt->con_map, cipkey);
+    close(connfd);
+    destroyRDMAConn(rdmaConn);
+    free(rdmaConn);
+    return -6;
+  }
+  MAP_UNLOCK(con, ctxt->con_map, cipkey);
+  return 0;
+}
+
+int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
+  // we do not disconnect it so far for experiment...
+  // A good way to do this is set up a listening thread at each node.
+  return -1;
+}
+
+int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist){
+  const uint64_t cipkey = (const uint64_t)hostip;
+  RDMAConnection *rdmaConn = NULL;
+  // STEP 1: get the connection
+  MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
+  if(MAP_READ(con, ctxt->con_map, cipkey, &rdmaConn)!=0){
+    fprintf(stderr, "Cannot find the context for ip:%lx",cipkey);
+    return -1;
+  }
+  // STEP 2: finish write and return
+  int len=0,i;
+  while(pagelist[len++]!=NULL);
+  struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*len);
+  for(i=0;i<len;i++){
+    (sge_list+i)->addr = (uintptr_t)pagelist[i];
+    (sge_list+i)->length = RDMA_CTXT_PAGE_SIZE(ctxt);
+    (sge_list+i)->lkey = rdmaConn->l_rkey;
+  }
+  struct ibv_send_wr wr;
+  wr.wr.rdma.remote_addr = r_vaddr;
+  wr.wr.rdma.rkey = rdmaConn->r_rkey;
+  wr.wr_id = RDMA_WRID;
+  wr.sg_list = sge_list;
+  wr.num_sge = len;
+  wr.opcode = IBV_WR_RDMA_WRITE;
+  wr.send_flags = IBV_SEND_SIGNALED;
+  wr.next = NULL;
+  struct ibv_send_wr *bad_wr;
+  TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_requ_notify_cq()");
+  int rSend = 0;
+  rSend = ibv_post_send(rdmaConn->qp,&wr,&bad_wr);
+  if(rSend!=0){
+    fprintf(stderr,"RDMA write failed...");
+    return -1; // write failed.
+  }
+  struct ibv_wc *wc = (struct ibv_wc*)malloc(MAX_SQE*sizeof(struct ibv_wc));
+  // wait on completion queue
+  void *cq_ctxt;
+  TEST_NZ(ibv_get_cq_event(rdmaConn->ch, &rdmaConn->scq, &cq_ctxt), "ibv_get_cq_event failed!");
+  ibv_ack_cq_events(rdmaConn->scq,1);
+  // get completion event.
+  int ne=0;
+  do{
+    ne = ibv_poll_cq(rdmaConn->scq,MAX_SQE,wc);
+  }while(ne==0);
+  if(ne<0){
+    fprintf(stderr, "%s: poll CQ failed %d\n", __func__, ne);
+    return -2;
+  }
+  for(i=0;i<ne;i++)
+  if((wc+i)->status != IBV_WC_SUCCESS) {
+    fprintf(stderr, "%s: rdma write failed.\n",__func__);
+    return -3;
+  }
+  free(sge_list);
+  free(wc);
+  MAP_UNLOCK(con, ctxt->con_map, cipkey);
   return 0;
 }
