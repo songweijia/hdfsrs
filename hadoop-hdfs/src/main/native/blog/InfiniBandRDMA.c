@@ -70,6 +70,30 @@ static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
   return 0;
 }
 
+static int qp_change_state_rts(struct ibv_qp *qp, RDMAConnection * conn){
+  qp_change_state_rtr(qp, conn);
+  struct ibv_qp_attr *attr;
+  attr = malloc(sizeof *attr);
+  memset(attr, 0, sizeof *attr);
+
+  attr->qp_state = IBV_QPS_RTS;
+  attr->timeout = 20;
+  attr->retry_cnt = 7;
+  attr->rnr_retry = 7;
+  attr->sq_psn = conn->l_psn;
+  attr->max_rd_atomic = 1;
+
+  TEST_NZ(ibv_modify_qp(qp, attr,
+    IBV_QP_STATE |
+    IBV_QP_TIMEOUT |
+    IBV_QP_RETRY_CNT |
+    IBV_QP_RNR_RETRY |
+    IBV_QP_SQ_PSN |
+    IBV_QP_MAX_QP_RD_ATOMIC),
+    "Could not modify QP to RTS State");
+  free(attr);
+  return 0;
+}
 
 static void setibcfg(char *ibcfg, RDMAConnection *conn){
   sprintf(ibcfg, "%04x:%06x:%06x:%08x:%016Lx",
@@ -544,4 +568,12 @@ int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, con
   free(wc);
   MAP_UNLOCK(con, ctxt->con_map, cipkey);
   return 0;
+}
+
+inline int isBlogCtxt(const RDMACtxt * ctxt){
+  return (ctxt->bitmap==NULL);
+}
+
+inline const uint32_t getip(const char* ipstr){
+  return (const uint32_t)inet_addr(ipstr);
 }

@@ -161,10 +161,10 @@ extern int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vad
   ////////////////////////////////////////////////
  // Definition of internal tools               //
 ////////////////////////////////////////////////
-inline int isBlogCtxt(const RDMACtxt * ctxt){return (ctxt->bitmap==NULL);}
+inline int isBlogCtxt(const RDMACtxt * ctxt);
 /*
  * get int ip from string.
  */
-inline const uint32_t getip(const char* ipstr){return (const uint32_t)inet_addr(ipstr);}
+inline const uint32_t getip(const char* ipstr);
 
 #endif//__INFINIBANDRDMA_H__
