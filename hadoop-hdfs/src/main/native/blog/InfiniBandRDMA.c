@@ -200,7 +200,7 @@ static void* blog_rdma_daemon_routine(void* param){
     qp_change_state_rts(rdmaConn->qp,rdmaConn);
     // STEP 7 Put the connection to map.
     MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
-    if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, rdmaConn)==0){
+    if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, rdmaConn)!=0){
       MAP_UNLOCK(con, ctxt->con_map, cipkey);
       close(connfd);
       destroyRDMAConn(rdmaConn);
@@ -430,6 +430,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
     return -1; // the connection exists already.
   }
   // STEP 1: connect to server
+printf("rdmaConnect:S1\n");
   struct sockaddr_in svraddr;
   int connfd = socket(AF_INET, SOCK_STREAM, 0);
   bzero((char*)&svraddr,sizeof(svraddr));
@@ -441,6 +442,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
     return -2;
   }
   // STEP 2: setup connection
+printf("rdmaConnect:S2\n");
   rdmaConn = (RDMAConnection*)malloc(sizeof(RDMAConnection));
   rdmaConn->scq  = NULL;
   rdmaConn->rcq  = NULL;
@@ -473,6 +475,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
   rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
   char msg[sizeof "0000:000000:000000:00000000:0000000000000000"];
   // STEP 3: exchange the RDMA info
+printf("rdmaConnect:S3\n");
   //// client --> server | connection string
   setibcfg(msg,rdmaConn);
   if(write(connfd,msg, sizeof msg)!=sizeof msg){
@@ -493,8 +496,9 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
   /// change pair to RTR
   qp_change_state_rtr(rdmaConn->qp,rdmaConn);
   // STEP 4: setup the RDMA map
+printf("rdmaConnect:S4\n");
   MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
-  if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, rdmaConn)==0){
+  if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, rdmaConn)!=0){
     MAP_UNLOCK(con, ctxt->con_map, cipkey);
     close(connfd);
     destroyRDMAConn(rdmaConn);
