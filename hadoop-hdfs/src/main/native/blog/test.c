@@ -17,7 +17,6 @@ static int die(const char *reason){
 // -z poolsize order, default is 20 for 1MB
 // -a page/buffer size order, default value is 12 for 4KB
 int main(int argc, char **argv){
-
   int c;
   int mode = -1; // 0 - client; 1 - blog; -1 - init
   char *host=NULL;
@@ -59,12 +58,12 @@ int main(int argc, char **argv){
     // client
     RDMACtxt rdma_ctxt;
     // step 1: initialize client
-    TEST_Z(initializeContext(&rdma_ctxt,psz,align,0),"initializeContext");
+    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,0),"initializeContext");
     // step 2: connect
-    TEST_Z(rdmaConnect(&rdma_ctxt,inet_addr(host),port),"rdmaConnect");
+    TEST_NZ(rdmaConnect(&rdma_ctxt,inet_addr(host),port),"rdmaConnect");
     // step 3: allocate buffer
     void *buf;
-    TEST_Z(allocateBuffer(&rdma_ctxt, &buf),"allocateBuffer");
+    TEST_NZ(allocateBuffer(&rdma_ctxt, &buf),"allocateBuffer");
     // step 4: initialize buffer
     bzero(buf,1<<align);
     printf("buffer address=%p,please press enter when the data has being written\n",buf);
@@ -79,7 +78,7 @@ int main(int argc, char **argv){
     RDMACtxt rdma_ctxt;
     int i;
     // step 1: initialize server
-    TEST_Z(initializeContext(&rdma_ctxt,psz,align,port),"initializeContext");
+    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,port),"initializeContext");
     for(i=0;i<(1<<(psz-align));i++)
       memset((void*)rdma_ctxt.pool+(i<<align),'0'+i,1<<align);
     // step 2:
@@ -110,7 +109,13 @@ int main(int argc, char **argv){
       free(ids);
     }
   }else{
-    fprintf(stderr,"Please specify mode: -c for client -s for blog server\n");
+    fprintf(stderr,"USAGE: -c for client -s for blog server\n");
+    fprintf(stderr,"\t-c client mode\n");
+    fprintf(stderr,"\t-s server mode\n");
+    fprintf(stderr,"\t-h <hostip>\n");
+    fprintf(stderr,"\t-p <port>\n");
+    fprintf(stderr,"\t-z <psz> pool size, default to 20 (1MB)\n");
+    fprintf(stderr,"\t-a <align> page/buf size, default to 12 (4KB page/buffer)\n");
     return -1;
   }
   exit(0);

@@ -124,11 +124,11 @@ static void* blog_rdma_daemon_routine(void* param){
   int n,connfd;
   ///struct sockaddr_in sin;
   TEST_N(asprintf(&service,"%d", ctxt->port), "ERROR writing port number to port string.");
-  TEST_N(n=getaddrinfo(NULL,service,&hints,&res), "getaddrinfo threw error");
+  TEST_NZ(n=getaddrinfo(NULL,service,&hints,&res), "getaddrinfo threw error");
   TEST_N(sockfd=socket(res->ai_family, res->ai_socktype, res->ai_protocol), "Could not create server socket");
   setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &n, sizeof n);
   // STEP 2 binding
-  TEST_N(bind(sockfd,res->ai_addr,res->ai_addrlen), "Could not bind addr to socket");
+  TEST_NZ(bind(sockfd,res->ai_addr,res->ai_addrlen), "Could not bind addr to socket");
   listen(sockfd, 1);
   // STEP 3 waiting for requests
   while(1){
@@ -171,7 +171,7 @@ static void* blog_rdma_daemon_routine(void* param){
     TEST_Z(rdmaConn->qp=ibv_create_qp(ctxt->pd,&qp_init_attr),"Could not create queue pair, ibv_create_qp");
     qp_change_state_init(rdmaConn->qp,rdmaConn->port);
     struct ibv_port_attr port_attr;
-    TEST_Z(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could not get port attributes, ibv_query_port");
+    TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could not get port attributes, ibv_query_port");
     rdmaConn->l_lid = port_attr.lid;
     rdmaConn->l_qpn = rdmaConn->qp->qp_num;
     rdmaConn->l_psn = lrand48() & 0xffffff;
@@ -220,6 +220,7 @@ int initializeContext(
   struct ibv_device_attr dev_attr;
   // client/blog test
   int bClient = (port==0);
+  ctxt->port = port;
   // initialize sizes and counters
   ctxt->psz   = psz;
   ctxt->align = align;
@@ -244,22 +245,22 @@ int initializeContext(
       RDMA_CTXT_POOL_SIZE(ctxt),
       bClient?(IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE):(IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE)),
     "Could not allocate mr, ibv_reg_mr. Do you have root privileges?");
-  TEST_Z(ibv_query_device(ctxt->ctxt,&dev_attr),"Could not query device values");
+  TEST_NZ(ibv_query_device(ctxt->ctxt,&dev_attr),"Could not query device values");
   ctxt->max_sge = dev_attr.max_sge;
   ctxt->max_mr  = dev_attr.max_mr;
   ctxt->max_cq  = dev_attr.max_cq;
   ctxt->max_cqe = dev_attr.max_cqe;
   // initialize mutex lock
-  TEST_Z(pthread_mutex_init(&ctxt->lock,NULL), "Could not initialize context mutex");
+  TEST_NZ(pthread_mutex_init(&ctxt->lock,NULL), "Could not initialize context mutex");
   // con_map
-  TEST_NZ(ctxt->con_map = MAP_INITIALIZE(con), "Could not initialize RDMA connection map");
+  TEST_Z(ctxt->con_map = MAP_INITIALIZE(con), "Could not initialize RDMA connection map");
   if(bClient){
     // client: bitmap
-    TEST_NZ(ctxt->bitmap = (uint8_t*)malloc(RDMA_CTXT_BYTES_BITMAP(ctxt)), "Could not allocate ctxt bitmap");
+    TEST_Z(ctxt->bitmap = (uint8_t*)malloc(RDMA_CTXT_BYTES_BITMAP(ctxt)), "Could not allocate ctxt bitmap");
     memset(ctxt->bitmap, 0, RDMA_CTXT_BYTES_BITMAP(ctxt));
   }else{
     // blog: daemon thread
-    TEST_Z(pthread_create(&ctxt->daemon, NULL,
+    TEST_NZ(pthread_create(&ctxt->daemon, NULL,
         blog_rdma_daemon_routine, (void*)ctxt),
       "Could not initialize the daemon routine");
   }
@@ -464,7 +465,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
   TEST_Z(rdmaConn->qp=ibv_create_qp(ctxt->pd,&qp_init_attr),"Could not create queue pair for read, ibv_create_qp");
   qp_change_state_init(rdmaConn->qp,rdmaConn->port);
   struct ibv_port_attr port_attr;
-  TEST_Z(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could get port attributes, ibv_query_port");
+  TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could get port attributes, ibv_query_port");
   rdmaConn->l_lid = port_attr.lid;
   rdmaConn->l_qpn = rdmaConn->qp->qp_num;
   rdmaConn->l_psn = lrand48() & 0xffffff;
