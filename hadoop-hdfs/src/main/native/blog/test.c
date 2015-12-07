@@ -23,7 +23,7 @@ int main(int argc, char **argv){
   unsigned short port=0;
   uint32_t psz=20;// the default pool size is 1MB.
   uint32_t align=12;// the default page or buffer size is 4KB.
-  while((c=getopt(argc,argv,"csh:p:"))!=-1){
+  while((c=getopt(argc,argv,"csh:p:a:z:"))!=-1){
     switch(c){
     case 'c':
       if(mode!=-1){
@@ -63,16 +63,19 @@ int main(int argc, char **argv){
     TEST_NZ(rdmaConnect(&rdma_ctxt,inet_addr(host),port),"rdmaConnect");
     // step 3: allocate buffer
     void *buf;
-    TEST_NZ(allocateBuffer(&rdma_ctxt, &buf),"allocateBuffer");
-    // step 4: initialize buffer
-    bzero(buf,1<<align);
-    printf("buffer address=%p,please press enter when the data has being written\n",buf);
-    getchar();
-    // step 5: wait for data being written
-    printf("Data(len=%d):[%c...%c...%c]\n",1<<align,
-      *(char *)buf,
-      *(char *)(buf+(1<<(align-1))-1),
-      *(char *)(buf+(1<<align)-1));
+    while(1){
+      TEST_NZ(allocateBuffer(&rdma_ctxt, &buf),"allocateBuffer");
+      // step 4: initialize buffer
+      bzero(buf,1<<align);
+      printf("ipkey=%llx,vaddr=%p\n",(unsigned long long)inet_addr(host),buf);
+      getchar();
+      // step 5: wait for data being written
+      printf("Data(len=%d):[%c...%c...%c...%c]\n",1<<align,
+        *(char *)buf,
+        *(char *)(buf+(1<<12)),
+        *(char *)(buf+(2<<12)),
+        *(char *)(buf+(3<<12)));
+    }
   }else if(mode == 1){
     // server
     RDMACtxt rdma_ctxt;
@@ -84,29 +87,30 @@ int main(int argc, char **argv){
     // step 2:
     while(1){
       int pns[4];
-      uint64_t len, *ids;
+      uint64_t len, *ids, rvaddr;
+      int cipkey;
       int i,j;
       RDMAConnection *conn;
+      printf("please give the remote ip(like:):\n");
+      scanf("%x",&cipkey);
+      printf("please give the remote address(like:):\n");
+      scanf("%p",(void **)&rvaddr);
       printf("please name four pages to write (like 1 2 3 4):\n");
       scanf("%d %d %d %d",&pns[0],&pns[1],&pns[2],&pns[3]);
-      printf("OK, I'm writing...");
+      printf("OK, I'm writing to client:%x\n",cipkey);
       // step 3: write it to all clients
-      len = MAP_LENGTH(con, rdma_ctxt.con_map);
-      ids = MAP_GET_IDS(con, rdma_ctxt.con_map, len);
-      for(i=0;i<len;i++){
-
-        if(MAP_READ(con, rdma_ctxt.con_map, ids[i], &conn) != 0){
-          fprintf(stderr, "cannot get connection from connection map.");
-          return -1;
-        }
-
-        const void *pagelist[4];
-        for(j=0;j<4;j++)
-          pagelist[j] = (void*)conn->r_vaddr+(pns[j]<<align);
-        rdmaWrite(&rdma_ctxt,(const uint32_t)ids[i],conn->r_vaddr,pagelist);
-        fprintf(stdout, "writing to client %ld ... done.\n",ids[i]);
+      if(MAP_READ(con,rdma_ctxt.con_map,(uint64_t)cipkey,&conn) != 0){
+        fprintf(stderr, "cannot get connection %x from connection map.\n",cipkey);
+        return -1;
       }
-      free(ids);
+      const void *pagelist[4];
+      for(j=0;j<4;j++)
+      {
+        pagelist[j] = (void*)conn->l_vaddr+(pns[j]<<align);
+        printf("rdmaWrite pagelist[%d]=%p\n",j,pagelist[j]);
+      }
+      rdmaWrite(&rdma_ctxt,cipkey,rvaddr,pagelist,4);
+      fprintf(stdout, "writing to client %x ... done.\n",cipkey);
     }
   }else{
     fprintf(stderr,"USAGE: -c for client -s for blog server\n");

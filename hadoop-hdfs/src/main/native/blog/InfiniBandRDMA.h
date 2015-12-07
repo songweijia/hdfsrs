@@ -153,11 +153,12 @@ extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t 
  * hostip:  the ip address of the client
  * r_vaddr: the remote buffer address
  * pagelist:pages to be written
+ * npage:   number of the pages to be written
  * RETURN VALUE
  * 0 for success
  * others for failure
  */
-extern int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist);
+extern int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist,int npage);
   ////////////////////////////////////////////////
  // Definition of internal tools               //
 ////////////////////////////////////////////////
