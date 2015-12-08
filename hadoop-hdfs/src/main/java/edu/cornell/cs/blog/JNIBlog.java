@@ -250,13 +250,13 @@ public class JNIBlog {
   
   /**
    * function: do RDMA Write, this is called by the DataNode.
-   * @param clientIp
+   * @param clientIp like "192.168.100.1".toByteArra()
    * @param offset
    * @param length
    * @param pageList
    * @throws Exception
    */
-  static public native void rbpRDMAWrite(int clientIp, long offset, long length, long []pageList) throws Exception;
+  public native void rbpRDMAWrite(byte clientIp[], long address, long []pageList) throws Exception;
   
   //////////////////////////////////////////////////////////////////////
   // Tests.

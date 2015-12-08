@@ -1491,7 +1491,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
   (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jbyteArray hostIp, jint port){
   RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
   int ipSize = (int)(*env)->GetArrayLength(env,hostIp);
-  jbyte* ipStr = (jbyte*)malloc(ipSize+1);
+  jbyte ipStr[16];
   (*env)->GetByteArrayRegion(env, hostIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
   uint32_t ipkey = net_addr((const char*)ipStr);
@@ -1507,7 +1507,27 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
  * Signature: (IJJ[J)V
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
-  (JNIEnv *env, jclass thisCls, jint clientIp, jlong offset, jlong length, jlongArray pageList){
+  (JNIEnv *env, jobject thisObj, jbyteArray clientIp, jlong address, jlongArray pageList){
   //TODO
+  // get filesystem
+  filesystem_t *fs = get_filesystem(env,thisObj);
+  // get ipkey
+  int ipSize = (int)(*env)->GetArrayLength(env,clientIp);
+  jbyte ipStr[16];
+  (*env)->GetByteArrayRegion(env, clientIp, 0, ipSize, ipStr);
+  ipStr[ipSize] = 0;
+  uint32_t ipkey = net_addr((const char*)ipStr);
+  // get pagelist
+  int npage = (*env)->GetArrayLength(env,pageList);
+  long *plist = (long*)malloc(sizeof(long)*npage);
+  void **paddrlist = (void**)malloc(sizeof(void*)*npage);
+  (*env)->GetLongArrayRegion(env, pageList, 0, npage, plist);
+  int i;
+  for(i=0; i<npage; i++)
+    paddrlist[i] = (void*)plist[i];
+  // rdma write...
+  int rc = rdmaWrite(fs->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage);
+  if(rc !=0 )
+    fprintf(stderr, "rdmaWrite failed with error code=%d.\n", rc);
 }
 
