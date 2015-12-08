@@ -10,6 +10,7 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.*;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -44,13 +45,14 @@ public class JNIBlog {
    * @param blockSize
    * @param pageSize
    * @param persPath
+   * @param port - the port number for RDMA based Blog
    */
-  public void initialize(MemDatasetManager dsmgr, String bpid, int blockSize, int pageSize, String persPath){
+  public void initialize(MemDatasetManager dsmgr, String bpid, int blockSize, int pageSize, String persPath, int port){
     this.dsmgr = dsmgr;
     this.bpid = bpid;
     this.persPath = persPath;
     // initialize blog
-    initialize((int)blockSize, pageSize, persPath);
+    initialize(1l<<30, (int)blockSize, pageSize, persPath, port);
     // LOAD blockmap
     loadBlockMap();
     Runtime.getRuntime().addShutdownHook(new Thread(){
@@ -125,11 +127,13 @@ public class JNIBlog {
   /**
    * initialization
    * @param blockSize - block size for each block
+   * @param poolSize - memory pool size
    * @param pageSize - page size
    * @param persPath - initialize it
+   * @param port - server port for the RDMA datanode.
    * @return error code, 0 for success.
    */
-  private native int initialize(int blockSize, int pageSize, String persPath);
+  private native int initialize(long poolSize, int blockSize, int pageSize, String persPath, int port);
   
   /**
    * destroy the blog
@@ -205,17 +209,18 @@ public class JNIBlog {
   // The interface for RDMA access library
   public static class RBPBuffer{
     public long handle; // handle to the RDMABufferPool
-    public long offset; // offset of this RBPBuffer in RDMABufferPool
-    public long length; // length of this buffer.
+    public long offset; // offset of this buffer.
+    public ByteBuffer buffer; // the buffer  
   }
   /**
    * function: initialize an RDMA Buffer Pool.
-   * @param size - size of the buffer tool, should be a power of 2. recommended value: (1l<<30)
-   * @param alignment - alignment for the buffer allocation. This prevents external segmentation
+   * @param psz - size of the buffer pool = 1l<<psz.
+   * @param align - alignment for the buffer/page allocation = 1l<<align
+   * @param port - port for the blog server to listen for. ZERO FOR CLIENT.
    * @return handle of the RDMA Block Pool
    * @throws Exception
    */
-  static public native long rbpInitialize(long size, long alignment) throws Exception;
+  static public native long rbpInitialize(int psz, int align, int port) throws Exception;
   /**
    * function: destroy the RDMA buffer Pool.
    * @param size - size of the buffer tool
@@ -223,12 +228,11 @@ public class JNIBlog {
    */
   static public native void rbpDestroy(long hRDMABufferPool) throws Exception;
   /**
-   * function: allocate a buffer.
-   * @param size - buffer size
-   * @return allocated Buffer
+   * function: allocate a block buffer.
+   * @return allocated Block Buffer
    * @throws Exception
    */
-  static public native RBPBuffer rbpAllocateBuffer(long size) throws Exception;
+  static public native RBPBuffer rbpAllocateBlockBuffer() throws Exception;
   /**
    * function: release a buffer.
    * @param buf
@@ -375,7 +379,7 @@ public class JNIBlog {
     long rtc;
   
     writeLine("Begin Initialize.");
-    bl.initialize(null,null,1024*1024, 1024, "testbpid");
+    bl.initialize(null,null,1024*1024, 1024, "testbpid", 0); // TODO: modify
 /*
     writeLine(bl.hlc.toString());
     bl.testBlockCreation(mhlc);

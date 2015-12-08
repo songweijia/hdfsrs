@@ -5,6 +5,7 @@
 #include <jni.h>
 
 #include "map.h"
+#include "InfiniBandRDMA.h"
 
 #define BLOCK_MAP_SIZE 4096
 #define LOG_MAP_SIZE 64
@@ -140,6 +141,7 @@ struct filesystem {
   size_t log_cap;
   size_t log_length;
   log_t *log;
+  RDMACtxt *rdmaCtxt; // RDMA
   pthread_rwlock_t lock;
   blog_writer_ctxt_t bwc;
   pthread_t writer_thrd;

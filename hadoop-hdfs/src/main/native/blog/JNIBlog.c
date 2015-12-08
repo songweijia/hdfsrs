@@ -23,6 +23,14 @@ MAP_DEFINE(snapshot, snapshot_t, SNAPSHOT_MAP_SIZE);
 #define SNAPFILE "snap._dat"
 #define MAX_FNLEN (strlen(BLOGFILE)+strlen(PAGEFILE)+strlen(SNAPFILE))
 
+// some internal tools
+#define LOG2(x) calc_logs(x)
+inline int calc_log2(uint64_t val){
+  int i=0;
+  while((val>>i) == 0 && (i<64) );
+  return i;
+}
+
 static void print_page(page_t *page)
 {
   printf("%s\n", page->data);
@@ -529,13 +537,14 @@ int do_load_snapshot(filesystem_t *fs, int64_t rtc, int64_t eid)
  *   -1 for "log file is corrupted", 
  *   -2 for "page file is correupted".
  *   -3 for "block operation".
+ *   -4 for "unknown errors"
  */
 static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
 {
   struct stat log_stat, page_stat, snap_stat;
   void *plog = (void*)-1, * ppage = (void*)-1, * psnap = (void*)-1;
   disk_log_t *pdle; // disk log entry
-  void *pp, *page_mem;
+  void *pp, *pagelist;
   page_t *pages;
   block_t *block;
   uint64_t *pse; // snapshot entry
@@ -562,32 +571,42 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
     fprintf(stderr, "call mmap on log file descriptor failed");
     loadBlogReturn(-1);
   }
+  if (page_stat.st_size % fs->page_size != 0){
+    fprintf(stderr, "page file size:0x%lx does not seems correct!\n",page_stat.st_size);
+    loadBlogReturn(-4);
+  }
   if ((ppage = mmap(NULL,page_stat.st_size,PROT_READ,MAP_SHARED,page_fd,0)) == (void*) -1) {
     fprintf(stderr, "call mmap on page file descriptor failed");
     loadBlogReturn(-2);
   }
   
   // STEP 2 replay log;
+  // STEP 2.1: preload pages
+  if( page_stat.st_size > 0 && allocatePageArray(fs->rdmaCtxt,&pagelist,page_stat.st_size>>fs->rdmaCtxt->align) ){
+    // allocate page failed.
+    fprintf(stderr, "Cannot allocate page array-(%ld) pages\n", page_stat.st_size>>fs->rdmaCtxt->align);
+    loadBlogReturn(-4);
+  }
+  memcpy(pagelist, ppage, page_stat.st_size);
+  // STEP 2.2: replay logs...
   pdle = (disk_log_t*)plog;
-  pp = ppage;
+  pp = pagelist;
   pthread_rwlock_wrlock(&(fs->lock));
   while (((void*) (pdle + 1)) <= (plog + log_stat.st_size)) {//NOTE: this is gcc extension!!!
     /// STEP 2.1 - log entry
-    page_mem = NULL;
     pages = NULL;
     // skip createBlock or deleteBlock
     if (pdle->pages_offset != -1 && pdle->pages_offset != -2) {
       // allocate page memory
-      page_mem = malloc(fs->page_size*(pdle->pages_length+1));
-      pages = (page_t*) page_mem;
+      // page_mem = malloc(fs->page_size*(pdle->pages_length+1));
+      pages = (page_t*)malloc((pdle->pages_length)*sizeof(page_t*));
       // load page data
-      if (pp + fs->page_size*pdle->pages_length > ppage + page_stat.st_size) {
+      if (pp + fs->page_size*pdle->pages_length > pagelist + page_stat.st_size) {
         fprintf(stderr, "not enough pages exists!");
         loadBlogReturn(-2);
       }
-      memcpy(page_mem + fs->page_size, pp, fs->page_size*pdle->pages_length);
       for (i = 0; i < pdle->pages_length; i++){
-        pages[i].data = (char*) (page_mem + fs->page_size*(i+1));
+        pages[i].data = (char*) (pp + fs->page_size*(i+1));
       }
       pp += fs->page_size * pdle->pages_length;
     }
@@ -638,7 +657,7 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
           block->cap=block->cap<<1;
         block->pages = (page_t **)realloc(block->pages,block->cap*sizeof(page_t*));
         for (i = 0; i < pdle->pages_length; i++){
-          block->pages[pdle->pages_offset+i] = ((page_t*)page_mem) + i;
+          block->pages[pdle->pages_offset+i] = pages + i;
         }
         block->last_entry = log_pos;
       }
@@ -680,7 +699,7 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
  * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *env, jobject thisObj, jint blockSize, jint pageSize, jstring persPath)
+  (JNIEnv *env, jobject thisObj, jlong poolSize, jint blockSize, jint pageSize, jstring persPath, jint port)
 {
   const char * pp = (*env)->GetStringUTFChars(env,persPath,NULL); // get the presistent path
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
@@ -721,6 +740,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->log_cap = 1024;
   filesystem->log_length = 0;
   filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
+  filesystem->rdmaCtxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
+  if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),(const uint16_t)port)){
+    fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
+    (*env)->ReleaseStringUTFChars(env, persPath, pp);
+    return -2;
+  }
   pthread_rwlock_init(&(filesystem->lock), NULL);
   
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
@@ -754,6 +779,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->bwc.page_fd = open(fullpath, O_RDWR|O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
   sprintf(fullpath, "%s/%s",pp,SNAPFILE);
   filesystem->bwc.snap_fd = open(fullpath, O_RDWR|O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
+  free(fullpath);
 
   if(filesystem->bwc.log_fd == -1 || 
      filesystem->bwc.page_fd == -1 || 
@@ -1102,9 +1128,13 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   last_page = (block_offset + length - 1) / filesystem->page_size;
   page_offset = block_offset % filesystem->page_size;
   new_pages_length = last_page - first_page + 1;
-  allData = (char*) malloc(filesystem->page_size*sizeof(char)*(new_pages_length+1));
-  //new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
-  new_pages = (page_t*)MALLOCPAGE;
+  //allData = (char*) malloc(filesystem->page_size*sizeof(char)*(new_pages_length+1));
+  if(allocatePageArray(filesystem->rdmaCtxt,(void**)&allData,new_pages_length)){
+    fprintf(stderr, "WriteBlock: cannot allocate page from RDMA pool.\n");
+    return -4;
+  }
+  new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
+  //new_pages = (page_t*)MALLOCPAGE;
   
   //new_pages[0].data = (char *) malloc(filesystem->page_size*sizeof(char));
   new_pages[0].data = (char*)MALLOCPAGE;
@@ -1361,8 +1391,14 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
  * Signature: (JJ)J
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize
-  (JNIEnv *env, jclass thisCls, jlong size, jlong alignment){
-  //TODO
+  (JNIEnv *env, jclass thisCls, jint psz, jint align, jint port){
+  RDMACtxt *ctxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
+  if(initializeContext(ctxt,(const uint32_t)psz,(const uint32_t)align,(const uint16_t)port)){
+    free(ctxt);
+    fprintf(stderr, "Cannot initialize rdma context.\n");
+    return (jlong)0;
+  }
+  return (jlong)ctxt;
 }
 
 /*
@@ -1372,7 +1408,7 @@ JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
   (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
-  //TODO
+  destroyContext((RDMACtxt*)hRDMABufferPool);
 }
 
 /*
@@ -1382,7 +1418,43 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
  */
 JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBuffer
   (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
-  //TODO
+  // STEP 1: create an object
+  jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog/RBPBuffer");
+  if(bufCls==NULL){
+    fprintf(stderr,"Cannot find the buffers.");
+    return NULL;
+  }
+  jmethodID bufConstructorId = (*env)->GetMethodID(env, bufCls, "<init>", "()V");
+  if(bufConstructorId==NULL){
+    fprintf(stderr,"Cannot find buffer constructor method.\n");
+    return NULL;
+  }
+  jobject bufObj = (*env)->NewObject(env,bufCls,bufConstructorId);
+  if(bufObj == NULL){
+    fprintf(stderr,"Cannot create buffer object.");
+    return NULL;
+  }
+  jfieldID handleId = (*env)->GetFieldID(env, bufCls, "handle", "J");
+  jfieldID addressId = (*env)->GetFieldID(env, bufCls, "address", "J");
+  jfieldID bufferId = (*env)->GetFieldID(env, bufCls, "buffer", "Ljava/nio/ByteBuffer;");
+  if(handleId == NULL || addressId == NULL || bufferId == NULL){
+    fprintf(stderr,"Cannot get some field of buffer class");
+    return NULL;
+  }
+  // STEP 2: allocate buffer
+  RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
+  void *buf;
+  if(allocateBuffer(ctxt, &buf)){
+    fprintf(stderr, "Cannot allocate buffer.\n");
+    return NULL;
+  }
+  jobject bbObj = (*env)->NewDirectByteBuffer(env,buf,(jlong)1l<<ctxt->align);
+  //STEP 3: fill buffer object
+  (*env)->SetLongField(env, bufObj, handleId, hRDMABufferPool);
+  (*env)->SetLongField(env, bufObj, addressId, (jlong)buf);
+  (*env)->SetObjectField(env, bufObj, bufferId, bbObj);
+
+  return bufObj;
 }
 
 /*
@@ -1392,7 +1464,22 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBuffer
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
   (JNIEnv *env, jclass thisCls, jobject rbpBuffer){
-  //TODO
+  RDMACtxt *ctxt;
+  void* bufAddr;
+  // STEP 1: get rbpbuffer class
+  jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog/RBPBuffer");
+  if(bufCls==NULL){
+    fprintf(stderr,"Cannot find the buffers.");
+    return;
+  }
+  jfieldID handleId = (*env)->GetFieldID(env, bufCls, "handle", "J");
+  jfieldID addressId = (*env)->GetFieldID(env, bufCls, "address", "J");
+  // STEP 2: get fields
+  ctxt = (RDMACtxt*)(*env)->GetLongField(env, rbpBuffer, handleId);
+  bufAddr = (void*)(*env)->GetLongField(env, rbpBuffer, addressId);
+  // STEP 3: release buffer
+  if(releaseBuffer(ctxt,bufAddr))
+    fprintf(stderr,"Cannot release buffer@%p\n",bufAddr);
 }
 
 /*
