@@ -130,10 +130,12 @@ extern int releaseBuffer(RDMACtxt *ctxt, const void *buf);
  * port:    the port where blog daemon thread is listening on
  * RETURN VALUE
  * 0 for success
- * -1  could not allocate buffer in blog mode
- * -2  invalid buffer pointer
- * -3  lock error
- * -4  buffer is being allocated
+ * -1  already connected
+ * -2  cannot establish tcp connection to the server
+ * -3  cannot send rdma configuration to peer
+ * -4  cannot receive rdma configuration from peer
+ * -5  cannot parse rdma configuration from peer
+ * -6  cannot fill rdma connection to map
  */
 extern int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
 /*

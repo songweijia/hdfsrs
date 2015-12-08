@@ -1488,8 +1488,17 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
  * Signature: (JII)V
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
-  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jint hostIp, jint port){
-  //TODO
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jbyteArray hostIp, jint port){
+  RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
+  int ipSize = (int)(*env)->GetArrayLength(env,hostIp);
+  jbyte* ipStr = (jbyte*)malloc(ipSize+1);
+  (*env)->GetByteArrayRegion(env, hostIp, 0, ipSize, ipStr);
+  ipStr[ipSize] = 0;
+  uint32_t ipkey = net_addr((const char*)ipStr);
+  int rc = rdmaConnect(ctxt, (const uint32_t)ipkey, (const uint16_t)port);
+  if(rc == 0 || rc == -1){
+  }else
+    fprintf(stderr,"Setting up RDMA connection to %s failed with error %d.\n", (char*)ipStr, rc);
 }
 
 /*

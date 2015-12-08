@@ -246,7 +246,7 @@ public class JNIBlog {
    * @param port
    * @throws Exception
    */
-  static public native void rbpConnect(long rbpBuffer, int hostIp, int port) throws Exception;
+  static public native void rbpConnect(long rbpBuffer, byte hostIp[], int port) throws Exception;
   
   /**
    * function: do RDMA Write, this is called by the DataNode.
