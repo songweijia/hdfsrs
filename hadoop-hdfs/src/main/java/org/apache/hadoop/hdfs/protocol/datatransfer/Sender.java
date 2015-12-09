@@ -24,6 +24,7 @@ import static org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil
 
 
 
+
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ClientOperationH
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpCopyBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockRDMAProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReplaceBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockProto;
@@ -116,6 +118,22 @@ public class Sender implements DataTransferProtocol {
     send(out, Op.READ_BLOCK, proto);
   }
   
+  @Override
+  public void readBlockRDMA(ExtendedBlock blk, 
+      Token<BlockTokenIdentifier> blockToken, 
+      String clientName,
+      long blockOffset, 
+      long length, 
+      long vaddr) throws IOException {
+    OpReadBlockRDMAProto proto = OpReadBlockRDMAProto.newBuilder()
+        .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName, blockToken))
+        .setOffset(blockOffset)
+        .setLen(length)
+        .setVaddr(vaddr)
+        .build();
+
+    send(out, Op.READ_BLOCK_RDMA, proto);
+  }
 
   @Override
   public void writeBlock(final ExtendedBlock blk,
@@ -264,4 +282,5 @@ public class Sender implements DataTransferProtocol {
     
     send(out, Op.BLOCK_CHECKSUM, proto);
   }
+
 }

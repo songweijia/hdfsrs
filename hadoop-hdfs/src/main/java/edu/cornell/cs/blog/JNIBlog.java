@@ -208,8 +208,7 @@ public class JNIBlog {
   //////////////////////////////////////////////////////////////////////
   // The interface for RDMA access library
   public static class RBPBuffer{
-    public long handle; // handle to the RDMABufferPool
-    public long offset; // offset of this buffer.
+    public long address; // address of this buffer.
     public ByteBuffer buffer; // the buffer  
   }
   /**
@@ -232,26 +231,26 @@ public class JNIBlog {
    * @return allocated Block Buffer
    * @throws Exception
    */
-  static public native RBPBuffer rbpAllocateBlockBuffer() throws Exception;
+  static public native RBPBuffer rbpAllocateBlockBuffer(long hRDMABufferPool) throws Exception;
   /**
    * function: release a buffer.
    * @param buf
    * @throws Exception
    */
-  static public native void rbpReleaseBuffer(RBPBuffer buf) throws Exception;
+  static public native void rbpReleaseBuffer(long hRDMABufferPool, RBPBuffer buf) throws Exception;
   /**
    * function: connect to RDMA datanode
-   * @rbpBuffer handle of the buffer
+   * @rbpBuffer handle of the RDMA buffer pool
    * @param hostIp
    * @param port
    * @throws Exception
    */
-  static public native void rbpConnect(long rbpBuffer, byte hostIp[], int port) throws Exception;
+  static public native void rbpConnect(long hRDMABufferPool, byte hostIp[], int port) throws Exception;
   
   /**
    * function: do RDMA Write, this is called by the DataNode.
    * @param clientIp like "192.168.100.1".toByteArra()
-   * @param offset
+   * @param address
    * @param length
    * @param pageList
    * @throws Exception

@@ -1413,10 +1413,10 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    rbpAllocateBuffer
+ * Method:    rbpAllocateBlockBuffer
  * Signature: (J)Ledu/cornell/cs/blog/JNIBlog/RBPBuffer;
  */
-JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBuffer
+JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffer
   (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
   // STEP 1: create an object
   jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog/RBPBuffer");
@@ -1434,10 +1434,9 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBuffer
     fprintf(stderr,"Cannot create buffer object.");
     return NULL;
   }
-  jfieldID handleId = (*env)->GetFieldID(env, bufCls, "handle", "J");
   jfieldID addressId = (*env)->GetFieldID(env, bufCls, "address", "J");
   jfieldID bufferId = (*env)->GetFieldID(env, bufCls, "buffer", "Ljava/nio/ByteBuffer;");
-  if(handleId == NULL || addressId == NULL || bufferId == NULL){
+  if(addressId == NULL || bufferId == NULL){
     fprintf(stderr,"Cannot get some field of buffer class");
     return NULL;
   }
@@ -1450,7 +1449,6 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBuffer
   }
   jobject bbObj = (*env)->NewDirectByteBuffer(env,buf,(jlong)1l<<ctxt->align);
   //STEP 3: fill buffer object
-  (*env)->SetLongField(env, bufObj, handleId, hRDMABufferPool);
   (*env)->SetLongField(env, bufObj, addressId, (jlong)buf);
   (*env)->SetObjectField(env, bufObj, bufferId, bbObj);
 
@@ -1460,11 +1458,11 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBuffer
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    rbpReleaseBuffer
- * Signature: (Ledu/cornell/cs/blog/JNIBlog/RBPBuffer;)V
+ * Signature: (JLedu/cornell/cs/blog/JNIBlog/RBPBuffer;)V
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
-  (JNIEnv *env, jclass thisCls, jobject rbpBuffer){
-  RDMACtxt *ctxt;
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jobject rbpBuffer){
+  RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
   void* bufAddr;
   // STEP 1: get rbpbuffer class
   jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog/RBPBuffer");
@@ -1472,10 +1470,8 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
     fprintf(stderr,"Cannot find the buffers.");
     return;
   }
-  jfieldID handleId = (*env)->GetFieldID(env, bufCls, "handle", "J");
   jfieldID addressId = (*env)->GetFieldID(env, bufCls, "address", "J");
   // STEP 2: get fields
-  ctxt = (RDMACtxt*)(*env)->GetLongField(env, rbpBuffer, handleId);
   bufAddr = (void*)(*env)->GetLongField(env, rbpBuffer, addressId);
   // STEP 3: release buffer
   if(releaseBuffer(ctxt,bufAddr))

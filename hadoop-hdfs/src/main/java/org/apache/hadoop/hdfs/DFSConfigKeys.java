@@ -637,6 +637,14 @@ public class DFSConfigKeys extends CommonConfigurationKeys {
   //HDFSRS_HLC: VCPID (vector clock pid) works to construct the rank for datanode or namenode
   public static final String DFS_MEMBLOCK_PAGESIZE = "dfs.memblock.pagesize";
   public static final int DEFAULT_DFS_MEMBLOCK_PAGESIZE = 4096;
-  
   //HDFSRS_HLC
+  
+  //HDFSRS_RDMA
+  public static final String DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_KEY = "dfs.rdma.client.mem.region.size.exp";
+  public static final int DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_DEFAULT = 30;
+  public static final String DFS_RDMA_PAGE_SIZE_EXPONENT_KEY = "dfs.rdma.page.size.exponent";
+  public static final int DFS_RDMA_PAGE_SIZE_EXPONENT_DEFAULT = 12;
+  public static final String DFS_RDMA_CON_PORT_KEY = "dfs.rdma.con.port";
+  public static final int DFS_RDMA_CON_PORT_DEFAULT = 1819;
+  //HDFSRS_RDMA
 }
