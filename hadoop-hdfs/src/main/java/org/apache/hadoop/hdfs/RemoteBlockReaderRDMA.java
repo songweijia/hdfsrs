@@ -101,6 +101,10 @@ public class RemoteBlockReaderRDMA implements BlockReader {
     startOffset = Math.max(startOffset, 0);
     this.bytesToRead = bytesToRead;
     this.filename = file;
+    // set the buffer viewport.
+    rbpBuffer.buffer.position((int)startOffset);
+    rbpBuffer.buffer.mark();
+    rbpBuffer.buffer.limit((int)(startOffset+bytesToRead));
   }
   
   /**
@@ -174,8 +178,15 @@ public class RemoteBlockReaderRDMA implements BlockReader {
    */
   @Override
   public int read(ByteBuffer buf) throws IOException {
-    // TODO Auto-generated method stub
-    return 0;
+    if(rbpBuffer.buffer.remaining() == 0)
+      return -1;
+    
+    int nRead = Math.min(rbpBuffer.buffer.remaining(), buf.remaining());
+    ByteBuffer writeSlice = rbpBuffer.buffer.duplicate();
+    writeSlice.limit(writeSlice.position() + nRead);
+    rbpBuffer.buffer.put(writeSlice);
+    rbpBuffer.buffer.position(writeSlice.position());
+    return nRead;
   }
 
   /* (non-Javadoc)
@@ -183,8 +194,13 @@ public class RemoteBlockReaderRDMA implements BlockReader {
    */
   @Override
   public int read(byte[] buf, int off, int len) throws IOException {
-    // TODO Auto-generated method stub
-    return 0;
+    if(rbpBuffer.buffer.remaining() == 0)
+      return -1;
+    
+    int nRead = Math.min(rbpBuffer.buffer.remaining(), len);
+    rbpBuffer.buffer.get(buf,off,nRead);
+    
+    return nRead;
   }
 
   /* (non-Javadoc)
@@ -192,8 +208,9 @@ public class RemoteBlockReaderRDMA implements BlockReader {
    */
   @Override
   public long skip(long n) throws IOException {
-    // TODO Auto-generated method stub
-    return 0;
+    int toSkip = (int)Math.min(n, rbpBuffer.buffer.remaining());
+    rbpBuffer.buffer.position(rbpBuffer.buffer.position() + toSkip);
+    return toSkip;
   }
 
   /* (non-Javadoc)
@@ -201,8 +218,7 @@ public class RemoteBlockReaderRDMA implements BlockReader {
    */
   @Override
   public int available() throws IOException {
-    // TODO Auto-generated method stub
-    return 0;
+    return rbpBuffer.buffer.remaining();
   }
 
   /* (non-Javadoc)
@@ -210,8 +226,12 @@ public class RemoteBlockReaderRDMA implements BlockReader {
    */
   @Override
   public void close() throws IOException {
-    // TODO Auto-generated method stub
-
+    try{
+      JNIBlog.rbpReleaseBuffer(hRDMABufferPool, rbpBuffer);
+      rbpBuffer = null;
+    }catch(Exception e){
+      LOG.warn("cannot release RDMA buffer with exception:"+e);
+    }
   }
 
   /* (non-Javadoc)
@@ -219,8 +239,10 @@ public class RemoteBlockReaderRDMA implements BlockReader {
    */
   @Override
   public void readFully(byte[] buf, int readOffset, int amtToRead) throws IOException {
-    // TODO Auto-generated method stub
-
+    if(amtToRead > rbpBuffer.buffer.remaining())
+      throw new IOException("try to read " + amtToRead + " bytes but we have only " + 
+        rbpBuffer.buffer.remaining() + " bytes remains.");
+    read(buf,readOffset,amtToRead);
   }
 
   /* (non-Javadoc)
@@ -228,8 +250,7 @@ public class RemoteBlockReaderRDMA implements BlockReader {
    */
   @Override
   public int readAll(byte[] buf, int offset, int len) throws IOException {
-    // TODO Auto-generated method stub
-    return 0;
+    return read(buf,offset,len);
   }
 
   /* (non-Javadoc)
