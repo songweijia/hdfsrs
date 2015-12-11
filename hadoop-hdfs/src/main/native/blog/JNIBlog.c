@@ -912,30 +912,27 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   return 0;
 }
 
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    readBlock
- * Signature: (JJIII[B)I
+/* 
+ * find_block_for_read: find the block_t structure for read.
+ * PARAMETERS:
+ *  filesystem    - the file system environment
+ *  blockId       - block id
+ *  snapshotId    - snapshot identifier, -1 for current version
+ *  blkOfst       - offset to the block where we try to read.
+ *  length        - length of the read.
+ *  block[OUTPUT] - the block_t structure we find.
+ * RETURN VALUE:
+ *  0 for success, the others for failure.
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
-  (JNIEnv *env, jobject thisObj, jlong blockId, jlong snapshotId, jint blkOfst,
-  jint bufOfst, jint length, jbyteArray buf)
+int find_block_for_read(filesystem_t *filesystem, long blockId, long snapshotId, 
+  int blkOfst, int length, block_t **block)
 {
-  filesystem_t *filesystem;
-  snapshot_t *snapshot;
-  block_t *block;
-  uint32_t page_id, page_offset, read_length, cur_length;
-  char *page_data;
   uint64_t *log_id;
-  int cnt;
-  
-  //struct timeval tv1,tv2,tv3;
-  //gettimeofday(&tv1,NULL);  
+  snapshot_t *snapshot;
   // Find the corresponding block.
-  filesystem = get_filesystem(env, thisObj);
   if (snapshotId == -1) {
     MAP_LOCK(block, filesystem->block_map, blockId, 'r');
-    if (MAP_READ(block, filesystem->block_map, blockId, &block) == -1) {
+    if (MAP_READ(block, filesystem->block_map, blockId, block) == -1) {
       MAP_UNLOCK(block, filesystem->block_map, blockId);
       // In case you did not find the block return an error.
       fprintf(stderr, "Read Block: Block with id %ld is not present.\n", blockId);
@@ -959,20 +956,45 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
       return -4;
     }
     MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
-    block = find_or_allocate_snapshot_block(filesystem, snapshot, *log_id, blockId);
+    *block = find_or_allocate_snapshot_block(filesystem, snapshot, *log_id, blockId);
     // If block did not exist at this point.
-    if (block->cap == -1) {
+    if ((*block)->cap == -1) {
       fprintf(stderr, "Read Block: Block with id %ld is not present at snapshot with rtc %ld.\n", blockId, snapshotId);
       return -1;
     }
   }
-  //gettimeofday(&tv2,NULL);
-  cnt=1;
   // In case the data you ask is not written return an error.
-  if (blkOfst >= block->length) {
+  if (blkOfst >= (*block)->length) {
     fprintf(stderr, "Read Block: Block %ld is not written at %d byte.\n", blockId, blkOfst);
     return -3;
   }
+
+  return 0;
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    readBlock
+ * Signature: (JJIII[B)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
+  (JNIEnv *env, jobject thisObj, jlong blockId, jlong snapshotId, jint blkOfst,
+  jint bufOfst, jint length, jbyteArray buf)
+{
+  filesystem_t *filesystem = get_filesystem(env, thisObj);
+  block_t *block;
+  uint32_t page_id, page_offset, read_length, cur_length;
+  char *page_data;
+  int cnt;
+
+  
+  //struct timeval tv1,tv2,tv3;
+  //gettimeofday(&tv1,NULL);
+  // Find the block structure.
+  int rc = find_block_for_read(filesystem, blockId, snapshotId, blkOfst, length, &block);
+  if(rc)return rc;
+  //gettimeofday(&tv2,NULL);
+  //cnt=1;
   
   // See if the data is partially written.
   if (blkOfst + length <= block->length)
@@ -995,7 +1017,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
     while (1) {
       //struct timeval t1,t2;
       //gettimeofday(&t1,NULL);
-      cnt++;
+      //cnt++;
       page_data = block->pages[page_id]->data;
       if (cur_length + filesystem->page_size >= read_length) {
         (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, read_length - cur_length, (jbyte*) page_data);
@@ -1015,6 +1037,57 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
   //  fprintf(stdout, "readBlock %ld %ld [%d,%d,%d]\n",search,copy,blkOfst,read_length,cnt);
   return read_length;
 }
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    readBlockPageList
+ * Signature: (JJII[BJ)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
+  (JNIEnv *env, jobject thisObj, jlong blockId, jlong rtc, 
+   jint blkOfst, jint length, jbyteArray clientIp, jlong vaddr){
+  filesystem_t *filesystem = get_filesystem(env, thisObj);
+  block_t *block;
+  uint32_t start_page_id,end_page_id,npage = 0;
+  char *page_data;
+
+  
+  // Find the block structure.
+  int rc = find_block_for_read(filesystem, blockId, rtc, blkOfst, length, &block);
+  if(rc)return rc;
+  
+  // See if the data is partially written.
+  if (blkOfst + length > block->length){
+    fprintf(stderr,"readBlockPageList:only %d bytes to read, but tried read to %d\n", block->length, blkOfst + length);
+    return -1;
+  }
+
+  // get ipkey
+  int ipSize = (int)(*env)->GetArrayLength(env,clientIp);
+  jbyte ipStr[16];
+  (*env)->GetByteArrayRegion(env, clientIp, 0, ipSize, ipStr);
+  ipStr[ipSize] = 0;
+  uint32_t ipkey = net_addr((const char*)ipStr);
+  // get pagelist
+  start_page_id = blkOfst / filesystem->page_size;
+  end_page_id = (blkOfst+length) / filesystem->page_size;
+  void **paddrlist = (void**)malloc(sizeof(void*)*npage);
+  while(start_page_id<=end_page_id){
+    paddrlist[npage] = (void*)block->pages[start_page_id]->data;
+    start_page_id ++;
+    npage ++;
+  }
+  // get remote address
+  const uint64_t address = vaddr % filesystem->page_size;
+  // rdma write...
+  rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage);
+  free(paddrlist);
+  if(rc !=0 )
+    fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
+
+  return 0;
+}
+
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -1504,7 +1577,6 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
   (JNIEnv *env, jobject thisObj, jbyteArray clientIp, jlong address, jlongArray pageList){
-  //TODO
   // get filesystem
   filesystem_t *fs = get_filesystem(env,thisObj);
   // get ipkey

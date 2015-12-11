@@ -1201,4 +1201,32 @@ class DataXceiver extends Receiver implements Runnable {
       }
     }
   }
+
+  @Override
+  public void readBlockRDMA(ExtendedBlock blk, Token<BlockTokenIdentifier> blockToken, String clientName,
+      long blockOffset, long length, long vaddr) throws IOException {
+    // TODO Auto-generated method stub
+    previousOpClientName = clientName;
+
+    OutputStream baseStream = getOutputStream();
+    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
+        baseStream, HdfsConstants.SMALL_BUFFER_SIZE));
+    checkAccess(out, true, blk, blockToken,
+        Op.READ_BLOCK, BlockTokenSecretManager.AccessMode.READ);
+    // STEP 1 - create RDMABlockSender
+    if(!datanode.isInMemoryStorage()){
+      BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()
+          .setStatus(ERROR_UNSUPPORTED);
+      resp.build().writeDelimitedTo(out);
+      out.flush();
+      return;
+    }
+    RDMABlockSender blockSender = new RDMABlockSender(
+        blk,blockOffset,length,datanode,
+        peer.getRemoteAddressString(),vaddr);
+    // STEP 2 - do RDMA write
+    blockSender.doSend();
+    // STEP 3 - notify the reader
+
+  }
 }

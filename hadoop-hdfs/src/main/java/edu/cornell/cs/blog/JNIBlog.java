@@ -167,6 +167,18 @@ public class JNIBlog {
   public native int readBlock(long blockId, long rtc, int blkOfst, int bufOfst, int length, byte buf[]);
   
   /**
+   * @param blockId
+   * @param rtc - 0 for the current version
+   * @param blkOfst - block offset
+   * @param length - how many bytes to read
+   * @param clientIp
+   * @param vaddr
+   * @return error code, 0 for success, otherwise error code.
+   */
+  public native int readBlockRDMA(long blockId, long rtc, int blkOfst, int length,
+      byte clientIp[], long vaddr);
+  
+  /**
    * get number of bytes we have in the block
    * @param blockId
    * @param rtc

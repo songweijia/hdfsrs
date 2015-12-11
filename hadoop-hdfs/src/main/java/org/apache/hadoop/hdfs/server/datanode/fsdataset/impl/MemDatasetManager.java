@@ -2,10 +2,13 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
 
+
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_MEMBLOCK_PAGESIZE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_MEMBLOCK_PAGESIZE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_CON_PORT_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_CON_PORT_DEFAULT;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +49,7 @@ public class MemDatasetManager {
   private final long blocksize; 
   private final int pagesize;
   private final String perspath; // the path for persistent files
+  private final int rdmaport; // port...
 
   
   public class MemBlockMeta extends Block implements Replica {
@@ -148,6 +152,16 @@ public class MemDatasetManager {
   	protected BlogInputStream getInputStream(int offset, long snapshotId){
   		return new BlogInputStream(blog,blockId,offset,snapshotId);
   	}
+  	protected void rdmaTransfer(long sid, int startOffset, int length,
+  	    String clientIp, long vaddr)throws IOException{
+  	  long blen = getNumBytes(sid);
+  	  if(startOffset + length > blen)
+  	    throw new IOException("rdmaTransfer failed: sid="+sid+",start="+
+  	      startOffset+",len="+length+",blen="+blen);
+  	  int rc = 0;
+  	  if((rc=blog.readBlockRDMA(blockId, sid, startOffset, length, clientIp.getBytes(), vaddr))!=0)
+  	    throw new IOException("rdmaTransfer failed: JNIBlog.readBlockRDMA returns: " + rc);
+  	}
   }
   
   class BlogInputStream extends InputStream {
@@ -248,6 +262,7 @@ public class MemDatasetManager {
   MemDatasetManager(Configuration conf){
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
+    this.rdmaport = conf.getInt(DFS_RDMA_CON_PORT_KEY, DFS_RDMA_CON_PORT_DEFAULT);
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
     this.blogMap = new HashMap<String, JNIBlog>();
     String[] dataDirs = conf.getTrimmedStrings(DFS_DATANODE_DATA_DIR_KEY);
@@ -288,7 +303,7 @@ public class MemDatasetManager {
       if(fPers.mkdir()==false)
         LOG.error("Initialize Blog: cannot create path:" + fPers.getAbsolutePath());
     }
-    rBlog.initialize(this, bpid, (int)blocksize, pagesize, fPers.getAbsolutePath());
+    rBlog.initialize(this, bpid, (int)blocksize, pagesize, fPers.getAbsolutePath(), rdmaport);
     return rBlog;
   }
   
