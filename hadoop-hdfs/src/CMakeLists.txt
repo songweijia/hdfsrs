@@ -119,6 +119,7 @@ output_directory(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer
 
 add_library(edu_cornell_cs_blog_JNIBlog SHARED
     main/native/blog/JNIBlog.c
+    main/native/blog/InfiniBandRDMA.c
 )
 output_directory(edu_cornell_cs_blog_JNIBlog target/usr/local/lib)
 
