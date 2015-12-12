@@ -24,7 +24,7 @@ MAP_DEFINE(snapshot, snapshot_t, SNAPSHOT_MAP_SIZE);
 #define MAX_FNLEN (strlen(BLOGFILE)+strlen(PAGEFILE)+strlen(SNAPFILE))
 
 // some internal tools
-#define LOG2(x) calc_logs(x)
+#define LOG2(x) calc_log2(x)
 inline int calc_log2(uint64_t val){
   int i=0;
   while((val>>i) == 0 && (i<64) );
