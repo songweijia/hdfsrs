@@ -233,7 +233,7 @@ int initializeContext(
   ctxt->align = align;
   ctxt->cnt   = 0;
   // malloc pool
-  TEST_NZ(posix_memalign(&ctxt->pool,
+  TEST_Z(posix_memalign(&ctxt->pool,
       bClient?RDMA_CTXT_BUF_SIZE(ctxt):RDMA_CTXT_PAGE_SIZE(ctxt),
       RDMA_CTXT_POOL_SIZE(ctxt)),
     "Cannot Allocate Pool Memory");
