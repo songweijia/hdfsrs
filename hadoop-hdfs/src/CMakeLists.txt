@@ -121,6 +121,10 @@ add_library(edu_cornell_cs_blog_JNIBlog SHARED
     main/native/blog/JNIBlog.c
     main/native/blog/InfiniBandRDMA.c
 )
+target_link_libraries(edu_cornell_cs_blog_JNIBlog
+    pthread
+    ibverbs
+)
 output_directory(edu_cornell_cs_blog_JNIBlog target/usr/local/lib)
 
 add_executable(test_libhdfs_ops
