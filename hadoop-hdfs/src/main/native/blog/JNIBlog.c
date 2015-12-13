@@ -27,7 +27,7 @@ MAP_DEFINE(snapshot, snapshot_t, SNAPSHOT_MAP_SIZE);
 #define LOG2(x) calc_log2(x)
 inline int calc_log2(uint64_t val){
   int i=0;
-  while((val>>i) == 0 && (i<64) );
+  while(((val>>i)&0x1)==0 && (i<64) )i++;
   return i;
 }
 
@@ -701,6 +701,7 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   (JNIEnv *env, jobject thisObj, jlong poolSize, jint blockSize, jint pageSize, jstring persPath, jint port)
 {
+fprintf(stderr,"debug-A\n");
   const char * pp = (*env)->GetStringUTFChars(env,persPath,NULL); // get the presistent path
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jfieldID long_id = (*env)->GetFieldID(env, thisCls, "jniData", "J");
@@ -712,6 +713,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   char *fullpath;
   int log_fd, page_fd, snap_fd;
   
+fprintf(stderr,"debug-B\n");
   filesystem = (filesystem_t *) malloc (sizeof(filesystem_t));
   if (filesystem == NULL) {
     perror("Error");
@@ -720,12 +722,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->block_size = blockSize;
   filesystem->page_size = pageSize;
   filesystem->block_map = MAP_INITIALIZE(block);
+fprintf(stderr,"debug-B1\n");
   if (filesystem->block_map == NULL) {
     fprintf(stderr, "Initialize: Allocation of block_map failed.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
     return -1;
   }
   filesystem->log_map = MAP_INITIALIZE(log);
+fprintf(stderr,"debug-B2\n");
   if (filesystem->log_map == NULL) {
     fprintf(stderr, "Initialize: Allocation of log_map failed.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
@@ -741,13 +745,16 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->log_length = 0;
   filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
   filesystem->rdmaCtxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
+fprintf(stderr,"debug-B3\n");
   if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),(const uint16_t)port)){
     fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
     return -2;
   }
+fprintf(stderr,"debug-B4\n");
   pthread_rwlock_init(&(filesystem->lock), NULL);
   
+fprintf(stderr,"debug-C\n");
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
   (*env)->SetLongField(env, thisObj, long_id, (int64_t) filesystem);
   
@@ -772,6 +779,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
     close(snap_fd);
   }
   // start write thread.
+fprintf(stderr,"debug-D\n");
   filesystem->bwc.fs = filesystem;
   sprintf(fullpath, "%s/%s",pp,BLOGFILE);
   filesystem->bwc.log_fd = open(fullpath, O_RDWR|O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
@@ -794,12 +802,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->bwc.thisObj = (*env)->NewGlobalRef(env, thisObj); // java this object
   
   //start blog writer thread
+fprintf(stderr,"debug-E\n");
   if (pthread_create(&filesystem->writer_thrd, NULL, blog_writer_routine, (void*)&filesystem->bwc)) {
     fprintf(stderr,"CANNOT create blogWriter thread, exit\n");
     exit(1);
   }
 
   (*env)->ReleaseStringUTFChars(env, persPath, pp);
+fprintf(stderr,"debug-End\n");
   return 0;
 }
 

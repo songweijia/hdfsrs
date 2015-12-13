@@ -233,13 +233,19 @@ int initializeContext(
   ctxt->align = align;
   ctxt->cnt   = 0;
   // malloc pool
-  TEST_Z(posix_memalign(&ctxt->pool,
+fprintf(stderr, "debug-bClient=%d,psz=%d,align=%d\n",bClient,psz,align);
+fprintf(stderr, "debug-RDMA_CTXT_BUF_SIZE=%ld\n",RDMA_CTXT_BUF_SIZE(ctxt));
+fprintf(stderr, "debug-RDMA_CTXT_PAGE_SIZE=%ld\n",RDMA_CTXT_PAGE_SIZE(ctxt));
+fprintf(stderr, "debug-RDMA_CTXT_POOL_SIZE=%ld\n",RDMA_CTXT_POOL_SIZE(ctxt));
+  TEST_NZ(posix_memalign(&ctxt->pool,
       bClient?RDMA_CTXT_BUF_SIZE(ctxt):RDMA_CTXT_PAGE_SIZE(ctxt),
       RDMA_CTXT_POOL_SIZE(ctxt)),
     "Cannot Allocate Pool Memory");
+fprintf(stderr,"debug:posix_memalign() get ctxt->pool:%p\n",ctxt->pool);
   // clear the data
   memset(ctxt->pool, 0, RDMA_CTXT_POOL_SIZE(ctxt));
   // get InfiniBand data structures
+fprintf(stderr,"debug:before initialize infiniband data structures\n");
   struct ibv_device **dev_list;
   TEST_Z(dev_list = ibv_get_device_list(NULL),"No IB-device available. get_device_list returned NULL");
   TEST_Z(dev_list[0],"IB-device could not be assigned. Maybe dev_list array is empty");
@@ -258,6 +264,7 @@ int initializeContext(
   ctxt->max_cq  = dev_attr.max_cq;
   ctxt->max_cqe = dev_attr.max_cqe;
   // initialize mutex lock
+fprintf(stderr,"debug:initialize mutex lock\n");
   TEST_NZ(pthread_mutex_init(&ctxt->lock,NULL), "Could not initialize context mutex");
   // con_map
   TEST_Z(ctxt->con_map = MAP_INITIALIZE(con), "Could not initialize RDMA connection map");
@@ -271,6 +278,7 @@ int initializeContext(
         blog_rdma_daemon_routine, (void*)ctxt),
       "Could not initialize the daemon routine");
   }
+fprintf(stderr,"debug:initialization done\n");
   return 0;
 }
 

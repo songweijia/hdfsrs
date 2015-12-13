@@ -298,6 +298,7 @@ public class MemDatasetManager {
     JNIBlog rBlog = new JNIBlog();
     // If path does not exists, create it firs.
     File fPers = new File(this.perspath+System.getProperty("file.separator")+"pers-"+bpid);
+    LOG.info("pers-"+bpid);
     if(fPers.exists()&&fPers.isFile())fPers.delete();
     if(!fPers.exists()){
       if(fPers.mkdir()==false)
