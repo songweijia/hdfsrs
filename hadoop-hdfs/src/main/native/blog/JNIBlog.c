@@ -1077,7 +1077,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
   jbyte ipStr[16];
   (*env)->GetByteArrayRegion(env, clientIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
-  uint32_t ipkey = net_addr((const char*)ipStr);
+  uint32_t ipkey = inet_addr((const char*)ipStr);
   // get pagelist
   start_page_id = blkOfst / filesystem->page_size;
   end_page_id = (blkOfst+length) / filesystem->page_size;
@@ -1573,7 +1573,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
   jbyte ipStr[16];
   (*env)->GetByteArrayRegion(env, hostIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
-  uint32_t ipkey = net_addr((const char*)ipStr);
+  uint32_t ipkey = inet_addr((const char*)ipStr);
   int rc = rdmaConnect(ctxt, (const uint32_t)ipkey, (const uint16_t)port);
   if(rc == 0 || rc == -1){
   }else
@@ -1594,7 +1594,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
   jbyte ipStr[16];
   (*env)->GetByteArrayRegion(env, clientIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
-  uint32_t ipkey = net_addr((const char*)ipStr);
+  uint32_t ipkey = inet_addr((const char*)ipStr);
   // get pagelist
   int npage = (*env)->GetArrayLength(env,pageList);
   long *plist = (long*)malloc(sizeof(long)*npage);
