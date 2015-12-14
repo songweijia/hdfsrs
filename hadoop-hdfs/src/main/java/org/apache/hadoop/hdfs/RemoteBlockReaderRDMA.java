@@ -91,7 +91,7 @@ public class RemoteBlockReaderRDMA implements BlockReader {
     this.datanodeID = datanodeID;
     try{
       //connect to server.
-      JNIBlog.rbpConnect(hRDMABufferPool, peer.getRemoteAddressString().getBytes(), RDMA_CON_PORT);
+      JNIBlog.rbpConnect(hRDMABufferPool, peer.getRemoteIPString().getBytes(), RDMA_CON_PORT);
       // allocate buffer.
       rbpBuffer = JNIBlog.rbpAllocateBlockBuffer(hRDMABufferPool);
     }catch(Exception e){

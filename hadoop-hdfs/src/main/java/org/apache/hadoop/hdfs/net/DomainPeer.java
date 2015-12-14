@@ -85,6 +85,11 @@ public class DomainPeer implements Peer {
   }
 
   @Override
+  public String getRemoteIPString() {
+    return null; // this is not implemented for Domain peer.
+  }
+
+  @Override
   public String getLocalAddressString() {
     return "<local>";
   }

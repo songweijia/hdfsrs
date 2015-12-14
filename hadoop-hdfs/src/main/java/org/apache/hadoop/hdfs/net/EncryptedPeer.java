@@ -111,6 +111,11 @@ public class EncryptedPeer implements Peer {
   }
 
   @Override
+  public String getRemoteIPString() {
+    return enclosedPeer.getRemoteIPString();
+  }
+
+  @Override
   public String getLocalAddressString() {
     return enclosedPeer.getLocalAddressString();
   }
