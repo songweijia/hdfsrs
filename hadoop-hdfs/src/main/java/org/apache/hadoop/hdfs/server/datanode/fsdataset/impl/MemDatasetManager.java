@@ -152,7 +152,7 @@ public class MemDatasetManager {
   	protected BlogInputStream getInputStream(int offset, long snapshotId){
   		return new BlogInputStream(blog,blockId,offset,snapshotId);
   	}
-  	protected void rdmaTransfer(long sid, int startOffset, int length,
+  	public void rdmaTransfer(long sid, int startOffset, int length,
   	    String clientIp, long vaddr)throws IOException{
   	  long blen = getNumBytes(sid);
   	  if(startOffset + length > blen)

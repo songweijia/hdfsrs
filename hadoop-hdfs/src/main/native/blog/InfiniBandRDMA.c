@@ -21,13 +21,13 @@ static int die(const char *reason){
   exit(EXIT_FAILURE);
   return -1;
 }
-
+/*
 #ifdef DEBUG
   #define DEBUG_PRINT(fmt, args...) fprintf(stderr, fmt, ## args);
 #else
   #define DEBUG_PRINT(fmt, args...)
 #endif//DEBUG
-
+*/
 MAP_DEFINE(con,RDMAConnection,10);
 
 #define MAX_SQE (100)
@@ -233,19 +233,19 @@ int initializeContext(
   ctxt->align = align;
   ctxt->cnt   = 0;
   // malloc pool
-fprintf(stderr, "debug-bClient=%d,psz=%d,align=%d\n",bClient,psz,align);
-fprintf(stderr, "debug-RDMA_CTXT_BUF_SIZE=%ld\n",RDMA_CTXT_BUF_SIZE(ctxt));
-fprintf(stderr, "debug-RDMA_CTXT_PAGE_SIZE=%ld\n",RDMA_CTXT_PAGE_SIZE(ctxt));
-fprintf(stderr, "debug-RDMA_CTXT_POOL_SIZE=%ld\n",RDMA_CTXT_POOL_SIZE(ctxt));
+  DEBUG_PRINT("debug-bClient=%d,psz=%d,align=%d\n",bClient,psz,align);
+  DEBUG_PRINT("debug-RDMA_CTXT_BUF_SIZE=%ld\n",RDMA_CTXT_BUF_SIZE(ctxt));
+  DEBUG_PRINT("debug-RDMA_CTXT_PAGE_SIZE=%ld\n",RDMA_CTXT_PAGE_SIZE(ctxt));
+  DEBUG_PRINT("debug-RDMA_CTXT_POOL_SIZE=%ld\n",RDMA_CTXT_POOL_SIZE(ctxt));
   TEST_NZ(posix_memalign(&ctxt->pool,
       bClient?RDMA_CTXT_BUF_SIZE(ctxt):RDMA_CTXT_PAGE_SIZE(ctxt),
       RDMA_CTXT_POOL_SIZE(ctxt)),
     "Cannot Allocate Pool Memory");
-fprintf(stderr,"debug:posix_memalign() get ctxt->pool:%p\n",ctxt->pool);
+  DEBUG_PRINT("debug:posix_memalign() get ctxt->pool:%p\n",ctxt->pool);
   // clear the data
   memset(ctxt->pool, 0, RDMA_CTXT_POOL_SIZE(ctxt));
   // get InfiniBand data structures
-fprintf(stderr,"debug:before initialize infiniband data structures\n");
+  DEBUG_PRINT("debug:before initialize infiniband data structures\n");
   struct ibv_device **dev_list;
   TEST_Z(dev_list = ibv_get_device_list(NULL),"No IB-device available. get_device_list returned NULL");
   TEST_Z(dev_list[0],"IB-device could not be assigned. Maybe dev_list array is empty");
@@ -534,6 +534,9 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
 }
 
 int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage){
+DEBUG_PRINT("rdmaWrite:npage=%d\n",npage);
+DEBUG_PRINT("rdmaWrite:first page_address=%p\n",*pagelist);
+DEBUG_PRINT("rdmaWrite:r_vaddr=%p\n",(void*)r_vaddr);
   const uint64_t cipkey = (const uint64_t)hostip;
   RDMAConnection *rdmaConn = NULL;
   // STEP 1: get the connection

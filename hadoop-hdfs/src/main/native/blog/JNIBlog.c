@@ -701,7 +701,6 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   (JNIEnv *env, jobject thisObj, jlong poolSize, jint blockSize, jint pageSize, jstring persPath, jint port)
 {
-fprintf(stderr,"debug-A\n");
   const char * pp = (*env)->GetStringUTFChars(env,persPath,NULL); // get the presistent path
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jfieldID long_id = (*env)->GetFieldID(env, thisCls, "jniData", "J");
@@ -713,7 +712,6 @@ fprintf(stderr,"debug-A\n");
   char *fullpath;
   int log_fd, page_fd, snap_fd;
   
-fprintf(stderr,"debug-B\n");
   filesystem = (filesystem_t *) malloc (sizeof(filesystem_t));
   if (filesystem == NULL) {
     perror("Error");
@@ -722,14 +720,12 @@ fprintf(stderr,"debug-B\n");
   filesystem->block_size = blockSize;
   filesystem->page_size = pageSize;
   filesystem->block_map = MAP_INITIALIZE(block);
-fprintf(stderr,"debug-B1\n");
   if (filesystem->block_map == NULL) {
     fprintf(stderr, "Initialize: Allocation of block_map failed.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
     return -1;
   }
   filesystem->log_map = MAP_INITIALIZE(log);
-fprintf(stderr,"debug-B2\n");
   if (filesystem->log_map == NULL) {
     fprintf(stderr, "Initialize: Allocation of log_map failed.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
@@ -745,16 +741,13 @@ fprintf(stderr,"debug-B2\n");
   filesystem->log_length = 0;
   filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
   filesystem->rdmaCtxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
-fprintf(stderr,"debug-B3\n");
   if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),(const uint16_t)port)){
     fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
     return -2;
   }
-fprintf(stderr,"debug-B4\n");
   pthread_rwlock_init(&(filesystem->lock), NULL);
   
-fprintf(stderr,"debug-C\n");
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
   (*env)->SetLongField(env, thisObj, long_id, (int64_t) filesystem);
   
@@ -779,7 +772,6 @@ fprintf(stderr,"debug-C\n");
     close(snap_fd);
   }
   // start write thread.
-fprintf(stderr,"debug-D\n");
   filesystem->bwc.fs = filesystem;
   sprintf(fullpath, "%s/%s",pp,BLOGFILE);
   filesystem->bwc.log_fd = open(fullpath, O_RDWR|O_APPEND|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
@@ -802,14 +794,12 @@ fprintf(stderr,"debug-D\n");
   filesystem->bwc.thisObj = (*env)->NewGlobalRef(env, thisObj); // java this object
   
   //start blog writer thread
-fprintf(stderr,"debug-E\n");
   if (pthread_create(&filesystem->writer_thrd, NULL, blog_writer_routine, (void*)&filesystem->bwc)) {
     fprintf(stderr,"CANNOT create blogWriter thread, exit\n");
     exit(1);
   }
 
   (*env)->ReleaseStringUTFChars(env, persPath, pp);
-fprintf(stderr,"debug-End\n");
   return 0;
 }
 
@@ -1077,6 +1067,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
   jbyte ipStr[16];
   (*env)->GetByteArrayRegion(env, clientIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
+  DEBUG_PRINT("readBlockRDMA:ip=%s\n",(char*)ipStr);
   uint32_t ipkey = inet_addr((const char*)ipStr);
   // get pagelist
   start_page_id = blkOfst / filesystem->page_size;
@@ -1088,7 +1079,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
     npage ++;
   }
   // get remote address
-  const uint64_t address = vaddr % filesystem->page_size;
+  const uint64_t address = vaddr - (vaddr % filesystem->page_size);
   // rdma write...
   rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage);
   free(paddrlist);
@@ -1216,6 +1207,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     fprintf(stderr, "WriteBlock: cannot allocate page from RDMA pool.\n");
     return -4;
   }
+  DEBUG_PRINT("allocatePageArray:address=%p,npage=%d\n",allData,new_pages_length);
   new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
   //new_pages = (page_t*)MALLOCPAGE;
   
@@ -1497,7 +1489,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    rbpAllocateBlockBuffer
- * Signature: (J)Ledu/cornell/cs/blog/JNIBlog/RBPBuffer;
+ * Signature: (J)Ledu/cornell/cs/blog/JNIBlog$RBPBuffer;
  */
 JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffer
   (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
@@ -1541,14 +1533,14 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffe
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    rbpReleaseBuffer
- * Signature: (JLedu/cornell/cs/blog/JNIBlog/RBPBuffer;)V
+ * Signature: (JLedu/cornell/cs/blog/JNIBlog$RBPBuffer;)V
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
   (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jobject rbpBuffer){
   RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
   void* bufAddr;
   // STEP 1: get rbpbuffer class
-  jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog/RBPBuffer");
+  jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog$RBPBuffer");
   if(bufCls==NULL){
     fprintf(stderr,"Cannot find the buffers.");
     return;

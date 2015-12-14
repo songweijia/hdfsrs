@@ -1223,7 +1223,7 @@ class DataXceiver extends Receiver implements Runnable {
     }
     RDMABlockSender blockSender = new RDMABlockSender(
         blk,blockOffset,length,datanode,
-        peer.getRemoteAddressString(),vaddr);
+        peer.getRemoteIPString(),vaddr);
     // STEP 2 - do RDMA write
     blockSender.doSend();
     // STEP 3 - notify the reader

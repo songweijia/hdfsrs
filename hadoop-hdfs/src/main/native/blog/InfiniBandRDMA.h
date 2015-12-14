@@ -169,5 +169,9 @@ inline int isBlogCtxt(const RDMACtxt * ctxt);
  * get int ip from string.
  */
 inline const uint32_t getip(const char* ipstr);
-
+#ifdef DEBUG
+#define DEBUG_PRINT(arg,fmt...) fprintf(stderr,arg, ##fmt )
+#else
+#define DEBUG_PRINT(arg,fmt...)
+#endif
 #endif//__INFINIBANDRDMA_H__
