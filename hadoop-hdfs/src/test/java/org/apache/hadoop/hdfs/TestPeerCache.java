@@ -90,6 +90,11 @@ public class TestPeerCache {
     }
 
     @Override
+    public String getRemoteIPString() {
+      return null;
+    }
+
+    @Override
     public String getLocalAddressString() {
       return "127.0.0.1:123";
     }
