@@ -1502,7 +1502,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
 JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffer
   (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
   // STEP 1: create an object
-  jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog/RBPBuffer");
+  jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog$RBPBuffer");
   if(bufCls==NULL){
     fprintf(stderr,"Cannot find the buffers.");
     return NULL;
