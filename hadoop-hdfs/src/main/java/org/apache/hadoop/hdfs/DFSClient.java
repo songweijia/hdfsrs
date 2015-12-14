@@ -308,6 +308,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     final long shortCircuitMmapCacheRetryTimeout;
     final long shortCircuitCacheStaleThresholdMs;
 
+    final boolean useRDMABlockReader;
+
     public Conf(Configuration conf) {
       // The hdfsTimeout is currently the same as the ipc timeout 
       hdfsTimeout = Client.getTimeout(conf);
@@ -394,6 +396,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       domainSocketPath = conf.getTrimmed(
           DFSConfigKeys.DFS_DOMAIN_SOCKET_PATH_KEY,
           DFSConfigKeys.DFS_DOMAIN_SOCKET_PATH_DEFAULT);
+      useRDMABlockReader = conf.getBoolean(
+          DFSConfigKeys.DFS_CLIENT_USE_RDMA_BLOCKREADER,
+          DFSConfigKeys.DFS_CLIENT_USE_RDMA_BLOCKREADER_DEFAULT);
 
       if (BlockReaderLocal.LOG.isDebugEnabled()) {
         BlockReaderLocal.LOG.debug(

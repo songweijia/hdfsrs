@@ -642,6 +642,8 @@ public class DFSConfigKeys extends CommonConfigurationKeys {
   //HDFSRS_RDMA
   public static final String DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_KEY = "dfs.rdma.client.mem.region.size.exp";
   public static final int DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_DEFAULT = 30;
+  public static final String  DFS_CLIENT_USE_RDMA_BLOCKREADER = "dfs.client.use.rdma.blockreader";
+  public static final boolean DFS_CLIENT_USE_RDMA_BLOCKREADER_DEFAULT = false;
 //  public static final String DFS_RDMA_PAGE_SIZE_EXPONENT_KEY = "dfs.rdma.page.size.exp";
 //  public static final int DFS_RDMA_PAGE_SIZE_EXPONENT_DEFAULT = 12;
   public static final String DFS_RDMA_CON_PORT_KEY = "dfs.rdma.con.port";

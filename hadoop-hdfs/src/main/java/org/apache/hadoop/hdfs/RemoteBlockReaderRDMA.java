@@ -49,8 +49,8 @@ public class RemoteBlockReaderRDMA implements BlockReader {
     Configuration conf = new HdfsConfiguration();
     int psz = conf.getInt(DFSConfigKeys.DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_KEY, 
         DFSConfigKeys.DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_DEFAULT);
-    long bs = conf.getLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 
-        DFSConfigKeys.DFS_NAMENODE_MIN_BLOCK_SIZE_DEFAULT);
+    long bs = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 
+        DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
     RDMA_CON_PORT = conf.getInt(DFSConfigKeys.DFS_RDMA_CON_PORT_KEY, DFSConfigKeys.DFS_RDMA_CON_PORT_DEFAULT);
     int align = 0;
     while(((bs>>align)&1) == 0)align++;
