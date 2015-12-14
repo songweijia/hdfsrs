@@ -1227,6 +1227,10 @@ class DataXceiver extends Receiver implements Runnable {
     // STEP 2 - do RDMA write
     blockSender.doSend();
     // STEP 3 - notify the reader
-
+    BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()
+        .setStatus(SUCCESS);
+    resp.build().writeDelimitedTo(out);
+    out.flush();
+    return;
   }
 }

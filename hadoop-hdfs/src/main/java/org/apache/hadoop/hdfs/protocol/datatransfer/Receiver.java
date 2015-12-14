@@ -30,6 +30,7 @@ import org.apache.hadoop.hdfs.ShortCircuitShm.SlotId;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpCopyBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockRDMAProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReplaceBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockProto;
@@ -69,6 +70,9 @@ public abstract class Receiver implements DataTransferProtocol {
     switch(op) {
     case READ_BLOCK:
       opReadBlock();
+      break;
+    case READ_BLOCK_RDMA:
+      opReadBlockRDMA();
       break;
     case WRITE_BLOCK:
       opWriteBlock(in);
@@ -122,6 +126,17 @@ public abstract class Receiver implements DataTransferProtocol {
         (proto.hasCachingStrategy() ?
             getCachingStrategy(proto.getCachingStrategy()) :
           CachingStrategy.newDefaultStrategy()));
+  }
+
+  /** Receive OP_READ_BLOCK_RDMA */
+  private void opReadBlockRDMA() throws IOException {
+    OpReadBlockRDMAProto proto = OpReadBlockRDMAProto.parseFrom(vintPrefixed(in));
+    readBlockRDMA(PBHelper.convert(proto.getHeader().getBaseHeader().getBlock()),
+        PBHelper.convert(proto.getHeader().getBaseHeader().getToken()),
+        proto.getHeader().getClientName(),
+        proto.getOffset(),
+        proto.getLen(),
+        proto.getVaddr());
   }
   
   /** Receive OP_WRITE_BLOCK */
