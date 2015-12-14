@@ -30,7 +30,7 @@ static int die(const char *reason){
 */
 MAP_DEFINE(con,RDMAConnection,10);
 
-#define MAX_SQE (100)
+#define MAX_SQE (1024)  // MAX_SQE * MAX_SGE * PAGE_SIZE = 128M
 
 static int qp_change_state_init(struct ibv_qp *qp, int port){
   struct ibv_qp_attr *attr;
@@ -260,6 +260,7 @@ int initializeContext(
     "Could not allocate mr, ibv_reg_mr. Do you have root privileges?");
   TEST_NZ(ibv_query_device(ctxt->ctxt,&dev_attr),"Could not query device values");
   ctxt->max_sge = dev_attr.max_sge;
+  DEBUG_PRINT("initialization:max_sge=%d,max_cqe=%d\n",ctxt->max_sge,dev_attr.max_cqe);
   ctxt->max_mr  = dev_attr.max_mr;
   ctxt->max_cq  = dev_attr.max_cq;
   ctxt->max_cqe = dev_attr.max_cqe;
@@ -546,48 +547,62 @@ DEBUG_PRINT("rdmaWrite:r_vaddr=%p\n",(void*)r_vaddr);
     return -1;
   }
   // STEP 2: finish write and return
-  int i;
-  struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*npage);
-  for(i=0;i<npage;i++){
-    (sge_list+i)->addr = (uintptr_t)pagelist[i];
-    (sge_list+i)->length = RDMA_CTXT_PAGE_SIZE(ctxt);
-    (sge_list+i)->lkey = rdmaConn->l_rkey;
-  }
+  struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*ctxt->max_sge);
   struct ibv_send_wr wr;
   wr.wr.rdma.remote_addr = r_vaddr;
   wr.wr.rdma.rkey = rdmaConn->r_rkey;
   wr.wr_id = RDMA_WRID;
   wr.sg_list = sge_list;
-  wr.num_sge = npage;
+//  wr.num_sge = npage;
   wr.opcode = IBV_WR_RDMA_WRITE;
   wr.send_flags = IBV_SEND_SIGNALED;
   wr.next = NULL;
   struct ibv_send_wr *bad_wr;
   TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
-  int rSend = 0;
-  rSend = ibv_post_send(rdmaConn->qp,&wr,&bad_wr);
-  if(rSend!=0){
-    fprintf(stderr,"RDMA write failed...");
-    return -1; // write failed.
+  int writeCnt=0;//number of RDMA write we made
+  int npageToSend=npage;
+  while(npageToSend > 0){
+    int i;
+    int batchSize = (npageToSend > ctxt->max_sge)?ctxt->max_sge:npageToSend;
+    // prepare the sge_list
+    for(i=0;i<batchSize;i++){
+      (sge_list+i)->addr = (uintptr_t)pagelist[npage-npageToSend+i];
+      (sge_list+i)->length = RDMA_CTXT_PAGE_SIZE(ctxt);
+      (sge_list+i)->lkey = rdmaConn->l_rkey;
+    }
+    wr.num_sge = batchSize;
+    npageToSend-=batchSize;
+    writeCnt ++;
+    // 
+    int rSend = ibv_post_send(rdmaConn->qp,&wr,&bad_wr);
+    if(rSend!=0){
+      fprintf(stderr,"ibv_post_send failed with error code:%d\n",rSend);
+      return -1; // write failed.
+    }
   }
-  struct ibv_wc *wc = (struct ibv_wc*)malloc(MAX_SQE*sizeof(struct ibv_wc));
+  DEBUG_PRINT("rdmaWrite: batchSize=%d\n",writeCnt);
+  struct ibv_wc *wc = (struct ibv_wc*)malloc(writeCnt*sizeof(struct ibv_wc));
   // wait on completion queue
   void *cq_ctxt;
   TEST_NZ(ibv_get_cq_event(rdmaConn->ch, &rdmaConn->scq, &cq_ctxt), "ibv_get_cq_event failed!");
   ibv_ack_cq_events(rdmaConn->scq,1);
   // get completion event.
   int ne=0;
-  do{
-    ne = ibv_poll_cq(rdmaConn->scq,MAX_SQE,wc);
-  }while(ne==0);
-  if(ne<0){
-    fprintf(stderr, "%s: poll CQ failed %d\n", __func__, ne);
-    return -2;
-  }
-  for(i=0;i<ne;i++)
-  if((wc+i)->status != IBV_WC_SUCCESS) {
-    fprintf(stderr, "%s: rdma write failed,wc[%d]->status=%d.\n",__func__,i,(wc+i)->status);
-    return -3;
+  while(ne<writeCnt){
+    int i,npe = 0; // polled entry;
+    do{
+      npe = ibv_poll_cq(rdmaConn->scq,writeCnt,wc);
+    }while(npe==0);
+    if(npe<0){
+      fprintf(stderr, "%s: poll CQ failed %d\n", __func__, ne);
+      return -2;
+    }
+    for(i=0;i<npe;i++)
+    if((wc+i)->status != IBV_WC_SUCCESS) {
+      fprintf(stderr, "%s: rdma write failed,wc[%d]->status=%d.\n",__func__,i,(wc+i)->status);
+      return -3;
+    }
+    ne += npe;
   }
   free(sge_list);
   free(wc);

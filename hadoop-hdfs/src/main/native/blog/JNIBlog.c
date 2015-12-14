@@ -1067,12 +1067,13 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
   jbyte ipStr[16];
   (*env)->GetByteArrayRegion(env, clientIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
-  DEBUG_PRINT("readBlockRDMA:ip=%s\n",(char*)ipStr);
   uint32_t ipkey = inet_addr((const char*)ipStr);
+  DEBUG_PRINT("readBlockRDMA:ip=%s\n",(char*)ipStr);
   // get pagelist
   start_page_id = blkOfst / filesystem->page_size;
-  end_page_id = (blkOfst+length) / filesystem->page_size;
-  void **paddrlist = (void**)malloc(sizeof(void*)*npage);
+  end_page_id = (blkOfst+length-1) / filesystem->page_size;
+  DEBUG_PRINT("readBlockRDMA:page range=%d-%d\n",start_page_id,end_page_id);
+  void **paddrlist = (void**)malloc(sizeof(void*)*(end_page_id - start_page_id + 1));
   while(start_page_id<=end_page_id){
     paddrlist[npage] = (void*)block->pages[start_page_id]->data;
     start_page_id ++;
@@ -1080,6 +1081,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
   }
   // get remote address
   const uint64_t address = vaddr - (vaddr % filesystem->page_size);
+  DEBUG_PRINT("readBlockRDMA:ip=%s,npage=%d,address=%p\n",
+    (char*)ipStr,npage,(const void *)address);
   // rdma write...
   rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage);
   free(paddrlist);
