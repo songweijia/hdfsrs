@@ -579,6 +579,7 @@ DEBUG_PRINT("rdmaWrite:r_vaddr=%p\n",(void*)r_vaddr);
       fprintf(stderr,"ibv_post_send failed with error code:%d\n",rSend);
       return -1; // write failed.
     }
+    wr.wr.rdma.remote_addr += batchSize * RDMA_CTXT_PAGE_SIZE(ctxt);
   }
   DEBUG_PRINT("rdmaWrite: batchSize=%d\n",writeCnt);
   struct ibv_wc *wc = (struct ibv_wc*)malloc(writeCnt*sizeof(struct ibv_wc));
