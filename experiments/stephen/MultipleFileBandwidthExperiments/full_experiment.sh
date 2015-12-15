@@ -12,7 +12,7 @@ for c in $(seq 5 5)
 do
      for r in $(seq 4 5)
 	 do
-		 #Restart File System and write 1G GB to test.txt
+		 #Restart File System and write files
 		 echo "Resetting File System"
 		 sh hdfsrs/experiments/stephen/MultipleFileBandwidthExperiments/reset.sh ${clients[c]}
 		 #Run on first node
