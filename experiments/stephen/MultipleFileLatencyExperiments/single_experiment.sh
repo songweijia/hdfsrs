@@ -16,7 +16,7 @@ rw_ratio=$2
 node_id=$3
 
 #Output file
-output_filename='hdfsrs/experiments/stephen/MultipleFileLatencyData/'$total_clients'_'$rw_ratio'/'
+output_folder='hdfsrs/experiments/stephen/MultipleFileLatencyData/'$total_clients'_'$rw_ratio'/'
 
 #If more than two jobs, split them across the machines
 if [ $total_clients -gt 1 ]
