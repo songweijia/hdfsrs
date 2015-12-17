@@ -47,12 +47,12 @@ public class JNIBlog {
    * @param persPath
    * @param port - the port number for RDMA based Blog
    */
-  public void initialize(MemDatasetManager dsmgr, String bpid, int blockSize, int pageSize, String persPath, int port){
+  public void initialize(MemDatasetManager dsmgr, String bpid, long poolSize, int blockSize, int pageSize, String persPath, int port){
     this.dsmgr = dsmgr;
     this.bpid = bpid;
     this.persPath = persPath;
     // initialize blog
-    initialize(1l<<30, (int)blockSize, pageSize, persPath, port);
+    initialize(poolSize, (int)blockSize, pageSize, persPath, port);
     // LOAD blockmap
     loadBlockMap();
     Runtime.getRuntime().addShutdownHook(new Thread(){
@@ -390,7 +390,7 @@ public class JNIBlog {
     long rtc;
   
     writeLine("Begin Initialize.");
-    bl.initialize(null,null,1024*1024, 1024, "testbpid", 0); // TODO: modify
+    bl.initialize(null,null,1l<<30,1024*1024, 1024, "testbpid", 0); // TODO: modify
 /*
     writeLine(bl.hlc.toString());
     bl.testBlockCreation(mhlc);

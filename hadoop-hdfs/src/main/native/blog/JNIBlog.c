@@ -741,6 +741,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->log_length = 0;
   filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
   filesystem->rdmaCtxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
+  DEBUG_PRINT("JNIBlog.initialize:(),poolSize=%ld,LOG2(poolSize)=%d\n",poolSize,LOG2(poolSize));
   if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),(const uint16_t)port)){
     fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
@@ -1571,6 +1572,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
   uint32_t ipkey = inet_addr((const char*)ipStr);
   int rc = rdmaConnect(ctxt, (const uint32_t)ipkey, (const uint16_t)port);
   if(rc == 0 || rc == -1){
+    // do nothing, -1 means duplicated connection.
   }else
     fprintf(stderr,"Setting up RDMA connection to %s failed with error %d.\n", (char*)ipStr, rc);
 }
