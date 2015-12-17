@@ -60,8 +60,9 @@ public class MultipleFileLatency {
       //Length of the file
       int FILE_SIZE = (int) fileStat.getLen();
 
-      //Open reader
+      //Open reader and writer
       FSDataInputStream reader = fs.open(file);
+      FSDataOutputStream writer = fs.append(file);
 
       long startTime = 0;
 	  long endTime = 0;
@@ -74,30 +75,24 @@ public class MultipleFileLatency {
 			  startTime = System.currentTimeMillis();
               reader.seek(newIndex);
               reader.read(randBuf);
+			  
 			  endTime = System.currentTimeMillis();
 			  System.out.println(endTime - startTime);
           } else {
               //Write 32 KB
-              boolean success = false;
 			  startTime = System.currentTimeMillis();
-              while (!success) {
-                  try {
-                    FSDataOutputStream writer = fs.append(file);
-                    writer.seek(newIndex);
-                    writer.write(randBuf);
-                    writer.close();
-	  			    endTime = System.currentTimeMillis();
-	  			    System.out.println(endTime - startTime);
-                    rand.nextBytes(randBuf);
-                    success = true;
-
-                  } catch (org.apache.hadoop.ipc.RemoteException e) {
-
-                  }
+              writer.seek(newIndex);
+              writer.write(randBuf);
+			  
+	  	      endTime = System.currentTimeMillis();
+	  		  System.out.println(endTime - startTime);
+			  
+              rand.nextBytes(randBuf);
               }
           }
       }
       reader.close();
+	  writer.close();
 
     } catch (Exception e) {
       System.out.println(e);

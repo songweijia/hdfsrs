@@ -60,8 +60,9 @@ public class MultipleFileThroughput {
       //Length of the file
       int FILE_SIZE = (int) fileStat.getLen();
 
-      //Open reader
+      //Open reader and writer
       FSDataInputStream reader = fs.open(file);
+	  FSDataOutputStream writer = fs.append(file);
 
       long startTime = System.currentTimeMillis();
 
@@ -73,25 +74,16 @@ public class MultipleFileThroughput {
               reader.read(randBuf);
           } else {
               //Write 32 KB
-              boolean success = false;
-              while (!success) {
-                  try {
-                    FSDataOutputStream writer = fs.append(file);
-                    writer.seek(newIndex);
-                    writer.write(randBuf);
-                    writer.close();
-
-                    rand.nextBytes(randBuf);
-                    success = true;
-
-                  } catch (org.apache.hadoop.ipc.RemoteException e) {
-
-                  }
+              writer.seek(newIndex);
+              writer.write(randBuf);
+			  
+              rand.nextBytes(randBuf);
               }
           }
       }
 	  
 	  System.out.println(System.currentTimeMillis() - startTime);
+	  writer.close();
       reader.close();
 
     } catch (Exception e) {
