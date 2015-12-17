@@ -506,7 +506,9 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       if (v == null) {
         throw new IOException("No volume for block " + replicaInfo);
       }
-      //v.incDfsUsed(bpid, replicaInfo.getNumBytes());
+      v.incDfsUsed(bpid, replicaInfo.accBytes);
+      replicaInfo.accBytes = 0l;
+//      LOG.info("SONIC-incDfsUsed:+replicaInfo.getNumBytes()="+replicaInfo.getNumBytes());
     }
     replicaInfo.state = ReplicaState.FINALIZED;
     return replicaInfo;

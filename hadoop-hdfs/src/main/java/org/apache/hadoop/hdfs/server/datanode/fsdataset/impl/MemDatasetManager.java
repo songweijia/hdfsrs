@@ -44,6 +44,7 @@ public class MemDatasetManager {
     boolean isDeleted;
     JNIBlog blog;
     ReplicaState state;
+    long accBytes;
     
     MemBlockMeta(String bpid, long genStamp, long blockId, ReplicaState state) {
       super(blockId,(int)JNIBlog.CURRENT_SNAPSHOT_ID,0l,genStamp);
@@ -59,6 +60,7 @@ public class MemDatasetManager {
       this.blockId = blockId;
       this.state = state;
       this.isDeleted = false;
+      this.accBytes = 0l;
     }
     
     public boolean isDeleted(){
@@ -124,7 +126,7 @@ public class MemDatasetManager {
   		if(offset < 0)
   			return getOutputStream();
   		else
-  		  return new BlogOutputStream(blog,blockId,offset);
+  		  return new BlogOutputStream(blog,blockId,offset,this);
   	}
   	public BlogInputStream getInputStream(int offset){
   		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID);
@@ -194,17 +196,20 @@ public class MemDatasetManager {
     JNIBlog blog;
     long blockId;
     int offset;
+    MemBlockMeta meta;
 
-    BlogOutputStream(String bpid,long blockId, int offset){
+    BlogOutputStream(String bpid,long blockId, int offset, MemBlockMeta meta){
     	this.blog = poolMap.get(bpid).blog;
     	this.blockId = blockId;
     	this.offset = offset;
+        this.meta = meta;
     }
     
-    BlogOutputStream(JNIBlog blog,long blockId, int offset){
+    BlogOutputStream(JNIBlog blog,long blockId, int offset, MemBlockMeta meta){
     	this.blog = blog;
     	this.blockId = blockId;
     	this.offset = offset;
+        this.meta = meta;
     }
     
     public synchronized void write(int b) throws IOException {
@@ -216,7 +221,7 @@ public class MemDatasetManager {
     }
 
     @Override
-    public void write(HybridLogicalClock mhlc, byte[] b, int off, int len)
+    public synchronized void write(HybridLogicalClock mhlc, byte[] b, int off, int len)
     throws IOException {
       int ret = blog.writeBlock(mhlc, blockId, offset, off, len, b);
       if(ret < 0)
@@ -224,7 +229,8 @@ public class MemDatasetManager {
           blockId+","+offset+","+off+","+len+",b):"+ret);
       else
         offset += len;
-	  } 
+      this.meta.accBytes += len;
+    } 
   }
   
 //  MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
