@@ -88,7 +88,6 @@ public class MultipleFileLatency {
 	  		  System.out.println(endTime - startTime);
 			  
               rand.nextBytes(randBuf);
-              }
           }
       }
       reader.close();

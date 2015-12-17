@@ -78,7 +78,6 @@ public class MultipleFileThroughput {
               writer.write(randBuf);
 			  
               rand.nextBytes(randBuf);
-              }
           }
       }
 	  
