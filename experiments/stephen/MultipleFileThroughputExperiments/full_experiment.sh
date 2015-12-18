@@ -4,7 +4,7 @@
 
 clients=(1 2 4 8 16 32 64)
 ratios=(1.0 0.75 0.5 0.25 0.0)
-waitTimes=(60s 600s 600s 600s 600s)
+waitTimes=(300s 200s 120s 100s 100s 100s 60s)
 
 cmd='sh hdfsrs/experiments/stephen/MultipleFileThroughputExperiments/single_experiment.sh'
 
@@ -14,7 +14,7 @@ do
 	 do
 		 #Restart File System and write files
 		 echo "Resetting File System"
-		 sh hdfsrs/experiments/stephen/MultipleFileThroughputExperiments/reset.sh ${clients[c]}
+		 sh hdfsrs/experiments/stephen/MultipleFileThroughputExperiments/reset.sh ${clients[c]} &> /dev/null
 		 #Run on first node
 		 ssh -i stephen.pem 128.84.105.91 -l root $cmd' '${clients[c]}' '${ratios[r]}' 1'
 		 echo "Running Node 1 "${clients[c]}' clients, readratio: '${ratios[r]}
@@ -24,6 +24,6 @@ do
 			 ssh -i stephen.pem 128.84.105.149 -l root $cmd' '${clients[c]}' '${ratios[r]}' 2'
 			 echo "Running Node 2 "${clients[c]}' clients, readratio: '${ratios[r]}
 		 fi
-		 sleep ${waitTimes[r]}
+		 #sleep ${waitTimes[c]}
 	 done
 done

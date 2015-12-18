@@ -8,9 +8,9 @@ waitTimes=(300s 1000s)
 
 cmd='sh hdfsrs/experiments/stephen/SharedFileLatencyExperiments/single_experiment.sh'
 
-for c in $(seq 2 6)
+for c in $(seq 0 6)
 do
-     for r in $(seq 0 0)
+     for r in $(seq 0 1)
 	 do
 		 #Restart File System and write 1G GB to test.txt
 		 echo "Resetting File System"

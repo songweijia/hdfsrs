@@ -14,7 +14,7 @@ then
 fi
 
 #Split up file sizes evenly
-file_size=$((128 / num_clients))
+file_size=$((1024 / num_clients))
 
 
 #Write 1024 GB to file
