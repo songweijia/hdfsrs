@@ -39,7 +39,7 @@ static int qp_change_state_init(struct ibv_qp *qp, int port){
   attr->qp_state=IBV_QPS_INIT;
   attr->pkey_index=0;
   attr->port_num=port;
-  attr->qp_access_flags=IBV_ACCESS_REMOTE_WRITE;
+  attr->qp_access_flags=IBV_ACCESS_REMOTE_WRITE|IBV_ACCESS_REMOTE_READ;
   TEST_NZ(ibv_modify_qp(qp,attr,
     IBV_QP_STATE|IBV_QP_PKEY_INDEX|IBV_QP_PORT|IBV_QP_ACCESS_FLAGS),
     "Could not modify QP to INIT, ibv_modify_qp");
@@ -256,7 +256,7 @@ int initializeContext(
       ctxt->pd,
       ctxt->pool,
       RDMA_CTXT_POOL_SIZE(ctxt),
-      bClient?(IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE):(IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE)),
+      bClient?(IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE):(IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE )),
     "Could not allocate mr, ibv_reg_mr. Do you have root privileges?");
   TEST_NZ(ibv_query_device(ctxt->ctxt,&dev_attr),"Could not query device values");
   ctxt->max_sge = dev_attr.max_sge;
@@ -441,6 +441,7 @@ int releaseBuffer(RDMACtxt *ctxt, const void *buf){
 }
 
 int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
+  DEBUG_PRINT("connecting to:%d:%d\n",hostip,port);
   // STEP 0: if connection exists?
   const uint64_t cipkey = (const uint64_t)hostip;
   int bDup;
@@ -525,6 +526,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
     return -6;
   }
   MAP_UNLOCK(con, ctxt->con_map, cipkey);
+  DEBUG_PRINT("client %d is connected.\n",hostip);
   return 0;
 }
 
@@ -534,10 +536,8 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
   return -1;
 }
 
-int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage){
-DEBUG_PRINT("rdmaWrite:npage=%d\n",npage);
-DEBUG_PRINT("rdmaWrite:first page_address=%p\n",*pagelist);
-DEBUG_PRINT("rdmaWrite:r_vaddr=%p\n",(void*)r_vaddr);
+int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite){
+DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr=%p\n",iswrite,npage,*pagelist,(void*)r_vaddr);
   const uint64_t cipkey = (const uint64_t)hostip;
   RDMAConnection *rdmaConn = NULL;
   // STEP 1: get the connection
@@ -546,33 +546,33 @@ DEBUG_PRINT("rdmaWrite:r_vaddr=%p\n",(void*)r_vaddr);
     fprintf(stderr, "Cannot find the context for ip:%lx",cipkey);
     return -1;
   }
-  // STEP 2: finish write and return
+  // STEP 2: finish transfer and return
   struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*ctxt->max_sge);
   struct ibv_send_wr wr;
   wr.wr.rdma.remote_addr = r_vaddr;
   wr.wr.rdma.rkey = rdmaConn->r_rkey;
-  wr.wr_id = RDMA_WRID;
+  wr.wr_id = iswrite?RDMA_WRID:RDMA_RDID;
   wr.sg_list = sge_list;
 //  wr.num_sge = npage;
-  wr.opcode = IBV_WR_RDMA_WRITE;
+  wr.opcode = iswrite?IBV_WR_RDMA_WRITE:IBV_WR_RDMA_READ;
   wr.send_flags = IBV_SEND_SIGNALED;
   wr.next = NULL;
   struct ibv_send_wr *bad_wr;
   TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
-  int writeCnt=0;//number of RDMA write we made
-  int npageToSend=npage;
-  while(npageToSend > 0){
+  int opCnt=0;//number of transfer
+  int npageToProcess=npage;
+  while(npageToProcess > 0){
     int i;
-    int batchSize = (npageToSend > ctxt->max_sge)?ctxt->max_sge:npageToSend;
+    int batchSize = (npageToProcess > ctxt->max_sge)?ctxt->max_sge:npageToProcess;
     // prepare the sge_list
     for(i=0;i<batchSize;i++){
-      (sge_list+i)->addr = (uintptr_t)pagelist[npage-npageToSend+i];
+      (sge_list+i)->addr = (uintptr_t)pagelist[npage-npageToProcess+i];
       (sge_list+i)->length = RDMA_CTXT_PAGE_SIZE(ctxt);
       (sge_list+i)->lkey = rdmaConn->l_rkey;
     }
     wr.num_sge = batchSize;
-    npageToSend-=batchSize;
-    writeCnt ++;
+    npageToProcess-=batchSize;
+    opCnt ++;
     // 
     int rSend = ibv_post_send(rdmaConn->qp,&wr,&bad_wr);
     if(rSend!=0){
@@ -581,18 +581,18 @@ DEBUG_PRINT("rdmaWrite:r_vaddr=%p\n",(void*)r_vaddr);
     }
     wr.wr.rdma.remote_addr += batchSize * RDMA_CTXT_PAGE_SIZE(ctxt);
   }
-  DEBUG_PRINT("rdmaWrite: batchSize=%d\n",writeCnt);
-  struct ibv_wc *wc = (struct ibv_wc*)malloc(writeCnt*sizeof(struct ibv_wc));
+  DEBUG_PRINT("rdmaTransfer: batchSize=%d\n",opCnt);
+  struct ibv_wc *wc = (struct ibv_wc*)malloc(opCnt*sizeof(struct ibv_wc));
   // wait on completion queue
   void *cq_ctxt;
   TEST_NZ(ibv_get_cq_event(rdmaConn->ch, &rdmaConn->scq, &cq_ctxt), "ibv_get_cq_event failed!");
   ibv_ack_cq_events(rdmaConn->scq,1);
   // get completion event.
   int ne=0;
-  while(ne<writeCnt){
+  while(ne<opCnt){
     int i,npe = 0; // polled entry;
     do{
-      npe = ibv_poll_cq(rdmaConn->scq,writeCnt,wc);
+      npe = ibv_poll_cq(rdmaConn->scq,opCnt,wc);
     }while(npe==0);
     if(npe<0){
       fprintf(stderr, "%s: poll CQ failed %d\n", __func__, ne);
@@ -600,7 +600,7 @@ DEBUG_PRINT("rdmaWrite:r_vaddr=%p\n",(void*)r_vaddr);
     }
     for(i=0;i<npe;i++)
     if((wc+i)->status != IBV_WC_SUCCESS) {
-      fprintf(stderr, "%s: rdma write failed,wc[%d]->status=%d.\n",__func__,i,(wc+i)->status);
+      fprintf(stderr, "%s: rdma transfer failed,wc[%d]->status=%d.\n",__func__,i,(wc+i)->status);
       return -3;
     }
     ne += npe;

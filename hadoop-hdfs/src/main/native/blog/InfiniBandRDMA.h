@@ -65,6 +65,7 @@ struct rdma_conn {
   uint64_t                l_vaddr,r_vaddr;
 };
 #define RDMA_WRID	(3)
+#define RDMA_RDID	(4)
 
   ////////////////////////////////////////////////
  // Definition of RDMA PRIMITIVES.             //
@@ -149,18 +150,23 @@ extern int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t por
  * others for failure
  */
 extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
-/* rdmaWrite(): write a list of pages using RDMA.
+/* rdmaTransfer(): transfer a list of pages using RDMA.
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized blog context.
  * hostip:  the ip address of the client
  * r_vaddr: the remote buffer address
- * pagelist:pages to be written
- * npage:   number of the pages to be written
+ * pagelist:pages to be transfer to/from the client buffer
+ * npage:   number of the pages to be read
+ * iswrite: true for write, false for read.
  * RETURN VALUE
  * 0 for success
  * others for failure
  */
-extern int rdmaWrite(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist,int npage);
+extern int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage, int iswrite);
+#define rdmaWrite( ctxt, hostip, r_vaddr, pagelist, npage ) \
+  rdmaTransfer( ctxt, hostip, r_vaddr, pagelist, npage, 1)
+#define rdmaRead( ctxt, hostip, r_vaddr, pagelist, npage ) \
+  rdmaTransfer( ctxt, hostip, r_vaddr, pagelist, npage, 0)
   ////////////////////////////////////////////////
  // Definition of internal tools               //
 ////////////////////////////////////////////////
