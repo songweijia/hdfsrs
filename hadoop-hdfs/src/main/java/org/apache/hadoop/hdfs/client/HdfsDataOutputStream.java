@@ -24,7 +24,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hdfs.DFSOutputStream;
+import org.apache.hadoop.hdfs.SeekableDFSOutputStream;
 
 /**
  * The Hdfs implementation of {@link FSDataOutputStream}.
@@ -32,12 +32,12 @@ import org.apache.hadoop.hdfs.DFSOutputStream;
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public class HdfsDataOutputStream extends FSDataOutputStream {
-  public HdfsDataOutputStream(DFSOutputStream out, FileSystem.Statistics stats,
+  public HdfsDataOutputStream(SeekableDFSOutputStream out, FileSystem.Statistics stats,
       long startPosition) throws IOException {
     super(out, stats, startPosition);
   }
 
-  public HdfsDataOutputStream(DFSOutputStream out, FileSystem.Statistics stats
+  public HdfsDataOutputStream(SeekableDFSOutputStream out, FileSystem.Statistics stats
       ) throws IOException {
     this(out, stats, 0L);
   }
@@ -55,7 +55,7 @@ public class HdfsDataOutputStream extends FSDataOutputStream {
    * @return the number of valid replicas of the current block
    */
   public synchronized int getCurrentBlockReplication() throws IOException {
-    return ((DFSOutputStream)getWrappedStream()).getCurrentBlockReplication();
+    return ((SeekableDFSOutputStream)getWrappedStream()).getCurrentBlockReplication();
   }
   
   /**
@@ -67,7 +67,7 @@ public class HdfsDataOutputStream extends FSDataOutputStream {
    * @see FSDataOutputStream#hsync()
    */
   public void hsync(EnumSet<SyncFlag> syncFlags) throws IOException {
-    ((DFSOutputStream) getWrappedStream()).hsync(syncFlags);
+    ((SeekableDFSOutputStream) getWrappedStream()).hsync(syncFlags);
   }
   
   public static enum SyncFlag {
@@ -81,20 +81,20 @@ public class HdfsDataOutputStream extends FSDataOutputStream {
 
   //HDFSRS_WRAPI{
   void checkOutputStream() throws IOException {
-	  if(! (this.getWrappedStream() instanceof DFSOutputStream))
-		  throw new IOException("[HDFSRS_WRAPI]outputstream is NOT "+DFSOutputStream.class.getName());
+	  if(! (this.getWrappedStream() instanceof SeekableDFSOutputStream))
+		  throw new IOException("[HDFSRS_WRAPI]outputstream is NOT "+SeekableDFSOutputStream.class.getName());
   }
   @Override
   public void seek(long pos) throws IOException {
 	  checkOutputStream();
-	  ((DFSOutputStream)this.getWrappedStream()).seek(pos);
+	  ((SeekableDFSOutputStream)this.getWrappedStream()).seek(pos);
 	  this.movePositionCache(pos);
   }
 
   @Override
   public long getPos() throws IOException {
 	  checkOutputStream();
-	  return ((DFSOutputStream)this.getWrappedStream()).getPos();
+	  return ((SeekableDFSOutputStream)this.getWrappedStream()).getPos();
   }
   //}HDFSRS_WRAPI
 }

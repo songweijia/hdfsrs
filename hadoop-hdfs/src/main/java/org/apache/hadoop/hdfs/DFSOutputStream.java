@@ -125,8 +125,7 @@ import edu.cornell.cs.sa.HybridLogicalClock;
  * starts sending packets from the dataQueue.
 ****************************************************************/
 @InterfaceAudience.Private
-public class DFSOutputStream extends FSOutputSummer
-    implements Syncable, CanSetDropBehind {
+public class DFSOutputStream extends SeekableDFSOutputStream{
   protected final DFSClient dfsClient;
   protected static final int MAX_PACKETS = 80; // each packet 64K, total 5MB
   protected Socket s;
