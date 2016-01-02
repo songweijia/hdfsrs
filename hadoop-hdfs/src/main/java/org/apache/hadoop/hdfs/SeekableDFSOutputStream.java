@@ -15,8 +15,28 @@ implements Syncable, CanSetDropBehind{
     super(sum, maxChunkSize, checksumSize);
     // TODO Auto-generated constructor stub
   }
+  /**
+   * get Replication number.
+   * @return
+   * @throws IOException
+   */
   public abstract int getCurrentBlockReplication() throws IOException;
+  /**
+   * 
+   * @param syncFlags
+   * @throws IOException
+   */
   public abstract void hsync(EnumSet<SyncFlag> syncFlags)throws IOException;
-  public abstract void seek(long pos)throws IOException;
+  /**
+   * flush previous data and seek to specified file position.
+   * @param pos
+   * @throws IOException
+   */
+  public abstract void seek(long pos)throws IOException; 
+  /**
+   * get Position of the current write cursor.
+   * @return
+   * @throws IOException
+   */
   public abstract long getPos() throws IOException;
 }

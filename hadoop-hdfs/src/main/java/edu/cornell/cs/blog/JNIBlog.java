@@ -15,6 +15,12 @@ import java.nio.charset.*;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hdfs.HdfsConfiguration;
+import org.apache.hadoop.hdfs.RemoteBlockReaderRDMA;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager.MemBlockMeta;
@@ -30,6 +36,28 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager.M
 public class JNIBlog {
   static{
     System.loadLibrary("edu_cornell_cs_blog_JNIBlog");
+  }
+  static final Log LOG = LogFactory.getLog(JNIBlog.class);
+  static long hRDMABufferPool = 0l;
+  static public long getRDMABufferPool(){
+    if(hRDMABufferPool == 0l)
+      initializeRDMABufferPool();
+    return hRDMABufferPool;
+  }
+  static private void initializeRDMABufferPool(){
+    Configuration conf = new HdfsConfiguration();
+    int psz = conf.getInt(DFSConfigKeys.DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_KEY, 
+        DFSConfigKeys.DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_DEFAULT);
+    long bs = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 
+        DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
+    int align = 0;
+    while(((bs>>align)&1) == 0)align++;
+    try{
+      hRDMABufferPool = JNIBlog.rbpInitialize(psz, align, 0);
+    }catch(Exception e){
+      LOG.fatal("Fail to initialize the rdma buffer with exception:"+e);
+      System.exit(-1);
+    }
   }
 
   static public long CURRENT_SNAPSHOT_ID = -1l;

@@ -42,24 +42,12 @@ import org.apache.hadoop.classification.InterfaceAudience;
 @InterfaceAudience.Private
 public class RemoteBlockReaderRDMA implements BlockReader {
   static final Log LOG = LogFactory.getLog(RemoteBlockReaderRDMA.class);
-  static long hRDMABufferPool;
+  static long hRDMABufferPool = JNIBlog.getRDMABufferPool();
   static final int RDMA_CON_PORT;
 
   static{
     Configuration conf = new HdfsConfiguration();
-    int psz = conf.getInt(DFSConfigKeys.DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_KEY, 
-        DFSConfigKeys.DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_DEFAULT);
-    long bs = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 
-        DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
     RDMA_CON_PORT = conf.getInt(DFSConfigKeys.DFS_RDMA_CON_PORT_KEY, DFSConfigKeys.DFS_RDMA_CON_PORT_DEFAULT);
-    int align = 0;
-    while(((bs>>align)&1) == 0)align++;
-    try{
-      hRDMABufferPool = JNIBlog.rbpInitialize(psz, align, 0);
-    }catch(Exception e){
-      LOG.fatal("Fail to initialize the rdma buffer with exception:"+e);
-      System.exit(-1);
-    }
   }
   
   final private Peer peer;
