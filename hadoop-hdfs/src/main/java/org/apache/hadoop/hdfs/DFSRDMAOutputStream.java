@@ -96,7 +96,7 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   protected final LinkedList<Packet> fDataQueue = new LinkedList<Packet>();
   protected final LinkedList<Packet> fAckQueue = new LinkedList<Packet>();
   protected final RBPBuffer fBlockBuffer;
-  long dataStartPos, dataEndPos; // all for the buffer.
+  long dataStartPos;//, dataEndPos; // all for the buffer.
   protected Packet currentPacket = null;
   protected DataStreamer streamer = null;
   protected long currentSeqno = 0;
@@ -130,6 +130,7 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   private void queuePacket(Packet pkt){
     synchronized(fDataQueue) {
       if(pkt == null) return;
+      //CLIENT: "inserting dQ"
       fDataQueue.addLast(pkt);
       fDataQueue.notifyAll();
     }
@@ -229,9 +230,10 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     /**
      * appending to a block
      * Here we assume the following variables have been setup 
-     * - block
      * - blockNumber
      * - stat
+     * - block
+     * After successful return, we assume the following variables have been setup:
      * - accessToken
      * - nodes
      */
@@ -243,6 +245,7 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
         lb = dfsClient.namenode.updateBlockForPipeline(block,dfsClient.clientName);
         long newGS = lb.getBlock().getGenerationStamp();
         accessToken = lb.getBlockToken();
+        nodes = lb.getLocations();
         //STEP 1.2: create output stream
         if(!this.createBlockOutputStream(nodes,newGS))
           return;
@@ -336,13 +339,13 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
           fPkt.seqno = -1; // flush packet always has seqno -1
           fPkt.writeTo(blockStream);
         }
-        synchronized(fAckQueue){
+        synchronized(fDataQueue){
           if(bFinishBlock)
             fAckQueue.addLast(fPkt);
-          
+          // STREAMER: wait till all pkts are acked.
           while(!fAckQueue.isEmpty()){
             try {
-              fAckQueue.wait();
+              fDataQueue.wait();
             } catch (InterruptedException e) {
               //do nothing
             }
@@ -428,48 +431,74 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     }
     
     /**
+     * send pkts till existing data of a same block is sent.
+     * NOTE: we assume lock on dQ and pkts are in dQ.
+     */
+    private void doStreamingInternal(){
+      while(!fDataQueue.isEmpty()){
+        Packet pkt = fDataQueue.getFirst();
+        if(!validatePacket(pkt)){
+          lastException = new Exception("Invalid pkt:"+pkt);
+          DFSClient.LOG.error("doStreaming() get invalid packet from dataQueue:"+pkt);
+          return;
+        }
+        if(pkt.blkno == this.blockNumber){//write to the same blk,
+          try {
+            pkt.writeTo(this.blockStream);
+          } catch (IOException e) {
+            DFSClient.LOG.error("doStreaming() fail sending packet:"+pkt);
+            this.lastException = e;
+            this.stat = DSS.ERROR;
+            return;
+          }
+          fDataQueue.removeFirst();
+          // STREAMER: notify responder. 
+          fAckQueue.addLast(pkt);
+          fDataQueue.notifyAll();
+        }else{//go to different blk.
+          if(!this.flushInternal(true))return;
+          endBlock(pkt.blkno);
+          break;
+        }
+      }
+    }
+    
+    /**
      * do Streaming
      */
     void doStreaming(){
       //lockdQ
       synchronized(fDataQueue){
-        if(fDataQueue.isEmpty()){
-          if(this.bRunning){// not stop, sleep on fDataQueue.
-            try {
-              fDataQueue.wait();
-            } catch (InterruptedException e) {
-              //do nothing.
-            }
-          }else{// stop...
-            flushInternal(true);
-            closeInternal();
-            //this will stop streaming thread.
+        // STREAMER: wait pkts data from client.
+        while(fDataQueue.isEmpty() && this.bRunning){
+          try {
+            fDataQueue.wait();
+          } catch (InterruptedException e) {
+            //do nothing.
           }
-        }else{//fDataQueue is not empty
-          while(!fDataQueue.isEmpty()){
-            Packet pkt = fDataQueue.getFirst();
-            if(!validatePacket(pkt)){
-              lastException = new Exception("Invalid pkt:"+pkt);
-              DFSClient.LOG.error("doStreaming() get invalid packet from dataQueue:"+pkt);
-              return;
-            }
-            if(pkt.blkno == this.blockNumber){//write to the same blk,
-              try {
-                pkt.writeTo(this.blockStream);
-              } catch (IOException e) {
-                DFSClient.LOG.error("doStreaming() fail sending packet:"+pkt);
-                this.lastException = e;
-                this.stat = DSS.ERROR;
-                return;
-              }
-              fDataQueue.removeFirst();
-              synchronized(fAckQueue){fAckQueue.addLast(pkt);};
-            }else{//go to different blk.
-              if(!this.flushInternal(true))return;
-              endBlock(pkt.blkno);
-              break;
-            }
-          }
+        }
+        if(fDataQueue.isEmpty() && !this.bRunning){// stop...
+          flushInternal(true);
+          closeInternal();
+        }else
+          doStreamingInternal();
+      }
+    }
+    
+    /**
+     * stop the thread. this is called from CLIENT,
+     */
+    void stop(){
+      if(this.bRunning){
+        synchronized(fDataQueue){
+          this.bRunning = false;
+          // CLIENT(STOP): notify streamer that is has been stopped.
+          fDataQueue.notifyAll();
+        }
+        try {
+          this.streamerThd.join();
+        } catch (InterruptedException e) {
+          DFSClient.LOG.warn("InterruptException received during waiting for streamer to stop gracely");
         }
       }
     }
@@ -565,11 +594,16 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     this.fProgress = progress;
     this.fBlockBuffer = JNIBlog.rbpAllocateBlockBuffer(hRDMABufferPool);
     this.bytesCurBlock = 0;
+    this.resetBlockBuffer((int)bytesCurBlock);
     if((progress != null) && DFSClient.LOG.isDebugEnabled()){
       DFSClient.LOG.debug(
           "Set non-null progress callback on DFSOutputStream " + src);
     }
-    //TODO: create a new data streamer.
+    //create and initialize the streamer. 
+    this.streamer = new DataStreamer(-1);
+    this.streamer.stat = DSS.CREATE;
+    this.streamer.block = null;
+    this.streamer.blockNumber = 0;
   }
   
   /** construct a new output stream for appending a file  */
@@ -592,13 +626,18 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     }
     this.curFileSize = fInitialFileSize;
     this.pos = fInitialFileSize;
+    this.streamer = new DataStreamer(fInitialFileSize/this.fBlockSize - 1); // maxBlockNumber = fInitialFileSize/this.fBlockSize
+    this.streamer.blockNumber = pos/this.fBlockSize;
     if(lastBlock != null) {
       bytesCurBlock = lastBlock.getBlockSize();
-      //TODO: create a new data streamer
+      this.streamer.stat = DSS.APPEND;
+      this.streamer.block = lastBlock.getBlock();
     } else {
       bytesCurBlock = 0;
-      //TODO: create a new data streamer
+      this.streamer.block = null;
+      this.streamer.stat = DSS.CREATE;
     }
+    this.resetBlockBuffer((int)this.bytesCurBlock);
   }
 
   /**
@@ -666,13 +705,27 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     return out;
   }
  
+  private int dataEndPos(){
+    return this.fBlockBuffer.buffer.position();
+  }
+  
+  private synchronized void checkAutoFlush() throws IOException{
+    if(dataEndPos() - this.dataStartPos >= this.fAutoFlushSize)
+      flushBuffer();
+  }
+  
   /* (non-Javadoc)
    * @see java.io.OutputStream#write(int)
    */
   @Override
-  public void write(int b) throws IOException {
-    // TODO Auto-generated method stub
-
+  public synchronized void write(int b) throws IOException {
+    if(dataEndPos() >= this.fBlockSize){
+      flushBufferAndQueue();
+    }
+    this.fBlockBuffer.buffer.put((byte)b);
+    pos++;
+    this.curFileSize = Math.max(pos, this.curFileSize);
+    this.checkAutoFlush();
   }
 
   @Override
@@ -681,21 +734,19 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   }
 
   @Override
+  // in FFFS, sync() == flush()
   public void sync() throws IOException {
-    // TODO Auto-generated method stub
-    
+    flushAll();
   }
 
   @Override
   public void hflush() throws IOException {
-    // TODO Auto-generated method stub
-    
+    flushAll();
   }
 
   @Override
   public void hsync() throws IOException {
-    // TODO Auto-generated method stub
-    
+    flushAll();
   }
   
   /* (non-Javadoc)
@@ -703,8 +754,7 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   public void write(byte[] b) throws IOException {
-    // TODO Auto-generated method stub
-    super.write(b);
+    write(b,0,b.length);
   }
 
   /* (non-Javadoc)
@@ -712,17 +762,71 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-    // TODO Auto-generated method stub
-    super.write(b, off, len);
+    if(dataEndPos() >= this.fBlockSize)flush();
+    int writeLen = len;
+    int writeOfst = off;
+    while(writeLen > 0){
+      int toWrite = (int)Math.min(writeLen, this.fBlockSize - dataEndPos()); 
+      this.fBlockBuffer.buffer.put(b, writeOfst, toWrite);
+      if(dataEndPos() >= this.fBlockSize)
+      flush();
+      writeLen -= toWrite;
+      writeOfst += toWrite;
+      pos += toWrite;
+    }
+    checkAutoFlush();
   }
 
+  /**
+   * Flush buffer to queue
+   */
+  public synchronized void flushBuffer(){
+    if(this.dataStartPos < dataEndPos()){
+      Packet pkt = new Packet();
+      pkt.blkno = this.pos/this.fBlockSize;
+      pkt.last = false;
+      pkt.length = dataEndPos() - this.dataStartPos;
+      pkt.offset = this.dataStartPos;
+      pkt.seqno = this.currentSeqno ++;
+      queuePacket(pkt);
+      this.dataStartPos = dataEndPos();
+    }
+  }
+  
+  public synchronized void flushBufferAndQueue(){
+    flushBuffer();
+    synchronized(fDataQueue){
+      // CLIENT: waiting for pkts been sent.
+      while(!fDataQueue.isEmpty()){
+        try {
+          fDataQueue.wait();
+        } catch (InterruptedException e) {
+          DFSClient.LOG.warn("Interrupted while flushBufferAndQueue waiting on fDataQueue.");
+        }
+      }
+    }
+  }
+  
+  public synchronized void flushAll(){
+    flushBufferAndQueue();
+    synchronized(fDataQueue){
+      // CLIENT: waiting for pkts been acked.
+      while(!fAckQueue.isEmpty()){
+        try {
+          fDataQueue.wait();
+        } catch (InterruptedException e) {
+          DFSClient.LOG.warn("Interrupted while flushBufferAndQueue waiting on fDataQueue.");
+        }
+      }
+    }
+  }
+  
   /* (non-Javadoc)
    * @see java.io.OutputStream#flush()
    */
   @Override
-  public void flush() throws IOException {
-    // TODO Auto-generated method stub
-    super.flush();
+  public synchronized void flush() throws IOException {
+    flushAll();
   }
 
   /* (non-Javadoc)
@@ -730,30 +834,44 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   public void close() throws IOException {
-    // TODO Auto-generated method stub
-    super.close();
+    if(streamer.bRunning){
+      flushAll();
+      synchronized(fDataQueue){
+        this.streamer.stop();
+      }
+    }
   }
 
   @Override
   public int getCurrentBlockReplication() throws IOException {
-    // TODO Auto-generated method stub
-    return 0;
+    return 1;
   }
 
   @Override
   public void hsync(EnumSet<SyncFlag> syncFlags) throws IOException {
-    // TODO Auto-generated method stub
-    
+    flushAll();
+  }
+
+  private void resetBlockBuffer(int offset){
+    this.fBlockBuffer.buffer.reset();
+    this.dataStartPos = offset;
+    this.fBlockBuffer.buffer.position(offset);
+  }
+  
+  @Override
+  public synchronized void seek(long newPos) throws IOException {
+    if(newPos > this.curFileSize)
+      throw new IOException("Cannot seek to pos:"+newPos+" because filesize is " + this.curFileSize);
+    else if(pos/this.fBlockSize != newPos/this.fBlockSize || newPos < pos)
+      flushBufferAndQueue(); // flush buffer for block switch or write backward.
+    else
+      flushBuffer(); // or just flush the buffer to queue.
+    pos = newPos;
+    this.resetBlockBuffer((int)(pos % this.fBlockSize));
   }
 
   @Override
-  public void seek(long pos) throws IOException {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public synchronized long  getPos() throws IOException {
+  public synchronized long getPos() throws IOException {
     return this.pos;
   }
 
@@ -771,6 +889,6 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   }
   
   private synchronized void start(){
-    // TODO start the streamer.
+    this.streamer.start();
   }
 }
