@@ -1205,7 +1205,6 @@ class DataXceiver extends Receiver implements Runnable {
   @Override
   public void readBlockRDMA(ExtendedBlock blk, Token<BlockTokenIdentifier> blockToken, String clientName,
       long blockOffset, long length, long vaddr) throws IOException {
-    // TODO Auto-generated method stub
     previousOpClientName = clientName;
 
     OutputStream baseStream = getOutputStream();
@@ -1232,5 +1231,26 @@ class DataXceiver extends Receiver implements Runnable {
     resp.build().writeDelimitedTo(out);
     out.flush();
     return;
+  }
+
+  @Override
+  public void writeBlockRDMA(ExtendedBlock blk, Token<BlockTokenIdentifier> blockToken, String clientName,
+      DatanodeInfo[] targets, long vaddr, long lastestGenerationStamp, HybridLogicalClock mhlc) throws IOException {
+    // TODO Auto-generated method stub
+    previousOpClientName = clientName;
+    
+    OutputStream baseStream = getOutputStream();
+    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
+        baseStream, HdfsConstants.SMALL_BUFFER_SIZE));
+    checkAccess(out, true, blk, blockToken,
+        Op.WRITE_BLOCK, BlockTokenSecretManager.AccessMode.WRITE);
+    //TODO: STEP 1 - create RDMABlockReceiver
+    
+    //STEP 2 - notify the writer we are prepared.
+    BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()
+        .setStatus(SUCCESS);
+    resp.build().writeDelimitedTo(out);
+    out.flush();
+    //TODO: STEP 3 - do write.
   }
 }

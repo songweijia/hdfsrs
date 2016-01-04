@@ -46,6 +46,7 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockP
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestShortCircuitAccessProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpWriteBlockProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpWriteBlockRDMAProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ReleaseShortCircuitAccessRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ShortCircuitShmRequestProto;
 import org.apache.hadoop.hdfs.protocolPB.PBHelper;
@@ -185,6 +186,26 @@ public class Sender implements DataTransferProtocol {
   }
 
   @Override
+  public void writeBlockRDMA(final ExtendedBlock blk,
+      final Token<BlockTokenIdentifier> blockToken,
+      final String clientName,
+      final DatanodeInfo[] targets,
+      final long vaddr,
+      final long lastestGenerationStamp,
+      final HybridLogicalClock mhlc) throws IOException{
+    ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
+        blk, clientName, blockToken);
+    OpWriteBlockRDMAProto.Builder proto = OpWriteBlockRDMAProto.newBuilder()
+        .setHeader(header)
+        .addAllTargets(PBHelper.convert(targets, 1))
+        .setVaddr(vaddr)
+        .setLatestGenerationStamp(lastestGenerationStamp)
+        .setMhlc(PBHelper.convert(mhlc));
+    send(out, Op.WRITE_BLOCK_RDMA, proto.build());
+  }
+  
+  
+  @Override
   public void transferBlock(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,
       final String clientName,
@@ -282,5 +303,4 @@ public class Sender implements DataTransferProtocol {
     
     send(out, Op.BLOCK_CHECKSUM, proto);
   }
-
 }

@@ -67,6 +67,13 @@ message OpReadBlockProto {
   optional CachingStrategyProto cachingStrategy = 5;
 }
 
+message OpReadBlockRDMAProto {
+  required ClientOperationHeaderProto header = 1;
+  required uint64 offset = 2;
+  required uint64 len = 3;
+  required uint64 vaddr = 4; // client address
+}
+
 message OpRequestSnapshotProto{
   required uint64 rtc = 1;
   required string bpid = 2;
@@ -121,6 +128,14 @@ message OpWriteBlockProto {
   //HDFSRS_VC{
   optional HybridLogicalClockProto mhlc = 12;
   //}
+}
+
+message OpWriteBlockRDMAProto {
+  required ClientOperationHeaderProto header = 1;
+  repeated DatanodeInfoProto targets = 2;
+  required uint64 vaddr = 3;
+  required uint64 latestGenerationStamp = 4;
+  required HybridLogicalClockProto mhlc = 5;
 }
   
 message OpTransferBlockProto {
@@ -228,6 +243,20 @@ message PipelineAckProto {
   repeated Status status = 2;
   optional uint64 downstreamAckTimeNanos = 3 [default = 0];
   optional HybridLogicalClockProto mhlc = 4;
+}
+
+message RDMAWritePacketProto {
+  required sint64 seqno = 1;
+  required uint64 offset = 2;
+  required uint64 length = 3;
+  required bool isLast = 4;
+  required HybridLogicalClockProto mhlc = 5;
+}
+
+message RDMAWriteAckProto{
+  required sint64 seqno = 1;
+  required Status status = 2;
+  required HybridLogicalClockProto mhlc = 3;
 }
 
 /**

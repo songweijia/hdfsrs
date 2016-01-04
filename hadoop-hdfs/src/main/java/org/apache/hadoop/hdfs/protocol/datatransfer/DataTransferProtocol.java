@@ -126,6 +126,25 @@ public interface DataTransferProtocol {
       ) throws IOException;
 
   /**
+   * write a block to a datanode using RDMA
+   * 
+   * @param blk the block being written.
+   * @param blockToken security token for accessing the block. 
+   * @param clientName client's name
+   * @param targets target datanodes in the pipeline(we have only one)
+   * @param latestGenerationStamp the latest generation stamp of the block.
+   * @param mhlc - timestamp
+   * @throws IOException
+   */
+  public void writeBlockRDMA(final ExtendedBlock blk,
+      final Token<BlockTokenIdentifier> blockToken,
+      final String clientName,
+      final DatanodeInfo[] targets,
+      final long vaddr,
+      final long lastestGenerationStamp,
+      final HybridLogicalClock mhlc) throws IOException;
+  
+  /**
    * Transfer a block to another datanode.
    * The block stage must be
    * either {@link BlockConstructionStage#TRANSFER_RBW}
