@@ -154,15 +154,27 @@ public class MemDatasetManager {
   	protected BlogInputStream getInputStream(int offset, long snapshotId){
   		return new BlogInputStream(blog,blockId,offset,snapshotId);
   	}
-  	public void rdmaTransfer(long sid, int startOffset, int length,
+  	public void readByRDMA(long sid, int startOffset, int length,
   	    String clientIp, long vaddr)throws IOException{
   	  long blen = getNumBytes(sid);
   	  if(startOffset + length > blen)
-  	    throw new IOException("rdmaTransfer failed: sid="+sid+",start="+
+  	    throw new IOException("readByRDMA failed: sid="+sid+",start="+
   	      startOffset+",len="+length+",blen="+blen);
   	  int rc = 0;
   	  if((rc=blog.readBlockRDMA(blockId, sid, startOffset, length, clientIp.getBytes(), vaddr))!=0)
-  	    throw new IOException("rdmaTransfer failed: JNIBlog.readBlockRDMA returns: " + rc);
+  	    throw new IOException("readByRDMA failed: JNIBlog.readBlockRDMA returns: " + rc);
+  	}
+  	public void writeByRDMA(int startOffset, int length, String clientIp, 
+  	    long vaddr, HybridLogicalClock mhlc)throws IOException{
+  	  long blen = getNumBytes();
+  	  if(startOffset > blen)
+  	    throw new IOException("writeByRDMA failed:blen="+blen+",start="+startOffset+
+  	        ",len="+length+",client="+clientIp+",vaddr="+vaddr+",mhlc="+mhlc);
+  	  int rc = 0;
+  	  if((rc=blog.writeBlockRDMA(mhlc, blen, startOffset, length, clientIp.getBytes(), vaddr))!=0){
+        throw new IOException("writeByRDMA failed: JNIBlog.writeBlockRDMA returns: " + rc);
+  	  }
+  	  this.accBytes += length;
   	}
   }
   

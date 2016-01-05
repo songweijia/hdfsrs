@@ -1249,13 +1249,20 @@ class DataXceiver extends Receiver implements Runnable {
         baseStream, HdfsConstants.SMALL_BUFFER_SIZE));
     checkAccess(out, true, blk, blockToken,
         Op.WRITE_BLOCK, BlockTokenSecretManager.AccessMode.WRITE);
-    //TODO: STEP 1 - create RDMABlockReceiver
+    // STEP 1 - create RDMABlockReceiver
+    RDMABlockReceiver blockReceiver = new RDMABlockReceiver(blk,in,
+        peer.getRemoteIPString(),peer.getLocalAddressString(),bytesRcvd,
+        lastestGenerationStamp,clientName,datanode,vaddr,mhlc);
     
     //STEP 2 - notify the writer we are prepared.
     BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()
         .setStatus(SUCCESS);
     resp.build().writeDelimitedTo(out);
     out.flush();
-    //TODO: STEP 3 - do write.
+    //STEP 3 - write till end.
+    blockReceiver.receiveBlock(out);
+    out.flush();
+    IOUtils.closeStream(out);
+    IOUtils.closeStream(blockReceiver);
   }
 }

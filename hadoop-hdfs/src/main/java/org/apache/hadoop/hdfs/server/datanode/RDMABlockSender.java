@@ -50,7 +50,7 @@ public class RDMABlockSender {
   void doSend()
   throws IOException{
     //send data.
-    replica.rdmaTransfer(block.getLocalBlock().getLongSid(), 
+    replica.rdmaRead(block.getLocalBlock().getLongSid(), 
         (int)startOffset, (int)length, clientIp, vaddr);
   }
 }

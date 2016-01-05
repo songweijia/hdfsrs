@@ -59,7 +59,7 @@ import static org.apache.hadoop.hdfs.protocolPB.PBHelper.vintPrefixed;
  * @author weijia
  *
  */
-class DFSRDMAOutputStream extends SeekableDFSOutputStream{
+public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   ///////////////////////////////////////////////////////
   // Data Structures.
   static long hRDMABufferPool = JNIBlog.getRDMABufferPool();
