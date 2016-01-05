@@ -689,7 +689,7 @@ class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       HybridLogicalClock hlc = DFSClient.tickAndCopy();
       new Sender(out).writeBlockRDMA(this.block, 
           this.accessToken, dfsClient.clientName, 
-          nodes, fBlockBuffer.address, newGS, hlc);
+          nodes, fBlockBuffer.address, block.getNumBytes(), newGS, hlc);
       
       //receive ack for connect
       BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(

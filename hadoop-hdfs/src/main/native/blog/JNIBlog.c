@@ -1087,8 +1087,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
   // rdma write...
   rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage);
   free(paddrlist);
-  if(rc !=0 )
+  if(rc !=0 ){
     fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
+    return -2;
+  }
 
   return 0;
 }
@@ -1348,6 +1350,125 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   return 0;
 }
 
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    writeBlock
+ * Signature: (Ledu/cornell/cs/sa/VectorClock;JIII[B)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst,
+  jint length, jbyteArray clientIp, jlong bufaddr){
+  filesystem_t *filesystem;
+  block_t *block;
+  int first_page, last_page;
+  page_t *new_pages;
+  int page_offset, block_offset;
+  int new_pages_length, new_pages_capacity, last_page_length;
+  int64_t log_pos;
+  char *pdata;
+  int i,adp=0; // next usageble page in allData.
+  char *allData=NULL;
+  
+  // Find block;
+  filesystem = get_filesystem(env,thisObj);
+  if(MAP_LOCK(block, filesystem->block_map, blockId, 'r') != 0){
+    //In case you did not find it return an error.
+    fprintf(stderr, "Write Block using RDMA: Block with id %ld is not present. \n", blockId);
+    MAP_UNLOCK(block, filesystem->block_map, blockId);
+    return -1;
+  }
+  MAP_UNLOCK(block, filesystem->block_map,blockId);
+  // In case you cannot write in the required offset.
+  if(blkOfst > block->length) {
+    fprintf(stderr, "Write Block using RDMA: Block %ld cannot be written at byte %d.\n", blockId, blkOfst);
+    return -3;
+  }
+  // create the new pages.
+  block_offset = (int) blkOfst;
+  first_page = block_offset / filesystem->page_size;
+  last_page = (block_offset + length) / filesystem->page_size;// How many full pages ahead the end of the write. this is different from writeBlock(), last_page could be 1 if you only write one page, and last_page_length is zero. On the contrary, in writeBlock(), last_page means the page last byte is written to.
+  page_offset = block_offset % filesystem->page_size;
+  last_page_length = (block_offset + length) % filesystem->page_size; // could be zero!!!
+  new_pages_length = last_page - first_page + 1; // number of new pages.
+  if(allocatePageArray(filesystem->rdmaCtxt,(void**)&allData,new_pages_length)){
+    fprintf(stderr, "writeBlockRDMA: cannot allocate page from RDMA pool.\n");
+    return -4;
+  }
+  DEBUG_PRINT("allocatePageArray:address=%p,npage=%d\n",allData, new_pages_length);
+  new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
+  void **paddrlist = (void**)malloc(new_pages_length*sizeof(void*));//page list for rdma transfer
+  for(i=0;i<new_pages_length;i++){
+    new_pages[i].data = (char*)MALLOCPAGE;
+    paddrlist[i] = (void*)new_pages[i].data;
+  }
+
+  // do write by rdma read...
+  // - get ipkey
+  int ipSize = (int)(*env)->GetArrayLength(env,clientIp);
+  jbyte ipStr[16];
+  (*env)->GetByteArrayRegion(env,clientIp, 0, ipSize, ipStr);
+  ipStr[ipSize] = 0;
+  uint32_t ipkey = inet_addr((const char*)ipStr);
+  DEBUG_PRINT("writeBlockRDMA:ip=%s\n",(char*)ipStr);
+  // - get pagelist: done with paddrlist
+  DEBUG_PRINT("writeBlockRDMA:page range=%d-%d(%d)\n",first_page,last_page,last_page_length);
+  // - get remote address:
+  const uint64_t address = bufaddr + first_page*filesystem->page_size;
+  DEBUG_PRINT("writeBlockRDMA:address=%p\n", (const void *)address);
+  // - rdma read ...
+  int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void**)paddrlist, new_pages_length);
+  free(paddrlist);
+  if(rc != 0){
+    fprintf(stderr, "writeBlockRDMA: rdmaRead failed with error code = %d.\n", rc);
+    return -5;
+  }
+  
+  // fill pages overlapping with existing data, if required
+  for (i = 0;i< page_offset; i++)
+    new_pages[0].data[i] = block->pages[first_page]->data[i];
+  if(last_page*filesystem->page_size + last_page_length > block->length)
+    block->length = last_page*filesystem->page_size + last_page_length;
+  else if(last_page_length != 0){//we need to fill the end part...
+    for( i = last_page_length; 
+         (block->length/filesystem->page_size>last_page)?filesystem->page_size:block->length%filesystem->page_size;
+         i++ )
+      new_pages[new_pages_length-1].data[i] = block->pages[last_page]->data[i];
+  }
+ 
+  // Fill block with thr appropriate information
+  if (block->cap == 0)
+    new_pages_capacity = 1;
+  else
+    new_pages_capacity = block->cap;
+  while ((block->length - 1) / filesystem->page_size >= new_pages_capacity) 
+    new_pages_capacity *=2;
+  if(new_pages_capacity > block->cap) {
+    block->cap = new_pages_capacity;
+    block->pages = (page_t**) realloc(block->pages, block->cap*sizeof(page_t*));
+  }
+  for(i=0;i<new_pages_length;i++)
+    block->pages[first_page+i] = new_pages + i;
+
+  // create log entry
+  pthread_rwlock_wrlock(&(filesystem->lock));
+  check_and_increase_log_length(filesystem);
+  log_pos = filesystem->log_length;
+  filesystem->log[log_pos].block_id = blockId;
+  filesystem->log[log_pos].block_length = block->length;
+  filesystem->log[log_pos].pages_offset = first_page;
+  filesystem->log[log_pos].pages_length = new_pages_length;
+  filesystem->log[log_pos].data = new_pages;
+  filesystem->log[log_pos].previous = block->last_entry;
+
+  // tick my clock.
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  update_log_clock(env, mhlc, filesystem->log+log_pos);
+  filesystem->log_length += 1;
+  pthread_rwlock_unlock(&(filesystem->lock));
+  block->last_entry = log_pos;
+
+  return 0;
+}
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createSnapshot

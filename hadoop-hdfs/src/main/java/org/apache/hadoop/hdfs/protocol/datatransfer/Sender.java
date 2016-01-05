@@ -191,6 +191,7 @@ public class Sender implements DataTransferProtocol {
       final String clientName,
       final DatanodeInfo[] targets,
       final long vaddr,
+      final long bytesRcvd,
       final long lastestGenerationStamp,
       final HybridLogicalClock mhlc) throws IOException{
     ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
@@ -198,6 +199,7 @@ public class Sender implements DataTransferProtocol {
     OpWriteBlockRDMAProto.Builder proto = OpWriteBlockRDMAProto.newBuilder()
         .setHeader(header)
         .addAllTargets(PBHelper.convert(targets, 1))
+        .setBytesRcvd(bytesRcvd)
         .setVaddr(vaddr)
         .setLatestGenerationStamp(lastestGenerationStamp)
         .setMhlc(PBHelper.convert(mhlc));

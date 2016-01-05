@@ -215,7 +215,7 @@ public class JNIBlog {
   public native int getNumberOfBytes(long blockId, long rtc);
   
   /**
-   * @param mvc
+   * @param mhlc
    * @param blockId
    * @param blkOfst
    * @param bufOfst
@@ -224,6 +224,17 @@ public class JNIBlog {
    * @return
    */
   public native int writeBlock(HybridLogicalClock mhlc, long blockId, int blkOfst, int bufOfst, int length, byte buf[]);
+  
+  /**
+   * @param mhlc
+   * @param blockId
+   * @param blkOfst
+   * @param length
+   * @param clientIp - ip address of the remote.
+   * @param vaddr - virtual address.
+   * @return
+   */
+  public native int writeBlockRDMA(HybridLogicalClock mhlc, long blockId, int blkOfst, int length, byte clientIp[], long vaddr);
   
   /**
    * create a local realtime snapshot

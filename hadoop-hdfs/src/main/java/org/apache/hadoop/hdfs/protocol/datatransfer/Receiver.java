@@ -175,6 +175,7 @@ public abstract class Receiver implements DataTransferProtocol {
         PBHelper.convert(proto.getHeader().getBaseHeader().getToken()),
         proto.getHeader().getClientName(),
         PBHelper.convert(proto.getTargetsList()),
+        proto.getBytesRcvd(),
         proto.getVaddr(),
         proto.getLatestGenerationStamp(),
         PBHelper.convert(proto.getMhlc()));

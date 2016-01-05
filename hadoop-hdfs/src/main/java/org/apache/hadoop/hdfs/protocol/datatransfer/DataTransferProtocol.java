@@ -132,6 +132,7 @@ public interface DataTransferProtocol {
    * @param blockToken security token for accessing the block. 
    * @param clientName client's name
    * @param targets target datanodes in the pipeline(we have only one)
+   * @param bytesRcvd - number of bytes available
    * @param latestGenerationStamp the latest generation stamp of the block.
    * @param mhlc - timestamp
    * @throws IOException
@@ -140,6 +141,7 @@ public interface DataTransferProtocol {
       final Token<BlockTokenIdentifier> blockToken,
       final String clientName,
       final DatanodeInfo[] targets,
+      final long bytesRcvd,
       final long vaddr,
       final long lastestGenerationStamp,
       final HybridLogicalClock mhlc) throws IOException;

@@ -134,8 +134,9 @@ message OpWriteBlockRDMAProto {
   required ClientOperationHeaderProto header = 1;
   repeated DatanodeInfoProto targets = 2;
   required uint64 vaddr = 3;
-  required uint64 latestGenerationStamp = 4;
-  required HybridLogicalClockProto mhlc = 5;
+  required uint64 bytesRcvd = 4;
+  required uint64 latestGenerationStamp = 5;
+  required HybridLogicalClockProto mhlc = 6;
 }
   
 message OpTransferBlockProto {

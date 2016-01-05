@@ -1234,8 +1234,13 @@ class DataXceiver extends Receiver implements Runnable {
   }
 
   @Override
-  public void writeBlockRDMA(ExtendedBlock blk, Token<BlockTokenIdentifier> blockToken, String clientName,
-      DatanodeInfo[] targets, long vaddr, long lastestGenerationStamp, HybridLogicalClock mhlc) throws IOException {
+  public void writeBlockRDMA(ExtendedBlock blk, 
+      Token<BlockTokenIdentifier> blockToken, 
+      String clientName,
+      DatanodeInfo[] targets, 
+      long vaddr,
+      long bytesRcvd,
+      long lastestGenerationStamp, HybridLogicalClock mhlc) throws IOException {
     // TODO Auto-generated method stub
     previousOpClientName = clientName;
     
