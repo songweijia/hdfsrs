@@ -1602,10 +1602,10 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     
     SeekableDFSOutputStream ret = null;
     if(getConf().useRDMABlockWriter)
-      ret = DFSOutputStream.newStreamForAppend(this, src, buffersize, progress,
-          lastBlock, stat, dfsClientConf.createChecksum());
-    else
       ret = DFSRDMAOutputStream.newStreamForAppend(this, src, progress, lastBlock, stat);
+    else
+    ret = DFSOutputStream.newStreamForAppend(this, src, buffersize, progress,
+        lastBlock, stat, dfsClientConf.createChecksum());
     return ret;
   }
   
