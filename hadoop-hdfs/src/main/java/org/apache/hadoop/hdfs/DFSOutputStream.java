@@ -2233,7 +2233,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
    * Aborts this output stream and releases any system 
    * resources associated with this stream.
    */
-  synchronized void abort() throws IOException {
+  @Override
+  public synchronized void abort() throws IOException {
     if (closed) {
       return;
     }
@@ -2360,7 +2361,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   /**
    * Returns the size of a file as it was when this stream was opened
    */
-  long getInitialLen() {
+  @Override
+  public long getInitialLen() {
     return initialFileSize;
   }
 
@@ -2384,7 +2386,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   }
 
   @VisibleForTesting
-  ExtendedBlock getBlock() {
+  @Override
+  public ExtendedBlock getBlock() {
     return streamer.getBlock();
   }
 

@@ -8,6 +8,7 @@ import org.apache.hadoop.fs.CanSetDropBehind;
 import org.apache.hadoop.fs.FSOutputSummer;
 import org.apache.hadoop.fs.Syncable;
 import org.apache.hadoop.hdfs.client.HdfsDataOutputStream.SyncFlag;
+import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 
 public abstract class SeekableDFSOutputStream extends FSOutputSummer 
 implements Syncable, CanSetDropBehind{
@@ -39,4 +40,21 @@ implements Syncable, CanSetDropBehind{
    * @throws IOException
    */
   public abstract long getPos() throws IOException;
+  
+  /**
+   * get Initial length of the package.
+   * @return
+   */
+  public abstract long getInitialLen();
+  
+  /**
+   * @throws IOException
+   */
+  public abstract void abort() throws IOException;
+  
+  /**
+   * get block
+   * @return
+   */
+  public abstract ExtendedBlock getBlock();
 }

@@ -515,8 +515,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * that are currently being written by this client.
    * Note that a file can only be written by a single client.
    */
-  private final Map<String, DFSOutputStream> filesBeingWritten
-      = new HashMap<String, DFSOutputStream>();
+  private final Map<String, SeekableDFSOutputStream> filesBeingWritten
+      = new HashMap<String, SeekableDFSOutputStream>();
 
   /**
    * Same as this(NameNode.getAddress(conf), conf);
@@ -745,7 +745,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   }
 
   /** Get a lease and start automatic renewal */
-  private void beginFileLease(final String src, final DFSOutputStream out) 
+  private void beginFileLease(final String src, final SeekableDFSOutputStream out) 
       throws IOException {
     getLeaseRenewer().put(src, out, this);
   }
@@ -760,7 +760,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    *  enforced to consistently update its local dfsclients array and 
    *  client's filesBeingWritten map.
    */
-  void putFileBeingWritten(final String src, final DFSOutputStream out) {
+  void putFileBeingWritten(final String src, final SeekableDFSOutputStream out) {
     synchronized(filesBeingWritten) {
       filesBeingWritten.put(src, out);
       // update the last lease renewal time only when there was no
@@ -861,7 +861,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   private void closeAllFilesBeingWritten(final boolean abort) {
     for(;;) {
       final String src;
-      final DFSOutputStream out;
+      final SeekableDFSOutputStream out;
       synchronized(filesBeingWritten) {
         if (filesBeingWritten.isEmpty()) {
           return;
@@ -1499,7 +1499,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   /**
    * Append to an existing file if {@link CreateFlag#APPEND} is present
    */
-  private DFSOutputStream primitiveAppend(String src, EnumSet<CreateFlag> flag,
+  private SeekableDFSOutputStream primitiveAppend(String src, EnumSet<CreateFlag> flag,
       int buffersize, Progressable progress) throws IOException {
     if (flag.contains(CreateFlag.APPEND)) {
       HdfsFileStatus stat = getFileInfo(src);
@@ -1521,7 +1521,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    *  Progressable, int, ChecksumOpt)} except that the permission
    *  is absolute (ie has already been masked with umask.
    */
-  public DFSOutputStream primitiveCreate(String src, 
+  public SeekableDFSOutputStream primitiveCreate(String src, 
                              FsPermission absPermission,
                              EnumSet<CreateFlag> flag,
                              boolean createParent,
@@ -1530,10 +1530,10 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
                              Progressable progress,
                              int buffersize,
                              ChecksumOpt checksumOpt)
-      throws IOException, UnresolvedLinkException {
+      throws IOException, UnresolvedLinkException{
     checkOpen();
     CreateFlag.validate(flag);
-    DFSOutputStream result = primitiveAppend(src, flag, buffersize, progress);
+    SeekableDFSOutputStream result = primitiveAppend(src, flag, buffersize, progress);
     if (result == null) {
       DataChecksum checksum = dfsClientConf.createChecksum(checksumOpt);
       result = DFSOutputStream.newStreamForCreate(this, src, absPermission,
@@ -1583,13 +1583,13 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   }
 
   /** Method to get stream returned by append call */
-  private DFSOutputStream callAppend(HdfsFileStatus stat, String src,
+  private SeekableDFSOutputStream callAppend(HdfsFileStatus stat, String src,
       int buffersize, Progressable progress) throws IOException {
     LocatedBlock lastBlock = null;
     try {
       HybridLogicalClock mhlc = DFSClient.hlc.tickCopy(); // HDFSRS_HLC
       lastBlock = namenode.append(src, clientName, mhlc);
-      DFSClient.hlc.tickOnRecv(mhlc);
+      DFSClient.tickOnRecv(mhlc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      FileNotFoundException.class,
@@ -1599,8 +1599,14 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
                                      UnresolvedPathException.class,
                                      SnapshotAccessControlException.class);
     }
-    return DFSOutputStream.newStreamForAppend(this, src, buffersize, progress,
-        lastBlock, stat, dfsClientConf.createChecksum());
+    
+    SeekableDFSOutputStream ret = null;
+    if(getConf().useRDMABlockWriter)
+      ret = DFSOutputStream.newStreamForAppend(this, src, buffersize, progress,
+          lastBlock, stat, dfsClientConf.createChecksum());
+    else
+      ret = DFSRDMAOutputStream.newStreamForAppend(this, src, progress, lastBlock, stat);
+    return ret;
   }
   
   /**
@@ -1617,11 +1623,11 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public HdfsDataOutputStream append(final String src, final int buffersize,
       final Progressable progress, final FileSystem.Statistics statistics
       ) throws IOException {
-    final DFSOutputStream out = append(src, buffersize, progress);
+    final SeekableDFSOutputStream out = append(src, buffersize, progress);
     return new HdfsDataOutputStream(out, statistics, out.getInitialLen());
   }
 
-  private DFSOutputStream append(String src, int buffersize, Progressable progress) 
+  private SeekableDFSOutputStream append(String src, int buffersize, Progressable progress) 
       throws IOException {
     checkOpen();
     HdfsFileStatus stat = getFileInfo(src);
@@ -1629,7 +1635,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       throw new FileNotFoundException("failed to append to non-existent file "
           + src + " on client " + clientName);
     }
-    final DFSOutputStream result = callAppend(stat, src, buffersize, progress);
+    final SeekableDFSOutputStream result = callAppend(stat, src, buffersize, progress);
     beginFileLease(src, result);
     return result;
   }

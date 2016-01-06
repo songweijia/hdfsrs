@@ -270,25 +270,25 @@ public class JNIBlog {
    * @return handle of the RDMA Block Pool
    * @throws Exception
    */
-  static public native long rbpInitialize(int psz, int align, int port) throws Exception;
+  static public native long rbpInitialize(int psz, int align, int port) throws IOException;
   /**
    * function: destroy the RDMA buffer Pool.
    * @param size - size of the buffer tool
    * @throws Exception
    */
-  static public native void rbpDestroy(long hRDMABufferPool) throws Exception;
+  static public native void rbpDestroy(long hRDMABufferPool) throws IOException;
   /**
    * function: allocate a block buffer.
    * @return allocated Block Buffer
    * @throws Exception
    */
-  static public native RBPBuffer rbpAllocateBlockBuffer(long hRDMABufferPool) throws Exception;
+  static public native RBPBuffer rbpAllocateBlockBuffer(long hRDMABufferPool) throws IOException;
   /**
    * function: release a buffer.
    * @param buf
    * @throws Exception
    */
-  static public native void rbpReleaseBuffer(long hRDMABufferPool, RBPBuffer buf) throws Exception;
+  static public native void rbpReleaseBuffer(long hRDMABufferPool, RBPBuffer buf) throws IOException;
   /**
    * function: connect to RDMA datanode
    * @rbpBuffer handle of the RDMA buffer pool
@@ -296,7 +296,7 @@ public class JNIBlog {
    * @param port
    * @throws Exception
    */
-  static public native void rbpConnect(long hRDMABufferPool, byte hostIp[], int port) throws Exception;
+  static public native void rbpConnect(long hRDMABufferPool, byte hostIp[], int port) throws IOException;
   
   /**
    * function: do RDMA Write, this is called by the DataNode.
@@ -306,7 +306,7 @@ public class JNIBlog {
    * @param pageList
    * @throws Exception
    */
-  public native void rbpRDMAWrite(byte clientIp[], long address, long []pageList) throws Exception;
+  public native void rbpRDMAWrite(byte clientIp[], long address, long []pageList) throws IOException;
   
   //////////////////////////////////////////////////////////////////////
   // Tests.

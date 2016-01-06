@@ -47,6 +47,7 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.Time;
 
 import com.google.protobuf.TextFormat;
 
@@ -200,7 +201,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     
     /** Default construction for file create */
     protected DataStreamer(long maxBlockNumber)
-    throws Exception{
+    throws IOException{
       block = null;
       blockNumber = -1;
       streamerThd = null;
@@ -741,7 +742,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   /** construct a new output stream for appending a file  */
   protected DFSRDMAOutputStream(DFSClient dfsClient, String src,
       Progressable progress, LocatedBlock lastBlock, 
-      HdfsFileStatus stat, int autoFlushSize)throws Exception{
+      HdfsFileStatus stat, int autoFlushSize)throws IOException{
     super(null, 0, 0); // we don't need checksum for RDMA
     this.dfsClient = dfsClient;
     this.src = src;
@@ -830,7 +831,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   
   static DFSRDMAOutputStream newStreamForAppend(DFSClient dfsClient, String src,
       Progressable progress, LocatedBlock lastBlock,
-      HdfsFileStatus stat) throws Exception{
+      HdfsFileStatus stat) throws IOException{
     final DFSRDMAOutputStream out = new DFSRDMAOutputStream(dfsClient, src,
         progress, lastBlock, stat, dfsClient.getConf().rdmaWriterFlushSize);
     out.start();
@@ -947,6 +948,44 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     flushAll();
   }
 
+  private void completeFile(ExtendedBlock last) throws IOException {
+    long localstart = Time.now();
+    long localTimeout = 400;
+    boolean fileComplete = false;
+    int retries = dfsClient.getConf().nBlockWriteLocateFollowingRetry;
+    while (!fileComplete) {
+      HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+      fileComplete =
+          dfsClient.namenode.complete(src, dfsClient.clientName, last, fFileId, mhlc);
+      DFSClient.tickOnRecv(mhlc);//HDFSRS_VC
+      if (!fileComplete) {
+        final int hdfsTimeout = dfsClient.getHdfsTimeout();
+        if (!dfsClient.clientRunning ||
+              (hdfsTimeout > 0 && localstart + hdfsTimeout < Time.now())) {
+            String msg = "Unable to close file because dfsclient " +
+                          " was unable to contact the HDFS servers." +
+                          " clientRunning " + dfsClient.clientRunning +
+                          " hdfsTimeout " + hdfsTimeout;
+            DFSClient.LOG.info(msg);
+            throw new IOException(msg);
+        }
+        try {
+          Thread.sleep(localTimeout);
+          if (retries == 0) {
+            throw new IOException("Unable to close file because the last block"
+                + " does not have enough number of replicas.");
+          }
+          retries--;
+          localTimeout *= 2;
+          if (Time.now() - localstart > 5000) {
+            DFSClient.LOG.info("Could not complete " + src + " retrying...");
+          }
+        } catch (InterruptedException ie) {
+        }
+      }
+    }
+  }
+  
   /* (non-Javadoc)
    * @see java.io.OutputStream#close()
    */
@@ -957,6 +996,9 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       synchronized(fDataQueue){
         this.streamer.stop();
       }
+      ExtendedBlock lastBlock = streamer.block;
+      completeFile(lastBlock);
+      dfsClient.endFileLease(src);
     }
   }
 
@@ -1008,5 +1050,24 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   
   private synchronized void start(){
     this.streamer.start();
+  }
+  
+  @Override
+  public long getInitialLen() {
+    return this.fInitialFileSize;
+  }
+  
+  @Override
+  public synchronized void abort()throws IOException{
+    if(this.closed)return;
+    streamer.setLastException(new IOException("Lease timeout of "
+        + (dfsClient.getHdfsTimeout()/1000) + "seconds expired."));
+    streamer.closeStream();
+    dfsClient.endFileLease(src);
+  }
+
+  @Override
+  public ExtendedBlock getBlock() {
+    return streamer.block;
   }
 }
