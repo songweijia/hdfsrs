@@ -1405,7 +1405,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * long, Progressable, int, ChecksumOpt)} with <code>createParent</code>
    *  set to true.
    */
-  public DFSOutputStream create(String src, 
+  public SeekableDFSOutputStream create(String src, 
                              FsPermission permission,
                              EnumSet<CreateFlag> flag, 
                              short replication,
@@ -1440,7 +1440,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * @see ClientProtocol#create(String, FsPermission, String, EnumSetWritable,
    * boolean, short, long) for detailed description of exceptions thrown
    */
-  public DFSOutputStream create(String src, 
+  public SeekableDFSOutputStream create(String src, 
                              FsPermission permission,
                              EnumSet<CreateFlag> flag, 
                              boolean createParent,
@@ -1462,7 +1462,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * replication, to move the blocks from favored nodes. A value of null means
    * no favored nodes for this create
    */
-  public DFSOutputStream create(String src, 
+  public SeekableDFSOutputStream create(String src, 
                              FsPermission permission,
                              EnumSet<CreateFlag> flag, 
                              boolean createParent,
@@ -1489,9 +1489,13 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
                          + favoredNodes[i].getPort();
       }
     }
-    final DFSOutputStream result = DFSOutputStream.newStreamForCreate(this,
-        src, masked, flag, createParent, replication, blockSize, progress,
-        buffersize, dfsClientConf.createChecksum(checksumOpt), favoredNodeStrs);
+    final SeekableDFSOutputStream result;
+    if(this.getConf().useRDMABlockWriter)
+      result = DFSRDMAOutputStream.newStreamForCreate(this, src, masked, flag, createParent, blockSize, progress);
+    else
+      result = DFSOutputStream.newStreamForCreate(this,
+          src, masked, flag, createParent, replication, blockSize, progress,
+          buffersize, dfsClientConf.createChecksum(checksumOpt), favoredNodeStrs);
     beginFileLease(src, result);
     return result;
   }

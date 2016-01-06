@@ -714,7 +714,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   /** construct a new output stream for creating a file  */
   protected DFSRDMAOutputStream(DFSClient dfsClient, String src,
       Progressable progress, HdfsFileStatus stat, int autoFlushSize)
-          throws Exception {
+          throws IOException {
     super(null, 0, 0); // we don't need checksum for RDMA
     this.dfsClient = dfsClient;
     this.src = src;
@@ -804,7 +804,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   
   static DFSRDMAOutputStream newStreamForCreate(DFSClient dfsClient, String src,
       FsPermission masked,EnumSet<CreateFlag> flag, boolean createParent,
-      long blockSize, Progressable progress) throws Exception{
+      long blockSize, Progressable progress) throws IOException{
     final HdfsFileStatus stat;
     try{
       HybridLogicalClock mhlc = DFSClient.tickAndCopy();
