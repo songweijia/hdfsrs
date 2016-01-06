@@ -1013,7 +1013,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   }
 
   private void resetBlockBuffer(int offset){
-    this.fBlockBuffer.buffer.reset();
+    this.fBlockBuffer.buffer.clear();
     this.dataStartPos = offset;
     this.fBlockBuffer.buffer.position(offset);
   }
