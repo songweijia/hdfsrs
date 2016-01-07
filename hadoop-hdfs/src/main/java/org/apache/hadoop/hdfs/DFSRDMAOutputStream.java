@@ -48,6 +48,7 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Time;
+import org.mortbay.log.Log;
 
 import com.google.protobuf.TextFormat;
 
@@ -232,40 +233,49 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
           //STEP 1: pick a packet from aQ
           Packet pkt = null;
           synchronized(fDataQueue){
+            DFSClient.LOG.debug("[R] locks dQ. aQ size ="+fAckQueue.size());
             while(fAckQueue.isEmpty() && !responderClosed)
               try{
+                DFSClient.LOG.debug("[R] yields dQ on dQ, aQ size="+fAckQueue.size());
                 fDataQueue.wait();
               }catch(InterruptedException e){
-                DFSClient.LOG.debug("Responder is interrupted on wait.");
+                DFSClient.LOG.debug("[R] is interrupted on wait.");
               }
-            if(!responderClosed)continue; // exit on stop
+            DFSClient.LOG.debug("[R] is awaken on dQ, aQ size="+fAckQueue.size());
+            if(responderClosed)continue; // exit on stop
             pkt = fAckQueue.getFirst();
           }
+          DFSClient.LOG.debug("[R] yields dQ and gets pkt.seqno="+pkt.seqno);
 
           //STEP 2: wait for ack:
           PacketAck ack = new PacketAck();
           try{
+            DFSClient.LOG.debug("[R] is waiting for ack.seqno="+pkt.seqno);
             ack.readFields(blockReplyStream);
+            DFSClient.LOG.debug("[R] gets an ack.seqno="+ack.getSeqno());
           }catch(IOException e){
             lastException = e;
-            DFSClient.LOG.error("Responder cannot read response from peer."+e);
+            DFSClient.LOG.error("[R] cannot read response from peer."+e);
           }
           if(ack.getSeqno() != pkt.seqno){
-            lastException = new Exception("Responder gets out-of-order ack. expecting seqno=" + pkt.seqno +
+            lastException = new Exception("[R] gets out-of-order ack. expecting seqno=" + pkt.seqno +
                 "but receiving seqno="+ack.getSeqno());
             DFSClient.LOG.error(lastException);
           }
           DFSClient.tickOnRecv(ack.getHLC());
           if(!ack.isSuccess()){
-            lastException = new Exception("Responder gets unsuccessful ack: ack.status="+ack.getReply());
+            lastException = new Exception("[R] gets unsuccessful ack: ack.status="+ack.getReply());
             DFSClient.LOG.error(lastException);
           }
           
           //STEP 3: remove it from aQ
           synchronized(fDataQueue){
+            DFSClient.LOG.debug("[R] locks dQ, trying to dequeue aQ.");
             fAckQueue.removeFirst();
+            DFSClient.LOG.debug("[R] dequeues aQ. kick on dQ.");
             fDataQueue.notifyAll();
           }
+          DFSClient.LOG.debug("[R] unlocked dQ");
         }
       }
       
@@ -306,6 +316,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      * - state: DSS.STREAMING
      */
     public void doCreate(){
+      DFSClient.LOG.debug("[S] begins doCreate.");
       //STEP 1: get LocatedBlock,
       HybridLogicalClock mhlc = DFSClient.tickAndCopy();
       ExtendedBlock oldBlock = block;
@@ -322,6 +333,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       //STEP 2: setup pipeline,
       //STEP 2.1: get block information
       block = lb.getBlock();
+      DFSClient.LOG.debug("[S] added a newblock (blkno="+this.blockNumber+"): blockId="+block.getBlockId());
       accessToken = lb.getBlockToken();
       nodes = lb.getLocations();
       
@@ -335,12 +347,16 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
         return;
       }
       
+      DFSClient.LOG.debug("[S] established write block protocol with the datanode.");
       //STEP 2.3: start Responder
       this.responder = new ResponseProcessor();
       responder.start();
+
+      DFSClient.LOG.debug("[S] started RespondePrecessor.");
       
       //STEP 3: change state
       stat = DSS.STREAMING;
+      DFSClient.LOG.debug("[S] shifts to "+stat);
     }
     
     /**
@@ -456,14 +472,20 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
           fPkt.last = true;
           fPkt.seqno = -1; // flush packet always has seqno -1
           fPkt.writeTo(blockStream);
+          blockStream.flush();
         }
         synchronized(fDataQueue){
-          if(bFinishBlock)
+          if(bFinishBlock){
+            DFSClient.LOG.debug("[S] sends flush packet and wait for ack...kicks on dQ.");
             fAckQueue.addLast(fPkt);
+            fDataQueue.notifyAll();
+          }
           // STREAMER: wait till all pkts are acked.
           while(!fAckQueue.isEmpty()){
             try {
+              DFSClient.LOG.debug("[S] waits on dQ for last ack.");
               fDataQueue.wait();
+              DFSClient.LOG.debug("[S] awaken with last ack received.");
             } catch (InterruptedException e) {
               //do nothing
             }
@@ -489,6 +511,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     private void closeStream(){
       if (blockStream != null) {
         try {
+          blockStream.flush();
           blockStream.close();
         } catch (IOException e) {
           setLastException(e);
@@ -535,10 +558,13 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      */
     private void endBlock(long nextBlock){
       // 1)  & 2)
+      DFSClient.LOG.debug("[S] ends block " + this.blockNumber);
       closeInternal();
       // 3) set maxBlockNumber and reset blockNumber
       maxBlockNumber = Math.max(maxBlockNumber, blockNumber);
+      DFSClient.LOG.debug("[S] updates maxBlockNumber to " + this.maxBlockNumber);
       blockNumber = nextBlock;
+      DFSClient.LOG.debug("[S] shift to block " + nextBlock);
       // 4) clear nodes and block
       nodes = null;
       // 5) change state to CREATE or OVERWRITE
@@ -546,6 +572,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
         stat = DSS.OVERWRITE;
       else
         stat = DSS.CREATE;
+      DFSClient.LOG.debug("[S] state shifts to " + this.stat);
     }
     
     /**
@@ -554,17 +581,21 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      */
     private void doStreamingInternal(){
       while(!fDataQueue.isEmpty()){
+        DFSClient.LOG.debug("[S] in doStreamingInternal:dQ size="+fDataQueue.size());
         Packet pkt = fDataQueue.getFirst();
+        DFSClient.LOG.debug("[S] picks a packet from dQ:"+pkt);
         if(!validatePacket(pkt)){
           lastException = new Exception("Invalid pkt:"+pkt);
-          DFSClient.LOG.error("doStreaming() get invalid packet from dataQueue:"+pkt);
+          DFSClient.LOG.error("[S] gets invalid packet from dQ:"+pkt);
           return;
         }
         if(pkt.blkno == this.blockNumber){//write to the same blk,
           try {
+            DFSClient.LOG.debug("[S] sends packet:"+pkt);
             pkt.writeTo(this.blockStream);
+            blockStream.flush();
           } catch (IOException e) {
-            DFSClient.LOG.error("doStreaming() fail sending packet:"+pkt);
+            DFSClient.LOG.error("[S] fails in sending packet:"+pkt);
             this.lastException = e;
             this.stat = DSS.ERROR;
             return;
@@ -572,8 +603,11 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
           fDataQueue.removeFirst();
           // STREAMER: notify responder. 
           fAckQueue.addLast(pkt);
+          DFSClient.LOG.debug("[S] move packet from dQ to aQ:"+pkt);
           fDataQueue.notifyAll();
+          DFSClient.LOG.debug("[S] kicks on dQ.");
         }else{//go to different blk.
+          DFSClient.LOG.debug("[S] is going to shift from blk "+this.blockNumber + " to " + pkt.blkno);
           if(!this.flushInternal(true))return;
           endBlock(pkt.blkno);
           break;
@@ -585,19 +619,26 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      * do Streaming
      */
     void doStreaming(){
+      DFSClient.LOG.debug("[S] in doStreaming().");
       //lockdQ
       synchronized(fDataQueue){
+        DFSClient.LOG.debug("[S] locks dQ. dQ size = "+fDataQueue.size());
         // STREAMER: wait pkts data from client.
         while(fDataQueue.isEmpty() && this.bRunning){
           try {
+            DFSClient.LOG.debug("[S] yields and wait on dQ.");
             fDataQueue.wait();
           } catch (InterruptedException e) {
             //do nothing.
           }
         }
+        DFSClient.LOG.debug("[S] is awaken on dQ.");
         if(fDataQueue.isEmpty() && !this.bRunning){// stop...
+          DFSClient.LOG.debug("[S] call flushInternal(true)");
           flushInternal(true);
+          DFSClient.LOG.debug("[S] call flushInternal(true)...done");
           closeInternal();
+          DFSClient.LOG.debug("[S] call closeInternal(true)...done");
         }else
           doStreamingInternal();
       }
@@ -607,14 +648,18 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      * stop the thread. this is called from CLIENT,
      */
     void stop(){
+      DFSClient.LOG.debug("[C] called streamer.stop().");
       if(this.bRunning){
         synchronized(fDataQueue){
           this.bRunning = false;
           // CLIENT(STOP): notify streamer that is has been stopped.
+          DFSClient.LOG.debug("[C] streamer.bRunning-->false. kick all other threads.");
           fDataQueue.notifyAll();
         }
         try {
+          DFSClient.LOG.debug("[C] joins streamer thread.");
           this.streamerThd.join();
+          DFSClient.LOG.debug("[C] streamer thread done.");
         } catch (InterruptedException e) {
           DFSClient.LOG.warn("InterruptException received during waiting for streamer to stop gracely");
         }
@@ -623,6 +668,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     
     @Override
     public void run() {
+      DFSClient.LOG.debug("[S] is started.");
       while(bRunning){
         switch(stat){
         case STREAMING:
@@ -638,10 +684,11 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
           doOverwrite();
           break;
         default:
-          DFSClient.LOG.fatal(" DFSRDMAOutputStream started with error state:"+stat);
+          DFSClient.LOG.fatal("[S] started with error state:"+stat);
           bRunning = false;
         }
       }
+      DFSClient.LOG.debug("[S] is stopped.");
     }
     
     
@@ -659,6 +706,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      */
     private boolean createBlockOutputStream(DatanodeInfo [] nodes,long newGS) 
         throws IOException{
+      DFSClient.LOG.debug("[S] in createBlockOutputStream()");
       if(!checkDatanodes("nodes for block is empty! block:"+block))
         return false;
       //STEP 1: connect to datanode
@@ -685,13 +733,15 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
         stat = DSS.ERROR;
         return false;
       }
+      DFSClient.LOG.debug("[S] created 'out' and 'blockReplyStream'");
       //STEP 2: send write block request
       // send the request
       HybridLogicalClock hlc = DFSClient.tickAndCopy();
       new Sender(out).writeBlockRDMA(this.block, 
           this.accessToken, dfsClient.clientName, 
           nodes, fBlockBuffer.address, block.getNumBytes(), newGS, hlc);
-      
+      DFSClient.LOG.debug("[S] RPC calls 'writeBlockRDMA' to datanode.");
+
       //receive ack for connect
       BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(
           vintPrefixed(blockReplyStream));
@@ -701,6 +751,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
         stat = DSS.ERROR;
         return false;
       }
+      DFSClient.LOG.debug("[S] get successful response from the datanode.");
       
       //STEP 3: setup streamer variables
       assert null == blockStream : "Previous blockStream unclosed.";
@@ -852,6 +903,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   public synchronized void write(int b) throws IOException {
+    DFSClient.LOG.debug("[C] write("+(byte)b+").");
     if(dataEndPos() >= this.fBlockSize){
       flushAll();
     }
@@ -895,6 +947,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
+    DFSClient.LOG.debug("[C] write(b,off,len) is called with:"+new String(b)+",off="+off+",len="+len);
     if(dataEndPos() >= this.fBlockSize)flush();
     int writeLen = len;
     int writeOfst = off;
@@ -945,6 +998,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   public synchronized void flush() throws IOException {
+    DFSClient.LOG.debug("[C] flush() is called.");
     flushAll();
   }
 
@@ -991,14 +1045,18 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   public void close() throws IOException {
+    DFSClient.LOG.debug("[C] close() is called");
     if(streamer.bRunning){
+      DFSClient.LOG.debug("[C] flushAll()...");
       flushAll();
-      synchronized(fDataQueue){
-        this.streamer.stop();
-      }
+      DFSClient.LOG.debug("[C] flushAll()...done.");
+      this.streamer.stop();
+      DFSClient.LOG.debug("[C] streamer is stopped.");
       ExtendedBlock lastBlock = streamer.block;
       completeFile(lastBlock);
+      DFSClient.LOG.debug("[C] completeFile()...done.");
       dfsClient.endFileLease(src);
+      DFSClient.LOG.debug("[C] encFileLease()...done.");
     }
   }
 
@@ -1020,6 +1078,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
   
   @Override
   public synchronized void seek(long newPos) throws IOException {
+    DFSClient.LOG.debug("[C] seek("+newPos+") is called");
     if(newPos > this.curFileSize)
       throw new IOException("Cannot seek to pos:"+newPos+" because filesize is " + this.curFileSize);
     else if(pos/this.fBlockSize != newPos/this.fBlockSize || newPos < pos)

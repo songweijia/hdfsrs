@@ -1240,8 +1240,7 @@ class DataXceiver extends Receiver implements Runnable {
       DatanodeInfo[] targets, 
       long vaddr,
       long bytesRcvd,
-      long lastestGenerationStamp, HybridLogicalClock mhlc) throws IOException {
-    // TODO Auto-generated method stub
+      long latestGenerationStamp, HybridLogicalClock mhlc) throws IOException {
     previousOpClientName = clientName;
     
     OutputStream baseStream = getOutputStream();
@@ -1250,9 +1249,17 @@ class DataXceiver extends Receiver implements Runnable {
     checkAccess(out, true, blk, blockToken,
         Op.WRITE_BLOCK, BlockTokenSecretManager.AccessMode.WRITE);
     // STEP 1 - create RDMABlockReceiver
+    LOG.debug("[S] writeblockRDMA received with: blk="+blk+
+        ",peer="+peer.getRemoteIPString()+
+        ",bytesRcvd="+bytesRcvd+
+        ",lastestGenerationStamp="+latestGenerationStamp+
+        ",clientName="+clientName+
+        ",datanode="+datanode+
+        ",vaddr="+vaddr+
+        "mhlc="+mhlc);
     RDMABlockReceiver blockReceiver = new RDMABlockReceiver(blk,in,
         peer.getRemoteIPString(),peer.getLocalAddressString(),bytesRcvd,
-        lastestGenerationStamp,clientName,datanode,vaddr,mhlc);
+        latestGenerationStamp,clientName,datanode,vaddr,mhlc);
     
     //STEP 2 - notify the writer we are prepared.
     BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()

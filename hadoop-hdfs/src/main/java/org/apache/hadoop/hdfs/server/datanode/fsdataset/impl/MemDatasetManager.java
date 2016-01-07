@@ -174,6 +174,9 @@ public class MemDatasetManager {
   	  if((rc=blog.writeBlockRDMA(mhlc, blen, startOffset, length, clientIp.getBytes(), vaddr))!=0){
         throw new IOException("writeByRDMA failed: JNIBlog.writeBlockRDMA returns: " + rc);
   	  }
+  	  //update length
+  	  if(this.getNumBytes() < this.getBytesOnDisk())
+  	    this.setNumBytes(this.getBytesOnDisk());
   	  this.accBytes += length;
   	}
   }

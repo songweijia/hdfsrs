@@ -4,6 +4,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import java.io.IOException;
+
 import java.io.OutputStream;
 import java.util.LinkedList;
 
@@ -11,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager.MemBlockMeta;
+import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
 import org.apache.zookeeper.common.IOUtils;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetImpl;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.RDMAWriteAckProto;
@@ -19,6 +21,8 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status;
 import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 import edu.cornell.cs.sa.HybridLogicalClock;
 import static org.apache.hadoop.hdfs.protocolPB.PBHelper.vintPrefixed;
+import static org.apache.hadoop.hdfs.server.datanode.DataNode.DN_CLIENTTRACE_FORMAT;
+import static org.apache.hadoop.hdfs.server.datanode.DataNode.ClientTraceLog;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -40,6 +44,7 @@ public class RDMABlockReceiver implements Closeable {
   private volatile boolean isClosed;
   private Thread responderThd;
   static final Log LOG = DataNode.LOG;
+  private final long startTime;
   
   /**
    * constructor
@@ -77,12 +82,14 @@ public class RDMABlockReceiver implements Closeable {
     this.ackQueue = new LinkedList<RDMAWriteAckProto>();
     this.lastSeqno = -1L;
     this.isClosed = false;
+    startTime = datanode.ClientTraceLog.isInfoEnabled() ? System.nanoTime() : 0L;
     
     
     //STEP 2: create replicaInfo
     if(datanode.data.getReplica(block)==null){
       //create new replica
       replicaInfo = (MemBlockMeta)datanode.data.createRbw(block,mhlc);
+      datanode.notifyNamenodeReceivingBlock(block, replicaInfo.getStorageUuid());
     }else{
       //open existing replica
       replicaInfo = (MemBlockMeta)datanode.data.append(block, newGs, bytesRcvd);
@@ -105,9 +112,12 @@ public class RDMABlockReceiver implements Closeable {
     public void run() {
       while(!isClosed){
         synchronized(ackQueue){
-          if(ackQueue.isEmpty())
+          LOG.debug("[R] lock aQ.");
+          if(ackQueue.isEmpty() && !isClosed)
             try {
+              LOG.debug("[R] wait on aQ.");
               ackQueue.wait();
+              LOG.debug("[R] is awaken on aQ.");
               continue;
             } catch (InterruptedException e) {
               //do nothing
@@ -115,32 +125,46 @@ public class RDMABlockReceiver implements Closeable {
           if(ackQueue.isEmpty()) // probably closed.
             continue;
           RDMAWriteAckProto ack = ackQueue.getFirst();
+          LOG.debug("[R] get ack:"+ack);
           try {
             ack.writeDelimitedTo(replyOutputStream);
+            replyOutputStream.flush();
           } catch (IOException e) {
             LOG.error("RDMABlockReceiver.Responder: Cannot send ack:"+ack);
           }
+          LOG.debug("[R] sends ack:"+ack);
+          ackQueue.removeFirst();
+          LOG.debug("[R] removed ack:"+ack);
+          ackQueue.notifyAll();
+          LOG.debug("[R] kicks aQ");
         }
       }
     }
   }
   
   boolean receiveNextPacket()throws IOException{
+    LOG.debug("[S] waits on pkt.");
     RDMAWritePacketProto proto = RDMAWritePacketProto.parseFrom(vintPrefixed(in));
+    LOG.debug("[S] gets packet:seqno="+proto.getSeqno());
     long seqno = proto.getSeqno();
     boolean islast = proto.getIsLast();
     long length = proto.getLength();
     long offset = proto.getOffset();
     HybridLogicalClock mhlc = PBHelper.convert(proto.getMhlc());
     //STEP 0: validate:
-    if(seqno != -1L || seqno != lastSeqno + 1){
+    if(seqno != -1L && seqno != lastSeqno + 1){
       throw new IOException("RDMABlockReceiver out-of-order packet received: expecting seqno[" +
         (lastSeqno+1) + "] but received seqno["+seqno+"]");
     }
-    //STEP 1: handle normal write
-    if(seqno > 0L){
+    //STEP 1: handle normal write or finalize block before we enqueue the ack.
+    if(seqno >= 0L){
       replicaInfo.writeByRDMA((int)offset, (int)length, this.inAddr, this.vaddr, mhlc);
+      LOG.debug("[S] replicaInfo.length="+replicaInfo.getNumBytes()+"/"+replicaInfo.getBytesOnDisk());
       lastSeqno ++;
+      LOG.debug("[S] wrote packet:offset="+offset+",length="+length+",peer="+this.inAddr+",vaddr="+vaddr);
+    } else if(islast){
+      finalizeBlock(this.startTime);
+      LOG.debug("[S] finalized block:"+replicaInfo);
     }
     
     //STEP 2: enqueue ack...
@@ -149,15 +173,20 @@ public class RDMABlockReceiver implements Closeable {
         .setStatus(Status.SUCCESS)
         .setMhlc(PBHelper.convert(mhlc))
         .build();
+    
     synchronized(this.ackQueue){
+      LOG.debug("[S] locks aQ.");
       this.ackQueue.addLast(ack);
+      LOG.debug("[S] adds ack:seqno="+ack.getSeqno());
       ackQueue.notifyAll();
+      LOG.debug("[S] kicks aQ.");
     }
 
     //STEP 3: wait and stop.
     if(seqno == -1L && islast){
+      LOG.debug("[S] waits until aQ is empty.");
       synchronized(this.ackQueue){
-        while(this.ackQueue.isEmpty()){
+        while(!this.ackQueue.isEmpty()){
           try {
             this.ackQueue.wait();
           } catch (InterruptedException e) {
@@ -167,9 +196,28 @@ public class RDMABlockReceiver implements Closeable {
         isClosed = true;
         this.ackQueue.notifyAll();
       }
+      LOG.debug("[S] found aQ is empty, return with false");
       return false;
     }
     return true;
+  }
+  
+  private void finalizeBlock(long startTime) throws IOException {
+    
+    final long endTime = ClientTraceLog.isInfoEnabled() ? System.nanoTime() : 0L;
+    block.setNumBytes(replicaInfo.getNumBytes());
+    datanode.data.finalizeBlock(block);
+    datanode.closeBlock(block, DataNode.EMPTY_DEL_HINT, replicaInfo.getStorageUuid());
+    if(ClientTraceLog.isInfoEnabled()){
+      long offset = 0;
+      DatanodeRegistration dnR = datanode.getDNRegistrationForBP(block.getBlockPoolId());
+      ClientTraceLog.info(String.format(DN_CLIENTTRACE_FORMAT, inAddr,
+          myAddr, block.getNumBytes(), "HDFS_WRITE", clientName, offset,
+          dnR.getDatanodeUuid(), block, endTime - startTime));
+    } else {
+      LOG.info("Received " + block + " size " + block.getNumBytes()
+      + " from " + inAddr);
+    }
   }
   
   /**
@@ -177,13 +225,16 @@ public class RDMABlockReceiver implements Closeable {
    * @param replyOut
    */
   void receiveBlock(DataOutputStream replyOut)throws IOException{
-    this.isClosed = true;
+    this.isClosed = false;
     //STEP 1: run responder. 
+    LOG.debug("[S] receiveBlock is called.");
     this.responderThd = new Thread(new Responder(replyOut));
     this.responderThd.start();
+    LOG.debug("[S] Responder is started.");
     //STEP 2: do receive packet.
     while(receiveNextPacket());
     try {
+      LOG.debug("[S] waits until responder finished.");
       this.responderThd.join();
     } catch (InterruptedException e) {
       LOG.info("RDMABlockReceiver: fail to join responder thread.");
