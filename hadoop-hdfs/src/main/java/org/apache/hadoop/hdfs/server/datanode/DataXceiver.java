@@ -1249,14 +1249,14 @@ class DataXceiver extends Receiver implements Runnable {
     checkAccess(out, true, blk, blockToken,
         Op.WRITE_BLOCK, BlockTokenSecretManager.AccessMode.WRITE);
     // STEP 1 - create RDMABlockReceiver
-    LOG.debug("[S] writeblockRDMA received with: blk="+blk+
+    LOG.debug("[S] writeBlockRDMA received with: blk="+blk+
         ",peer="+peer.getRemoteIPString()+
         ",bytesRcvd="+bytesRcvd+
         ",lastestGenerationStamp="+latestGenerationStamp+
         ",clientName="+clientName+
         ",datanode="+datanode+
         ",vaddr="+vaddr+
-        "mhlc="+mhlc);
+        ",mhlc="+mhlc);
     RDMABlockReceiver blockReceiver = new RDMABlockReceiver(blk,in,
         peer.getRemoteIPString(),peer.getLocalAddressString(),bytesRcvd,
         latestGenerationStamp,clientName,datanode,vaddr,mhlc);

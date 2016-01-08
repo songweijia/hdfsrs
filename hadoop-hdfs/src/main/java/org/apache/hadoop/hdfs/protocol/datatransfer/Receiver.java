@@ -171,12 +171,13 @@ public abstract class Receiver implements DataTransferProtocol {
   
   private void opWriteBlockRDMA(DataInputStream in) throws IOException {
     final OpWriteBlockRDMAProto proto = OpWriteBlockRDMAProto.parseFrom(vintPrefixed(in));
+    LOG.debug("[S] Receiver: vaddr="+proto.getVaddr());
     this.writeBlockRDMA(PBHelper.convert(proto.getHeader().getBaseHeader().getBlock()), 
         PBHelper.convert(proto.getHeader().getBaseHeader().getToken()),
         proto.getHeader().getClientName(),
         PBHelper.convert(proto.getTargetsList()),
-        proto.getBytesRcvd(),
         proto.getVaddr(),
+        proto.getBytesRcvd(),
         proto.getLatestGenerationStamp(),
         PBHelper.convert(proto.getMhlc()));
   }

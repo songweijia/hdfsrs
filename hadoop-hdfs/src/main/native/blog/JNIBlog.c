@@ -1370,11 +1370,13 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   char *allData=NULL;
   
   // Find block;
+  DEBUG_PRINT("writeBlockRDMA(): blkOfst=%d,length=%d,bufAddr=%p\n",blkOfst,length,(void*)bufaddr);
   filesystem = get_filesystem(env,thisObj);
-  if(MAP_LOCK(block, filesystem->block_map, blockId, 'r') != 0){
+  MAP_LOCK(block, filesystem->block_map, blockId, 'r');
+  if(MAP_READ(block, filesystem->block_map, blockId, &block) != 0){
     //In case you did not find it return an error.
-    fprintf(stderr, "Write Block using RDMA: Block with id %ld is not present. \n", blockId);
     MAP_UNLOCK(block, filesystem->block_map, blockId);
+    fprintf(stderr, "Write Block using RDMA: Block with id %ld is not present. \n", blockId);
     return -1;
   }
   MAP_UNLOCK(block, filesystem->block_map,blockId);
@@ -1384,6 +1386,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
     return -3;
   }
   // create the new pages.
+  DEBUG_PRINT("writeBlockRDMA(): create new pages.\n");
   block_offset = (int) blkOfst;
   first_page = block_offset / filesystem->page_size;
   last_page = (block_offset + length) / filesystem->page_size;// How many full pages ahead the end of the write. this is different from writeBlock(), last_page could be 1 if you only write one page, and last_page_length is zero. On the contrary, in writeBlock(), last_page means the page last byte is written to.
@@ -1424,11 +1427,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   }
   
   // fill pages overlapping with existing data, if required
+  DEBUG_PRINT("writeBlockRDMA(): fill pages with existing data.\n");
   for (i = 0;i< page_offset; i++)
     new_pages[0].data[i] = block->pages[first_page]->data[i];
-  if(last_page*filesystem->page_size + last_page_length > block->length)
+  DEBUG_PRINT("writeBlockRDMA(): [0~%d] is filled, block->length=%d\n", page_offset,block->length);
+  if(last_page*filesystem->page_size + last_page_length > block->length){
     block->length = last_page*filesystem->page_size + last_page_length;
-  else if(last_page_length != 0){//we need to fill the end part...
+    DEBUG_PRINT("writeBlockRDMA(): block length is updated to %d\n", block->length);
+  }
+  else if(last_page_length != 0 && block->length > last_page_length + last_page*filesystem->page_size){//we need to fill the end part...
     for( i = last_page_length; 
          (block->length/filesystem->page_size>last_page)?filesystem->page_size:block->length%filesystem->page_size;
          i++ )
@@ -1436,6 +1443,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   }
  
   // Fill block with thr appropriate information
+  DEBUG_PRINT("writeBlockRDMA(): fill block metadata.\n");
   if (block->cap == 0)
     new_pages_capacity = 1;
   else
@@ -1450,6 +1458,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
     block->pages[first_page+i] = new_pages + i;
 
   // create log entry
+  DEBUG_PRINT("writeBlockRDMA(): create log entry\n");
   pthread_rwlock_wrlock(&(filesystem->lock));
   check_and_increase_log_length(filesystem);
   log_pos = filesystem->log_length;
@@ -1461,6 +1470,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   filesystem->log[log_pos].previous = block->last_entry;
 
   // tick my clock.
+  DEBUG_PRINT("writeBlockRDMA(): tick clock\n");
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, filesystem->log+log_pos);
   filesystem->log_length += 1;
@@ -1651,6 +1661,8 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffe
   //STEP 3: fill buffer object
   (*env)->SetLongField(env, bufObj, addressId, (jlong)buf);
   (*env)->SetObjectField(env, bufObj, bufferId, bbObj);
+
+  DEBUG_PRINT("buffer[%p] is allocated from pool[%p]\n",buf,(void*)hRDMABufferPool);
 
   return bufObj;
 }

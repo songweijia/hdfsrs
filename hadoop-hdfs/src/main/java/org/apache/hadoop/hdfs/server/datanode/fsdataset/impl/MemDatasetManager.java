@@ -171,7 +171,7 @@ public class MemDatasetManager {
   	    throw new IOException("writeByRDMA failed:blen="+blen+",start="+startOffset+
   	        ",len="+length+",client="+clientIp+",vaddr="+vaddr+",mhlc="+mhlc);
   	  int rc = 0;
-  	  if((rc=blog.writeBlockRDMA(mhlc, blen, startOffset, length, clientIp.getBytes(), vaddr))!=0){
+  	  if((rc=blog.writeBlockRDMA(mhlc, blockId, startOffset, length, clientIp.getBytes(), vaddr))!=0){
         throw new IOException("writeByRDMA failed: JNIBlog.writeBlockRDMA returns: " + rc);
   	  }
   	  //update length

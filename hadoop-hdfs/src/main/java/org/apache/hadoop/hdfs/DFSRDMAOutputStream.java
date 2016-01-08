@@ -48,10 +48,7 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Time;
-import org.mortbay.log.Log;
-
 import com.google.protobuf.TextFormat;
-
 import edu.cornell.cs.blog.JNIBlog;
 import edu.cornell.cs.blog.JNIBlog.RBPBuffer;
 import edu.cornell.cs.sa.HybridLogicalClock;
@@ -268,7 +265,11 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
             DFSClient.LOG.error(lastException);
           }
           
-          //STEP 3: remove it from aQ
+          //STEP 3: update block size
+          bytesCurBlock = Math.max(bytesCurBlock, pkt.length + pkt.offset);
+          block.setNumBytes(bytesCurBlock);
+          
+          //STEP 4: remove pkt from dQ 
           synchronized(fDataQueue){
             DFSClient.LOG.debug("[R] locks dQ, trying to dequeue aQ.");
             fAckQueue.removeFirst();
@@ -565,7 +566,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       DFSClient.LOG.debug("[S] updates maxBlockNumber to " + this.maxBlockNumber);
       blockNumber = nextBlock;
       DFSClient.LOG.debug("[S] shift to block " + nextBlock);
-      // 4) clear nodes and block
+      // 4) clear nodes
       nodes = null;
       // 5) change state to CREATE or OVERWRITE
       if(nextBlock <= maxBlockNumber)
@@ -710,6 +711,11 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       if(!checkDatanodes("nodes for block is empty! block:"+block))
         return false;
       //STEP 1: connect to datanode
+      // first connect RDMA
+      DFSClient.LOG.debug("[S] make RDMA connection to "+nodes[0].getIpAddr()+":"+RDMA_CON_PORT+
+          "with pool-"+hRDMABufferPool);
+      JNIBlog.rbpConnect(hRDMABufferPool, nodes[0].getIpAddr().getBytes(), RDMA_CON_PORT);
+      // then connect tcp
       DataOutputStream out = null;
       long writeTimeout = dfsClient.getDatanodeWriteTimeout(nodes.length);
       try {
@@ -737,10 +743,10 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       //STEP 2: send write block request
       // send the request
       HybridLogicalClock hlc = DFSClient.tickAndCopy();
+      DFSClient.LOG.debug("[S] RPC calls 'writeBlockRDMA' to datanode.fBlockBuffer.address="+fBlockBuffer.address);
       new Sender(out).writeBlockRDMA(this.block, 
           this.accessToken, dfsClient.clientName, 
           nodes, fBlockBuffer.address, block.getNumBytes(), newGS, hlc);
-      DFSClient.LOG.debug("[S] RPC calls 'writeBlockRDMA' to datanode.");
 
       //receive ack for connect
       BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(
@@ -777,6 +783,8 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     this.pos = 0;
     this.fProgress = progress;
     this.fBlockBuffer = JNIBlog.rbpAllocateBlockBuffer(hRDMABufferPool);
+    DFSClient.LOG.debug("[C] constructor: hRDMABufferPool="+hRDMABufferPool+
+        ",buffer.address="+fBlockBuffer.address+",buffer.size="+fBlockBuffer.buffer.capacity());
     this.bytesCurBlock = 0;
     this.resetBlockBuffer((int)bytesCurBlock);
     if((progress != null) && DFSClient.LOG.isDebugEnabled()){
@@ -1053,10 +1061,13 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       this.streamer.stop();
       DFSClient.LOG.debug("[C] streamer is stopped.");
       ExtendedBlock lastBlock = streamer.block;
+      DFSClient.LOG.debug("[C] before complete file: blk.len="+lastBlock.getLocalBlock().getNumBytes());
       completeFile(lastBlock);
       DFSClient.LOG.debug("[C] completeFile()...done.");
       dfsClient.endFileLease(src);
       DFSClient.LOG.debug("[C] encFileLease()...done.");
+      JNIBlog.rbpReleaseBuffer(hRDMABufferPool, this.fBlockBuffer);
+      DFSClient.LOG.debug("[C] release rbpBuffer...done.");
     }
   }
 

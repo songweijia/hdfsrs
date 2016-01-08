@@ -141,8 +141,8 @@ public interface DataTransferProtocol {
       final Token<BlockTokenIdentifier> blockToken,
       final String clientName,
       final DatanodeInfo[] targets,
-      final long bytesRcvd,
       final long vaddr,
+      final long bytesRcvd,
       final long lastestGenerationStamp,
       final HybridLogicalClock mhlc) throws IOException;
   
