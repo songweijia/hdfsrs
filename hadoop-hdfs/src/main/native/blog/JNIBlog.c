@@ -742,7 +742,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
   filesystem->rdmaCtxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
   DEBUG_PRINT("JNIBlog.initialize:(),poolSize=%ld,LOG2(poolSize)=%d\n",poolSize,LOG2(poolSize));
-  if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),(const uint16_t)port)){
+  if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),(const uint16_t)port,0)){//this is for server
     fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
     return -2;
@@ -1476,6 +1476,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   filesystem->log_length += 1;
   pthread_rwlock_unlock(&(filesystem->lock));
   block->last_entry = log_pos;
+  DEBUG_PRINT("writeBlockRDMA(): finished\n");
 
   return 0;
 }
@@ -1603,7 +1604,7 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize
   (JNIEnv *env, jclass thisCls, jint psz, jint align, jint port){
   RDMACtxt *ctxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
-  if(initializeContext(ctxt,(const uint32_t)psz,(const uint32_t)align,(const uint16_t)port)){
+  if(initializeContext(ctxt,(const uint32_t)psz,(const uint32_t)align,(const uint16_t)port,1)){ // this is for client
     free(ctxt);
     fprintf(stderr, "Cannot initialize rdma context.\n");
     return (jlong)0;
@@ -1696,14 +1697,14 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
  * Signature: (JII)V
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
-  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jbyteArray hostIp, jint port){
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jbyteArray hostIp){
   RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
   int ipSize = (int)(*env)->GetArrayLength(env,hostIp);
   jbyte ipStr[16];
   (*env)->GetByteArrayRegion(env, hostIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
   uint32_t ipkey = inet_addr((const char*)ipStr);
-  int rc = rdmaConnect(ctxt, (const uint32_t)ipkey, (const uint16_t)port);
+  int rc = rdmaConnect(ctxt, (const uint32_t)ipkey);
   if(rc == 0 || rc == -1){
     // do nothing, -1 means duplicated connection.
   }else

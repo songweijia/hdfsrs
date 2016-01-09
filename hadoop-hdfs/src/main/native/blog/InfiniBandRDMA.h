@@ -31,6 +31,7 @@ struct rdma_ctxt {
   uint64_t           cnt;      // allocated page/buf counter
   uint8_t            *bitmap;  // bitmap length = 1<<(max(0,ctxt.psz-ctxt.align-3)); if bitmap == NULL, this is a blog context.
   uint16_t           port;     // blog daemon listen port.
+  uint16_t           isClient; // if this is client or not.
   pthread_t          daemon;   // daemon thread for blog context. not used if this is client context.
   pthread_mutex_t    lock;     // mutex lock.
   BLOG_MAP_TYPE(con) *con_map; // map: ip -> rdma connection
@@ -75,14 +76,19 @@ struct rdma_conn {
  * ctxt:   the pointer pointing to an uninitialized context
  * psz:    pool size is calculated by (1l<<psz)
  * align:  page/buffer size is calculated by (1l<<align)
- * port:   port number for blog ctxt. port==0 means client ctxt,
- *         and ctxt->bitmap should be initialized.
+ * port:   port number for blog ctxt.
+ * isClient: 
+ *         client ctxt, and ctxt->bitmap should be initialized.
  * RETURN VALUE
  * 0 for success
  * others for failure
  */
-extern int initializeContext(RDMACtxt *ctxt, const uint32_t psz, 
-  const uint32_t align, const uint16_t port);
+extern int initializeContext(
+  RDMACtxt *ctxt, 
+  const uint32_t psz, 
+  const uint32_t align, 
+  const uint16_t port,
+  const uint16_t isClient);
 /* destroyContext():Destroy an initialized RDMA context.
  * PARAMTERS
  * ctxt:   the pointer pointing to an initialized RDMA context
@@ -128,7 +134,6 @@ extern int releaseBuffer(RDMACtxt *ctxt, const void *buf);
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized client context
  * hostip:  the ip address of blog context(datanode), the value is decided by sockaddr_in.sin_addr.s_addr, please refer to "man 7 ip"
- * port:    the port where blog daemon thread is listening on
  * RETURN VALUE
  * 0 for success
  * -1  already connected
@@ -138,18 +143,17 @@ extern int releaseBuffer(RDMACtxt *ctxt, const void *buf);
  * -5  cannot parse rdma configuration from peer
  * -6  cannot fill rdma connection to map
  */
-extern int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
+extern int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip);
 /*
  * rdmaDisconnect(): disconnect the client context from a blog context.
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized client context.
  * hostip:  the ip address of blog context(datanode), hostip==0 means all connected blog contexts
- * port:    the port where blog daemon thread is listening on
  * RETURN VALUE
  * 0 for success
  * others for failure
  */
-extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port);
+extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip);
 /* rdmaTransfer(): transfer a list of pages using RDMA.
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized blog context.

@@ -51,9 +51,22 @@ public class JNIBlog {
     long bs = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 
         DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
     int align = 0;
+    int port = conf.getInt(DFSConfigKeys.DFS_RDMA_CON_PORT_KEY, DFSConfigKeys.DFS_RDMA_CON_PORT_DEFAULT);
     while(((bs>>align)&1) == 0)align++;
     try{
-      hRDMABufferPool = JNIBlog.rbpInitialize(psz, align, 0);
+      hRDMABufferPool = JNIBlog.rbpInitialize(psz, align, port);
+      if(hRDMABufferPool != 0L){
+        //add shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+          public void run(){
+            try{
+              JNIBlog.rbpDestroy(hRDMABufferPool);
+            }catch(IOException e){
+              LOG.error("JNIBlog.rbpDestroy("+hRDMABufferPool+") failed with exception:"+e);
+            }
+          }
+        });
+      }
     }catch(Exception e){
       LOG.fatal("Fail to initialize the rdma buffer with exception:"+e);
       System.exit(-1);
@@ -293,10 +306,9 @@ public class JNIBlog {
    * function: connect to RDMA datanode
    * @rbpBuffer handle of the RDMA buffer pool
    * @param hostIp
-   * @param port
    * @throws Exception
    */
-  static public native void rbpConnect(long hRDMABufferPool, byte hostIp[], int port) throws IOException;
+  static public native void rbpConnect(long hRDMABufferPool, byte hostIp[]) throws IOException;
   
   /**
    * function: do RDMA Write, this is called by the DataNode.

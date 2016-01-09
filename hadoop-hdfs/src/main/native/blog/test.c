@@ -62,11 +62,11 @@ int main(int argc, char **argv){
     RDMACtxt rdma_ctxt;
     int i;
     // step 1: initialize client
-    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,0),"initializeContext");
+    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,port,1),"initializeContext");
     for(i=0;i<(1<<(psz-align));i++)
       memset((void*)rdma_ctxt.pool+(i<<align),'A'+i,1<<align);
     // step 2: connect
-    TEST_NZ(rdmaConnect(&rdma_ctxt,inet_addr(host),port),"rdmaConnect");
+    TEST_NZ(rdmaConnect(&rdma_ctxt,inet_addr(host)),"rdmaConnect");
     // step 3: allocate buffer
     void *buf;
     while(1){
@@ -87,7 +87,7 @@ int main(int argc, char **argv){
     RDMACtxt rdma_ctxt;
     int i;
     // step 1: initialize server
-    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,port),"initializeContext");
+    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,port,0),"initializeContext");
     for(i=0;i<(1<<(psz-align));i++)
       memset((void*)rdma_ctxt.pool+(i<<align),'0'+i,1<<align);
     // step 2:

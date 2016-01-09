@@ -160,8 +160,6 @@ int NAME##_map_delete(BLOG_MAP_TYPE(NAME) *map, uint64_t id) {                  
     map[hash].entry = entry->next;                                                                  \
   else                                                                                              \
     last_entry->next = entry->next;                                                                 \
-  if (entry->value != NULL)                                                                         \
-    free(entry->value);                                                                             \
   free(entry);                                                                                      \
   return 0;                                                                                         \
 }                                                                                                   \

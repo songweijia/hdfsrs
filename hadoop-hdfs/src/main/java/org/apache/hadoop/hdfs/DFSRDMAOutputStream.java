@@ -714,7 +714,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       // first connect RDMA
       DFSClient.LOG.debug("[S] make RDMA connection to "+nodes[0].getIpAddr()+":"+RDMA_CON_PORT+
           "with pool-"+hRDMABufferPool);
-      JNIBlog.rbpConnect(hRDMABufferPool, nodes[0].getIpAddr().getBytes(), RDMA_CON_PORT);
+      JNIBlog.rbpConnect(hRDMABufferPool, nodes[0].getIpAddr().getBytes());
       // then connect tcp
       DataOutputStream out = null;
       long writeTimeout = dfsClient.getDatanodeWriteTimeout(nodes.length);
@@ -783,6 +783,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     this.pos = 0;
     this.fProgress = progress;
     this.fBlockBuffer = JNIBlog.rbpAllocateBlockBuffer(hRDMABufferPool);
+    DFSClient.LOG.debug("[C] fBlockBuffer="+fBlockBuffer+",hRDMABufferPool="+hRDMABufferPool);
     DFSClient.LOG.debug("[C] constructor: hRDMABufferPool="+hRDMABufferPool+
         ",buffer.address="+fBlockBuffer.address+",buffer.size="+fBlockBuffer.buffer.capacity());
     this.bytesCurBlock = 0;

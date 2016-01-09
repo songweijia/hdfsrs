@@ -8,6 +8,9 @@
 #include <pthread.h>
 #include <infiniband/verbs.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/tcp.h>
 #include "InfiniBandRDMA.h"
 
   ////////////////////////////////////////////////
@@ -16,6 +19,7 @@
 #define TEST_NZ(x,y) do { if ((x)) die(y); } while (0)
 #define TEST_Z(x,y) do { if (!(x)) die(y); } while (0)
 #define TEST_N(x,y) do { if ((x)<0) die(y); } while (0)
+#define CONFIG_STR_LEN (sizeof "0000:000000:000000:00000000:0000000000000000")
 static int die(const char *reason){
   fprintf(stderr, "Err: %s - %s \n ", strerror(errno), reason);
   exit(EXIT_FAILURE);
@@ -113,46 +117,15 @@ static void destroyRDMAConn(RDMAConnection *conn){
   if(conn->ch)ibv_destroy_comp_channel(conn->ch);
 }
 
-  ////////////////////////////////////////////////
- // RDMA Library APIs                          //
-////////////////////////////////////////////////
-static void* blog_rdma_daemon_routine(void* param){
-  RDMACtxt* ctxt = (RDMACtxt*)param;
-  // STEP 1 initialization
-  struct addrinfo *res;
-  struct addrinfo hints = {
-    .ai_flags = AI_PASSIVE,
-    .ai_family = AF_UNSPEC,
-    .ai_socktype = SOCK_STREAM
-  };
-  char *service;
-  int sockfd = -1;
-  int n,connfd;
-  ///struct sockaddr_in sin;
-  TEST_N(asprintf(&service,"%d", ctxt->port), "ERROR writing port number to port string.");
-  TEST_NZ(n=getaddrinfo(NULL,service,&hints,&res), "getaddrinfo threw error");
-  TEST_N(sockfd=socket(res->ai_family, res->ai_socktype, res->ai_protocol), "Could not create server socket");
-  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &n, sizeof n);
-  // STEP 2 binding
-  TEST_NZ(bind(sockfd,res->ai_addr,res->ai_addrlen), "Could not bind addr to socket");
-  listen(sockfd, 1);
-  // STEP 3 waiting for requests
-  while(1){
-    struct sockaddr_in clientAddr;
-    socklen_t addrLen = sizeof(struct sockaddr_in);
-    uint32_t clientip;
-    TEST_N(connfd = accept(sockfd, (struct sockaddr*)&clientAddr, &addrLen), "server accept failed.");
-    // STEP 3 - get remote IP
-    clientip = clientAddr.sin_addr.s_addr;
-    uint64_t cipkey = (uint64_t)clientip;
+static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const char* cfgstr, uint64_t cipkey){
     int bDup;
-    // STEP 4 - if this is included in map
+    // STEP 1 - if this is included in map
     MAP_LOCK(con, ctxt->con_map, cipkey, 'r');
     RDMAConnection *rdmaConn = NULL, *readConn = NULL;
     bDup = (MAP_READ(con, ctxt->con_map, cipkey, &readConn)==0);
     MAP_UNLOCK(con, ctxt->con_map, cipkey);
-    if(bDup)continue;
-    // STEP 5 - setup connection
+    if(bDup)return 0;// return success for duplicated connect...
+    // STEP 2 - setup connection
     rdmaConn = (RDMAConnection*)malloc(sizeof(RDMAConnection));
     rdmaConn->scq  = NULL;
     rdmaConn->rcq  = NULL;
@@ -183,24 +156,19 @@ static void* blog_rdma_daemon_routine(void* param){
     rdmaConn->l_psn = lrand48() & 0xffffff;
     rdmaConn->l_rkey = ctxt->mr->rkey;
     rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
-    char msg[sizeof "0000:000000:000000:00000000:0000000000000000"];
+    char mmsg[sizeof "0000:000000:000000:00000000:0000000000000000"];
     // STEP 6 Exchange connection information(initialize client connection first.)
     /// server --> client | connection string
-    setibcfg(msg,rdmaConn);
-    if(write(connfd, msg, sizeof msg) != sizeof msg){
+    setibcfg(mmsg,rdmaConn);
+    if(write(connfd, mmsg, sizeof mmsg) != sizeof mmsg){
       perror("Could not send ibcfg to peer");
-      return NULL;
+      return -1;
     }
-    /// client --> server | connection string | put connection to map
-    if(read(connfd, msg, sizeof msg)!= sizeof msg){
-      perror("Could not receive ibcfg from peer");
-      return NULL;
-    }
-    int parsed = sscanf(msg, "%x:%x:%x:%x:%Lx",
+    int parsed = sscanf(cfgstr, "%x:%x:%x:%x:%Lx",
     &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,(long long unsigned*)&rdmaConn->r_vaddr);
     if(parsed!=5){
-      fprintf(stderr, "Could not parse message from peer.");
-      return NULL;
+      perror("Could not parse message from peer.");
+      return -2;
     }
     /// change pair to RTS
     qp_change_state_rts(rdmaConn->qp,rdmaConn);
@@ -208,13 +176,76 @@ static void* blog_rdma_daemon_routine(void* param){
     MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
     if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, rdmaConn)!=0){
       MAP_UNLOCK(con, ctxt->con_map, cipkey);
-      close(connfd);
       destroyRDMAConn(rdmaConn);
       free(rdmaConn);
-      continue;
+      perror("Could not put rdmaConn to map.");
+      return -3;
     }
     MAP_UNLOCK(con, ctxt->con_map, cipkey);
     DEBUG_PRINT("new client:%lx\n",cipkey);
+    // end setup connection
+    return 0;
+}
+
+  ////////////////////////////////////////////////
+ // RDMA Library APIs                          //
+////////////////////////////////////////////////
+static void* blog_rdma_daemon_routine(void* param){
+  RDMACtxt* ctxt = (RDMACtxt*)param;
+  // STEP 1 initialization
+  struct addrinfo *res;
+  struct addrinfo hints = {
+    .ai_flags = AI_PASSIVE,
+    .ai_family = AF_UNSPEC,
+    .ai_socktype = SOCK_STREAM
+  };
+  char *service;
+  int sockfd = -1;
+  int n,connfd;
+  ///struct sockaddr_in sin;
+  TEST_N(asprintf(&service,"%d", ctxt->port), "ERROR writing port number to port string.");
+  TEST_NZ(n=getaddrinfo(NULL,service,&hints,&res), "getaddrinfo threw error");
+  TEST_N(sockfd=socket(res->ai_family, res->ai_socktype, res->ai_protocol), "Could not create server socket");
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &n, sizeof n);
+  // STEP 2 binding
+  TEST_NZ(bind(sockfd,res->ai_addr,res->ai_addrlen), "Could not bind addr to socket");
+  listen(sockfd, 1);
+  // STEP 3 waiting for requests
+  while(1){
+    struct sockaddr_in clientAddr;
+    socklen_t addrLen = sizeof(struct sockaddr_in);
+    uint32_t clientip;
+    TEST_N(connfd = accept(sockfd, (struct sockaddr*)&clientAddr, &addrLen), "server accept failed.");
+    // STEP 3.1 - get remote IP
+    clientip = clientAddr.sin_addr.s_addr;
+    uint64_t cipkey = (uint64_t)clientip;
+    // STEP 3.2 - read connection string...
+    char msg[CONFIG_STR_LEN];
+    /// client --> server | connection string | put connection to map
+    if(read(connfd, msg, sizeof msg)!= sizeof msg){
+      perror("Could not receive ibcfg from peer");
+      return NULL;
+    }
+    if(strlen(msg) == 0){//empty configuration string for disconnection.
+      RDMAConnection * readConn = NULL;
+      // find the connection, destroy and clean it up.
+      MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
+      if(MAP_READ(con, ctxt->con_map, cipkey, &readConn) == 0){
+        MAP_DELETE(con,ctxt->con_map,cipkey);
+      }
+      MAP_UNLOCK(con, ctxt->con_map, cipkey);
+      DEBUG_PRINT("deleted ipkey:%lx from con map.\n",cipkey);
+      destroyRDMAConn(readConn);
+      DEBUG_PRINT("destroyed connection for %lx\n",cipkey);
+      free(readConn);
+      DEBUG_PRINT("released space for %lx\n",cipkey);
+      DEBUG_PRINT("Client %lx successfully disconnected!\n",cipkey);
+    }else{
+      // setup connection.
+      if(serverConnectInternal(ctxt,connfd,msg,cipkey)!=0)
+        return NULL;
+    }
+    close(connfd);
   }
   return NULL;
 }
@@ -223,11 +254,11 @@ int initializeContext(
   RDMACtxt *ctxt,
   const uint32_t psz,   // pool size
   const uint32_t align, // alignment
-  const uint16_t port){ // port number
+  const uint16_t port, // port number
+  const uint16_t bClient){ // is client or not?
   struct ibv_device_attr dev_attr;
-  // client/blog test
-  int bClient = (port==0);
   ctxt->port = port;
+  ctxt->isClient = bClient;
   // initialize sizes and counters
   ctxt->psz   = psz;
   ctxt->align = align;
@@ -284,15 +315,20 @@ fprintf(stderr,"debug:initialization done\n");
 }
 
 int destroyContext(RDMACtxt *ctxt){
-  // STEP 1 - destroy Connections
   uint64_t len = MAP_LENGTH(con,ctxt->con_map);
+  // STEP 1 - destroy Connections
   if(len > 0){
     uint64_t *keys = MAP_GET_IDS(con,ctxt->con_map,len);
     while(len--){
       RDMAConnection *conn;
       MAP_READ(con,ctxt->con_map,keys[len],&conn);
-      destroyRDMAConn(conn);
       MAP_DELETE(con,ctxt->con_map,keys[len]);
+      if(ctxt->isClient){
+        if(rdmaDisconnect(ctxt,(int32_t)keys[len])!=0)
+          fprintf(stderr, "Couldn't disconnect from server %lx:%d\n",keys[len],ctxt->port);
+      }
+      destroyRDMAConn(conn);
+      free(conn);
     }
     free(keys);
   }
@@ -301,7 +337,7 @@ int destroyContext(RDMACtxt *ctxt){
   if(ctxt->pd)ibv_dealloc_pd(ctxt->pd);
   if(ctxt->ctxt)ibv_close_device(ctxt->ctxt);
   if(ctxt->pool)free(ctxt->pool);
-  if(ctxt->port){//blog
+  if(!ctxt->isClient){//server
     pthread_kill(ctxt->daemon, 9);
   }else{//client
     free(ctxt->bitmap);
@@ -311,7 +347,7 @@ int destroyContext(RDMACtxt *ctxt){
 
 int allocatePageArray(RDMACtxt *ctxt, void **pages, int num){
   // STEP 1 test Context mode, quit for client context
-  if(ctxt->port==0){ /// client context
+  if(ctxt->isClient){ /// client context
     fprintf(stderr,"Could not allocate page array in client mode");
     return -1;
   }
@@ -344,8 +380,8 @@ int allocatePageArray(RDMACtxt *ctxt, void **pages, int num){
 int allocateBuffer(RDMACtxt *ctxt, void **buf){
   DEBUG_PRINT("allocateBuffer() begin:%ld buffers allocated.\n",ctxt->cnt);
   // STEP 1 test context mode, quit for blog context
-  if(ctxt->port){ /// blog context
-    fprintf(stderr,"Could not allocate buffer in blog mode");
+  if(!ctxt->isClient){ /// blog context
+    fprintf(stderr,"Could not allocate buffer in blog mode\n");
     return -1;
   }
   // STEP 2 test if we have enough space
@@ -407,8 +443,8 @@ int allocateBuffer(RDMACtxt *ctxt, void **buf){
 
 int releaseBuffer(RDMACtxt *ctxt, const void *buf){
   // STEP 1 check mode
-  if(ctxt->port){ /// blog context
-    fprintf(stderr,"Could not allocate buffer in blog mode");
+  if(!ctxt->isClient){ /// blog context
+    fprintf(stderr,"Could not release buffer in blog mode");
     return -1;
   }
   // STEP 2 validate buf address
@@ -440,8 +476,8 @@ int releaseBuffer(RDMACtxt *ctxt, const void *buf){
   return 0;
 }
 
-int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
-  DEBUG_PRINT("connecting to:%d:%d\n",hostip,port);
+int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
+  DEBUG_PRINT("connecting to:%d:%d\n",hostip,ctxt->port);
   // STEP 0: if connection exists?
   const uint64_t cipkey = (const uint64_t)hostip;
   int bDup;
@@ -458,10 +494,10 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
   int connfd = socket(AF_INET, SOCK_STREAM, 0);
   bzero((char*)&svraddr,sizeof(svraddr));
   svraddr.sin_family = AF_INET;
-  svraddr.sin_port = htons(port);
+  svraddr.sin_port = htons(ctxt->port);
   svraddr.sin_addr.s_addr = hostip;
   if(connect(connfd,(const struct sockaddr *)&svraddr,sizeof(svraddr))<0){
-    fprintf(stderr,"cannot connect to server:%x:%d\n",hostip,port);
+    fprintf(stderr,"cannot connect to server:%x:%d\n",hostip,ctxt->port);
     return -2;
   }
   // STEP 2: setup connection
@@ -530,10 +566,37 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
   return 0;
 }
 
-int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip, const uint16_t port){
-  // we do not disconnect it so far for experiment...
-  // A good way to do this is set up a listening thread at each node.
-  return -1;
+int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
+  DEBUG_PRINT("disconnecting from:%d:%d\n",hostip,ctxt->port);
+  // STEP 1: connect to server
+  struct sockaddr_in svraddr;
+  int connfd = socket(AF_INET, SOCK_STREAM, 0);
+  bzero((char*)&svraddr,sizeof(svraddr));
+  svraddr.sin_family = AF_INET;
+  svraddr.sin_port = htons(ctxt->port);
+  svraddr.sin_addr.s_addr = hostip;
+  if(connect(connfd,(const struct sockaddr *)&svraddr,sizeof(svraddr))<0){
+    fprintf(stderr,"cannot connect to server:%x:%d\n",hostip,ctxt->port);
+    return -1;
+  }
+  int flag = 1;
+  if(setsockopt(connfd,IPPROTO_TCP,TCP_NODELAY,(char*)&flag,sizeof(int)) < 0){
+    fprintf(stderr,"cannot set tcp nodelay.\n");
+    return -2;
+  }
+  
+  // STEP 2: send an empty cfg
+  char msg[CONFIG_STR_LEN] = "";
+  if(write(connfd, msg, sizeof msg) != sizeof msg){
+    perror("Could not send ibcfg to peer");
+    return -1;
+  }
+  fsync(connfd);
+
+  // finish
+  close(connfd);
+  DEBUG_PRINT("disconnected from host %x.\n",hostip);
+  return 0;
 }
 
 int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite){
