@@ -296,7 +296,6 @@ int initializeContext(
   ctxt->max_cq  = dev_attr.max_cq;
   ctxt->max_cqe = dev_attr.max_cqe;
   // initialize mutex lock
-fprintf(stderr,"debug:initialize mutex lock\n");
   TEST_NZ(pthread_mutex_init(&ctxt->lock,NULL), "Could not initialize context mutex");
   // con_map
   TEST_Z(ctxt->con_map = MAP_INITIALIZE(con), "Could not initialize RDMA connection map");
@@ -310,7 +309,6 @@ fprintf(stderr,"debug:initialize mutex lock\n");
         blog_rdma_daemon_routine, (void*)ctxt),
       "Could not initialize the daemon routine");
   }
-fprintf(stderr,"debug:initialization done\n");
   return 0;
 }
 

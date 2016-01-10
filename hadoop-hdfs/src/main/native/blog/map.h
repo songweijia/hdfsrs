@@ -97,7 +97,7 @@ BLOG_MAP_TYPE(NAME) *NAME##_map_initialize() {                                  
     map[i].lock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));                            \
     map[i].entry = NULL;                                                                            \
     if (pthread_rwlock_init(map[i].lock, NULL) != 0) {                                              \
-      fprintf(stderr, "Map Initialize: Lock %ld is not initialized correctly\n", i);                \
+      fprintf(stderr, "Map Initialize: Lock %ld is not initialized correctly\n", i);                   \
       return NULL;                                                                                  \
     }                                                                                               \
   }                                                                                                 \
@@ -129,7 +129,7 @@ int NAME##_map_create_and_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE* val
     entry = entry->next;                                                                            \
   }                                                                                                 \
   if (entry != NULL) {                                                                              \
-    fprintf(stderr, "Map Create: Entry ID %ld already exists in map.\n", id);                       \
+    fprintf(stderr, "Map Create: Entry ID %ld already exists in map.\n", id);                           \
     return -1;                                                                                      \
   }                                                                                                 \
   entry = (NAME##_entry_t *) malloc(sizeof(NAME##_entry_t));                                        \
@@ -171,7 +171,7 @@ int NAME##_map_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE *value) {      
   while ((entry != NULL) && (entry->id != id))                                                      \
     entry = entry->next;                                                                            \
   if (entry == NULL) {                                                                              \
-    fprintf(stderr, "Map Write: Entry ID %ld does not exist in map.\n", id);                        \
+    fprintf(stderr, "Map Write: Entry ID %ld does not exist in map.\n", id);                            \
     return -1;                                                                                      \
   }                                                                                                 \
   entry->value = value;                                                                             \
@@ -185,7 +185,7 @@ int NAME##_map_read(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE **value) {      
   while ((entry != NULL) && (entry->id != id))                                                      \
     entry = entry->next;                                                                            \
   if (entry == NULL) {                                                                              \
-    fprintf(stderr, "Map Read: Entry ID %ld does not exist in map.\n", id);                         \
+    DEBUG_PRINT("Map Read: Entry ID %ld does not exist in map.\n", id);                     \
     return -1;                                                                                      \
   }                                                                                                 \
   *value = entry->value;                                                                            \
@@ -230,7 +230,7 @@ int NAME##_map_lock(NAME##_map_t *map, uint64_t id, char read_write) {          
     return pthread_rwlock_wrlock(map[hash].lock);                                                   \
   if (read_write == 'r')                                                                            \
     return pthread_rwlock_rdlock(map[hash].lock);                                                   \
-  fprintf(stderr, "Map Lock: Wrong read/write character.\n");                                       \
+  fprintf(stderr, "Map Lock: Wrong read/write character.\n");                                           \
   return -1;                                                                                        \
 }                                                                                                   \
                                                                                                     \

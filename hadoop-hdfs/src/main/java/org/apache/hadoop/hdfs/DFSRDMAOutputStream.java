@@ -194,6 +194,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     long lastSentSeqno;
     DSS stat;
     DatanodeInfo [] nodes = null;
+    String [] storageIDs = null;
     Exception lastException; // lastException
     
     
@@ -314,6 +315,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      * - block: current block
      * - accessToken:
      * - nodes: datanodes
+     * - storageIDs: storageIDs
      * - state: DSS.STREAMING
      */
     public void doCreate(){
@@ -337,6 +339,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       DFSClient.LOG.debug("[S] added a newblock (blkno="+this.blockNumber+"): blockId="+block.getBlockId());
       accessToken = lb.getBlockToken();
       nodes = lb.getLocations();
+      storageIDs = lb.getStorageIDs();
       
       //STEP 2.2: create output stream
       try{
@@ -366,9 +369,10 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      * - blockNumber
      * - stat
      * - block
+     * - nodes
+     * - storageIDs
      * After successful return, we assume the following variables have been setup:
      * - accessToken
-     * - nodes
      */
     public void doAppend(){
       //STEP 1: setup pipeline
@@ -378,7 +382,6 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
         lb = dfsClient.namenode.updateBlockForPipeline(block,dfsClient.clientName);
         long newGS = lb.getBlock().getGenerationStamp();
         accessToken = lb.getBlockToken();
-        nodes = lb.getLocations();
         //STEP 1.2: create output stream
         if(!this.createBlockOutputStream(nodes,newGS))
           return;
@@ -390,7 +393,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
             block.getNumBytes(),
             newGS);
         dfsClient.namenode.updatePipeline(dfsClient.clientName, block, newBlock, nodes, 
-            lb.getStorageIDs());
+            storageIDs);
         block = newBlock;
         //STEP 1.4: start Responser
         this.responder = new ResponseProcessor();
@@ -412,6 +415,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      * After this is set, the following variables are setup:
      * - block
      * - nodes
+     * - storageIDs
      * - accessToken
      * - bytesCurBlock
      */
@@ -426,6 +430,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
         block = lb.getBlock();
         bytesCurBlock = block.getNumBytes();
         nodes = lb.getLocations();
+        storageIDs = lb.getStorageIDs();
         //STEP 2: setup pipeline
         lb = dfsClient.namenode.updateBlockForPipeline(block,dfsClient.clientName);
         long newGS = lb.getBlock().getGenerationStamp();
@@ -441,7 +446,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
             block.getNumBytes(),
             newGS);
         dfsClient.namenode.updatePipeline(dfsClient.clientName, block, newBlock, nodes, 
-            lb.getStorageIDs());
+            storageIDs);
         block = newBlock;
         //STEP 2.4: start Responser
         this.responder = new ResponseProcessor();
@@ -825,6 +830,8 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       bytesCurBlock = lastBlock.getBlockSize();
       this.streamer.stat = DSS.APPEND;
       this.streamer.block = lastBlock.getBlock();
+      this.streamer.nodes = lastBlock.getLocations();
+      this.streamer.storageIDs = lastBlock.getStorageIDs();
     } else {
       bytesCurBlock = 0;
       this.streamer.block = null;
