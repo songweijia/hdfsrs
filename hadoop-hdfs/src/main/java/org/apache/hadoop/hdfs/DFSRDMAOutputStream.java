@@ -317,6 +317,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      * - nodes: datanodes
      * - storageIDs: storageIDs
      * - state: DSS.STREAMING
+     * - bytesCurBlock: 
      */
     public void doCreate(){
       DFSClient.LOG.debug("[S] begins doCreate.");
@@ -340,6 +341,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       accessToken = lb.getBlockToken();
       nodes = lb.getLocations();
       storageIDs = lb.getStorageIDs();
+      bytesCurBlock = 0L;
       
       //STEP 2.2: create output stream
       try{
@@ -936,17 +938,17 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
 
   @Override
   // in FFFS, sync() == flush()
-  public void sync() throws IOException {
+  synchronized public void sync() throws IOException {
     flushAll();
   }
 
   @Override
-  public void hflush() throws IOException {
+  synchronized public void hflush() throws IOException {
     flushAll();
   }
 
   @Override
-  public void hsync() throws IOException {
+  synchronized public void hsync() throws IOException {
     flushAll();
   }
   
@@ -954,7 +956,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    * @see java.io.OutputStream#write(byte[])
    */
   @Override
-  public void write(byte[] b) throws IOException {
+  synchronized public void write(byte[] b) throws IOException {
     write(b,0,b.length);
   }
 
@@ -962,7 +964,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    * @see java.io.OutputStream#write(byte[], int, int)
    */
   @Override
-  public void write(byte[] b, int off, int len) throws IOException {
+  synchronized public void write(byte[] b, int off, int len) throws IOException {
     DFSClient.LOG.debug("[C] write(b,off,len) is called with:"+new String(b)+",off="+off+",len="+len);
     if(dataEndPos() >= this.fBlockSize)flush();
     int writeLen = len;
@@ -1007,6 +1009,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
         }
       }
     }
+    this.resetBlockBuffer(0);
   }
   
   /* (non-Javadoc)

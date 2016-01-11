@@ -152,7 +152,7 @@ public class RDMABlockReceiver implements Closeable {
     long offset = proto.getOffset();
     HybridLogicalClock mhlc = PBHelper.convert(proto.getMhlc());
     //STEP 0: validate:
-    if(seqno != -1L && seqno != lastSeqno + 1){
+    if(seqno != -1L && lastSeqno != -1L && seqno != lastSeqno + 1){
       throw new IOException("RDMABlockReceiver out-of-order packet received: expecting seqno[" +
         (lastSeqno+1) + "] but received seqno["+seqno+"]");
     }
@@ -160,7 +160,7 @@ public class RDMABlockReceiver implements Closeable {
     if(seqno >= 0L){
       replicaInfo.writeByRDMA((int)offset, (int)length, this.inAddr, this.vaddr, mhlc);
       LOG.debug("[S] replicaInfo.length="+replicaInfo.getNumBytes()+"/"+replicaInfo.getBytesOnDisk());
-      lastSeqno ++;
+      lastSeqno = seqno;
       LOG.debug("[S] wrote packet:offset="+offset+",length="+length+",peer="+this.inAddr+",vaddr="+vaddr);
     } else if(islast){
       finalizeBlock(this.startTime);
