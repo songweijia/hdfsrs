@@ -1392,7 +1392,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   last_page = (block_offset + length) / filesystem->page_size;// How many full pages ahead the end of the write. this is different from writeBlock(), last_page could be 1 if you only write one page, and last_page_length is zero. On the contrary, in writeBlock(), last_page means the page last byte is written to.
   page_offset = block_offset % filesystem->page_size;
   last_page_length = (block_offset + length) % filesystem->page_size; // could be zero!!!
-  new_pages_length = last_page - first_page + 1; // number of new pages.
+  new_pages_length = last_page - first_page; // number of new pages.
+  if(last_page_length > 0)new_pages_length += 1;
   if(allocatePageArray(filesystem->rdmaCtxt,(void**)&allData,new_pages_length)){
     fprintf(stderr, "writeBlockRDMA: cannot allocate page from RDMA pool.\n");
     return -4;
@@ -1435,7 +1436,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
     block->length = last_page*filesystem->page_size + last_page_length;
     DEBUG_PRINT("writeBlockRDMA(): block length is updated to %d\n", block->length);
   }
-  else if(last_page_length != 0 && block->length > last_page_length + last_page*filesystem->page_size){//we need to fill the end part...
+  else if(last_page_length != 0 && block->length > last_page_length + (last_page)*filesystem->page_size){//we need to fill the end part...
+    DEBUG_PRINT("writeBlockRDMA(): last_page_length=%d;first_page=%d;last_page=%d\n",last_page_length,first_page,last_page);
     for( i = last_page_length; 
          i < ((block->length/filesystem->page_size>last_page)?filesystem->page_size:block->length%filesystem->page_size);
          i++ )
@@ -1456,6 +1458,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   }
   for(i=0;i<new_pages_length;i++)
     block->pages[first_page+i] = new_pages + i;
+  DEBUG_PRINT("writeBlockRDMA(): new_page_length=%d\n",new_pages_length);
 
   // create log entry
   DEBUG_PRINT("writeBlockRDMA(): create log entry\n");
