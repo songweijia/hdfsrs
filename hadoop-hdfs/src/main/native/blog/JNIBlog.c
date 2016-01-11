@@ -1437,7 +1437,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   }
   else if(last_page_length != 0 && block->length > last_page_length + last_page*filesystem->page_size){//we need to fill the end part...
     for( i = last_page_length; 
-         (block->length/filesystem->page_size>last_page)?filesystem->page_size:block->length%filesystem->page_size;
+         i < ((block->length/filesystem->page_size>last_page)?filesystem->page_size:block->length%filesystem->page_size);
          i++ )
       new_pages[new_pages_length-1].data[i] = block->pages[last_page]->data[i];
   }
