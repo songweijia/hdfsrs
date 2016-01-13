@@ -1,244 +1,226 @@
-#include <jni.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <inttypes.h>
+#include <string.h>
 #include <sys/time.h>
-
 #include "JNIBlog.h"
 #include "types.h"
 
+// Type definitions for dictionaries.
 MAP_DEFINE(block, block_t, BLOCK_MAP_SIZE);
-MAP_DEFINE(log, int64_t, LOG_MAP_SIZE);
+MAP_DEFINE(snapshot_block, snapshot_block_t, SNAPSHOT_BLOCK_MAP_SIZE);
+MAP_DEFINE(log, uint64_t, LOG_MAP_SIZE);
 MAP_DEFINE(snapshot, snapshot_t, SNAPSHOT_MAP_SIZE);
 
-void print_page(page_t *page)
+// Printer Functions.
+char *log_to_string(log_t *log, size_t page_size)
 {
-  printf("%s\n", page->data);
-}
-
-void print_log(log_t *log)
-{
-  int i;
+  char *res = (char *) malloc(4096 * sizeof(char));
+  char buf[1024];
+  uint32_t length, i;
   
-  printf("Block ID: %ld\n", log->block_id);
-  printf("Block Length: %d\n", log->block_length);
-  printf("Starting Page: %d\n", log->page_id);
-  printf("Number of Pages: %d\n", log->nr_pages);
-  for (i = 0; i < log->nr_pages; i++) {
-    printf("Page %d:\n", log->page_id + i);
-    print_page(log->pages + i);
+  switch (log->op) {
+  case BOL:
+  	strcpy(res, "Operation: Beginning Of Log\n");
+    sprintf(buf, "HLC Value: (%" PRIu64 ",%" PRIu64 ")\n", log->r, log->c);
+    strcat(res, buf);
+    break;
+  case CREATE_BLOCK:
+    strcpy(res, "Operation: Create Block\n");
+    sprintf(buf, "Block ID: %" PRIu64 "\n", log->block_id);
+    strcat(res, buf);
+    sprintf(buf, "HLC Value: (%" PRIu64 ",%" PRIu64 ")\n", log->r, log->c);
+    strcat(res, buf);
+    break;
+  case DELETE_BLOCK:
+    strcpy(res, "Operation: Delete Block\n");
+    sprintf(buf, "Block ID: %" PRIu64 "\n", log->block_id);
+    strcat(res, buf);
+    sprintf(buf, "HLC Value: (%" PRIu64 ",%" PRIu64 ")\n", log->r, log->c);
+    strcat(res, buf);
+    sprintf(buf, "Previous: %" PRIu64 "\n", log->previous);
+    strcat(res, buf);
+    break;
+  case WRITE:
+    strcpy(res, "Operation: Write\n");
+    sprintf(buf, "Block ID: %" PRIu64 "\n", log->block_id);
+    strcat(res, buf);
+    sprintf(buf, "Block Length: %" PRIu32 "\n", (uint32_t) log->block_length);
+    strcat(res, buf);
+    sprintf(buf, "Starting Page: %" PRIu32 "\n", log->page_id);
+    strcat(res, buf);
+    sprintf(buf, "Number of Pages: %" PRIu32 "\n", log->nr_pages);
+    strcat(res, buf);
+    for (i = 0; i < log->nr_pages-1; i++) {
+      sprintf(buf, "Page %" PRIu32 ":\n", log->page_id + i);
+      strcat(res, buf);
+      snprintf(buf, page_size+1, "%s", log->pages + i*page_size);
+      strcat(res, buf);
+      strcat(res, "\n");
+    }
+    if (log->block_length > log->nr_pages*page_size)
+      length = page_size;
+    else
+      length = log->block_length - (log->nr_pages-1)*page_size;
+    sprintf(buf, "Page %" PRIu32 ":\n", log->page_id + log->nr_pages-1);
+    strcat(res, buf);
+    snprintf(buf, length+1, "%s", log->pages + (log->nr_pages-1)*page_size);
+    strcat(res, buf);
+    strcat(res, "\n");
+    sprintf(buf, "HLC Value: (%" PRIu64 ",%" PRIu64 ")\n", log->r, log->c);
+    strcat(res, buf);
+    sprintf(buf, "Previous: %" PRIu64 "\n", log->previous);
+    strcat(res, buf);
+    break;
+  default:
+    strcat(res, "Operation: Unknown Operation\n");
   }
-  printf("HLC Value: (%ld,%ld)\n", log->r, log->c);
-  if (log->previous != -1)
-    printf("Previous: %ld\n", log->previous);
+  return res;
 }
 
-void print_block(block_t *block, int page_size)
+char *block_to_string(block_t *block, size_t page_size)
 {
-  int i = 0;
+  char *res = (char *) malloc((4096 + block->length) * sizeof(char));
+  char buf[1024];
+  uint32_t i;
 
-  printf("Length: %d\n", block->length);
-  printf("Capacity: %d\n", block->cap);
+  sprintf(buf, "Log Index: %" PRIu64 "\n", block->log_index);
+	strcpy(res, buf);
+  sprintf(buf, "Length: %" PRIu32 "\n", (uint32_t) block->length);
+  strcat(res, buf);
+  sprintf(buf, "Pages Capacity: %" PRIu32 "\n", block->pages_cap);
+  strcat(res, buf);
   if (block->length != 0) {
     for (i = 0; i <= (block->length - 1) / page_size; i++) {
-      printf("Page %d\n", i);
-      print_page(block->pages[i]);
+      sprintf(buf, "Page %" PRIu32 ":\n", i);
+      strcat(res, buf);
+      snprintf(buf, page_size+2, "%s\n", block->pages[i]);
+      strcat(res, buf);
     }
   }
-  printf("Last Log Entry: %ld\n", block->last_entry);
+  return res;
 }
 
-void print_snapshot(snapshot_t *snapshot, log_t *log, int page_size)
+char *snapshot_block_to_string(snapshot_block_t *block, size_t page_size)
 {
-  block_t *block;
-  int64_t *ids;
-  int64_t length, i;
+  char *res = (char *) malloc((4096 + block->length) * sizeof(char));
+  char buf[1024];
+  uint32_t i;
+
+	if (block->status == 0)
+		strcpy(res, "Status: Active\n");
+	else
+		strcpy(res, "Status: Non-Active\n");
+  sprintf(buf, "Length: %" PRIu32 "\n", (uint32_t) block->length);
+  strcat(res, buf);
+  sprintf(buf, "Pages Capacity: %" PRIu32 "\n", block->pages_cap);
+  strcat(res, buf);
+  if (block->length != 0) {
+    for (i = 0; i <= (block->length - 1) / page_size; i++) {
+      sprintf(buf, "Page %" PRIu32 ":\n", i);
+      strcat(res, buf);
+      snprintf(buf, page_size+2, "%s\n", block->pages[i]);
+      strcat(res, buf);
+    }
+  }
+  return res;
+}
+
+char *snapshot_to_string(snapshot_t *snapshot, size_t page_size)
+{
+  char *res = (char *) malloc((1024*page_size) * sizeof(char));
+  char buf[1024];
+  snapshot_block_t *block;
+  uint64_t *block_ids;
+  uint64_t length, i;
   
-  printf("Blocks:\n");
+  strcpy(res, "Blocks:\n");
   for (i = 0; i < BLOCK_MAP_SIZE; i++)
-    MAP_LOCK(block, snapshot->block_map, i, 'r');
-  length = MAP_LENGTH(block, snapshot->block_map);
-  ids = MAP_GET_IDS(block, snapshot->block_map, length);
+    MAP_LOCK(snapshot_block, snapshot->block_map, i, 'r');
+  length = MAP_LENGTH(snapshot_block, snapshot->block_map);
+  block_ids = MAP_GET_IDS(snapshot_block, snapshot->block_map, length);
   for (i = 0; i < length; i++) {
-    if (MAP_READ(block, snapshot->block_map, ids[i], &block) != 0) {
-      fprintf(stderr, "Print Snapshot: Something is wrong with BLOCK_MAP_GET_IDS or BLOCK_MAP_READ\n");
-      return;
+    if (MAP_READ(snapshot_block, snapshot->block_map, block_ids[i], &block) != 0) {
+      fprintf(stderr, "ERROR: Cannot read block whose block ID is contained in block map.\n");
+      exit(0);
     }
-    print_block(block, page_size);
-    printf("\n");
+    strcat(res, snapshot_block_to_string(block, page_size));
+    strcat(res, "\n");
   }
-  printf("\n");
+  sprintf(buf, "Reference Count: %" PRIu64 "\n", snapshot->ref_count);
+  strcat(res, buf);
   for (i = 0; i < BLOCK_MAP_SIZE; i++)
-    MAP_UNLOCK(block, snapshot->block_map, i);
-  free(ids);
+    MAP_UNLOCK(snapshot_block, snapshot->block_map, i);
+  free(block_ids);
+  return res;
 }
 
-void print_filesystem(JNIEnv *env, filesystem_t *filesystem)
+char *filesystem_to_string(filesystem_t *filesystem)
 {
-  block_t *block;
+  char *res = (char *) malloc((1024*filesystem->page_size) * sizeof(char));
+  char buf[1024];
   snapshot_t *snapshot;
-  int64_t *ids;
-  int64_t length, i;
-  int64_t *log_id;
-  
-  pthread_rwlock_rdlock(&filesystem->lock);
+  uint64_t length, i, log_index;
+  uint64_t *snapshot_ids;
+  uint64_t *log_ptr;
   
   // Print Filesystem.
-  printf("Filesystem\n");
-  printf("----------\n");
-  printf("Block Size: %zu\n", filesystem->block_size);
-  printf("Page Size: %zu\n", filesystem->page_size);
+  strcpy(res, "Filesystem\n");
+  strcat(res, "----------\n");
+  sprintf(buf, "Block Size: %zu\n", filesystem->block_size);
+  strcat(res, buf);
+  sprintf(buf, "Page Size: %zu\n", filesystem->page_size);
+  strcat(res, buf);
   
-  // Print Blocks.
-  printf("Blocks:\n");
-  for (i = 0; i < BLOCK_MAP_SIZE; i++)
-    MAP_LOCK(block, filesystem->block_map, i, 'r');
-  length = MAP_LENGTH(block, filesystem->block_map);
-  ids = MAP_GET_IDS(block, filesystem->block_map, length);
-  for (i = 0; i < length; i++) {
-    if (MAP_READ(block, filesystem->block_map, ids[i], &block) != 0) {
-      fprintf(stderr, "Print Filesystem: Something is wrong with BLOCK_MAP_GET_IDS or BLOCK_MAP_READ\n");
-      return;
-    }
-    printf("Block ID: %ld\n", ids[i]);
-    print_block(block, filesystem->page_size);
-    printf("\n");
+  // Print Log.
+  pthread_rwlock_rdlock(&filesystem->log_lock);
+  sprintf(buf, "Log Capacity: %" PRIu64 "\n", filesystem->log_cap);
+  strcat(res, buf);
+  sprintf(buf, "Log Length: %" PRIu64 "\n", filesystem->log_length);
+  strcat(res, buf);
+  for (i = 0; i < filesystem->log_length; i++) {
+    sprintf(buf, "Log %" PRIu64 ":\n", i);
+  	strcat(res, buf);
+    strcat(res, log_to_string(filesystem->log + i, filesystem->page_size));
+    strcat(res, "\n");
   }
-  printf("\n");
-  for (i = 0; i < BLOCK_MAP_SIZE; i++)
-    MAP_UNLOCK(block, filesystem->block_map, i);
-  free(ids);
+  pthread_rwlock_unlock(&filesystem->log_lock);
   
-  // Print Snapshots
-  printf("Snapshots:\n");
+  // Print Snapshots.
   for (i = 0; i < LOG_MAP_SIZE; i++)
     MAP_LOCK(log, filesystem->log_map, i, 'r');
   length = MAP_LENGTH(log, filesystem->log_map);
-  ids = MAP_GET_IDS(log, filesystem->log_map, length);
-  for (i = 0; i < length; i++) {
-    if (MAP_READ(log, filesystem->log_map, ids[i], &log_id) != 0) {
-      fprintf(stderr, "Print Filesystem: Something is wrong with LOG_MAP_GET_IDS or LOG_MAP_READ\n");
-      return;
-    }
-    MAP_LOCK(snapshot, filesystem->snapshot_map, *log_id, 'r');
-    if (MAP_READ(snapshot, filesystem->snapshot_map, *log_id, &snapshot) != 0) {
-      fprintf(stderr, "Print Filesystem: Something is wrong with LOG_MAP_GET_IDS or LOG_MAP_READ\n");
-      return;
-    }
-    printf("RTC: %ld\n", ids[i]);
-    printf("Last Log Entry: %ld\n", *log_id);
-    print_snapshot(snapshot, filesystem->log, filesystem->page_size);
-    printf("\n");
-    MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
+  sprintf(buf, "Length: %" PRIu64 "\n", length);
+  strcat(res, buf);
+  if (length > 0) {
+    snapshot_ids = MAP_GET_IDS(log, filesystem->log_map, length);
+    strcat(res, "Snapshots:\n");
   }
-  printf("\n");
+  for (i = 0; i < length; i++) {
+    sprintf(buf, "RTC: %" PRIu64 "\n", snapshot_ids[i]);
+    strcat(res, buf);
+    if (MAP_READ(log, filesystem->log_map, snapshot_ids[i], &log_ptr) != 0) {
+      fprintf(stderr, "ERROR: Cannot read log index whose time is contained in log map.\n");
+      exit(0);
+    }
+    log_index = *log_ptr;
+  	sprintf(buf, "Last Log Index: %" PRIu64 "\n", log_index);
+  	strcat(res, buf);
+    MAP_LOCK(snapshot, filesystem->snapshot_map, log_index, 'r');
+    if (MAP_READ(snapshot, filesystem->snapshot_map, log_index, &snapshot) != 0) {
+      fprintf(stderr, "ERROR: Cannot read snapshot whose last log index is contained in snapshot map.\n");
+      exit(0);
+    }
+    strcat(res, snapshot_to_string(snapshot, filesystem->page_size));
+    strcat(res, "\n");
+    MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_ptr);
+  }
   for (i = 0; i < LOG_MAP_SIZE; i++)
     MAP_UNLOCK(log, filesystem->log_map, i);
-  free(ids);
-  
-  printf("Log Capacity: %zu\n", filesystem->log_cap);
-  printf("Log Length: %zu\n", filesystem->log_length);
-  for (i = 0; i < filesystem->log_length; i++) {
-    printf("Log %ld\n", i);
-    print_log(filesystem->log + i);
-    printf("\n");
-  }
-  
-  pthread_rwlock_unlock(&filesystem->lock);
+  if (length > 0)
+    free(snapshot_ids);
+  return res;
 }
 
-block_t *find_or_allocate_snapshot_block(filesystem_t *filesystem, snapshot_t *snapshot, int64_t last_log_entry,
-                                         int64_t block_id) {
-  log_t *log = filesystem->log;
-  log_t *cur_log;
-  block_t *block;
-  int64_t log_id;
-  int i, nr_unfilled_pages;
-  
-  MAP_LOCK(block, snapshot->block_map, block_id, 'w');
-  if (MAP_CREATE(block, snapshot->block_map, block_id) == -1) {
-    MAP_UNLOCK(block, snapshot->block_map, block_id);
-    MAP_LOCK(block, snapshot->block_map, block_id, 'r');
-    if (MAP_READ(block, snapshot->block_map, block_id, &block) == -1) {
-      MAP_UNLOCK(block, snapshot->block_map, block_id);
-      fprintf(stderr, "Find or Allocate Snapshot Block: Something is wrong with BLOCK_MAP_CREATE or BLOCK_MAP_READ.\n");
-      return NULL;
-    }
-    MAP_UNLOCK(block, snapshot->block_map, block_id);
-    return block;
-  }
-  
-  block = (block_t *) malloc(sizeof(block_t));
-  log_id = last_log_entry;
-  while ((log_id >= 0) && (log[log_id].block_id != block_id))
-    log_id--;
-  if (log_id == -1 || log[log_id].page_id == -2) {
-    block->length = 0;
-    block->cap = -1;
-    block->pages = NULL;
-    block->last_entry = -1;
-  } else if (log[log_id].page_id == -1) {
-    block->length = 0;
-    block->cap = 0;
-    block->pages = NULL;
-    block->last_entry = -1;
-  } else {
-    block->length = log[log_id].block_length;
-    if (block->length == 0)
-      block->cap = 0;
-    else
-      block->cap = (block->length - 1) / filesystem->page_size + 1;
-    block->pages = (page_t**) malloc(block->cap*sizeof(page_t*));
-    for (i = 0; i < block->cap; i++)
-      block->pages[i] = NULL;
-    cur_log = log + log_id;
-    nr_unfilled_pages = block->cap;
-    while (cur_log != NULL && nr_unfilled_pages > 0) {
-      for (i = 0; i < cur_log->nr_pages; i++) {
-        if (block->pages[cur_log->page_id + i] == NULL) {
-          nr_unfilled_pages--;
-          block->pages[cur_log->page_id + i] = cur_log->pages + i;
-        }
-      }
-      if (cur_log->previous != -1)
-        cur_log = log + cur_log->previous;
-      else
-        cur_log = NULL;
-    }
-    block->last_entry = log_id;
-  }
-  
-  if (MAP_WRITE(block, snapshot->block_map, block_id, block) != 0) {
-    fprintf(stderr, "Find or Allocate Snapshot Block: Something is wrong with BLOCK_MAP_CREATE or BLOCK_MAP_WRITE.\n");
-    MAP_UNLOCK(block, snapshot->block_map, block_id);
-    return NULL;
-  }
-
-  MAP_UNLOCK(block, snapshot->block_map, block_id);
-  return block;
-}
-
-void check_and_increase_log_length(filesystem_t *filesystem)
-{
-  if (filesystem->log_length == filesystem->log_cap) {
-    filesystem->log = (log_t *) realloc(filesystem->log, filesystem->log_cap*2*sizeof(log_t));
-    if (filesystem->log == NULL) {
-      perror("Error: ");
-      exit(1);
-    }
-    filesystem->log_cap *= 2;
-  }
-}
-
-int64_t read_local_rtc()
-{
-  struct timeval tv;
-  int64_t rtc;
-  
-  gettimeofday(&tv,NULL);
-  rtc = tv.tv_sec*1000 + tv.tv_usec/1000;
-  return rtc;
-}
-
+// Helper functions for clock updates - See JAVA counterpart for more details.
 void update_log_clock(JNIEnv *env, jobject hlc, log_t *log) {
   jclass hlcClass = (*env)->GetObjectClass(env, hlc);
   jfieldID rfield = (*env)->GetFieldID(env, hlcClass, "r", "J");
@@ -253,31 +235,7 @@ void tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jobject mhlc)
   jclass hlcClass = (*env)->GetObjectClass(env, hlc);
   jmethodID mid = (*env)->GetMethodID(env, hlcClass, "tickOnRecv", "(Ledu/cornell/cs/sa/HybridLogicalClock;)V");
 
-  if (mid == NULL) {
-    perror("Error");
-    exit(-1);
-  }
   (*env)->CallObjectMethod(env, hlc, mid, mhlc);
-}
-
-void mock_tick_hybrid_logical_clock(JNIEnv *env, jobject hlc, jlong rtc)
-{
-  jclass hlcClass = (*env)->GetObjectClass(env, hlc);
-  jmethodID mid = (*env)->GetMethodID(env, hlcClass, "mockTick", "(J)V");
-  
-  if (mid == NULL) {
-    perror("Error");
-    exit(-1);
-  }
-  (*env)->CallObjectMethod(env, hlc, mid, rtc);
-}
-
-filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
-{
-  jclass thisCls = (*env)->GetObjectClass(env,thisObj);
-  jfieldID fid = (*env)->GetFieldID(env,thisCls,"jniData","J");
-  
-  return (filesystem_t *) (*env)->GetLongField(env, thisObj, fid);
 }
 
 jobject get_hybrid_logical_clock(JNIEnv *env, jobject thisObj)
@@ -286,6 +244,214 @@ jobject get_hybrid_logical_clock(JNIEnv *env, jobject thisObj)
   jfieldID fid = (*env)->GetFieldID(env,thisCls,"hlc","Ledu/cornell/cs/sa/HybridLogicalClock;");
   
   return (*env)->GetObjectField(env, thisObj, fid);
+}
+
+// Helper function for obtaining the local filesystem object - See JAVA counterpart for more details.
+filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
+{
+  jclass thisCls = (*env)->GetObjectClass(env,thisObj);
+  jfieldID fid = (*env)->GetFieldID(env,thisCls,"jniData","J");
+  
+  return (filesystem_t *) (*env)->GetLongField(env, thisObj, fid);
+}
+
+/**
+ * Read local RTC value.
+ * return clock value.
+*/
+uint64_t read_local_rtc()
+{
+  struct timeval tv;
+  uint64_t rtc;
+  
+  gettimeofday(&tv,NULL);
+  rtc = tv.tv_sec*1000 + tv.tv_usec/1000;
+  return rtc;
+}
+
+/**
+ * Check if the log capacity needs to be increased.
+ * filesystem - Local filesystem object.
+ * return  0, if successful,
+ *        -1, otherwise.
+ */
+int check_and_increase_log_length(filesystem_t *filesystem)
+{
+  if (filesystem->log_length == filesystem->log_cap) {
+    filesystem->log = (log_t *) realloc(filesystem->log, 2*filesystem->log_cap*sizeof(log_t));
+    if (filesystem->log == NULL)
+    	return -1;
+    filesystem->log_cap *= 2;
+  }
+}
+
+/**
+ * Find a snapshot object with specific time. If not found, instatiate one.
+ * filesystem   - Local filesystem object.
+ * time         - Time to take the snapshot.
+ *                Must be lower or equal than a timestamp that might appear in the future.
+ * snapshot_ptr - Snapshot pointer used for returning the correct snapshot instance.
+ * return  1, if created snapshot,
+ *         0, if found snapshot,
+ *         error code, otherwise. 
+ */
+int find_or_create_snapshot(filesystem_t *filesystem, uint64_t t, snapshot_t **snapshot_ptr)
+{
+	snapshot_t *snapshot;
+  log_t *log = filesystem->log;
+  uint64_t *log_ptr;
+  uint64_t length, cur_diff, log_index;
+  
+  // If snapshot already exists return the existing snapshot.
+  MAP_LOCK(log, filesystem->log_map, t, 'w');
+  if (MAP_READ(log, filesystem->log_map, t, &log_ptr) == 0) {
+    log_index = *log_ptr;
+    MAP_LOCK(snapshot, filesystem->snapshot_map, log_index, 'r');
+    if (MAP_READ(snapshot, filesystem->snapshot_map, log_index, snapshot_ptr) == -1) {
+      fprintf(stderr, "ERROR: Could not find snapshot in snapshot map although ID exists in log map.\n");
+      exit(0);
+    }
+    MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_index);
+    MAP_UNLOCK(log, filesystem->log_map, t);
+    return 0;
+  }
+  
+  // If snapshot does not exist try to instatiate it.
+  // If it is possible to include future entries to snapshot return NULL.
+  if (t > read_local_rtc()) {
+  		fprintf(stderr, "WARNING: Snapshot was not created because it might have future entries.\n");
+  		return -1;
+ 	}
+ 	
+  // Find last log entry that has timestamp less than t.
+  pthread_rwlock_rdlock(&filesystem->log_lock);
+  length = filesystem->log_length;
+  pthread_rwlock_unlock(&filesystem->log_lock);
+ 	
+ 	// Find the last log entry for this snapshot.
+  if (log[length-1].r < t) {
+    log_index = length - 1;
+  } else {
+    log_index = length/2;
+    cur_diff = length/4;
+    while ((log[log_index].r >= t) || (log[log_index+1].r < t)) {
+      if (log[log_index].r >= t)
+        log_index -= cur_diff;
+      else
+        log_index += cur_diff;
+      if (cur_diff > 1)
+        cur_diff /= 2;
+    }
+  }
+  
+  // Create snapshot.
+  log_ptr = (uint64_t *) malloc(sizeof(uint64_t));
+  (*log_ptr) = log_index;
+  if (MAP_CREATE_AND_WRITE(log, filesystem->log_map, t, log_ptr) == -1) {
+      fprintf(stderr, "ERROR: Could not create snapshot although it does not exist in the log map.\n");
+      exit(0);
+  }
+  MAP_LOCK(snapshot, filesystem->snapshot_map, log_index, 'w');
+  if (MAP_READ(snapshot, filesystem->snapshot_map, log_index, snapshot_ptr) == 0) {
+  	snapshot = *snapshot_ptr;
+    snapshot->ref_count++;
+  } else {
+    snapshot = (snapshot_t*) malloc(sizeof(snapshot_t));
+    snapshot->block_map = MAP_INITIALIZE(snapshot_block);
+    if (snapshot->block_map == NULL) {
+      fprintf(stderr, "ERROR: Allocation of block map failed.\n");
+      exit(0);
+    }
+    snapshot->ref_count = 1;
+    if (MAP_CREATE_AND_WRITE(snapshot, filesystem->snapshot_map, log_index, snapshot) == -1) {
+      fprintf(stderr, "ERROR: Could not create snapshot although it does not exist in the snapshot map.\n");
+      exit(0);
+    }
+    (*snapshot_ptr) = snapshot;
+  }
+  MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_index);
+  MAP_UNLOCK(log, filesystem->log_map, t);
+  return 1;
+}
+
+/**
+ * Find a snapshot block object. If not found, instatiate one.
+ * filesystem     - Local filesystem object.
+ * snapshot       - Snapshot object.
+ * last_log_index - Last log entry for this snapshot.
+ * block_id				- ID of the requested block.
+ * block_ptr 		  - Block pointer used for returning the correct block instance.
+ * return  1, if created block,
+ *         0, if found block.
+ */
+int find_or_create_snapshot_block(filesystem_t *filesystem, snapshot_t *snapshot, uint64_t last_log_index,
+                                  uint64_t block_id, snapshot_block_t **block_ptr)
+{
+  log_t *log = filesystem->log;
+  log_t *log_ptr;
+  snapshot_block_t *block;
+  uint64_t log_index;
+  uint32_t i, nr_unfilled_pages;
+  
+  // If you find the snapshot block return it.
+  MAP_LOCK(snapshot_block, snapshot->block_map, block_id, 'w');
+  if (MAP_READ(snapshot_block, snapshot->block_map, block_id, block_ptr) == 0) {
+    MAP_UNLOCK(snapshot_block, snapshot->block_map, block_id);
+    return 0;
+  }
+  
+  // Otherwise, traverse the log until you find the last log entry associated with the requested block for this 
+  // snapshot.
+  log_index = last_log_index;
+  while ((log_index > 0) && (log[log_index].block_id != block_id))
+    log_index--;
+  
+  // Instatiate the snapshot block
+  block = (snapshot_block_t *) malloc(sizeof(snapshot_block_t));
+  if ((log[log_index].block_id != block_id) || (log[log_index].op == DELETE_BLOCK)) {
+  	block->status = NON_ACTIVE;
+    block->length = 0;
+    block->pages_cap = 0;
+    block->pages = NULL;
+  } else if (log[log_index].op == CREATE_BLOCK) {
+  	block->status = ACTIVE;
+    block->length = 0;
+    block->pages_cap = 0;
+    block->pages = NULL;
+  } else {
+  	block->status = ACTIVE;
+    block->length = log[log_index].block_length;
+    if (block->length == 0)
+      block->pages_cap = 0;
+    else
+      block->pages_cap = (block->length - 1) / filesystem->page_size + 1;
+    block->pages = (page_t*) malloc(block->pages_cap * sizeof(page_t));
+    for (i = 0; i < block->pages_cap; i++)
+      block->pages[i] = NULL;
+    log_ptr = log + log_index;
+    nr_unfilled_pages = block->pages_cap;
+    while ((log_ptr != NULL) && (nr_unfilled_pages > 0)) {
+      for (i = 0; i < log_ptr->nr_pages; i++) {
+        if (block->pages[log_ptr->page_id + i] == NULL) {
+          nr_unfilled_pages--;
+          block->pages[log_ptr->page_id + i] = log_ptr->pages + i * filesystem->page_size;
+        }
+      }
+      if (log_ptr->op != CREATE_BLOCK)
+        log_ptr = log + log_ptr->previous;
+      else
+        log_ptr = NULL;
+    }
+  }
+  
+  // Write the block back to snapshot map for future references.
+  if (MAP_CREATE_AND_WRITE(snapshot_block, snapshot->block_map, block_id, block) != 0) {
+    fprintf(stderr, "ERROR: Could not create snapshot block although it does not exist in the block map.\n");
+    exit(0);
+  }
+	MAP_UNLOCK(snapshot_block, snapshot->block_map, block_id);
+  (*block_ptr) = block;
+  return 1;
 }
 
 /*
@@ -303,7 +469,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   jmethodID cid = (*env)->GetMethodID(env, hlc_class, "<init>", "()V");
   jobject hlc_object = (*env)->NewObject(env, hlc_class, cid);
   filesystem_t *filesystem;
-  int i;
   
   filesystem = (filesystem_t *) malloc (sizeof(filesystem_t));
   if (filesystem == NULL) {
@@ -312,28 +477,32 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   }
   filesystem->block_size = blockSize;
   filesystem->page_size = pageSize;
-  filesystem->block_map = MAP_INITIALIZE(block);
-  if (filesystem->block_map == NULL) {
-    fprintf(stderr, "Initialize: Allocation of block_map failed.\n");
-    return -1;
-  }
+  filesystem->log_cap = 1024;
+  filesystem->log_length = 1;
+  filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
+  filesystem->log[0].op = BOL;
+  filesystem->log[0].r = 0;
+  filesystem->log[0].c = 0;
+  
   filesystem->log_map = MAP_INITIALIZE(log);
   if (filesystem->log_map == NULL) {
-    fprintf(stderr, "Initialize: Allocation of log_map failed.\n");
-    return -1;
+    fprintf(stderr, "ERROR: Allocation of log_map failed.\n");
+    exit(0);
   }
   filesystem->snapshot_map = MAP_INITIALIZE(snapshot);
   if (filesystem->snapshot_map == NULL) {
-    fprintf(stderr, "Initialize: Allocation of snapshot_map failed.\n");
-    return -1;
+    fprintf(stderr, "ERROR: Allocation of snapshot_map failed.\n");
+    exit(0);
   }
-  filesystem->log_cap = 1024;
-  filesystem->log_length = 0;
-  filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
-  pthread_rwlock_init(&(filesystem->lock), NULL);
+  filesystem->block_map = MAP_INITIALIZE(block);
+  if (filesystem->block_map == NULL) {
+    fprintf(stderr, "ERROR: Allocation of block_map failed.\n");
+    exit(0);
+  }
+  pthread_rwlock_init(&(filesystem->log_lock), NULL);
   
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
-  (*env)->SetLongField(env, thisObj, long_id, (int64_t) filesystem);
+  (*env)->SetLongField(env, thisObj, long_id, (uint64_t) filesystem);
   
   return 0;
 }
@@ -346,50 +515,48 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId)
 {
-  filesystem_t *filesystem;
-  block_t *new_block;
-  int64_t log_pos;
-  jobject hlc;
+  filesystem_t *filesystem = get_filesystem(env, thisObj);
+  uint64_t block_id = (uint64_t) blockId;
+  block_t *block;
+  log_t *log_entry;
+  uint64_t log_index;
   
-  // Create a new block.
-  filesystem = get_filesystem(env, thisObj);
-  MAP_LOCK(block, filesystem->block_map, blockId, 'w');
-  if (MAP_CREATE(block, filesystem->block_map, blockId) == -1) {
-    MAP_UNLOCK(block, filesystem->block_map, blockId);
-    fprintf(stderr, "Create Block: Filesystem already contains block %ld.\n", blockId);
+  // If the block already exists return an error.
+  MAP_LOCK(block, filesystem->block_map, block_id, 'w');
+  if (MAP_CREATE(block, filesystem->block_map, block_id) != 0) {
+    fprintf(stderr, "WARNING: Block with ID %" PRIu64 " already exists.\n", block_id);
     return -1;
   }
-  MAP_UNLOCK(block, filesystem->block_map, blockId);
+  MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Create the corresponding log entry.
-  pthread_rwlock_wrlock(&(filesystem->lock));
+  pthread_rwlock_wrlock(&(filesystem->log_lock));
+  log_index = filesystem->log_length;
   check_and_increase_log_length(filesystem);
-  log_pos = filesystem->log_length;
-  filesystem->log[log_pos].block_id = blockId;
-  filesystem->log[log_pos].block_length = 0;
-  filesystem->log[log_pos].page_id = -1;
-  filesystem->log[log_pos].nr_pages = 0;
-  filesystem->log[log_pos].pages = NULL;
-  filesystem->log[log_pos].previous = -1;
-  hlc = get_hybrid_logical_clock(env, thisObj);
-  tick_hybrid_logical_clock(env, hlc, mhlc);
-  update_log_clock(env, hlc, filesystem->log+log_pos);
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  log_entry = filesystem->log + log_index;
+  log_entry->block_id = block_id;
+  log_entry->op = CREATE_BLOCK;
+  log_entry->block_length = 0;
+  update_log_clock(env, mhlc, log_entry);
+  log_entry->pages = NULL;
   filesystem->log_length += 1;
-  pthread_rwlock_unlock(&(filesystem->lock));
+  pthread_rwlock_unlock(&(filesystem->log_lock));
+  
+  // Create the block structure.
+  block = (block_t *) malloc(sizeof(block_t));
+  block->log_index = log_index;
+  block->length = 0;
+  block->pages_cap = 0;
+  block->pages = NULL;
 
-  // Create the block, fill the appropriate fields and write it to block map.
-  new_block = (block_t *) malloc(sizeof(block_t));
-  new_block->length = 0;
-  new_block->cap = 0;
-  new_block->pages = NULL;
-  new_block->last_entry = log_pos;
-  MAP_LOCK(block, filesystem->block_map, blockId, 'r');
-  if (MAP_WRITE(block, filesystem->block_map, blockId, new_block) != 0) {
-    fprintf(stderr, "Create Block: Something is wrong with BLOCK_MAP_CREATE or BLOCK_MAP_WRITE.\n");
-    MAP_UNLOCK(block, filesystem->block_map, blockId);
-    return -2;
+  MAP_LOCK(block, filesystem->block_map, block_id, 'w');
+  if (MAP_WRITE(block, filesystem->block_map, block_id, block) != 0) {
+    fprintf(stderr, "ERROR: Block with ID %" PRIu64 " was not found in the block map while it should be there.\n",
+            block_id);
+    exit(0);
   }
-  MAP_UNLOCK(block, filesystem->block_map, blockId);
+  MAP_UNLOCK(block, filesystem->block_map, block_id);
   return 0;
 }
 
@@ -401,49 +568,48 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId)
 {
-  filesystem_t *filesystem;
-  int block_pos;
-  block_t *cur_block;
-  block_t *last_block = NULL;
-  block_t *new_block;
-  int64_t log_pos;
+  filesystem_t *filesystem = get_filesystem(env, thisObj);
+  uint64_t block_id = (uint64_t) blockId;
+  block_t *block;
+  log_t *log_entry;
+  uint64_t log_index;
   
-  // Find the corresponding block. In case you did not find it return an error.
-  filesystem = get_filesystem(env, thisObj);
-  MAP_LOCK(block, filesystem->block_map, blockId, 'r');
-  if (MAP_READ(block, filesystem->block_map, blockId, &cur_block) == -1) {
-      fprintf(stderr, "Delete Block: Block with id %ld is not present.\n", blockId);
-      MAP_UNLOCK(block, filesystem->block_map, blockId);
-      return -1;
+  // If the block does not exist return an error.
+  MAP_LOCK(block, filesystem->block_map, block_id, 'r');
+  if (MAP_READ(block, filesystem->block_map, block_id, &block) == -1) {
+    fprintf(stderr, "WARNING: It is not possible to delete block with ID %" PRIu64 " because it does not exist.\n",
+            block_id);
+    MAP_UNLOCK(block, filesystem->block_map, block_id);
+    return -1;
   }
-  MAP_UNLOCK(block, filesystem->block_map, blockId);
+  MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Create the corresponding log entry.
-  pthread_rwlock_wrlock(&(filesystem->lock));
+  pthread_rwlock_wrlock(&(filesystem->log_lock));
+  log_index = filesystem->log_length;
   check_and_increase_log_length(filesystem);
-  log_pos = filesystem->log_length;
-  filesystem->log[log_pos].block_id = blockId;
-  filesystem->log[log_pos].block_length = 0;
-  filesystem->log[log_pos].page_id = -2;
-  filesystem->log[log_pos].nr_pages = 0;
-  filesystem->log[log_pos].pages = NULL;
-  filesystem->log[log_pos].previous = cur_block->last_entry;
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
-  update_log_clock(env, mhlc, filesystem->log+log_pos);
+  log_entry = filesystem->log + log_index;
+  log_entry->block_id = block_id;
+  log_entry->op = DELETE_BLOCK;
+  log_entry->block_length = 0;
+  log_entry->previous = block->log_index;
+  update_log_clock(env, mhlc, log_entry);
+  log_entry->pages = NULL;
   filesystem->log_length += 1;
-  pthread_rwlock_unlock(&(filesystem->lock));
+  pthread_rwlock_unlock(&(filesystem->log_lock));
   
-  // Free the underlying data and delete the block.
-  if (cur_block->pages != NULL)
-    free(cur_block->pages);
-  MAP_LOCK(block, filesystem->block_map, blockId, 'w');
-  if (MAP_DELETE(block, filesystem->block_map, blockId) == -1) {
-      fprintf(stderr, "Delete Block: Something is wrong with BLOCK_MAP_READ or BLOCK_MAP_DELETE.\n");
-      MAP_UNLOCK(block, filesystem->block_map, blockId);
-      return -1;
+  // Delete the block in block map for future references.
+  if (block->pages != NULL)
+    free(block->pages);
+  free(block);
+  MAP_LOCK(block, filesystem->block_map, block_id, 'w');
+  if (MAP_DELETE(block, filesystem->block_map, block_id) != 0) {
+    fprintf(stderr, "ERROR: Block with ID %" PRIu64 " was not found in the block map while it should have been there.\n",
+            block_id);
+    exit(0);
   }
-  MAP_UNLOCK(block, filesystem->block_map, blockId);
-  
+  MAP_UNLOCK(block, filesystem->block_map, block_id);
   return 0;
 }
 
@@ -456,54 +622,41 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong snapshotId, jint blkOfst,
   jint bufOfst, jint length, jbyteArray buf)
 {
-  filesystem_t *filesystem;
+  filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
-  block_t *block;
-  int page_id, page_offset, read_length, cur_length;
+  snapshot_block_t *block;
+  uint64_t *log_ptr;
+  uint64_t log_index;
+  uint32_t read_length, cur_length, page_id, page_offset;
   char *page_data;
-  int64_t *log_id;
-//struct timeval tv1,tv2,tv3;
-//gettimeofday(&tv1,NULL);  
+  
   // Find the corresponding block.
-  filesystem = get_filesystem(env, thisObj);
-  if (snapshotId == -1) {
-    MAP_LOCK(block, filesystem->block_map, blockId, 'r');
-    if (MAP_READ(block, filesystem->block_map, blockId, &block) == -1) {
-      MAP_UNLOCK(block, filesystem->block_map, blockId);
-      // In case you did not find the block return an error.
-      fprintf(stderr, "Read Block: Block with id %ld is not present.\n", blockId);
+  if (find_or_create_snapshot(filesystem, snapshotId, &snapshot) < 0) {
+      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshotId);
       return -1;
-    }
-    MAP_UNLOCK(block, filesystem->block_map, blockId);
-  } else {
-    MAP_LOCK(log, filesystem->log_map, snapshotId, 'r');
-    if (MAP_READ(log, filesystem->log_map, snapshotId, &log_id) == -1) {
-      MAP_UNLOCK(log, filesystem->log_map, snapshotId);
-      // In case you did not find the snapshot return an error.
-      fprintf(stderr, "Read Block: Snapshot with id %ld is not present.\n", snapshotId);
-      return -2;
-    }
-    MAP_LOCK(snapshot, filesystem->snapshot_map, *log_id, 'r');
-    MAP_UNLOCK(log, filesystem->log_map, snapshotId);
-    if (MAP_READ(snapshot, filesystem->snapshot_map, *log_id, &snapshot) == -1) {
-      MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
-      // In case you did not find the snapshot return an error.
-      fprintf(stderr, "Read Block: Something is wrong with readBlock.\n");
-      return -3;
-    }
-    MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
-    block = find_or_allocate_snapshot_block(filesystem, snapshot, *log_id, blockId);
-    // If block did not exist at this point.
-    if (block->cap == -1) {
-      fprintf(stderr, "Read Block: Block with id %ld is not present at snapshot with rtc %ld.\n", blockId, snapshotId);
-      return -1;
-    }
   }
-//gettimeofday(&tv2,NULL);
-int cnt=1;
+  MAP_LOCK(log, filesystem->log_map, snapshotId, 'r');
+  if (MAP_READ(log, filesystem->log_map, snapshotId, &log_ptr) != 0) {
+    fprintf(stderr, "ERROR: Snapshot time %" PRIu64 " was not found in the log map while it should have been there.\n",
+            snapshotId);
+    exit(0);
+  }
+  MAP_UNLOCK(log, filesystem->log_map, snapshotId);
+  log_index = *log_ptr;
+  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, blockId, &block) < 0) {
+    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", blockId);
+    exit(0);
+  }
+  
+  // In case the block does not exist return an error.
+  if (block->status == NON_ACTIVE) {
+      fprintf(stderr, "WARNING: Block with id %ld is not active at snapshot with rtc %ld.\n", blockId, snapshotId);
+      return -2;
+  }
+  
   // In case the data you ask is not written return an error.
   if (blkOfst >= block->length) {
-    fprintf(stderr, "Read Block: Block %ld is not written at %d byte.\n", blockId, blkOfst);
+    fprintf(stderr, "WARNING: Block %ld is not written at %d byte.\n", blockId, blkOfst);
     return -3;
   }
   
@@ -516,36 +669,25 @@ int cnt=1;
   // Fill the buffer.
   page_id = blkOfst / filesystem->page_size;
   page_offset = blkOfst % filesystem->page_size;
-  page_data = block->pages[page_id]->data;
+  page_data = block->pages[page_id];
   page_data += page_offset;
   cur_length = filesystem->page_size - page_offset;
   if (cur_length >= read_length) {
     (*env)->SetByteArrayRegion(env, buf, bufOfst, read_length, (jbyte*) page_data);
-//    return read_length;
-  }else{
-  (*env)->SetByteArrayRegion(env, buf, bufOfst, cur_length, (jbyte*) page_data);
-  page_id++;
-  while (1) {
-//struct timeval t1,t2;
-//gettimeofday(&t1,NULL);
-    cnt++;
-    page_data = block->pages[page_id]->data;
-    if (cur_length + filesystem->page_size >= read_length) {
+  } else {
+  	(*env)->SetByteArrayRegion(env, buf, bufOfst, cur_length, (jbyte*) page_data);
+  	page_id++;
+  	while (1) {
+  		page_data = block->pages[page_id];
+  		if (cur_length + filesystem->page_size >= read_length) {
         (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, read_length - cur_length, (jbyte*) page_data);
-        break;//return read_length;
+        break;
+      }
+      (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, filesystem->page_size, (jbyte*) page_data);
+      cur_length += filesystem->page_size;
+      page_id++;
     }
-    (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, filesystem->page_size, (jbyte*) page_data);
-//fprintf(stdout, "set: off=%d,len=%ld\n",bufOfst + cur_length, filesystem->page_size);
-    cur_length += filesystem->page_size;
-    page_id++;
-//gettimeofday(&t2,NULL);
-// fprintf(stdout, "%ldus\n", (t2.tv_sec-t1.tv_sec)*1000000+t2.tv_usec-t1.tv_usec);
   }
-  }
-//gettimeofday(&tv3,NULL);
-//  long search=(tv2.tv_sec-tv1.tv_sec)*1000000+tv2.tv_usec-tv1.tv_usec;
-//  long copy=(tv3.tv_sec-tv2.tv_sec)*1000000+tv3.tv_usec-tv2.tv_usec;
-//  fprintf(stdout, "readBlock %ld %ld [%d,%d,%d]\n",search,copy,blkOfst,read_length,cnt);
   return read_length;
 }
 
@@ -557,46 +699,34 @@ int cnt=1;
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong snapshotId)
 {
-  filesystem_t *filesystem;
+  filesystem_t *filesystem = get_filesystem(env, thisObj);;
   snapshot_t *snapshot;
-  block_t *block;
-  int64_t *log_id;
+  snapshot_block_t *block;
+  uint64_t *log_ptr;
+  uint64_t log_index;
   
   // Find the corresponding block.
-  filesystem = get_filesystem(env, thisObj);
-  if (snapshotId == -1) {
-    MAP_LOCK(block, filesystem->block_map, blockId, 'r');
-    if (MAP_READ(block, filesystem->block_map, blockId, &block) == -1) {
-      MAP_UNLOCK(block, filesystem->block_map, blockId);
-      // In case you did not find the block return an error.
-      fprintf(stderr, "Get Number of Bytes: Block with id %ld is not present.\n", blockId);
+  if (find_or_create_snapshot(filesystem, snapshotId, &snapshot) < 0) {
+      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshotId);
       return -1;
-    }
-    MAP_UNLOCK(block, filesystem->block_map, blockId);
-  } else {
-    MAP_LOCK(log, filesystem->log_map, snapshotId, 'r');
-    if (MAP_READ(log, filesystem->log_map, snapshotId, &log_id) == -1) {
-      MAP_UNLOCK(log, filesystem->log_map, snapshotId);
-      // In case you did not find the snapshot return an error.
-      fprintf(stderr, "Get Number of Bytes: Snapshot with id %ld is not present.\n", snapshotId);
+  }
+  MAP_LOCK(log, filesystem->log_map, snapshotId, 'r');
+  if (MAP_READ(log, filesystem->log_map, snapshotId, &log_ptr) != 0) {
+    fprintf(stderr, "ERROR: Snapshot time %" PRIu64 " was not found in the log map while it should have been there.\n",
+            snapshotId);
+    exit(0);
+  }
+  MAP_UNLOCK(log, filesystem->log_map, snapshotId);
+  log_index = *log_ptr; 
+  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, blockId, &block) < 0) {
+    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", blockId);
+    exit(0);
+  }
+  
+  // In case the block does not exist return an error.
+  if (block->status == NON_ACTIVE) {
+      fprintf(stderr, "WARNING: Block with id %ld is not active at snapshot with rtc %ld.\n", blockId, snapshotId);
       return -2;
-    }
-    MAP_LOCK(snapshot, filesystem->snapshot_map, *log_id, 'r');
-    MAP_UNLOCK(log, filesystem->log_map, snapshotId);
-    if (MAP_READ(snapshot, filesystem->snapshot_map, *log_id, &snapshot) == -1) {
-      MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
-      // In case you did not find the snapshot return an error.
-      fprintf(stderr, "Get Number of Bytes: Something is wrong with getNumberOfBytes.\n");
-      return -3;
-    }
-    MAP_UNLOCK(snapshot, filesystem->snapshot_map, *log_id);
-    block = find_or_allocate_snapshot_block(filesystem, snapshot, *log_id, blockId);
-    // If block did not exist at this point.
-    if (block->cap == -1) {
-      fprintf(stderr, "Get Number of Bytes: Block with id %ld is not present at snapshot with rtc %ld.\n", blockId,
-              snapshotId);
-      return -1;
-    }
   }
   
   return (jint) block->length;
@@ -610,210 +740,100 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst,
   jint bufOfst, jint length, jbyteArray buf)
-{
-#ifdef PERF_WRITE
-  struct timeval tv_base,tv1,tv2;
-  long t_tot=0,t_tick=0,t_copy=0;
-  gettimeofday(&tv_base,NULL);
-#endif//PERF_WRITE
-  filesystem_t *filesystem;
+{  
+  filesystem_t *filesystem = get_filesystem(env, thisObj);
+  uint64_t block_id = (uint64_t) blockId;
+  uint32_t block_offset = (uint32_t) blkOfst;
+  uint32_t buffer_offset = (uint32_t) bufOfst;
+  log_t *log, *log_entry;
   block_t *block;
-  page_t *new_pages;
-  int first_page, last_page;
-  int page_offset, block_offset, buffer_offset;
-  int new_pages_length, new_pages_capacity, write_length, last_page_length;
-  int64_t log_pos;
-  char *pdata;
-  int i;
-  char *allData=NULL;
-  int adp=0; // next usagable page in allData.
-#define ADP	(adp*filesystem->page_size)
-#define IADP	(adp++)
-#define MALLOCPAGE (void*)(allData+(filesystem->page_size*adp++))
-  
-  // Find the corresponding block.
-  filesystem = get_filesystem(env, thisObj);
-  MAP_LOCK(block, filesystem->block_map, blockId, 'r');
-  if (MAP_READ(block, filesystem->block_map, blockId, &block) != 0) {
-    // In case you did not find it return an error.
-    fprintf(stderr, "Write Block: Block with id %ld is not present.\n", blockId);
-    MAP_UNLOCK(block, filesystem->block_map, blockId);
+  page_t *pages;
+  uint64_t log_index;
+  uint32_t first_page, last_page, first_page_offset, last_page_length, pages_cap, write_length, block_length;
+  char *data, *temp_data;
+  uint32_t i;
+
+  // If the block does not exist return an error.
+  MAP_LOCK(block, filesystem->block_map, block_id, 'r');
+  if (MAP_READ(block, filesystem->block_map, block_id, &block) == -1) {
+    fprintf(stderr, "WARNING: It is not possible to write to block with ID %" PRIu64 " because it does not exist.\n",
+            block_id);
+    MAP_UNLOCK(block, filesystem->block_map, block_id);
     return -1;
   }
-  MAP_UNLOCK(block, filesystem->block_map, blockId);
+  MAP_UNLOCK(block, filesystem->block_map, block_id);
 
-  // In case you cannot write in the required offset.
+	// In case you write after the end of the block return an error.
   if (blkOfst > block->length) {
-    fprintf(stderr, "Write Block: Block %ld cannot be written at byte %d.\n", blockId, blkOfst);
-    return -3;
+    fprintf(stderr, "WARNING: Block %ld cannot be written at %d byte.\n", blockId, blkOfst);
+    return -2;
   }
 
-#ifdef FIRST_EXPERIMENT
-  // First experiment.
-  if (blkOfst + length > block->length)
-      block->length = blkOfst + length;
-#else
   // Create the new pages.
-  block_offset = (int) blkOfst;
-  buffer_offset = (int) bufOfst;
-  
   first_page = block_offset / filesystem->page_size;
   last_page = (block_offset + length - 1) / filesystem->page_size;
-  page_offset = block_offset % filesystem->page_size;
-  new_pages_length = last_page - first_page + 1;
-  allData = (char*) malloc(filesystem->page_size*sizeof(char)*(new_pages_length+1));
-  //new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
-  new_pages = (page_t*)MALLOCPAGE;
-  
-  //new_pages[0].data = (char *) malloc(filesystem->page_size*sizeof(char));
-  new_pages[0].data = (char*)MALLOCPAGE;
-  for (i = 0; i < page_offset; i++)
-    new_pages[0].data[i] = block->pages[first_page]->data[i];
+  first_page_offset = block_offset % filesystem->page_size;
+  pages_cap = last_page - first_page + 1;
+  data = (char*) malloc(pages_cap * filesystem->page_size * sizeof(char));
+  for (i = 0; i < first_page_offset; i++)
+    data[i] = block->pages[first_page][i];
   if (first_page == last_page) {
     write_length = (jint) length;
-    pdata = new_pages[0].data + page_offset;
-#ifdef SECOND_EXPERIMENT
-#else
-#ifdef PERF_WRITE
-    gettimeofday(&tv1,NULL);
-#endif//PERF_WRITE
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
-#ifdef PERF_WRITE
-    gettimeofday(&tv2,NULL);
-    t_copy+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
-#endif//PERF_WRITE
-#endif
-    last_page_length = page_offset + write_length;
+    temp_data = data + first_page_offset;
+    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
+    last_page_length = first_page_offset + write_length;
   } else {
-    write_length = filesystem->page_size - page_offset;
-    pdata = new_pages[0].data + page_offset;
-#ifdef SECOND_EXPERIMENT
-#else
-#ifdef PERF_WRITE
-    gettimeofday(&tv1,NULL);
-#endif//PERF_WRITE
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
-#ifdef PERF_WRITE
-    gettimeofday(&tv2,NULL);
-    t_copy+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
-#endif//PERF_WRITE
-#endif
+    write_length = filesystem->page_size - first_page_offset;
+    temp_data = data + first_page_offset;
+    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
     buffer_offset += write_length;
-    for (i = 1; i < new_pages_length-1; i++) {
-      //new_pages[i].data = (char *) malloc(filesystem->page_size*sizeof(char));
-      new_pages[i].data = (char *)MALLOCPAGE;
+    for (i = 1; i < pages_cap-1; i++) {
       write_length = filesystem->page_size;
-      pdata = new_pages[i].data;
-#ifdef SECOND_EXPERIMENT
-#else
-#ifdef PERF_WRITE
-    gettimeofday(&tv1,NULL);
-#endif//PERF_WRITE
-      (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
-#ifdef PERF_WRITE
-    gettimeofday(&tv2,NULL);
-    t_copy+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
-#endif//PERF_WRITE
-#endif
+      temp_data = data + i * filesystem->page_size;
+      (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
       buffer_offset += write_length;
     }
-    //new_pages[new_pages_length-1].data =  (char *) malloc(filesystem->page_size*sizeof(char));
-    new_pages[new_pages_length-1].data =  (char *)MALLOCPAGE;
     write_length = (int) bufOfst + (int) length - buffer_offset;
-    pdata = new_pages[new_pages_length-1].data;
-#ifdef SECOND_EXPERIMENT
-#else
-#ifdef PERF_WRITE
-    gettimeofday(&tv1,NULL);
-#endif//PERF_WRITE
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) pdata);
-#ifdef PERF_WRITE
-    gettimeofday(&tv2,NULL);
-    t_copy+=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
-#endif//PERF_WRITE
-#endif
+    temp_data = data + (pages_cap-1)*filesystem->page_size;
+    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
     last_page_length = write_length;
   }
-  if (last_page*filesystem->page_size + last_page_length > block->length) {
-    block->length = last_page*filesystem->page_size + last_page_length;
-  } else if (last_page*filesystem->page_size > block->length) {
-    for (i = last_page_length; i < block->length - (last_page-1)*filesystem->page_size; i++)
-      new_pages[new_pages_length-1].data[i] = block->pages[last_page]->data[i];
-  } else {
-    for (i = last_page_length; i < filesystem->page_size; i++)
-      new_pages[new_pages_length-1].data[i] = block->pages[last_page]->data[i];
-  }
+  block_length = last_page * filesystem->page_size + last_page_length;
+  if (block_length < block->length)
+    block_length = block->length;
+
+  // Create the corresponding log entry.
+  pthread_rwlock_wrlock(&(filesystem->log_lock));
+  log_index = filesystem->log_length;
+  check_and_increase_log_length(filesystem);
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  log_entry = filesystem->log + log_index;
+  log_entry->block_id = block_id;
+  log_entry->op = WRITE;
+  log_entry->block_length = block_length;
+  log_entry->page_id = first_page;
+  log_entry->nr_pages = pages_cap;
+  log_entry->previous = block->log_index;
+  update_log_clock(env, mhlc, log_entry);
+  log_entry->pages = data;
+  filesystem->log_length += 1;
+  pthread_rwlock_unlock(&(filesystem->log_lock));
   
   // Fill block with the appropriate information.
-  if (block->cap == 0)
-    new_pages_capacity = 1;
+  block->log_index = log_index;
+  block->length = block_length;
+  if (block->pages_cap == 0)
+    pages_cap = 1;
   else
-    new_pages_capacity = block->cap;
-  while ((block->length - 1) / filesystem->page_size >= new_pages_capacity)
-    new_pages_capacity *= 2;
-  if (new_pages_capacity > block->cap) {
-    block->cap = new_pages_capacity;
-    block->pages = (page_t**) realloc(block->pages, block->cap*sizeof(page_t*));
+    pages_cap = block->pages_cap;
+  while ((block->length - 1) / filesystem->page_size >= pages_cap)
+    pages_cap *= 2;
+  if (pages_cap > block->pages_cap) {
+    block->pages_cap = pages_cap;
+    block->pages = (page_t*) realloc(block->pages, block->pages_cap * sizeof(page_t));
   }
-  for (i = 0; i < new_pages_length; i++)
-    block->pages[first_page+i] = new_pages + i;
-
-
-  // Create log entry.
-  pthread_rwlock_wrlock(&(filesystem->lock));
-  check_and_increase_log_length(filesystem);
-  log_pos = filesystem->log_length;
-  filesystem->log[log_pos].block_id = blockId;
-  filesystem->log[log_pos].block_length = block->length;
-  filesystem->log[log_pos].page_id = first_page;
-  filesystem->log[log_pos].nr_pages = new_pages_length;
-  filesystem->log[log_pos].pages = new_pages;
-  filesystem->log[log_pos].previous = block->last_entry;
-#ifdef SECOND_EXPERIMENT
-#else
-#ifdef THIRD_EXPERIMENT
-#else
-#ifdef PERF_WRITE
-  gettimeofday(&tv1,NULL);
-#endif
-//  tick_vector_clock(env, thisObj, mvc, filesystem->log+log_pos);
-  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
-  update_log_clock(env, mhlc, filesystem->log+log_pos);
-#ifdef PERF_WRITE
-  gettimeofday(&tv2,NULL);
-  t_tick=(tv2.tv_usec-tv1.tv_usec+(1<<20))%(1<<20);
-#endif//PERF_WRITE
-#endif
-#endif
-  filesystem->log_length += 1;
-  pthread_rwlock_unlock(&(filesystem->lock));
-  block->last_entry = log_pos;
-#endif
-#ifdef PERF_WRITE
-  gettimeofday(&tv2,NULL);
-  t_tot+=(tv2.tv_usec-tv_base.tv_usec+(1<<20))%(1<<20);
-  printf("%ld %ld %ld %d\n",t_tot-(t_copy+t_tick),t_copy,t_tick,length);
-// fflush(stdout);
-#endif//PERF_WRITE
-/*
-#define PRINT_TIMEDIFF(tag,to,from) { \
-  long delta = ((to).tv_sec - (from).tv_sec)*1000000 + (to).tv_usec - (from).tv_usec; \
-  printf("%s %ld\n", tag, delta); \
- }
-PRINT_TIMEDIFF("L(blk):",tv1,tv_base);
-PRINT_TIMEDIFF("R(blk):",tv2,tv1);
-PRINT_TIMEDIFF("C(dat):",tv3,tv2);
-PRINT_TIMEDIFF("L(log):",tv4,tv3);
-PRINT_TIMEDIFF("R(log):",tv5,tv4);
-*/
-/*
-printf("b  %ld.%ld\n",tv_base.tv_sec,tv_base.tv_usec);
-printf("bl %ld.%ld\n",tv1.tv_sec,tv1.tv_usec);
-printf("bc %ld.%ld\n",tv2.tv_sec,tv2.tv_usec);
-printf("ec %ld.%ld\n",tv3.tv_sec,tv3.tv_usec);
-printf("fl %ld.%ld\n",tv4.tv_sec,tv4.tv_usec);
-printf("e  %ld.%ld\n",tv5.tv_sec,tv5.tv_usec);
-*/
+  for (i = 0; i < log_entry->nr_pages; i++)
+    block->pages[log_entry->page_id+i] = data + i * filesystem->page_size;
   return 0;
 }
 
@@ -825,83 +845,23 @@ printf("e  %ld.%ld\n",tv5.tv_sec,tv5.tv_usec);
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
   (JNIEnv *env, jobject thisObj, jlong rtc)
 {
-  filesystem_t *filesystem;
+  filesystem_t *filesystem = get_filesystem(env, thisObj);
+  uint64_t t = (uint64_t) rtc;
   snapshot_t *snapshot;
-  snapshot_t *last_snapshot = NULL;
-  log_t *log;
-  int64_t log_pos, cur_value, length;
-  int64_t *new_id;
   
-  // Find the corresponding log.
-  filesystem = get_filesystem(env, thisObj);
-  log = filesystem->log;
-  pthread_rwlock_rdlock(&(filesystem->lock));
-  length = filesystem->log_length;
-  pthread_rwlock_unlock(&(filesystem->lock));
-  // If the real time cut is before the first log...
-  if ((length == 0) || (log[0].r > rtc)) {
-    fprintf(stderr, "Create Snapshot: Log has not entries before RTC %ld\n", rtc);
-    return -1;
+  switch (find_or_create_snapshot(filesystem, t, &snapshot)) {
+    case 0:
+      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " already exists.\n", t);
+      return -1;
+    case -1:
+      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", t);
+      return -2;
+    case 1:
+      return 0;
+    default:
+      fprintf(stderr, "ERROR: Unknown error code for find_or_create_snapshot function.\n");
+      exit(0);
   }
-  // If the real time cut is after the last log, create a mock event with rtc timestamp. Otherwise do binary search.
-  log_pos = length-1;
-  if (log[log_pos].r < rtc) {
-    mock_tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), rtc);
-  } else {
-    log_pos = length / 2;
-    cur_value = log_pos / 2;
-//    while ((log[log_pos].r > rtc) || (log[log_pos+1].r <= rtc)) {
-    while ((log[log_pos].r > rtc) || ((log_pos+1 < length) &&(log[log_pos+1].r <= rtc))) {
-      if (log[log_pos].r > rtc)
-        log_pos -= cur_value;
-      else
-        log_pos += cur_value;
-      if (cur_value > 1)
-        cur_value /= 2;
-    }
-  }
-  
-  // Find the corresponding position to write snapshot.
-  MAP_LOCK(log, filesystem->log_map, rtc, 'w');
-  if (MAP_CREATE(log, filesystem->log_map, rtc) != 0) {
-    MAP_UNLOCK(log, filesystem->log_map, rtc);
-    fprintf(stderr, "Create Snapshot: Snapshot %ld already exists\n", rtc);
-    return -1;
-  }
-  new_id = (int64_t *) malloc(sizeof(int64_t));
-  *new_id = log_pos;
-  if (MAP_WRITE(log, filesystem->log_map, rtc, new_id)) {
-    MAP_UNLOCK(log, filesystem->log_map, rtc);
-    fprintf(stderr, "Create Snapshot: Something is wrong with LOG_MAP_CREATE or LOG_MAP_WRITE\n");
-    return -2;
-  }
-  MAP_LOCK(snapshot, filesystem->snapshot_map, log_pos, 'w');
-  MAP_UNLOCK(log, filesystem->log_map, rtc);
-  
-  if (MAP_CREATE(snapshot, filesystem->snapshot_map, log_pos) != 0) {
-    if (MAP_READ(snapshot, filesystem->snapshot_map, log_pos, &snapshot) != 0) {
-      MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_pos);
-      fprintf(stderr, "Create Snapshot: Something is wrong with SNAPSHOT_MAP_CREATE or SNAPSHOT_MAP_READ\n");
-    }
-    snapshot->ref_count++;
-    MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_pos);
-    return 0;
-  }
-    
-  snapshot = (snapshot_t*) malloc(sizeof(snapshot_t));
-  snapshot->block_map = MAP_INITIALIZE(block);
-  if (snapshot->block_map == NULL) {
-    fprintf(stderr, "Create Snapshot: Allocation of snapshot block map failed.\n");
-    return -1;
-  }
-  snapshot->ref_count = 1;
-  if (MAP_WRITE(snapshot, filesystem->snapshot_map, log_pos, snapshot)) {
-    MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_pos);
-    fprintf(stderr, "Create Snapshot: Something is wrong with SNAPSHOT_MAP_CREATE or SNAPSHOT_MAP_WRITE\n");
-    return -2;
-  }
-  MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_pos);
-  return 0;
 }
 
 /*

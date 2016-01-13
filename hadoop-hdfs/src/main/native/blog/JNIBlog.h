@@ -17,6 +17,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    destroy
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_destroy
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createBlock
  * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;J)I
  */
@@ -70,14 +78,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
   (JNIEnv *, jclass);
-
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    destroy
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_destroy
-  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

@@ -1,22 +1,11 @@
-/**
- * 
- */
 package edu.cornell.cs.blog;
 
 import edu.cornell.cs.sa.HybridLogicalClock;
-
 import java.nio.charset.*;
 
-/**
- * @author Weijia
- * Blog = Block log
- */
-/**
- * @author root
- *
- */
-public class JNIBlog {
-  static{
+public class JNIBlog
+{
+  static {
     System.loadLibrary("edu_cornell_cs_blog_JNIBlog");
   }
 
@@ -55,19 +44,43 @@ public class JNIBlog {
   
   /**
    * @param blockId
-   * @param rtc - 0 for the current version
    * @param blkOfst - block offset
    * @param bufOfst - buffer offset
    * @param length - how many bytes to read
    * @param buf[OUTPUT] - for read data
    * @return error code, number of bytes read for success.
    */
-  public native int readBlock(long blockId, long rtc, int blkOfst, int bufOfst, int length, byte buf[]);
+  public int readBlock(long blockId, int blkOfst, int bufOfst, int length, byte buf[])
+  {
+	return readBlock(blockId, readLocalRTC(), blkOfst, bufOfst, length, buf);
+  }
+  
+  /**
+   * @param blockId
+   * @param t - time to read from
+   * @param blkOfst - block offset
+   * @param bufOfst - buffer offset
+   * @param length - how many bytes to read
+   * @param buf[OUTPUT] - for read data
+   * @return error code, number of bytes read for success.
+   */
+  public native int readBlock(long blockId, long t, int blkOfst, int bufOfst, int length, byte buf[]);
   
   /**
    * get number of bytes we have in the block
    * @param blockId
-   * @param rtc
+   * @param t
+   * @return
+   */
+  public int getNumberOfBytes(long blockId)
+  {
+	  return getNumberOfBytes(blockId, readLocalRTC());
+  }
+  
+  /**
+   * get number of bytes we have in the block
+   * @param blockId
+   * @param t
    * @return
    */
   public native int getNumberOfBytes(long blockId, long rtc);
@@ -101,45 +114,30 @@ public class JNIBlog {
   public void testBlockCreation(HybridLogicalClock mhlc)
   {
     for (long i = 0; i < 100; i++) {
-      mhlc.tick();
-      if (createBlock(mhlc,i) == 0)
-        writeLine("Block " + i + " was created.");
+      assert (createBlock(mhlc,i) == 0);
+      writeLine("Block " + i + " was created.");
     }
     for (long i = 4096; i < 4196; i++) {
-      mhlc.tick();
-      if (createBlock(mhlc,i) == 0)
-        writeLine("Block " + i + " was created.");
+      assert (createBlock(mhlc,i) == 0);
+      writeLine("Block " + i + " was created.");
     }
-    mhlc.tick();
-    if (createBlock(mhlc,1) == 0)
-      writeLine("Block 1 was created.");
-    mhlc.tick();
-    if (createBlock(mhlc,4096) == 0)
-      writeLine("Block 4096 was created.");
-    mhlc.tick();
-    if (createBlock(mhlc,4100) == 0)
-      writeLine("Block 4100 was created.");
-    mhlc.tick();
-    if (createBlock(mhlc,5000) == 0)
-      writeLine("Block 5000 was created.");
+    assert (createBlock(mhlc,1) == -1);
+    assert (createBlock(mhlc,4096) == -1);
+    assert (createBlock(mhlc,4100) == -1);
+    assert (createBlock(mhlc,5000) == 0);
+    writeLine("Block 5000 was created.");
   }
   
   public void testBlockDeletion(HybridLogicalClock mhlc)
   { 
     for (long i = 0; i < 100; i++) {
-      mhlc.tick();
-      if (deleteBlock(mhlc,i) == 0)
-        writeLine("Block " + i + " was deleted.");
+      assert (deleteBlock(mhlc,i) == 0);
+      writeLine("Block " + i + " was deleted.");
     }
-    mhlc.tick();
-    if (deleteBlock(mhlc,1) == 0)
-      writeLine("Block 1 was deleted.");
-    mhlc.tick();
-    if (deleteBlock(mhlc,4500) == 0)
-      writeLine("Block 4500 was deleted.");
-    mhlc.tick();
-    if (deleteBlock(mhlc,4100) == 0)
-      writeLine("Block 4100 was deleted.");
+    assert (deleteBlock(mhlc,1) == -1);
+    assert (deleteBlock(mhlc,4500) == -1);
+    assert (deleteBlock(mhlc,4100) == 0);
+    writeLine("Block 4100 was deleted.");
   }
   
   public long testWrite(HybridLogicalClock mhlc) throws InterruptedException
@@ -149,55 +147,56 @@ public class JNIBlog {
     String c = "Laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
     long rtc;
 
-    mhlc.tick();
-    if (writeBlock(mhlc, 4101, 0, 0, a.length(), a.getBytes()) == 0)
-      writeLine("Block 4101 was written.");
-    mhlc.tick();
-    if (writeBlock(mhlc, 4100, 0, 0, 20, a.getBytes()) == 0)
-      writeLine("Block 4100 was written.");
-    mhlc.tick();
-    if (writeBlock(mhlc, 4101, 100, 0, 20, a.getBytes()) == 0)
-      writeLine("Block 4101 was written.");
-    writeLine("Before Snapshot: " + hlc.toString());
+    assert (writeBlock(mhlc, 4101, 0, 0, a.length(), a.getBytes()) == 0);
+    writeLine("Block 4101 was written.");
+    assert (writeBlock(mhlc, 4100, 0, 0, 20, a.getBytes()) == -1);
+    assert (writeBlock(mhlc, 4101, 100, 0, 20, a.getBytes()) == -2);
     Thread.sleep(1);
     rtc = readLocalRTC();
-    writeLine("RTC: " + new Long(rtc).toString());
     createSnapshot(rtc);
-    writeLine("After Snapshot: " + hlc.toString());
-    mhlc.tick();
-    if (writeBlock(mhlc, 4101, 0, 0, b.length(), b.getBytes()) == 0)
-      writeLine("Block 4101 was written.");
-    mhlc.tick();
-    if (writeBlock(mhlc, 5000, 0, 0, c.length(), c.getBytes()) == 0)
-      writeLine("Block 5000 was written.");
+    assert (writeBlock(mhlc, 4101, 0, 0, b.length(), b.getBytes()) == 0);
+    writeLine("Block 4101 was written.");
+    assert (writeBlock(mhlc, 5000, 0, 0, c.length(), c.getBytes()) == 0);
+    writeLine("Block 5000 was written.");
     
     return rtc;
   }
   
   public void testRead()
   {
+	String a = "Hello Theo & Weijia. I am working well!!";
+	String b = "This should not be in the snapshot read.";
+	String c = "Laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
+	String temp;
     byte[] mybuf = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".getBytes();
 
-    readBlock(4100, -1, 0, 0, 20, mybuf);
-    readBlock(4101, -1, 100, 0, 20, mybuf);
-    readBlock(4101, -1, 0, 0, 40, mybuf);
-    writeLine("Read: " + new String(mybuf, Charset.forName("UTF-8")));
+    assert (readBlock(4100, 0, 0, 40, mybuf) == -2);
+    assert (readBlock(4101, 100, 0, 40, mybuf) == -3);
+    assert (readBlock(4101, 0, 0, 40, mybuf) == 40);
+    temp = new String(mybuf, Charset.forName("UTF-8"));
+    writeLine("Block 4101: " + temp);
+    assert (b.compareTo(temp) == 0);
   }
   
   public void testSnapshot(long rtc)
   {
+	String a = "Hello Theo & Weijia. I am working well!!";
+	String b = "This should not be in the snapshot read.";
+	String c = "Laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
+	String temp;
     byte[] mybuf = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".getBytes();
     long cut;
     int nrBytes;
     
-    readBlock(4101, rtc, 0, 0, 40, mybuf);
-    writeLine("Read Snapshot: " + new String(mybuf, Charset.forName("UTF-8")));
-    nrBytes = getNumberOfBytes(5000,rtc);
-    writeLine("Bytes: " + nrBytes);
-    if (readBlock(5000, rtc, 0, 0, 40, mybuf) != -3)
-      writeLine("There is a problem here.");
-    if (readBlock(5001, rtc, 0, 0, 40, mybuf) != -1)
-      writeLine("There is a problem here.");
+    assert (readBlock(4101, rtc+10000, 0, 0, 40, mybuf) == -1);
+    assert (readBlock(5001, rtc, 0, 0, 40, mybuf) == -2);
+    assert (readBlock(5000, rtc, 0, 0, 40, mybuf) == -3);
+    assert (readBlock(4101, rtc, 0, 0, 40, mybuf) == 40);
+    temp = new String(mybuf, Charset.forName("UTF-8"));
+    writeLine("Snapshot " + Long.toString(rtc)  + " Block 4101: " + temp);
+    assert (a.compareTo(temp) == 0);
+    assert (getNumberOfBytes(4101,rtc) == 40);
+    assert (getNumberOfBytes(5000,rtc) == 0);
   }
   
   static public void writeLine(String str) {
@@ -214,16 +213,18 @@ public class JNIBlog {
     HybridLogicalClock mhlc = new HybridLogicalClock();
     long rtc;
     
-    writeLine("Begin Initialize.");
+    writeLine("Initialize.");
     bl.initialize(1024*1024, 1024);
-    writeLine(bl.hlc.toString());
+    writeLine("Create Blocks.");
     bl.testBlockCreation(mhlc);
-    writeLine(bl.hlc.toString());
+    writeLine("Delete Blocks.");
     bl.testBlockDeletion(mhlc);
-    writeLine(bl.hlc.toString());
+    writeLine("Write Blocks.");
     rtc = bl.testWrite(mhlc);
-    writeLine(bl.hlc.toString());
+    Thread.sleep(2);
+    writeLine("Read Blocks.");
     bl.testRead();
+    writeLine("Read Snapshot Blocks.");
     bl.testSnapshot(rtc);
   }
 }

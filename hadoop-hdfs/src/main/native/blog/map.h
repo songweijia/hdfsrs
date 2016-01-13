@@ -5,7 +5,7 @@
 #define MAP_DECLARE(NAME,TYPE)                                                                  \
                                                                                                 \
 typedef struct NAME##_entry_t {                                                                 \
-  int64_t id;                                                                                   \
+  uint64_t id;                                                                                  \
   TYPE *value;                                                                                  \
   struct NAME##_entry_t *next;                                                                  \
 } NAME##_entry_t;                                                                               \
@@ -31,55 +31,55 @@ void NAME##_map_destroy(NAME##_map_t *map);                                     
  * Return 0 for success.
  * Return -1 if entry already exists.
  */                                                                                             \
-int NAME##_map_create(NAME##_map_t *map, int64_t id);                                           \
+int NAME##_map_create(NAME##_map_t *map, uint64_t id);                                          \
                                                                                                 \
 /*
  * Create a map entry and initialize it.
  * Return 0 for success.
  * Return -1 if entry already exists.
  */                                                                                             \
-int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, int64_t id, TYPE* value);                  \
+int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, uint64_t id, TYPE* value);                 \
                                                                                                 \
 /**
  * Delete a map entry.
  * Return 0 for success.
  * Return -1 if entry does not exist.
  */                                                                                             \
-int NAME##_map_delete(NAME##_map_t *map, int64_t id);                                           \
+int NAME##_map_delete(NAME##_map_t *map, uint64_t id);                                          \
                                                                                                 \
 /**
  * Assign a value to an entry.
  * Return 0 for success.
  * Return -1 if entry does not exist.
  */                                                                                             \
-int NAME##_map_write(NAME##_map_t *map, int64_t id, TYPE *value);                               \
+int NAME##_map_write(NAME##_map_t *map, uint64_t id, TYPE *value);                              \
                                                                                                 \
 /**
- * Assign a value to an entry.
+ * Read the value from an entry.
  * Return 0 for success.
  * Return -1 if entry does not exist.
  */                                                                                             \
-int NAME##_map_read(NAME##_map_t *map, int64_t id, TYPE **value);                               \
+int NAME##_map_read(NAME##_map_t *map, uint64_t id, TYPE **value);                              \
                                                                                                 \
 /**
  * Get map length.
  */                                                                                             \
-int64_t NAME##_map_length(MAP_TYPE(NAME) *map);                                                 \
+uint64_t NAME##_map_length(MAP_TYPE(NAME) *map);                                                \
                                                                                                 \
 /**
  * Get all the keys in the dictionary.
  */                                                                                             \
-int64_t *NAME##_map_get_ids(NAME##_map_t *map, int64_t length);                                 \
+uint64_t *NAME##_map_get_ids(NAME##_map_t *map, uint64_t length);                               \
                                                                                                 \
 /**
  * Lock the structure in the appropriate position.
  */                                                                                             \
-int NAME##_map_lock(NAME##_map_t *map, int64_t id, char read_write);                            \
+int NAME##_map_lock(NAME##_map_t *map, uint64_t id, char read_write);                           \
                                                                                                 \
 /**
  * Unlock the structure in the appropriate position.
  */                                                                                             \
-int NAME##_map_unlock(NAME##_map_t *map, int64_t id);
+int NAME##_map_unlock(NAME##_map_t *map, uint64_t id);
                                                                                                 
 #define ENTRY_TYPE(NAME)                                                                        \
 NAME##_entry_t
@@ -91,7 +91,7 @@ NAME##_map_t
                                                                                                     \
 MAP_TYPE(NAME) *NAME##_map_initialize() {                                                           \
   MAP_TYPE(NAME) *map = (MAP_TYPE(NAME) *) malloc(SIZE*sizeof(MAP_TYPE(NAME)));                     \
-  int64_t i;                                                                                        \
+  uint64_t i;                                                                                       \
                                                                                                     \
   for (i = 0; i < SIZE; i++) {                                                                      \
     map[i].lock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));                            \
@@ -105,7 +105,7 @@ MAP_TYPE(NAME) *NAME##_map_initialize() {                                       
 }                                                                                                   \
                                                                                                     \
 void NAME##_map_destroy(MAP_TYPE(NAME) *map) {                                                      \
-  int64_t i;                                                                                        \
+  uint64_t i;                                                                                       \
                                                                                                     \
   for (i = 0; i < SIZE; i++) {                                                                      \
     pthread_rwlock_destroy(map[i].lock);                                                            \
@@ -115,12 +115,12 @@ void NAME##_map_destroy(MAP_TYPE(NAME) *map) {                                  
   free(map);                                                                                        \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_create(MAP_TYPE(NAME) *map, int64_t id) {                                            \
+int NAME##_map_create(MAP_TYPE(NAME) *map, uint64_t id) {                                           \
   return NAME##_map_create_and_write(map, id, NULL);                                                \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, int64_t id, TYPE* value) {                     \
-  int64_t hash = id % SIZE;                                                                         \
+int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, uint64_t id, TYPE* value) {                    \
+  uint64_t hash = id % SIZE;                                                                        \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
   ENTRY_TYPE(NAME) *last_entry = NULL;                                                              \
                                                                                                     \
@@ -143,8 +143,8 @@ int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, int64_t id, TYPE* value) { 
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_delete(MAP_TYPE(NAME) *map, int64_t id) {                                            \
-  int64_t hash = id % SIZE;                                                                         \
+int NAME##_map_delete(MAP_TYPE(NAME) *map, uint64_t id) {                                           \
+  uint64_t hash = id % SIZE;                                                                        \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
   ENTRY_TYPE(NAME) *last_entry = NULL;                                                              \
                                                                                                     \
@@ -160,43 +160,37 @@ int NAME##_map_delete(MAP_TYPE(NAME) *map, int64_t id) {                        
     map[hash].entry = entry->next;                                                                  \
   else                                                                                              \
     last_entry->next = entry->next;                                                                 \
-  if (entry->value != NULL)                                                                         \
-    free(entry->value);                                                                             \
   free(entry);                                                                                      \
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_write(MAP_TYPE(NAME) *map, int64_t id, TYPE *value) {                                \
-  int64_t hash = id % SIZE;                                                                         \
+int NAME##_map_write(MAP_TYPE(NAME) *map, uint64_t id, TYPE *value) {                               \
+  uint64_t hash = id % SIZE;                                                                        \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
                                                                                                     \
   while ((entry != NULL) && (entry->id != id))                                                      \
     entry = entry->next;                                                                            \
-  if (entry == NULL) {                                                                              \
-    fprintf(stderr, "Map Write: Entry ID %ld does not exist in map.\n", id);                        \
+  if (entry == NULL)                                                                                \
     return -1;                                                                                      \
-  }                                                                                                 \
   entry->value = value;                                                                             \
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_read(MAP_TYPE(NAME) *map, int64_t id, TYPE **value) {                                \
-  int64_t hash = id % SIZE;                                                                         \
+int NAME##_map_read(MAP_TYPE(NAME) *map, uint64_t id, TYPE **value) {                               \
+  uint64_t hash = id % SIZE;                                                                        \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
                                                                                                     \
   while ((entry != NULL) && (entry->id != id))                                                      \
     entry = entry->next;                                                                            \
-  if (entry == NULL) {                                                                              \
-    fprintf(stderr, "Map Read: Entry ID %ld does not exist in map.\n", id);                         \
+  if (entry == NULL)                                                                                \
     return -1;                                                                                      \
-  }                                                                                                 \
   *value = entry->value;                                                                            \
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int64_t NAME##_map_length(MAP_TYPE(NAME) *map) {                                                    \
+uint64_t NAME##_map_length(MAP_TYPE(NAME) *map) {                                                   \
   ENTRY_TYPE(NAME) *entry;                                                                          \
-  int64_t length, i;                                                                                \
+  uint64_t length, i;                                                                               \
                                                                                                     \
   length = 0;                                                                                       \
   for (i = 0; i < SIZE; i++) {                                                                      \
@@ -209,11 +203,11 @@ int64_t NAME##_map_length(MAP_TYPE(NAME) *map) {                                
   return length;                                                                                    \
 }                                                                                                   \
                                                                                                     \
-int64_t *NAME##_map_get_ids(MAP_TYPE(NAME) *map, int64_t length) {                                  \
+uint64_t *NAME##_map_get_ids(MAP_TYPE(NAME) *map, uint64_t length) {                                \
   ENTRY_TYPE(NAME) *entry;                                                                          \
-  int64_t *ids = (int64_t *) malloc(length*sizeof(int64_t));                                        \
-  int64_t index = 0;                                                                                \
-  int64_t i;                                                                                        \
+  uint64_t *ids = (uint64_t *) malloc(length*sizeof(uint64_t));                                     \
+  uint64_t index = 0;                                                                               \
+  uint64_t i;                                                                                       \
                                                                                                     \
   for (i = 0; i < SIZE; i++) {                                                                      \
      entry = map[i].entry;                                                                          \
@@ -225,8 +219,8 @@ int64_t *NAME##_map_get_ids(MAP_TYPE(NAME) *map, int64_t length) {              
   return ids;                                                                                       \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_lock(NAME##_map_t *map, int64_t id, char read_write) {                               \
-  int64_t hash = id % SIZE;                                                                         \
+int NAME##_map_lock(NAME##_map_t *map, uint64_t id, char read_write) {                              \
+  uint64_t hash = id % SIZE;                                                                        \
                                                                                                     \
   if (read_write == 'w')                                                                            \
     return pthread_rwlock_wrlock(map[hash].lock);                                                   \
@@ -236,8 +230,8 @@ int NAME##_map_lock(NAME##_map_t *map, int64_t id, char read_write) {           
   return -1;                                                                                        \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_unlock(NAME##_map_t *map, int64_t id) {                                              \
-  int64_t hash = id % SIZE;                                                                         \
+int NAME##_map_unlock(NAME##_map_t *map, uint64_t id) {                                             \
+  uint64_t hash = id % SIZE;                                                                        \
                                                                                                     \
   return pthread_rwlock_unlock(map[hash].lock);                                                     \
 }
