@@ -290,7 +290,10 @@ int initializeContext(
       bClient?(IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE):(IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE )),
     "Could not allocate mr, ibv_reg_mr. Do you have root privileges?");
   TEST_NZ(ibv_query_device(ctxt->ctxt,&dev_attr),"Could not query device values");
-  ctxt->max_sge = dev_attr.max_sge;
+  // ctxt->max_sge = dev_attr.max_sge;
+  ctxt->max_sge = 16; // it turns out that if we use a number greater than 16, Mellanox Infiniband card will report error.
+  // TYPE of the card: InfiniBand: Mellanox Technologies MT26428 [ConnectX VPI PCIe 2.0 5GT/s - IB QDR / 10GigE] (rev a0)
+  
   DEBUG_PRINT("initialization:max_sge=%d,max_cqe=%d\n",ctxt->max_sge,dev_attr.max_cqe);
   ctxt->max_mr  = dev_attr.max_mr;
   ctxt->max_cq  = dev_attr.max_cq;
@@ -597,7 +600,7 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
   return 0;
 }
 
-int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite){
+int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
 DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr=%p\n",iswrite,npage,*pagelist,(void*)r_vaddr);
   const uint64_t cipkey = (const uint64_t)hostip;
   RDMAConnection *rdmaConn = NULL;
@@ -628,7 +631,7 @@ DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr
     // prepare the sge_list
     for(i=0;i<batchSize;i++){
       (sge_list+i)->addr = (uintptr_t)pagelist[npage-npageToProcess+i];
-      (sge_list+i)->length = RDMA_CTXT_PAGE_SIZE(ctxt);
+      (sge_list+i)->length = (pagesize==0)?RDMA_CTXT_PAGE_SIZE(ctxt):pagesize;
       (sge_list+i)->lkey = rdmaConn->l_rkey;
     }
     wr.num_sge = batchSize;

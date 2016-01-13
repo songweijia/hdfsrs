@@ -1085,7 +1085,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
   DEBUG_PRINT("readBlockRDMA:ip=%s,npage=%d,address=%p\n",
     (char*)ipStr,npage,(const void *)address);
   // rdma write...
-  rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage);
+  rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage,0);
   free(paddrlist);
   if(rc !=0 ){
     fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
@@ -1400,11 +1400,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   }
   DEBUG_PRINT("allocatePageArray:address=%p,npage=%d\n",allData, new_pages_length);
   new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
-  void **paddrlist = (void**)malloc(new_pages_length*sizeof(void*));//page list for rdma transfer
+//  void **paddrlist = (void**)malloc(new_pages_length*sizeof(void*));//page list for rdma transfer
   for(i=0;i<new_pages_length;i++){
     new_pages[i].data = (char*)MALLOCPAGE;
-    paddrlist[i] = (void*)new_pages[i].data;
+//    paddrlist[i] = (void*)new_pages[i].data;
   }
+  void *paddr = (void*)new_pages[0].data;
 
   // do write by rdma read...
   // - get ipkey
@@ -1420,8 +1421,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   const uint64_t address = bufaddr + first_page*filesystem->page_size;
   DEBUG_PRINT("writeBlockRDMA:address=%p\n", (const void *)address);
   // - rdma read ...
-  int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void**)paddrlist, new_pages_length);
-  free(paddrlist);
+  int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void**)&paddr, 1, new_pages_length*filesystem->page_size);
+  //free(paddrlist);
   if(rc != 0){
     fprintf(stderr, "writeBlockRDMA: rdmaRead failed with error code = %d.\n", rc);
     return -5;
@@ -1738,7 +1739,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
   for(i=0; i<npage; i++)
     paddrlist[i] = (void*)plist[i];
   // rdma write...
-  int rc = rdmaWrite(fs->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage);
+  int rc = rdmaWrite(fs->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage,0);
   if(rc !=0 )
     fprintf(stderr, "rdmaWrite failed with error code=%d.\n", rc);
 }

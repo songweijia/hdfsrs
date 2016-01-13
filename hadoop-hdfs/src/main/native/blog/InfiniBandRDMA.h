@@ -162,15 +162,16 @@ extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip);
  * pagelist:pages to be transfer to/from the client buffer
  * npage:   number of the pages to be read
  * iswrite: true for write, false for read.
+ * pagesize: 0 for the default page size specified in ctxt, otherwise, use this user specified page size.
  * RETURN VALUE
  * 0 for success
  * others for failure
  */
-extern int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage, int iswrite);
-#define rdmaWrite( ctxt, hostip, r_vaddr, pagelist, npage ) \
-  rdmaTransfer( ctxt, hostip, r_vaddr, pagelist, npage, 1)
-#define rdmaRead( ctxt, hostip, r_vaddr, pagelist, npage ) \
-  rdmaTransfer( ctxt, hostip, r_vaddr, pagelist, npage, 0)
+extern int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage, int iswrite, int pagesize);
+#define rdmaWrite( ctxt, hostip, r_vaddr, pagelist, npage, pagesize ) \
+  rdmaTransfer( ctxt, hostip, r_vaddr, pagelist, npage, 1, pagesize)
+#define rdmaRead( ctxt, hostip, r_vaddr, pagelist, npage, pagesize ) \
+  rdmaTransfer( ctxt, hostip, r_vaddr, pagelist, npage, 0, pagesize)
   ////////////////////////////////////////////////
  // Definition of internal tools               //
 ////////////////////////////////////////////////
