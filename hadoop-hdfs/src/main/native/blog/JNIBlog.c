@@ -742,11 +742,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->log = (log_t *) malloc (1024*sizeof(log_t));
   filesystem->rdmaCtxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
   DEBUG_PRINT("JNIBlog.initialize:(),poolSize=%ld,LOG2(poolSize)=%d\n",poolSize,LOG2(poolSize));
+  struct timeval tv1,tv2;
+  gettimeofday(&tv1,NULL);
   if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),(const uint16_t)port,0)){//this is for server
     fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
     (*env)->ReleaseStringUTFChars(env, persPath, pp);
     return -2;
   }
+  gettimeofday(&tv2,NULL);
+  DEBUG_PRINT("initialized in %ld us\n",(tv2.tv_sec-tv1.tv_sec)*1000000+tv2.tv_usec-tv1.tv_usec);
   pthread_rwlock_init(&(filesystem->lock), NULL);
   
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
@@ -1368,6 +1372,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   char *pdata;
   int i,adp=0; // next usageble page in allData.
   char *allData=NULL;
+#ifdef PERF_RDMA
+  struct timeval tv1,tv2,tv3,tv4;
+  gettimeofday(&tv1,NULL);
+#endif//PERF_RDMA
   
   // Find block;
   DEBUG_PRINT("writeBlockRDMA(): blkOfst=%d,length=%d,bufAddr=%p\n",blkOfst,length,(void*)bufaddr);
@@ -1421,7 +1429,13 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   const uint64_t address = bufaddr + first_page*filesystem->page_size;
   DEBUG_PRINT("writeBlockRDMA:address=%p\n", (const void *)address);
   // - rdma read ...
+#if PERF_RDMA
+gettimeofday(&tv2, NULL);
+#endif
   int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void**)&paddr, 1, new_pages_length*filesystem->page_size);
+#if PERF_RDMA
+gettimeofday(&tv3, NULL);
+#endif
   //free(paddrlist);
   if(rc != 0){
     fprintf(stderr, "writeBlockRDMA: rdmaRead failed with error code = %d.\n", rc);
@@ -1482,6 +1496,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   block->last_entry = log_pos;
   DEBUG_PRINT("writeBlockRDMA(): finished\n");
 
+#if PERF_RDMA
+  gettimeofday(&tv4, NULL);
+  fprintf(stdout,"%ld %ld us\n",
+    (tv3.tv_sec-tv2.tv_sec)*1000000+tv3.tv_usec-tv2.tv_usec,
+    (tv4.tv_sec-tv1.tv_sec)*1000000+tv4.tv_usec-tv1.tv_usec);
+#endif
   return 0;
 }
 /*

@@ -487,7 +487,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   bDup = (MAP_READ(con,ctxt->con_map,cipkey,&readConn)==0);
   MAP_UNLOCK(con, ctxt->con_map, cipkey);
   if(bDup){
-    fprintf(stderr,"Cannot connect because the connection is established already.");
+    //fprintf(stderr,"Cannot connect because the connection is established already.");
     return -1; // the connection exists already.
   }
   // STEP 1: connect to server
@@ -497,9 +497,17 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   svraddr.sin_family = AF_INET;
   svraddr.sin_port = htons(ctxt->port);
   svraddr.sin_addr.s_addr = hostip;
-  if(connect(connfd,(const struct sockaddr *)&svraddr,sizeof(svraddr))<0){
-    fprintf(stderr,"cannot connect to server:%x:%d\n",hostip,ctxt->port);
-    return -2;
+  int retry = 2;
+  while(retry){
+    retry --;
+    if(connect(connfd,(const struct sockaddr *)&svraddr,sizeof(svraddr))<0){
+      if(!retry){
+        fprintf(stderr,"cannot connect to server:%x:%d, errno=%d\n",hostip,ctxt->port,errno);
+        return -2;
+      }
+      sleep(30); // sleep 30 sec.
+    }else // succeed
+      break;
   }
   // STEP 2: setup connection
   rdmaConn = (RDMAConnection*)malloc(sizeof(RDMAConnection));

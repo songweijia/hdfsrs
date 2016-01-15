@@ -864,7 +864,12 @@ public class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           "replica.getGenerationStamp() < block.getGenerationStamp(), block="
           + block + ", replica=" + replica);
     }
-    return replica.getVisibleLength((long)block.getLocalBlock().getLongSid());
+    long vl = replica.getVisibleLength((long)block.getLocalBlock().getLongSid());
+    if(vl<0)
+      throw new IOException(
+          "wrong visible length: block="
+          + block + ", replica=" + replica + ",vl="+ vl);
+    return vl;
   }
   
   @Override

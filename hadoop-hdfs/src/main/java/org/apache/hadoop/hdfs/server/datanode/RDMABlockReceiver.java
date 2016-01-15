@@ -143,13 +143,16 @@ public class RDMABlockReceiver implements Closeable {
   }
   
   boolean receiveNextPacket()throws IOException{
+    long ts = System.nanoTime(),ts1,ts2,ts3,ts4,ts5;
     LOG.debug("[S] waits on pkt.");
     RDMAWritePacketProto proto = RDMAWritePacketProto.parseFrom(vintPrefixed(in));
+    ts1 = System.nanoTime();
     LOG.debug("[S] gets packet:seqno="+proto.getSeqno());
     long seqno = proto.getSeqno();
     boolean islast = proto.getIsLast();
     long length = proto.getLength();
     long offset = proto.getOffset();
+    boolean bRet = true;
     HybridLogicalClock mhlc = PBHelper.convert(proto.getMhlc());
     //STEP 0: validate:
     if(seqno != -1L && lastSeqno != -1L && seqno != lastSeqno + 1){
@@ -157,6 +160,7 @@ public class RDMABlockReceiver implements Closeable {
         (lastSeqno+1) + "] but received seqno["+seqno+"]");
     }
     //STEP 1: handle normal write or finalize block before we enqueue the ack.
+    ts2 = System.nanoTime();
     if(seqno >= 0L){
       replicaInfo.writeByRDMA((int)offset, (int)length, this.inAddr, this.vaddr, mhlc);
       LOG.debug("[S] replicaInfo.length="+replicaInfo.getNumBytes()+"/"+replicaInfo.getBytesOnDisk());
@@ -166,14 +170,13 @@ public class RDMABlockReceiver implements Closeable {
       finalizeBlock(this.startTime);
       LOG.debug("[S] finalized block:"+replicaInfo);
     }
-    
+    ts3 = System.nanoTime();
     //STEP 2: enqueue ack...
     RDMAWriteAckProto ack = RDMAWriteAckProto.newBuilder()
         .setSeqno(seqno)
         .setStatus(Status.SUCCESS)
         .setMhlc(PBHelper.convert(mhlc))
         .build();
-    
     synchronized(this.ackQueue){
       LOG.debug("[S] locks aQ.");
       this.ackQueue.addLast(ack);
@@ -181,6 +184,7 @@ public class RDMABlockReceiver implements Closeable {
       ackQueue.notifyAll();
       LOG.debug("[S] kicks aQ.");
     }
+    ts4 = System.nanoTime();
 
     //STEP 3: wait and stop.
     if(seqno == -1L && islast){
@@ -197,9 +201,14 @@ public class RDMABlockReceiver implements Closeable {
         this.ackQueue.notifyAll();
       }
       LOG.debug("[S] found aQ is empty, return with false");
-      return false;
+      bRet = false;
     }
-    return true;
+    ts5 = System.nanoTime();
+
+    // SEQNO RECV WRITE/FINAL ENQ-ACK FLUSH
+//    LOG.error(seqno+" "+(ts2-ts1)+" "+(ts3-ts2)+" "+(ts4-ts3)+" "+(ts5-ts4));
+    
+    return bRet;
   }
   
   private void finalizeBlock(long startTime) throws IOException {

@@ -107,6 +107,8 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     long offset;  // offset into the block
     long length;  // length of the data
     boolean last; // if it is the last packet.
+    long cts; // create timestamp, for profiling...
+    long sts; // send timestamp, for profiling...
 
     @Override
     public String toString(){
@@ -265,6 +267,8 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
             lastException = new Exception("[R] gets unsuccessful ack: ack.status="+ack.getReply());
             DFSClient.LOG.error(lastException);
           }
+//PERF_RDMA
+//          System.out.println(pkt.seqno + " " + pkt.sts + " "+ (pkt.sts - pkt.cts) + " " + (System.nanoTime() - pkt.sts));
           
           //STEP 3: update block size
           bytesCurBlock = Math.max(bytesCurBlock, pkt.length + pkt.offset);
@@ -479,6 +483,8 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
           fPkt.blkno = this.blockNumber;
           fPkt.last = true;
           fPkt.seqno = -1; // flush packet always has seqno -1
+          fPkt.cts = System.nanoTime();
+          fPkt.sts = fPkt.cts;
           fPkt.writeTo(blockStream);
           blockStream.flush();
         }
@@ -601,6 +607,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
           try {
             DFSClient.LOG.debug("[S] sends packet:"+pkt);
             pkt.writeTo(this.blockStream);
+            pkt.sts = System.nanoTime();
             blockStream.flush();
           } catch (IOException e) {
             DFSClient.LOG.error("[S] fails in sending packet:"+pkt);
@@ -921,7 +928,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   public synchronized void write(int b) throws IOException {
-    DFSClient.LOG.debug("[C] write("+(byte)b+").");
+    //DFSClient.LOG.debug("[C] write("+(byte)b+").");
     if(dataEndPos() >= this.fBlockSize){
       flushAll();
     }
@@ -965,7 +972,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
    */
   @Override
   synchronized public void write(byte[] b, int off, int len) throws IOException {
-    DFSClient.LOG.debug("[C] write(b,off,len) is called with:"+new String(b)+",off="+off+",len="+len);
+    DFSClient.LOG.debug("[C] write(b,off,len) is called with:,off="+off+",len="+len);
     if(dataEndPos() >= this.fBlockSize)flush();
     int writeLen = len;
     int writeOfst = off;
@@ -992,6 +999,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       pkt.length = dataEndPos() - this.dataStartPos;
       pkt.offset = this.dataStartPos;
       pkt.seqno = this.currentSeqno ++;
+      pkt.cts = System.nanoTime();
       queuePacket(pkt);
       this.dataStartPos = dataEndPos();
     }
