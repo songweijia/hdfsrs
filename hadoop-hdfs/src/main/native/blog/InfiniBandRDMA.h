@@ -158,6 +158,7 @@ extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip);
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized blog context.
  * hostip:  the ip address of the client
+ * pid:     the pid of the client process
  * r_vaddr: the remote buffer address
  * pagelist:pages to be transfer to/from the client buffer
  * npage:   number of the pages to be read
@@ -167,11 +168,11 @@ extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip);
  * 0 for success
  * others for failure
  */
-extern int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage, int iswrite, int pagesize);
-#define rdmaWrite( ctxt, hostip, r_vaddr, pagelist, npage, pagesize ) \
-  rdmaTransfer( ctxt, hostip, r_vaddr, pagelist, npage, 1, pagesize)
-#define rdmaRead( ctxt, hostip, r_vaddr, pagelist, npage, pagesize ) \
-  rdmaTransfer( ctxt, hostip, r_vaddr, pagelist, npage, 0, pagesize)
+extern int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, const uint64_t r_vaddr, const void **pagelist, int npage, int iswrite, int pagesize);
+#define rdmaWrite( ctxt, hostip, pid, r_vaddr, pagelist, npage, pagesize ) \
+  rdmaTransfer( ctxt, hostip, pid, r_vaddr, pagelist, npage, 1, pagesize)
+#define rdmaRead( ctxt, hostip, pid, r_vaddr, pagelist, npage, pagesize ) \
+  rdmaTransfer( ctxt, hostip, pid, r_vaddr, pagelist, npage, 0, pagesize)
   ////////////////////////////////////////////////
  // Definition of internal tools               //
 ////////////////////////////////////////////////

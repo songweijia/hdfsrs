@@ -1204,7 +1204,7 @@ class DataXceiver extends Receiver implements Runnable {
 
   @Override
   public void readBlockRDMA(ExtendedBlock blk, Token<BlockTokenIdentifier> blockToken, String clientName,
-      long blockOffset, long length, long vaddr) throws IOException {
+      int rpid, long blockOffset, long length, long vaddr) throws IOException {
     previousOpClientName = clientName;
 
     OutputStream baseStream = getOutputStream();
@@ -1222,7 +1222,7 @@ class DataXceiver extends Receiver implements Runnable {
     }
     RDMABlockSender blockSender = new RDMABlockSender(
         blk,blockOffset,length,datanode,
-        peer.getRemoteIPString(),vaddr);
+        peer.getRemoteIPString(),rpid,vaddr);
     // STEP 2 - do RDMA write
     blockSender.doSend();
     // STEP 3 - notify the reader
@@ -1237,7 +1237,8 @@ class DataXceiver extends Receiver implements Runnable {
   public void writeBlockRDMA(ExtendedBlock blk, 
       Token<BlockTokenIdentifier> blockToken, 
       String clientName,
-      DatanodeInfo[] targets, 
+      DatanodeInfo[] targets,
+      int rpid,
       long vaddr,
       long bytesRcvd,
       long latestGenerationStamp, HybridLogicalClock mhlc) throws IOException {
@@ -1258,8 +1259,8 @@ class DataXceiver extends Receiver implements Runnable {
         ",vaddr="+vaddr+
         ",mhlc="+mhlc);
     RDMABlockReceiver blockReceiver = new RDMABlockReceiver(blk,in,
-        peer.getRemoteIPString(),peer.getLocalAddressString(),bytesRcvd,
-        latestGenerationStamp,clientName,datanode,vaddr,mhlc);
+        peer.getRemoteIPString(),peer.getLocalAddressString(),rpid,
+        bytesRcvd,latestGenerationStamp,clientName,datanode,vaddr,mhlc);
     
     //STEP 2 - notify the writer we are prepared.
     BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()

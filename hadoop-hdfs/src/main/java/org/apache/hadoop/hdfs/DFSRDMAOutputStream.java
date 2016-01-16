@@ -760,7 +760,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       DFSClient.LOG.debug("[S] RPC calls 'writeBlockRDMA' to datanode.fBlockBuffer.address="+fBlockBuffer.address);
       new Sender(out).writeBlockRDMA(this.block, 
           this.accessToken, dfsClient.clientName, 
-          nodes, fBlockBuffer.address, block.getNumBytes(), newGS, hlc);
+          nodes, JNIBlog.getPid(), fBlockBuffer.address, block.getNumBytes(), newGS, hlc);
 
       //receive ack for connect
       BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(
@@ -980,7 +980,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       int toWrite = (int)Math.min(writeLen, this.fBlockSize - dataEndPos()); 
       this.fBlockBuffer.buffer.put(b, writeOfst, toWrite);
       if(dataEndPos() >= this.fBlockSize)
-      flush();
+        flush();
       writeLen -= toWrite;
       writeOfst += toWrite;
       pos += toWrite;

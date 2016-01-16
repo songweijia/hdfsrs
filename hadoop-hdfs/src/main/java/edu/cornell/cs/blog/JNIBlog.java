@@ -213,11 +213,12 @@ public class JNIBlog {
    * @param blkOfst - block offset
    * @param length - how many bytes to read
    * @param clientIp
+   * @param rpid - the pid of the client
    * @param vaddr
    * @return error code, 0 for success, otherwise error code.
    */
   public native int readBlockRDMA(long blockId, long rtc, int blkOfst, int length,
-      byte clientIp[], long vaddr);
+      byte clientIp[], int rpid, long vaddr);
   
   /**
    * get number of bytes we have in the block
@@ -244,10 +245,12 @@ public class JNIBlog {
    * @param blkOfst
    * @param length
    * @param clientIp - ip address of the remote.
+   * @param rpid - the pid of the client
    * @param vaddr - virtual address.
    * @return
    */
-  public native int writeBlockRDMA(HybridLogicalClock mhlc, long blockId, int blkOfst, int length, byte clientIp[], long vaddr);
+  public native int writeBlockRDMA(HybridLogicalClock mhlc, long blockId, int blkOfst, int length,
+      byte clientIp[], int rpid, long vaddr);
   
   /**
    * create a local realtime snapshot
@@ -262,6 +265,11 @@ public class JNIBlog {
    * @return microseconds from the Epoch(1970-01-01 00:00:00 +0000(UTC))
    */
   public static native long readLocalRTC();
+  
+  /**
+   * @return pid of my process.
+   */
+  public static native int getPid();
   
   
   //////////////////////////////////////////////////////////////////////

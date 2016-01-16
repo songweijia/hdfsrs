@@ -116,9 +116,9 @@ int main(int argc, char **argv){
         printf("transfer pagelist[%d]=%p\n",j,pagelist[j]);
       }
       if(mode == 1)
-        rdmaWrite(&rdma_ctxt,cipkey,rvaddr,pagelist,4,0);
+        rdmaWrite(&rdma_ctxt,cipkey,getpid(),rvaddr,pagelist,4,0);
       else
-        rdmaRead(&rdma_ctxt,cipkey,rvaddr,pagelist,4,0);
+        rdmaRead(&rdma_ctxt,cipkey,getpid(),rvaddr,pagelist,4,0);
       fprintf(stdout, "transfer with client %x ... done.\n",cipkey);
       // step 5: wait for data being transfered.
       printf("Data(len=%d):[%c...%c...%c...%c]\n",1<<align,

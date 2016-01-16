@@ -136,7 +136,9 @@ public class MemDatasetManager {
   	}
   	
   	public long getNumBytes(long sid){
-  		return blog.getNumberOfBytes(blockId,sid);
+        	long nbytes = blog.getNumberOfBytes(blockId,sid);
+                if(nbytes == -1)nbytes=0L; // block does not present.
+                return nbytes;
   	}
   	
   	public BlogOutputStream getOutputStream(){
@@ -155,23 +157,23 @@ public class MemDatasetManager {
   		return new BlogInputStream(blog,blockId,offset,snapshotId);
   	}
   	public void readByRDMA(long sid, int startOffset, int length,
-  	    String clientIp, long vaddr)throws IOException{
+  	    String clientIp, int rpid, long vaddr)throws IOException{
   	  long blen = getNumBytes(sid);
   	  if(startOffset + length > blen)
   	    throw new IOException("readByRDMA failed: sid="+sid+",start="+
   	      startOffset+",len="+length+",blen="+blen);
   	  int rc = 0;
-  	  if((rc=blog.readBlockRDMA(blockId, sid, startOffset, length, clientIp.getBytes(), vaddr))!=0)
+  	  if((rc=blog.readBlockRDMA(blockId, sid, startOffset, length, clientIp.getBytes(), rpid, vaddr))!=0)
   	    throw new IOException("readByRDMA failed: JNIBlog.readBlockRDMA returns: " + rc);
   	}
   	public void writeByRDMA(int startOffset, int length, String clientIp, 
-  	    long vaddr, HybridLogicalClock mhlc)throws IOException{
+  	    int rpid, long vaddr, HybridLogicalClock mhlc)throws IOException{
   	  long blen = getNumBytes();
   	  if(startOffset > blen)
   	    throw new IOException("writeByRDMA failed:blen="+blen+",start="+startOffset+
   	        ",len="+length+",client="+clientIp+",vaddr="+vaddr+",mhlc="+mhlc);
   	  int rc = 0;
-  	  if((rc=blog.writeBlockRDMA(mhlc, blockId, startOffset, length, clientIp.getBytes(), vaddr))!=0){
+  	  if((rc=blog.writeBlockRDMA(mhlc, blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr))!=0){
         throw new IOException("writeByRDMA failed: JNIBlog.writeBlockRDMA returns: " + rc);
   	  }
   	  //update length
@@ -225,7 +227,9 @@ public class MemDatasetManager {
      * @see java.io.InputStream#read(byte[], int, int)
      */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
-    	if(offset < blog.getNumberOfBytes(blockId, snapshotId)){
+        long nbytes = blog.getNumberOfBytes(blockId, snapshotId);
+        if(nbytes == -1)nbytes = 0L;//block does not exists.
+    	if(offset < nbytes){
     		int ret = blog.readBlock(blockId, snapshotId, offset, off, len, bytes);
     		if(ret > 0){
     			this.offset+=ret;

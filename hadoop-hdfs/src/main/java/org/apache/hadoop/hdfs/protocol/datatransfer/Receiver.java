@@ -138,6 +138,7 @@ public abstract class Receiver implements DataTransferProtocol {
     readBlockRDMA(PBHelper.convert(proto.getHeader().getBaseHeader().getBlock()),
         PBHelper.convert(proto.getHeader().getBaseHeader().getToken()),
         proto.getHeader().getClientName(),
+        proto.getRpid(),
         proto.getOffset(),
         proto.getLen(),
         proto.getVaddr());
@@ -176,6 +177,7 @@ public abstract class Receiver implements DataTransferProtocol {
         PBHelper.convert(proto.getHeader().getBaseHeader().getToken()),
         proto.getHeader().getClientName(),
         PBHelper.convert(proto.getTargetsList()),
+        proto.getRpid(),
         proto.getVaddr(),
         proto.getBytesRcvd(),
         proto.getLatestGenerationStamp(),

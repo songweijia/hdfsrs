@@ -33,6 +33,7 @@ import java.io.DataOutputStream;
 public class RDMABlockReceiver implements Closeable {
 
   private final String inAddr,myAddr;
+  private final int rpid;
   private DataNode datanode;
   private final String clientName;
   private final DataInputStream in;
@@ -64,6 +65,7 @@ public class RDMABlockReceiver implements Closeable {
       final DataInputStream in,
       final String inAddr, 
       final String myAddr,
+      final int rpid,
       final long bytesRcvd,
       final long newGs, 
       final String clientName,
@@ -82,6 +84,7 @@ public class RDMABlockReceiver implements Closeable {
     this.ackQueue = new LinkedList<RDMAWriteAckProto>();
     this.lastSeqno = -1L;
     this.isClosed = false;
+    this.rpid = rpid;
     startTime = datanode.ClientTraceLog.isInfoEnabled() ? System.nanoTime() : 0L;
     
     
@@ -162,7 +165,7 @@ public class RDMABlockReceiver implements Closeable {
     //STEP 1: handle normal write or finalize block before we enqueue the ack.
     ts2 = System.nanoTime();
     if(seqno >= 0L){
-      replicaInfo.writeByRDMA((int)offset, (int)length, this.inAddr, this.vaddr, mhlc);
+      replicaInfo.writeByRDMA((int)offset, (int)length, this.inAddr, this.rpid, this.vaddr, mhlc);
       LOG.debug("[S] replicaInfo.length="+replicaInfo.getNumBytes()+"/"+replicaInfo.getBytesOnDisk());
       lastSeqno = seqno;
       LOG.debug("[S] wrote packet:offset="+offset+",length="+length+",peer="+this.inAddr+",vaddr="+vaddr);

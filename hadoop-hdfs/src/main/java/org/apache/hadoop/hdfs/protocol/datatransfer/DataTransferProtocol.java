@@ -79,6 +79,7 @@ public interface DataTransferProtocol {
    * @param blk the block being read.
    * @param blockToken security token for accessing the block.
    * @param clientName client's name.
+   * @param peer pid.
    * @param blockOffset offset of the block.
    * @param length maximum number of bytes for this read.
    * @param vaddr local address for RDMA.
@@ -87,6 +88,7 @@ public interface DataTransferProtocol {
   public void readBlockRDMA(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,
       final String clientName,
+      final int rpid,
       final long blockOffset,
       final long length,
       final long vaddr) throws IOException;
@@ -132,6 +134,7 @@ public interface DataTransferProtocol {
    * @param blockToken security token for accessing the block. 
    * @param clientName client's name
    * @param targets target datanodes in the pipeline(we have only one)
+   * @param rpid peer's pid
    * @param bytesRcvd - number of bytes available
    * @param latestGenerationStamp the latest generation stamp of the block.
    * @param mhlc - timestamp
@@ -141,6 +144,7 @@ public interface DataTransferProtocol {
       final Token<BlockTokenIdentifier> blockToken,
       final String clientName,
       final DatanodeInfo[] targets,
+      final int rpid,
       final long vaddr,
       final long bytesRcvd,
       final long lastestGenerationStamp,

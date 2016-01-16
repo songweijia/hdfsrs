@@ -19,7 +19,10 @@
 #define TEST_NZ(x,y) do { if ((x)) die(y); } while (0)
 #define TEST_Z(x,y) do { if (!(x)) die(y); } while (0)
 #define TEST_N(x,y) do { if ((x)<0) die(y); } while (0)
-#define CONFIG_STR_LEN (sizeof "0000:000000:000000:00000000:0000000000000000")
+#define CONFIG_STR_LEN (sizeof "00000000:0000:000000:000000:00000000:0000000000000000")
+#define MAKE_CON_KEY(host,port_or_pid) ((((long)(host))<<32)|(port_or_pid))
+#define GET_IP_FROM_KEY(key)	((const uint32_t)(((key)>>32)&0x00000000FFFFFFFF))
+
 static int die(const char *reason){
   fprintf(stderr, "Err: %s - %s \n ", strerror(errno), reason);
   exit(EXIT_FAILURE);
@@ -106,8 +109,9 @@ static int qp_change_state_rts(struct ibv_qp *qp, RDMAConnection * conn){
 }
 
 static void setibcfg(char *ibcfg, RDMAConnection *conn){
-  sprintf(ibcfg, "%04x:%06x:%06x:%08x:%016Lx",
-    conn->l_lid, conn->l_qpn, conn->l_psn, conn->l_rkey, (unsigned long long)conn->l_vaddr);
+  sprintf(ibcfg, "%08x:%04x:%06x:%06x:%08x:%016Lx",
+    getpid(), conn->l_lid, conn->l_qpn, conn->l_psn, 
+    conn->l_rkey, (unsigned long long)conn->l_vaddr);
 }
 
 static void destroyRDMAConn(RDMAConnection *conn){
@@ -117,14 +121,19 @@ static void destroyRDMAConn(RDMAConnection *conn){
   if(conn->ch)ibv_destroy_comp_channel(conn->ch);
 }
 
-static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const char* cfgstr, uint64_t cipkey){
+static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const char* cfgstr, int clientip){
     int bDup;
+    // STEP 0 - get rpid
+    int rpid;
+    sscanf(cfgstr,"%x",&rpid);
+    uint64_t cipkey = MAKE_CON_KEY(clientip,rpid);
     // STEP 1 - if this is included in map
     MAP_LOCK(con, ctxt->con_map, cipkey, 'r');
     RDMAConnection *rdmaConn = NULL, *readConn = NULL;
     bDup = (MAP_READ(con, ctxt->con_map, cipkey, &readConn)==0);
     MAP_UNLOCK(con, ctxt->con_map, cipkey);
     if(bDup)return 0;// return success for duplicated connect...
+
     // STEP 2 - setup connection
     rdmaConn = (RDMAConnection*)malloc(sizeof(RDMAConnection));
     rdmaConn->scq  = NULL;
@@ -156,7 +165,7 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const char* cfgstr,
     rdmaConn->l_psn = lrand48() & 0xffffff;
     rdmaConn->l_rkey = ctxt->mr->rkey;
     rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
-    char mmsg[sizeof "0000:000000:000000:00000000:0000000000000000"];
+    char mmsg[sizeof "00000000:0000:000000:000000:00000000:0000000000000000"];
     // STEP 6 Exchange connection information(initialize client connection first.)
     /// server --> client | connection string
     setibcfg(mmsg,rdmaConn);
@@ -164,9 +173,9 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const char* cfgstr,
       perror("Could not send ibcfg to peer");
       return -1;
     }
-    int parsed = sscanf(cfgstr, "%x:%x:%x:%x:%Lx",
+    int parsed = sscanf(cfgstr, "%x:%x:%x:%x:%x:%Lx", &rpid, // we've get rpid, here is just for a place holder.
     &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,(long long unsigned*)&rdmaConn->r_vaddr);
-    if(parsed!=5){
+    if(parsed!=6){
       perror("Could not parse message from peer.");
       return -2;
     }
@@ -218,7 +227,7 @@ static void* blog_rdma_daemon_routine(void* param){
     TEST_N(connfd = accept(sockfd, (struct sockaddr*)&clientAddr, &addrLen), "server accept failed.");
     // STEP 3.1 - get remote IP
     clientip = clientAddr.sin_addr.s_addr;
-    uint64_t cipkey = (uint64_t)clientip;
+    //uint64_t cipkey = (uint64_t)clientip;
     // STEP 3.2 - read connection string...
     char msg[CONFIG_STR_LEN];
     /// client --> server | connection string | put connection to map
@@ -226,7 +235,11 @@ static void* blog_rdma_daemon_routine(void* param){
       perror("Could not receive ibcfg from peer");
       return NULL;
     }
-    if(strlen(msg) == 0){//empty configuration string for disconnection.
+    if(strlen(msg) == 8){//only pid for disconnection.
+      int rpid;
+      sscanf(msg, "%x", &rpid);
+      DEBUG_PRINT("Client %x:%x trying to disconnect.\n", clientip, rpid);
+      uint64_t cipkey = MAKE_CON_KEY(clientip,rpid);
       RDMAConnection * readConn = NULL;
       // find the connection, destroy and clean it up.
       MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
@@ -239,10 +252,10 @@ static void* blog_rdma_daemon_routine(void* param){
       DEBUG_PRINT("destroyed connection for %lx\n",cipkey);
       free(readConn);
       DEBUG_PRINT("released space for %lx\n",cipkey);
-      DEBUG_PRINT("Client %lx successfully disconnected!\n",cipkey);
+      DEBUG_PRINT("Client %x:%x successfully disconnected!\n",clientip, rpid);
     }else{
       // setup connection.
-      if(serverConnectInternal(ctxt,connfd,msg,cipkey)!=0)
+      if(serverConnectInternal(ctxt,connfd,msg,clientip)!=0)
         return NULL;
     }
     close(connfd);
@@ -325,7 +338,7 @@ int destroyContext(RDMACtxt *ctxt){
       MAP_READ(con,ctxt->con_map,keys[len],&conn);
       MAP_DELETE(con,ctxt->con_map,keys[len]);
       if(ctxt->isClient){
-        if(rdmaDisconnect(ctxt,(int32_t)keys[len])!=0)
+        if(rdmaDisconnect(ctxt,GET_IP_FROM_KEY(keys[len]))!=0)
           fprintf(stderr, "Couldn't disconnect from server %lx:%d\n",keys[len],ctxt->port);
       }
       destroyRDMAConn(conn);
@@ -480,7 +493,7 @@ int releaseBuffer(RDMACtxt *ctxt, const void *buf){
 int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   DEBUG_PRINT("connecting to:%d:%d\n",hostip,ctxt->port);
   // STEP 0: if connection exists?
-  const uint64_t cipkey = (const uint64_t)hostip;
+  const uint64_t cipkey = (const uint64_t)MAKE_CON_KEY(hostip,ctxt->port);
   int bDup;
   MAP_LOCK(con, ctxt->con_map, cipkey, 'r' );
   RDMAConnection *rdmaConn = NULL, *readConn = NULL;
@@ -540,7 +553,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   rdmaConn->l_psn = lrand48() & 0xffffff;
   rdmaConn->l_rkey = ctxt->mr->rkey;
   rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
-  char msg[sizeof "0000:000000:000000:00000000:0000000000000000"];
+  char msg[sizeof "00000000:0000:000000:000000:00000000:0000000000000000"];
   // STEP 3: exchange the RDMA info
   //// client --> server | connection string
   setibcfg(msg,rdmaConn);
@@ -553,8 +566,9 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
     perror("Could not receive ibcfg from peer.");
     return -4;
   }
-  int parsed = sscanf(msg, "%x:%x:%x:%x:%Lx", &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,(long long unsigned*)&rdmaConn->r_vaddr);
-  if(parsed!=5){
+  int rpid; // server pid is unimportant.
+  int parsed = sscanf(msg, "%x:%x:%x:%x:%x:%Lx", &rpid, &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,(long long unsigned*)&rdmaConn->r_vaddr);
+  if(parsed!=6){
     fprintf(stderr, "Could not parse message from peer.");
     return -5;
   }
@@ -608,9 +622,9 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
   return 0;
 }
 
-int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
+int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
 DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr=%p\n",iswrite,npage,*pagelist,(void*)r_vaddr);
-  const uint64_t cipkey = (const uint64_t)hostip;
+  const uint64_t cipkey = (const uint64_t)MAKE_CON_KEY(hostip,pid);
   RDMAConnection *rdmaConn = NULL;
   // STEP 1: get the connection
   MAP_LOCK(con, ctxt->con_map, cipkey, 'w');

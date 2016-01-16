@@ -21,6 +21,8 @@ public class RDMABlockSender {
   protected DataNode datanode;
   /** peer */
   protected final String clientIp;
+  /** peer's pid */
+  protected final int rpid;
   /** remote vaddress */
   protected final long vaddr;
   /** replica */
@@ -35,11 +37,12 @@ public class RDMABlockSender {
    */
   RDMABlockSender(ExtendedBlock block, 
       long startOffset, long length,
-      DataNode datanode, String clientIp, long vaddr){
+      DataNode datanode, String clientIp, int rpid, long vaddr){
     this.block = block;
     this.startOffset = startOffset;
     this.length = Math.min(startOffset + length, this.block.getNumBytes()) - startOffset;
     this.clientIp = clientIp;
+    this.rpid = rpid;
     this.vaddr = vaddr;
     this.replica = (MemBlockMeta)datanode.data.getReplica(block);
   }
@@ -51,6 +54,6 @@ public class RDMABlockSender {
   throws IOException{
     //send data.
     replica.readByRDMA(block.getLocalBlock().getLongSid(), 
-        (int)startOffset, (int)length, clientIp, vaddr);
+        (int)startOffset, (int)length, clientIp, rpid, vaddr);
   }
 }

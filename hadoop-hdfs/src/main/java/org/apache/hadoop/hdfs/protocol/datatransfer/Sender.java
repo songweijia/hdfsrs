@@ -123,11 +123,13 @@ public class Sender implements DataTransferProtocol {
   public void readBlockRDMA(ExtendedBlock blk, 
       Token<BlockTokenIdentifier> blockToken, 
       String clientName,
+      int rpid,
       long blockOffset, 
       long length, 
       long vaddr) throws IOException {
     OpReadBlockRDMAProto proto = OpReadBlockRDMAProto.newBuilder()
         .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName, blockToken))
+        .setRpid(rpid)
         .setOffset(blockOffset)
         .setLen(length)
         .setVaddr(vaddr)
@@ -190,6 +192,7 @@ public class Sender implements DataTransferProtocol {
       final Token<BlockTokenIdentifier> blockToken,
       final String clientName,
       final DatanodeInfo[] targets,
+      final int rpid,
       final long vaddr,
       final long bytesRcvd,
       final long lastestGenerationStamp,
@@ -199,6 +202,7 @@ public class Sender implements DataTransferProtocol {
     OpWriteBlockRDMAProto.Builder proto = OpWriteBlockRDMAProto.newBuilder()
         .setHeader(header)
         .addAllTargets(PBHelper.convert(targets, 1))
+        .setRpid(rpid)
         .setBytesRcvd(bytesRcvd)
         .setVaddr(vaddr)
         .setLatestGenerationStamp(lastestGenerationStamp)

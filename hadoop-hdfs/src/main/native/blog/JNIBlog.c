@@ -1050,7 +1050,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong rtc, 
-   jint blkOfst, jint length, jbyteArray clientIp, jlong vaddr){
+   jint blkOfst, jint length, jbyteArray clientIp, jint rpid, jlong vaddr){
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   block_t *block;
   uint32_t start_page_id,end_page_id,npage = 0;
@@ -1089,7 +1089,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
   DEBUG_PRINT("readBlockRDMA:ip=%s,npage=%d,address=%p\n",
     (char*)ipStr,npage,(const void *)address);
   // rdma write...
-  rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage,0);
+  rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, rpid, (const uint64_t)address, (const void **)paddrlist,npage,0);
   free(paddrlist);
   if(rc !=0 ){
     fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
@@ -1361,7 +1361,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst,
-  jint length, jbyteArray clientIp, jlong bufaddr){
+  jint length, jbyteArray clientIp, jint rpid, jlong bufaddr){
   filesystem_t *filesystem;
   block_t *block;
   int first_page, last_page;
@@ -1432,7 +1432,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
 #if PERF_RDMA
 gettimeofday(&tv2, NULL);
 #endif
-  int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void**)&paddr, 1, new_pages_length*filesystem->page_size);
+  int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, rpid, (const uint64_t)address, (const void**)&paddr, 1, new_pages_length*filesystem->page_size);
 #if PERF_RDMA
 gettimeofday(&tv3, NULL);
 #endif
@@ -1601,6 +1601,12 @@ JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
   return read_local_rtc();
 }
 
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getPid
+  (JNIEnv *env, jclass thisCls)
+{
+  return getpid();
+}
+
 JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
   (JNIEnv *env, jobject thisObj)
 {
@@ -1759,7 +1765,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
   for(i=0; i<npage; i++)
     paddrlist[i] = (void*)plist[i];
   // rdma write...
-  int rc = rdmaWrite(fs->rdmaCtxt, (const uint32_t)ipkey, (const uint64_t)address, (const void **)paddrlist,npage,0);
+  int rc = rdmaWrite(fs->rdmaCtxt, (const uint32_t)ipkey, fs->rdmaCtxt->port, (const uint64_t)address, (const void **)paddrlist,npage,0);
   if(rc !=0 )
     fprintf(stderr, "rdmaWrite failed with error code=%d.\n", rc);
 }

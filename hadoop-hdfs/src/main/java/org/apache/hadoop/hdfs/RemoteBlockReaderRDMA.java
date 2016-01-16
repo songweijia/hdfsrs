@@ -123,7 +123,7 @@ public class RemoteBlockReaderRDMA implements BlockReader {
         peer.getOutputStream()));
     // send request
     new Sender(out).readBlockRDMA(block, blockToken, clientName, 
-        startOffset, len, blockReader.rbpBuffer.address);
+        JNIBlog.getPid(), startOffset, len, blockReader.rbpBuffer.address);
     // get response
     DataInputStream in = new DataInputStream(peer.getInputStream());
     BlockOpResponseProto status = BlockOpResponseProto.parseFrom(
