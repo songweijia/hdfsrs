@@ -844,6 +844,44 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     return readWithStrategy(byteBufferReader, 0, buf.remaining());
   }
 
+  //new Reader API:
+  public synchronized ByteBuffer rdmaRead()throws IOException{
+    //STEP 1: sanity checks
+    dfsClient.checkOpen();
+    if(closed) {
+      throw new IOException("Stream closed");
+    }
+    if(pos < getFileLength()){
+      if (pos > blockEnd || currentNode == null){
+        currentNode = blockSeekTo(pos);
+      }
+      //STEP 2: read all.
+      ByteBuffer bb = ((RemoteBlockReaderRDMA)blockReader).readAll();
+      pos = blockEnd + 1;
+      return bb;
+    }else{
+      return null; // end of file
+    }
+  }
+  public synchronized ByteBuffer rdmaRead(int len)throws IOException{
+    //STEP 1: sanity checks
+    dfsClient.checkOpen();
+    if(closed) {
+      throw new IOException("Stream closed");
+    }
+    if(pos < getFileLength()){
+      if (pos > blockEnd || currentNode == null){
+        currentNode = blockSeekTo(pos);
+      }
+      //STEP 2: read as long enough.
+      ByteBuffer bb = ((RemoteBlockReaderRDMA)blockReader).read(len);
+      pos += bb.remaining();
+      return bb;
+    }else{
+      return null; // end of file
+    }
+  }
+
 
   /**
    * Add corrupted block replica into map.

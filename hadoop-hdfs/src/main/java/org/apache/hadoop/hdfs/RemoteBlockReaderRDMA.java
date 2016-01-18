@@ -177,6 +177,19 @@ public class RemoteBlockReaderRDMA implements BlockReader {
     return nRead;
   }
 
+  // this is a new API
+  public ByteBuffer readAll() throws IOException{
+    ByteBuffer bb = rbpBuffer.buffer.asReadOnlyBuffer();
+    rbpBuffer.buffer.position(rbpBuffer.buffer.limit());
+    return bb;
+  }
+  public ByteBuffer read(int len) throws IOException{
+    ByteBuffer bb = rbpBuffer.buffer.asReadOnlyBuffer();
+    if(bb.limit() - bb.position() > len)
+      bb.limit(bb.position()+len);
+    return bb;
+  }
+
   /* (non-Javadoc)
    * @see org.apache.hadoop.hdfs.BlockReader#read(byte[], int, int)
    */
