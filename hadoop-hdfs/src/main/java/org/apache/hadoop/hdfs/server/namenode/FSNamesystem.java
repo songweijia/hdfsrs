@@ -2469,7 +2469,6 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
 
     leaseManager.addLease(cons.getFileUnderConstructionFeature()
         .getClientName(), src);
-    
     LocatedBlock ret = blockManager.convertLastBlockToUnderConstruction(cons);
     if (writeToEditLog) {
       getEditLog().logOpenFile(src, cons, logRetryCache);
@@ -7215,7 +7214,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     String snapshotPath = null;
     writeLock();
     //long timestamp = Time.now();
-    long timestamp = JNIBlog.readLocalRTC();
+    long timestamp = 0;
     try {
       checkOperation(OperationCategory.WRITE);
       checkNameNodeSafeMode("Cannot create snapshot for " + snapshotRoot);
@@ -7223,18 +7222,19 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
         checkOwner(pc, snapshotRoot);
       }
 
-      if (snapshotName == null || snapshotName.isEmpty()) {
-        snapshotName = ""+timestamp;
-      }
-      if(snapshotName != null){
-        if (!DFSUtil.isValidNameForComponent(snapshotName)) {
-            throw new InvalidPathException("Invalid snapshot name: "
-                + snapshotName);
-        }
-      }
-      dir.verifySnapshotName(snapshotName, snapshotRoot);
       dir.writeLock();
       try {
+        timestamp = NameNode.hlc.r;
+        if (snapshotName == null || snapshotName.isEmpty()) {
+          snapshotName = ""+timestamp;
+        }
+        if(snapshotName != null){
+          if (!DFSUtil.isValidNameForComponent(snapshotName)) {
+              throw new InvalidPathException("Invalid snapshot name: "
+                  + snapshotName);
+          }
+        }
+        dir.verifySnapshotName(snapshotName, snapshotRoot);
         snapshotPath = snapshotManager.createSnapshot(snapshotRoot, snapshotName, timestamp);
       } finally {
         dir.writeUnlock();
