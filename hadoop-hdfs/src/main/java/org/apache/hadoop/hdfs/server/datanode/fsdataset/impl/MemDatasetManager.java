@@ -116,7 +116,9 @@ public class MemDatasetManager {
   	}
   	
   	public long getNumBytes(long sid){
-  		return blog.getNumberOfBytes(blockId,sid);
+  		long nb = blog.getNumberOfBytes(blockId,sid);
+		if(nb == -1L)nb = 0L; // -1 means block does not exists.
+		return nb;
   	}
   	
   	public BlogOutputStream getOutputStream(){
