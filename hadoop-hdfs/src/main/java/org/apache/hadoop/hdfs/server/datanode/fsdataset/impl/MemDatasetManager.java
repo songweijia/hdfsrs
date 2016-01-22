@@ -116,7 +116,7 @@ public class MemDatasetManager {
   	}
   	
   	public long getNumBytes(long sid){
-  		long nb = blog.getNumberOfBytes(blockId,sid);
+  		long nb = (sid == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,sid);
 		if(nb == -1L)nb = 0L; // -1 means block does not exists.
 		return nb;
   	}
@@ -182,8 +182,11 @@ public class MemDatasetManager {
      * @see java.io.InputStream#read(byte[], int, int)
      */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
-    	if(offset < blog.getNumberOfBytes(blockId, snapshotId)){
-    		int ret = blog.readBlock(blockId, snapshotId, offset, off, len, bytes);
+    	if(offset < ((snapshotId==JNIBlog.CURRENT_SNAPSHOT_ID)?
+            blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, snapshotId))){
+    		int ret = ((snapshotId == JNIBlog.CURRENT_SNAPSHOT_ID)? 
+                    blog.readBlock(blockId, offset, off, len, bytes):
+                    blog.readBlock(blockId, snapshotId, offset, off, len, bytes);
     		if(ret > 0){
     			this.offset+=ret;
     			return ret;
