@@ -7224,6 +7224,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
 
       dir.writeLock();
       try {
+        NameNode.hlc.mockTick(NameNode.hlc.r+1);//do a mockTick to make sure the logical component is 0
         timestamp = NameNode.hlc.r;
         if (snapshotName == null || snapshotName.isEmpty()) {
           snapshotName = ""+timestamp;

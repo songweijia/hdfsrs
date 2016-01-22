@@ -623,7 +623,7 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
 }
 
 int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
-DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr=%p\n",iswrite,npage,*pagelist,(void*)r_vaddr);
+DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr=%p\nhostip=%x,pid=%d\n",iswrite,npage,*pagelist,(void*)r_vaddr,hostip,pid);
   const uint64_t cipkey = (const uint64_t)MAKE_CON_KEY(hostip,pid);
   RDMAConnection *rdmaConn = NULL;
   // STEP 1: get the connection
