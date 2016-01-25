@@ -52,8 +52,20 @@ public class JNIBlog
    */
   public int readBlock(long blockId, int blkOfst, int bufOfst, int length, byte buf[])
   {
-	return readBlock(blockId, readLocalRTC(), blkOfst, bufOfst, length, buf);
+	return readBlock(blockId, hlc.r, hlc.c, blkOfst, bufOfst, length, buf);
   }
+  
+  /**
+   * @param blockId
+   * @param r - real time component
+   * @param l - logical time component
+   * @param blkOfst - block offset
+   * @param bufOfst - buffer offset
+   * @param length - how many bytes to read
+   * @param buf[OUTPUT] - for read data
+   * @return error code, number of bytes read for success.
+   */
+  private native int readBlock(long blockId, long r, long l, int blkOfst, int bufOfst, int length, byte buf[]);
   
   /**
    * @param blockId
@@ -69,13 +81,21 @@ public class JNIBlog
   /**
    * get number of bytes we have in the block
    * @param blockId
-   * @param t
    * @return
    */
   public int getNumberOfBytes(long blockId)
   {
-	  return getNumberOfBytes(blockId, readLocalRTC());
+	  return getNumberOfBytes(blockId, hlc.r, hlc.c);
   }
+  
+  /**
+   * get number of bytes we have in the block
+   * @param blockId
+   * @param r
+   * @param l
+   * @return
+   */
+  private native int getNumberOfBytes(long blockId, long r, long l); 
   
   /**
    * get number of bytes we have in the block
@@ -83,7 +103,7 @@ public class JNIBlog
    * @param t
    * @return
    */
-  public native int getNumberOfBytes(long blockId, long rtc);
+  public native int getNumberOfBytes(long blockId, long t);
   
   /**
    * @param mvc
@@ -170,8 +190,8 @@ public class JNIBlog
 	String temp;
     byte[] mybuf = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".getBytes();
 
-    assert (readBlock(4100, 0, 0, 40, mybuf) == -2);
-    assert (readBlock(4101, 100, 0, 40, mybuf) == -3);
+    assert (readBlock(4100, 0, 0, 40, mybuf) == -1);
+    assert (readBlock(4101, 100, 0, 40, mybuf) == -2);
     assert (readBlock(4101, 0, 0, 40, mybuf) == 40);
     temp = new String(mybuf, Charset.forName("UTF-8"));
     writeLine("Block 4101: " + temp);
@@ -196,7 +216,7 @@ public class JNIBlog
     writeLine("Snapshot " + Long.toString(rtc)  + " Block 4101: " + temp);
     assert (a.compareTo(temp) == 0);
     assert (getNumberOfBytes(4101,rtc) == 40);
-    assert (getNumberOfBytes(5000,rtc) == 0);
+    assert (getNumberOfBytes(5000) == 40);
   }
   
   static public void writeLine(String str) {

@@ -38,7 +38,7 @@ struct log {
   uint32_t nr_pages;
   uint64_t previous;
   uint64_t r;
-  uint64_t c;
+  uint64_t l;
   page_t pages;
 };
 
