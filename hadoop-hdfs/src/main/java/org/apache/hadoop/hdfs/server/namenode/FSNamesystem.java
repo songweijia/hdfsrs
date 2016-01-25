@@ -7215,7 +7215,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     String snapshotPath = null;
     writeLock();
     //long timestamp = Time.now();
-    long timestamp = JNIBlog.readLocalRTC();
+    //long timestamp = JNIBlog.readLocalRTC();
+    long timestamp = NameNode.hlc.r;
     try {
       checkOperation(OperationCategory.WRITE);
       checkNameNodeSafeMode("Cannot create snapshot for " + snapshotRoot);
