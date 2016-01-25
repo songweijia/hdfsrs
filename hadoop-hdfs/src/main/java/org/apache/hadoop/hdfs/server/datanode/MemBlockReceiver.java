@@ -1043,7 +1043,7 @@ class MemBlockReceiver extends BlockReceiver {
             System.out.println(ioe);
             ioe.printStackTrace();
           }
-        }while(isRunning);
+        }while(isRunning || curBufIdx != -1);
       }
     }
   }
