@@ -52,6 +52,7 @@ public class JNIBlog
    */
   public int readBlock(long blockId, int blkOfst, int bufOfst, int length, byte buf[])
   {
+	writeLine(Long.toString(hlc.r) + " " + Long.toString(hlc.c));
 	return readBlock(blockId, hlc.r, hlc.c, blkOfst, bufOfst, length, buf);
   }
   
@@ -85,6 +86,7 @@ public class JNIBlog
    */
   public int getNumberOfBytes(long blockId)
   {
+		writeLine(Long.toString(hlc.r) + " " + Long.toString(hlc.c));
 	  return getNumberOfBytes(blockId, hlc.r, hlc.c);
   }
   
@@ -213,9 +215,10 @@ public class JNIBlog
     assert (readBlock(5000, rtc, 0, 0, 40, mybuf) == -3);
     assert (readBlock(4101, rtc, 0, 0, 40, mybuf) == 40);
     temp = new String(mybuf, Charset.forName("UTF-8"));
-    writeLine("Snapshot " + Long.toString(rtc)  + " Block 4101: " + temp);
+    writeLine("Snapshot " + Long.toString(rtc)  + ", Block 4101: " + temp);
     assert (a.compareTo(temp) == 0);
     assert (getNumberOfBytes(4101,rtc) == 40);
+    writeLine("Bytes for Block 5000: " + Long.toString(getNumberOfBytes(5000)));
     assert (getNumberOfBytes(5000) == 40);
   }
   

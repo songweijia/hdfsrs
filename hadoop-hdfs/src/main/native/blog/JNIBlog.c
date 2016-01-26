@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <sys/time.h>
+#include <limits.h>
 #include "JNIBlog.h"
 #include "types.h"
 
@@ -142,8 +143,9 @@ char *snapshot_to_string(snapshot_t *snapshot, size_t page_size)
       fprintf(stderr, "ERROR: Cannot read block whose block ID is contained in block map.\n");
       exit(0);
     }
+    sprintf(buf, "Block ID: %" PRIu64 "\n", block_ids[i]);
+    strcat(res, buf);
     strcat(res, snapshot_block_to_string(block, page_size));
-    strcat(res, "\n");
   }
   sprintf(buf, "Reference Count: %" PRIu64 "\n", snapshot->ref_count);
   strcat(res, buf);
@@ -256,19 +258,6 @@ filesystem_t *get_filesystem(JNIEnv *env, jobject thisObj)
   return (filesystem_t *) (*env)->GetLongField(env, thisObj, fid);
 }
 
-int compare(uint64_t r1, uint64_t c1, uint64_t r2, uint64_t c2)
-{
-  if (r1 > r2)
-    return 1;
-  if (r2 > r1)
-    return -1;
-  if (c1 > c2)
-    return 1;
-  if (c2 > c1)
-    return -1;
-  return 0;
-}
-
 
 /**
  * Read local RTC value.
@@ -282,6 +271,19 @@ uint64_t read_local_rtc()
   gettimeofday(&tv,NULL);
   rtc = tv.tv_sec*1000 + tv.tv_usec/1000;
   return rtc;
+}
+
+int compare(uint64_t r1, uint64_t c1, uint64_t r2, uint64_t c2)
+{
+  if (r1 > r2)
+    return 1;
+  if (r2 > r1)
+    return -1;
+  if (c1 > c2)
+    return 1;
+  if (c2 > c1)
+    return -1;
+  return 0;
 }
 
 // Find last log entry that has timestamp less than (r,l).
@@ -353,8 +355,6 @@ int find_or_create_snapshot(filesystem_t *filesystem, uint64_t t, snapshot_t **s
   if (MAP_READ(log, filesystem->log_map, t, &log_ptr) == 0) {
     log_index = *log_ptr;
     MAP_LOCK(snapshot, filesystem->snapshot_map, log_index, 'r');
-    printf("Log Index: %" PRIu64 "\n", log_index);
-    printf("%s\n", filesystem_to_string(filesystem));
     if (MAP_READ(snapshot, filesystem->snapshot_map, log_index, snapshot_ptr) == -1) {
       fprintf(stderr, "ERROR: Could not find snapshot in snapshot map although ID exists in log map.\n");
       exit(0);
@@ -366,11 +366,12 @@ int find_or_create_snapshot(filesystem_t *filesystem, uint64_t t, snapshot_t **s
  	
  	// If snapshot can include future references do not create it.
   log_ptr = (uint64_t *) malloc(sizeof(uint64_t));
-  if (find_last_entry(filesystem, t, 0, log_ptr) == -1) {
+  if (find_last_entry(filesystem, t-1, ULLONG_MAX, log_ptr) == -1) {
     free(log_ptr);
     fprintf(stderr, "WARNING: Snapshot was not created because it might have future entries.\n");
   	return -1;
   }
+  log_index = *log_ptr;
   
   // Create snapshot.
   if (MAP_CREATE_AND_WRITE(log, filesystem->log_map, t, log_ptr) == -1) {
@@ -873,7 +874,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJJ
  * Method:    getNumberOfBytes
  * Signature: (JJ)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong t)
 {
   filesystem_t *filesystem = get_filesystem(env, thisObj);;
