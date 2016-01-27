@@ -7216,7 +7216,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     writeLock();
     //long timestamp = Time.now();
     //long timestamp = JNIBlog.readLocalRTC();
-    NameNode.hlc.mockTick(JNIBlog.readLocalRTC());
+    NameNode.hlc.mockTick(JNIBlog.readLocalRTC()+1);
     long timestamp = NameNode.hlc.r;
     try {
       checkOperation(OperationCategory.WRITE);

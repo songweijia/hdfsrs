@@ -302,7 +302,7 @@ int find_last_entry(filesystem_t *filesystem, uint64_t r, uint64_t l, uint64_t *
  	  log_index = length - 1;
  	} else {
     log_index = length/2;
-    cur_diff = length/4;
+    cur_diff = (length/4 > 1)?length/4:1;
     while ((compare(r,l,log[log_index].r,log[log_index].l) == -1) ||
            (compare(r,l,log[log_index+1].r,log[log_index+1].l) >= 0)) {
       if (compare(r,l,log[log_index].r,log[log_index].l) == -1)
@@ -853,6 +853,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJJ
       exit(0);
     }
   }
+
+  MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_index);
 
   if (find_or_create_snapshot_block(filesystem, snapshot, log_index, blockId, &block) < 0) {
     fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", blockId);
