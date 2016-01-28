@@ -286,7 +286,7 @@ int compare(uint64_t r1, uint64_t c1, uint64_t r2, uint64_t c2)
   return 0;
 }
 
-// Find last log entry that has timestamp less than (r,l).
+// Find last log entry that has timestamp less or equal than (r,l).
 int find_last_entry(filesystem_t *filesystem, uint64_t r, uint64_t l, uint64_t *last_entry)
 {
   log_t *log = filesystem->log;
@@ -296,13 +296,15 @@ int find_last_entry(filesystem_t *filesystem, uint64_t r, uint64_t l, uint64_t *
   length = filesystem->log_length;
   pthread_rwlock_unlock(&filesystem->log_lock);
  	
- 	if ((log[length-1].r < r) || ((log[length-1].r == r) && (log[length-1].l < l))) {
- 	  if (read_local_rtc() <= r)
+ 	if (compare(r,l,log[length-1].r,log[length-1].l) < 0) {
+ 	  if (read_local_rtc() < r)
  	    return -1;
+ 	  log_index = length -1;
+ 	} else if (compare(r,l,log[length-1].r,log[length-1].l) == 0) {
  	  log_index = length - 1;
  	} else {
     log_index = length/2;
-    cur_diff = (length/4 > 1)?length/4:1;
+    cur_diff = (length/4 > 1) ? length/4 : 1;
     while ((compare(r,l,log[log_index].r,log[log_index].l) == -1) ||
            (compare(r,l,log[log_index+1].r,log[log_index+1].l) >= 0)) {
       if (compare(r,l,log[log_index].r,log[log_index].l) == -1)
@@ -853,7 +855,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJJ
       exit(0);
     }
   }
-
   MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_index);
 
   if (find_or_create_snapshot_block(filesystem, snapshot, log_index, blockId, &block) < 0) {
