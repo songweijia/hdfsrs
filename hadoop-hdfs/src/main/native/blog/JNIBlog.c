@@ -295,24 +295,23 @@ int find_last_entry(filesystem_t *filesystem, uint64_t r, uint64_t l, uint64_t *
   pthread_rwlock_rdlock(&filesystem->log_lock);
   length = filesystem->log_length;
   pthread_rwlock_unlock(&filesystem->log_lock);
- 	
- 	if (compare(r,l,log[length-1].r,log[length-1].l) > 0) {
- 	  if (read_local_rtc() < r)
- 	    return -1;
- 	  log_index = length -1;
- 	} else if (compare(r,l,log[length-1].r,log[length-1].l) == 0) {
- 	  log_index = length - 1;
+  
+  if (compare(r,l,log[length-1].r,log[length-1].l) > 0) {
+    if (read_local_rtc() < r)
+      return -1;
+    log_index = length -1;
+  } else if (compare(r,l,log[length-1].r,log[length-1].l) == 0) {
+    log_index = length - 1;
  	} else {
-    log_index = length/2;
-    cur_diff = (length/4 > 1) ? length/4 : 1;
+    log_index = length/2 > 0 ? length / 2 - 1 : 0;
+    cur_diff = length/4 > 1? length/4 : 1;
     while ((compare(r,l,log[log_index].r,log[log_index].l) == -1) ||
            (compare(r,l,log[log_index+1].r,log[log_index+1].l) >= 0)) {
       if (compare(r,l,log[log_index].r,log[log_index].l) == -1)
         log_index -= cur_diff;
       else
         log_index += cur_diff;
-      if (cur_diff > 1)
-        cur_diff /= 2;
+      cur_diff = cur_diff > 1 ? cur_diff/2 : 1;
     }
   }
   *last_entry = log_index;
@@ -822,13 +821,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJJ
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong r, jlong l)
 {
   filesystem_t *filesystem = get_filesystem(env, thisObj);
-  snapshot_t *snapshot;
-  snapshot_block_t *block;
   uint64_t *log_ptr;
   uint64_t log_index;
-  uint32_t read_length, cur_length, page_id, page_offset;
-  char *page_data;
-  int err_no;
   
   // Find the last entry.
   log_ptr = (uint64_t *) malloc(sizeof(uint64_t));
@@ -838,38 +832,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJJ
   }
   log_index = *log_ptr;
   
-  // Find or create snapshot.
-  MAP_LOCK(snapshot, filesystem->snapshot_map, log_index, 'w');
-  if (MAP_READ(snapshot, filesystem->snapshot_map, log_index, &snapshot) != 0) {
-    snapshot = (snapshot_t *) malloc(sizeof(snapshot_t));
-    snapshot->ref_count = 0;
-    snapshot->block_map = MAP_INITIALIZE(snapshot_block);
-    if (snapshot->block_map == NULL) {
-      fprintf(stderr, "ERROR: Allocation of block map failed.\n");
-      exit(0);
-    }
-    snapshot->ref_count = 0;
-    if (MAP_CREATE_AND_WRITE(snapshot, filesystem->snapshot_map, log_index, snapshot) == -1) {
-      fprintf(stderr, "ERROR: Snapshot with log index %" PRIu64 " cannot be created or read in the snapshot map.\n",
-              log_index);
-      exit(0);
-    }
-  }
-  MAP_UNLOCK(snapshot, filesystem->snapshot_map, log_index);
-
-  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, blockId, &block) < 0) {
-    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", blockId);
-    exit(0);
-  }
-  
-  // In case the block does not exist return an error.
-  if (block->status == NON_ACTIVE) {
-      fprintf(stderr, "WARNING: Block with id %ld is not active at snapshot with log index %" PRIu64 ".\n", blockId,
-              log_index);
-      return -1;
-  }
-  
-  return (jint) block->length;
+  return (jint) filesystem->log[log_index].block_length;
 }
 
 /*
