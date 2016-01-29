@@ -186,7 +186,7 @@ public class MemDatasetManager {
             blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, snapshotId))){
     		int ret = ((snapshotId == JNIBlog.CURRENT_SNAPSHOT_ID)? 
                     blog.readBlock(blockId, offset, off, len, bytes):
-                    blog.readBlock(blockId, snapshotId, offset, off, len, bytes);
+                    blog.readBlock(blockId, snapshotId, offset, off, len, bytes));
     		if(ret > 0){
     			this.offset+=ret;
     			return ret;
