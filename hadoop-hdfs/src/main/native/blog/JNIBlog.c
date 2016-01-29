@@ -296,7 +296,7 @@ int find_last_entry(filesystem_t *filesystem, uint64_t r, uint64_t l, uint64_t *
   length = filesystem->log_length;
   pthread_rwlock_unlock(&filesystem->log_lock);
  	
- 	if (compare(r,l,log[length-1].r,log[length-1].l) < 0) {
+ 	if (compare(r,l,log[length-1].r,log[length-1].l) > 0) {
  	  if (read_local_rtc() < r)
  	    return -1;
  	  log_index = length -1;
