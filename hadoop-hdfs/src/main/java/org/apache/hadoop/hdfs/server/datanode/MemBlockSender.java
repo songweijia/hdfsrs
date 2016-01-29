@@ -209,7 +209,6 @@ class MemBlockSender extends BlockSender {
     
     int dataOff = checksumOff + checksumDataLen;
     if (!transferTo) { // normal transfer
-System.out.println("readFully:"+dataOff+" "+dataLen+" "+endOffset+" "+offset); //DEBUG
       IOUtils.readFully(blockIn, buf, dataOff, dataLen);
     }
     

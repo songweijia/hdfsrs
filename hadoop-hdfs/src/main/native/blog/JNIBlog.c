@@ -852,7 +852,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
   // Find the corresponding block.
   if (find_or_create_snapshot(filesystem, t, &snapshot) < 0) {
       fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", t);
-      return -1;
+      return -2;
   }
   MAP_LOCK(log, filesystem->log_map, t, 'r');
   if (MAP_READ(log, filesystem->log_map, t, &log_ptr) != 0) {
@@ -870,7 +870,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
   // In case the block does not exist return an error.
   if (block->status == NON_ACTIVE) {
       fprintf(stderr, "WARNING: Block with id %ld is not active at snapshot with rtc %ld.\n", blockId, t);
-      return -2;
+      return -1;
   }
   
   return (jint) block->length;
