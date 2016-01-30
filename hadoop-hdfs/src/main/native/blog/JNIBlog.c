@@ -167,9 +167,9 @@ char *filesystem_to_string(filesystem_t *filesystem)
   // Print Filesystem.
   strcpy(res, "Filesystem\n");
   strcat(res, "----------\n");
-  sprintf(buf, "Block Size: %zu\n", filesystem->block_size);
+  sprintf(buf, "Block Size: %" PRIu64 "\n", (uint64_t) filesystem->block_size);
   strcat(res, buf);
-  sprintf(buf, "Page Size: %zu\n", filesystem->page_size);
+  sprintf(buf, "Page Size: %" PRIu64 "\n", (uint64_t) filesystem->page_size);
   strcat(res, buf);
   
   // Print Log.
@@ -332,6 +332,7 @@ int check_and_increase_log_length(filesystem_t *filesystem)
     	return -1;
     filesystem->log_cap *= 2;
   }
+  return 0;
 }
 
 /**
@@ -347,7 +348,6 @@ int check_and_increase_log_length(filesystem_t *filesystem)
 int find_or_create_snapshot(filesystem_t *filesystem, uint64_t t, snapshot_t **snapshot_ptr)
 {
 	snapshot_t *snapshot;
-  log_t *log = filesystem->log;
   uint64_t *log_ptr;
   uint64_t log_index;
   
@@ -646,26 +646,25 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
  * Method:    readBlock
  * Signature: (JJJIII[B)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJJIII_3B
-  (JNIEnv *env, jobject thisObj, jlong blockId, jlong r, jlong l, jint blkOfst, jint bufOfst, jint length,
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
+  (JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint bufOfst, jint length,
    jbyteArray buf)
 {
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   snapshot_block_t *block;
-  uint64_t *log_ptr;
+  uint64_t block_id = (uint64_t) blockId;
+  uint32_t block_offset = (uint32_t) blkOfst;
+  uint32_t buffer_offset = (uint32_t) bufOfst;
+  uint32_t read_length = (uint32_t) length;
   uint64_t log_index;
-  uint32_t read_length, cur_length, page_id, page_offset;
+  uint32_t cur_length, page_id, page_offset;
   char *page_data;
-  int err_no;
   
   // Find the last entry.
-  log_ptr = (uint64_t *) malloc(sizeof(uint64_t));
-  if (find_last_entry(filesystem, r, l, log_ptr) == -1) {
-    fprintf(stderr, "ERROR: Last Entry for (%" PRIu64 ",%" PRIu64 ") cannot be found.\n", r, l);
-    exit(0);
-  }
-  log_index = *log_ptr;
+  pthread_rwlock_rdlock(&filesystem->log_lock);
+  log_index = filesystem->log_length-1;
+  pthread_rwlock_unlock(&filesystem->log_lock);
   
   // Find or create snapshot.
   MAP_LOCK(snapshot, filesystem->snapshot_map, log_index, 'w');
@@ -685,48 +684,46 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJJIII_3B
     }
   }
 
-  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, blockId, &block) < 0) {
-    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", blockId);
+  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, block_id, &block) < 0) {
+    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", block_id);
     exit(0);
   }
   
   // In case the block does not exist return an error.
   if (block->status == NON_ACTIVE) {
-      fprintf(stderr, "WARNING: Block with id %ld is not active at snapshot with log index %" PRIu64 ".\n", blockId,
-              log_index);
+      fprintf(stderr, "WARNING: Block with id %" PRId64 " is not active at snapshot with log index %" PRIu64 ".\n",
+              block_id, log_index);
       return -1;
   }
   
   // In case the data you ask is not written return an error.
-  if (blkOfst >= block->length) {
-    fprintf(stderr, "WARNING: Block %ld is not written at %d byte.\n", blockId, blkOfst);
+  if (block_offset >= block->length) {
+    fprintf(stderr, "WARNING: Block %" PRId64 " is not written at %" PRId32 " byte.\n", block_id, block_offset);
     return -2;
   }
   
   // See if the data is partially written.
-  if (blkOfst + length <= block->length)
-    read_length = length;
-  else
-    read_length = block->length - blkOfst;
+  if (block_offset + read_length > block->length)
+    read_length = block->length - block_offset;
   
   // Fill the buffer.
-  page_id = blkOfst / filesystem->page_size;
-  page_offset = blkOfst % filesystem->page_size;
+  page_id = block_offset / filesystem->page_size;
+  page_offset = block_offset % filesystem->page_size;
   page_data = block->pages[page_id];
   page_data += page_offset;
   cur_length = filesystem->page_size - page_offset;
   if (cur_length >= read_length) {
-    (*env)->SetByteArrayRegion(env, buf, bufOfst, read_length, (jbyte*) page_data);
+    (*env)->SetByteArrayRegion(env, buf, buffer_offset, read_length, (jbyte*) page_data);
   } else {
-  	(*env)->SetByteArrayRegion(env, buf, bufOfst, cur_length, (jbyte*) page_data);
+  	(*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
   	page_id++;
   	while (1) {
   		page_data = block->pages[page_id];
   		if (cur_length + filesystem->page_size >= read_length) {
-        (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, read_length - cur_length, (jbyte*) page_data);
+        (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, read_length - cur_length, (jbyte*) page_data);
         break;
       }
-      (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, filesystem->page_size, (jbyte*) page_data);
+      (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, filesystem->page_size, (jbyte*) page_data);
       cur_length += filesystem->page_size;
       page_id++;
     }
@@ -746,65 +743,69 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   snapshot_block_t *block;
+  uint64_t snapshot_time = (uint64_t) t;
+  uint64_t block_id = (uint64_t) blockId;
+  uint32_t block_offset = (uint32_t) blkOfst;
+  uint32_t buffer_offset = (uint32_t) bufOfst;
+  uint32_t read_length = (uint32_t) length;
   uint64_t *log_ptr;
   uint64_t log_index;
-  uint32_t read_length, cur_length, page_id, page_offset;
+  uint32_t cur_length, page_id, page_offset;
   char *page_data;
   
   // Find the corresponding block.
-  if (find_or_create_snapshot(filesystem, t, &snapshot) < 0) {
-      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", t);
+  if (find_or_create_snapshot(filesystem, snapshot_time, &snapshot) < 0) {
+      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
       return -1;
   }
-  MAP_LOCK(log, filesystem->log_map, t, 'r');
-  if (MAP_READ(log, filesystem->log_map, t, &log_ptr) != 0) {
+  MAP_LOCK(log, filesystem->log_map, snapshot_time, 'r');
+  if (MAP_READ(log, filesystem->log_map, snapshot_time, &log_ptr) != 0) {
     fprintf(stderr, "ERROR: Snapshot time %" PRIu64 " was not found in the log map while it should have been there.\n",
-            t);
+            snapshot_time);
     exit(0);
   }
-  MAP_UNLOCK(log, filesystem->log_map, t);
+  MAP_UNLOCK(log, filesystem->log_map, snapshot_time);
   log_index = *log_ptr;
-  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, blockId, &block) < 0) {
-    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", blockId);
+  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, block_id, &block) < 0) {
+    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", block_id);
     exit(0);
   }
   
   // In case the block does not exist return an error.
   if (block->status == NON_ACTIVE) {
-      fprintf(stderr, "WARNING: Block with id %ld is not active at snapshot with rtc %ld.\n", blockId, t);
+      fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active at snapshot with rtc %" PRIu64 ".\n", block_id,
+              snapshot_time);
       return -2;
   }
   
   // In case the data you ask is not written return an error.
-  if (blkOfst >= block->length) {
-    fprintf(stderr, "WARNING: Block %ld is not written at %d byte.\n", blockId, blkOfst);
+  if (block_offset >= block->length) {
+    fprintf(stderr, "WARNING: Block %" PRIu64 " is not written at %" PRIu32 " byte.\n", block_id, block_offset);
     return -3;
   }
   
   // See if the data is partially written.
-  if (blkOfst + length <= block->length)
-    read_length = length;
-  else
-    read_length = block->length - blkOfst;
+  if (block_offset + read_length > block->length)
+    read_length = block->length - block_offset;
   
   // Fill the buffer.
-  page_id = blkOfst / filesystem->page_size;
-  page_offset = blkOfst % filesystem->page_size;
+  page_id = block_offset / filesystem->page_size;
+  page_offset = block_offset % filesystem->page_size;
   page_data = block->pages[page_id];
   page_data += page_offset;
   cur_length = filesystem->page_size - page_offset;
   if (cur_length >= read_length) {
-    (*env)->SetByteArrayRegion(env, buf, bufOfst, read_length, (jbyte*) page_data);
+    (*env)->SetByteArrayRegion(env, buf, buffer_offset, read_length, (jbyte*) page_data);
   } else {
-  	(*env)->SetByteArrayRegion(env, buf, bufOfst, cur_length, (jbyte*) page_data);
+  	(*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
   	page_id++;
   	while (1) {
   		page_data = block->pages[page_id];
   		if (cur_length + filesystem->page_size >= read_length) {
-        (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, read_length - cur_length, (jbyte*) page_data);
+        (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, read_length - cur_length, (jbyte*) page_data);
         break;
       }
-      (*env)->SetByteArrayRegion(env, buf, bufOfst + cur_length, filesystem->page_size, (jbyte*) page_data);
+      (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, filesystem->page_size, (jbyte*) page_data);
       cur_length += filesystem->page_size;
       page_id++;
     }
@@ -817,20 +818,16 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
  * Method:    getNumberOfBytes
  * Signature: (JJJ)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJJ
-  (JNIEnv *env, jobject thisObj, jlong blockId, jlong r, jlong l)
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
+  (JNIEnv *env, jobject thisObj, jlong blockId)
 {
   filesystem_t *filesystem = get_filesystem(env, thisObj);
-  uint64_t *log_ptr;
   uint64_t log_index;
   
   // Find the last entry.
-  log_ptr = (uint64_t *) malloc(sizeof(uint64_t));
-  if (find_last_entry(filesystem, r, l, log_ptr) == -1) {
-    fprintf(stderr, "ERROR: Last Entry for (%" PRIu64 ",%" PRIu64 ") cannot be found.\n", r, l);
-    exit(0);
-  }
-  log_index = *log_ptr;
+  pthread_rwlock_rdlock(&filesystem->log_lock);
+  log_index = filesystem->log_length-1;
+  pthread_rwlock_unlock(&filesystem->log_lock);
   
   return (jint) filesystem->log[log_index].block_length;
 }
@@ -848,28 +845,31 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
   snapshot_block_t *block;
   uint64_t *log_ptr;
   uint64_t log_index;
+  uint64_t block_id = (uint64_t) blockId;
+  uint64_t snapshot_time = (uint64_t) t;
   
   // Find the corresponding block.
-  if (find_or_create_snapshot(filesystem, t, &snapshot) < 0) {
-      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", t);
+  if (find_or_create_snapshot(filesystem, snapshot_time, &snapshot) < 0) {
+      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
       return -2;
   }
-  MAP_LOCK(log, filesystem->log_map, t, 'r');
-  if (MAP_READ(log, filesystem->log_map, t, &log_ptr) != 0) {
+  MAP_LOCK(log, filesystem->log_map, snapshot_time, 'r');
+  if (MAP_READ(log, filesystem->log_map, snapshot_time, &log_ptr) != 0) {
     fprintf(stderr, "ERROR: Snapshot time %" PRIu64 " was not found in the log map while it should have been there.\n",
-            t);
+            snapshot_time);
     exit(0);
   }
-  MAP_UNLOCK(log, filesystem->log_map, t);
+  MAP_UNLOCK(log, filesystem->log_map, snapshot_time);
   log_index = *log_ptr; 
-  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, blockId, &block) < 0) {
-    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", blockId);
+  if (find_or_create_snapshot_block(filesystem, snapshot, log_index, block_id, &block) < 0) {
+    fprintf(stderr, "ERROR: Block with id %" PRIu64 " was not created or found.\n", block_id);
     exit(0);
   }
   
   // In case the block does not exist return an error.
   if (block->status == NON_ACTIVE) {
-      fprintf(stderr, "WARNING: Block with id %ld is not active at snapshot with rtc %ld.\n", blockId, t);
+      fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active at snapshot with rtc %" PRIu64 ".\n", block_id,
+              snapshot_time);
       return -1;
   }
   
@@ -889,11 +889,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   uint64_t block_id = (uint64_t) blockId;
   uint32_t block_offset = (uint32_t) blkOfst;
   uint32_t buffer_offset = (uint32_t) bufOfst;
-  log_t *log, *log_entry;
+  uint32_t write_length = (uint32_t) length;
+  size_t page_size = filesystem->page_size;
+  log_t *log_entry;
   block_t *block;
-  page_t *pages;
   uint64_t log_index;
-  uint32_t first_page, last_page, first_page_offset, last_page_length, pages_cap, write_length, block_length;
+  uint32_t first_page, last_page, block_length, write_page_length, first_page_offset, last_page_length, pages_cap;
   char *data, *temp_data;
   uint32_t i;
 
@@ -908,44 +909,51 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   MAP_UNLOCK(block, filesystem->block_map, block_id);
 
 	// In case you write after the end of the block return an error.
-  if (blkOfst > block->length) {
-    fprintf(stderr, "WARNING: Block %ld cannot be written at %d byte.\n", blockId, blkOfst);
+  if (block_offset > block->length) {
+    fprintf(stderr, "WARNING: Block %" PRIu64 " cannot be written at %" PRIu32 " byte.\n", block_id, block_offset);
     return -2;
   }
 
   // Create the new pages.
-  first_page = block_offset / filesystem->page_size;
-  last_page = (block_offset + length - 1) / filesystem->page_size;
-  first_page_offset = block_offset % filesystem->page_size;
-  pages_cap = last_page - first_page + 1;
-  data = (char*) malloc(pages_cap * filesystem->page_size * sizeof(char));
-  for (i = 0; i < first_page_offset; i++)
-    data[i] = block->pages[first_page][i];
+  first_page = block_offset / page_size;
+  last_page = (block_offset + write_length - 1) / page_size;
+  first_page_offset = block_offset % page_size;
+  data = (char*) malloc((last_page-first_page+1) * page_size * sizeof(char));
+  
+  // Write the first page until block_offset;
+  temp_data = data;
+  strncpy(temp_data, block->pages[first_page], first_page_offset);
+  temp_data += first_page_offset;
+  
+  // Write all the data from the packet.
   if (first_page == last_page) {
-    write_length = (jint) length;
-    temp_data = data + first_page_offset;
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
-    last_page_length = first_page_offset + write_length;
+    write_page_length = write_length;
+    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
+    temp_data += write_page_length;
   } else {
-    write_length = filesystem->page_size - first_page_offset;
-    temp_data = data + first_page_offset;
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
-    buffer_offset += write_length;
-    for (i = 1; i < pages_cap-1; i++) {
-      write_length = filesystem->page_size;
-      temp_data = data + i * filesystem->page_size;
-      (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
-      buffer_offset += write_length;
+    write_page_length = filesystem->page_size - first_page_offset;
+    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
+    buffer_offset += write_page_length;
+    temp_data += write_page_length;
+    for (i = 1; i < last_page-first_page-1; i++) {
+      write_page_length = page_size;
+      (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
+      buffer_offset += write_page_length;
+      temp_data += write_page_length;
     }
-    write_length = (int) bufOfst + (int) length - buffer_offset;
-    temp_data = data + (pages_cap-1)*filesystem->page_size;
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
-    last_page_length = write_length;
+    write_page_length = (block_offset + write_length%page_size);
+    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
+    temp_data += write_page_length;
   }
+  last_page_length = write_page_length;
   block_length = last_page * filesystem->page_size + last_page_length;
-  if (block_length < block->length)
+  if (block_length < block->length) {
+    write_page_length = last_page*(page_size+1) <= block->length ? page_size - last_page_length
+                                                                 : block_length%page_size - last_page_length;
+    strncpy(temp_data, block->pages[last_page] + last_page_length, write_page_length);
     block_length = block->length;
-
+  }
+  
   // Create the corresponding log entry.
   pthread_rwlock_wrlock(&(filesystem->log_lock));
   log_index = filesystem->log_length;
@@ -956,7 +964,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   log_entry->op = WRITE;
   log_entry->block_length = block_length;
   log_entry->page_id = first_page;
-  log_entry->nr_pages = pages_cap;
+  log_entry->nr_pages = last_page-first_page+1;
   log_entry->previous = block->log_index;
   update_log_clock(env, mhlc, log_entry);
   log_entry->pages = data;
@@ -987,18 +995,18 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
  * Signature: (JJ)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
-  (JNIEnv *env, jobject thisObj, jlong rtc)
+  (JNIEnv *env, jobject thisObj, jlong t)
 {
   filesystem_t *filesystem = get_filesystem(env, thisObj);
-  uint64_t t = (uint64_t) rtc;
+  uint64_t snapshot_time = (uint64_t) t;
   snapshot_t *snapshot;
   
-  switch (find_or_create_snapshot(filesystem, t, &snapshot)) {
+  switch (find_or_create_snapshot(filesystem, snapshot_time, &snapshot)) {
     case 0:
-      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " already exists.\n", t);
+      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " already exists.\n", snapshot_time);
       return -1;
     case -1:
-      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", t);
+      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
       return -2;
     case 1:
       return 0;

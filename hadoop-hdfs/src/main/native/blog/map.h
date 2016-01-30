@@ -97,7 +97,7 @@ MAP_TYPE(NAME) *NAME##_map_initialize() {                                       
     map[i].lock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));                            \
     map[i].entry = NULL;                                                                            \
     if (pthread_rwlock_init(map[i].lock, NULL) != 0) {                                              \
-      fprintf(stderr, "Map Initialize: Lock %ld is not initialized correctly\n", i);                \
+      fprintf(stderr, "Map Initialize: Lock %" PRIu64 " is not initialized correctly\n", i);        \
       return NULL;                                                                                  \
     }                                                                                               \
   }                                                                                                 \
@@ -129,7 +129,7 @@ int NAME##_map_create_and_write(MAP_TYPE(NAME) *map, uint64_t id, TYPE* value) {
     entry = entry->next;                                                                            \
   }                                                                                                 \
   if (entry != NULL) {                                                                              \
-    fprintf(stderr, "Map Create: Entry ID %ld already exists in map.\n", id);                       \
+    fprintf(stderr, "Map Create: Entry ID %" PRIu64 " already exists in map.\n", id);               \
     return -1;                                                                                      \
   }                                                                                                 \
   entry = (NAME##_entry_t *) malloc(sizeof(NAME##_entry_t));                                        \
@@ -153,7 +153,7 @@ int NAME##_map_delete(MAP_TYPE(NAME) *map, uint64_t id) {                       
     entry = entry->next;                                                                            \
   }                                                                                                 \
   if (entry == NULL) {                                                                              \
-    fprintf(stderr, "Map Delete: Entry ID %ld does not exist in map.\n", id);                       \
+    fprintf(stderr, "Map Delete: Entry ID %" PRIu64 " does not exist in map.\n", id);                       \
     return -1;                                                                                      \
   }                                                                                                 \
   if (last_entry == NULL)                                                                           \

@@ -42,10 +42,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    readBlock
- * Signature: (JJJIII[B)I
+ * Signature: (JIII[B)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJJIII_3B
-  (JNIEnv *, jobject, jlong, jlong, jlong, jint, jint, jint, jbyteArray);
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
+  (JNIEnv *, jobject, jlong, jint, jint, jint, jbyteArray);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -58,10 +58,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    getNumberOfBytes
- * Signature: (JJJ)I
+ * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJJ
-  (JNIEnv *, jobject, jlong, jlong, jlong);
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog

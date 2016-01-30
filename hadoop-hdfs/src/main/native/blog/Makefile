@@ -1,4 +1,3 @@
-#LIB=libJNIBlog.so
 LIB=libedu_cornell_cs_blog_JNIBlog.so
 SRCS=JNIBlog.c
 HEADERS=JNIBlog.h map.h types.h
