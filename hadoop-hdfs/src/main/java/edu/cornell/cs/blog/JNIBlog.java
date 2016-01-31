@@ -2,6 +2,7 @@ package edu.cornell.cs.blog;
 
 import edu.cornell.cs.sa.HybridLogicalClock;
 import java.nio.charset.*;
+import java.util.Arrays;
 
 public class JNIBlog
 {
@@ -79,7 +80,7 @@ public class JNIBlog
   public native int getNumberOfBytes(long blockId, long t);
   
   /**
-   * @param mvc
+   * @param mhlc
    * @param blockId
    * @param blkOfst
    * @param bufOfst
@@ -138,8 +139,18 @@ public class JNIBlog
     String a = "Hello Theo & Weijia. I am working well!!";
     String b = "This should not be in the snapshot read.";
     String c = "Laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
+    byte[] d = new byte[4096*3];
+    byte[] e = new byte[4096*3];
     long rtc;
 
+    for (int i = 0; i < 4096; i++) {
+    	d[3*i] = (byte) 'a';
+    	d[3*i+1] = (byte) 'b';
+    	d[3*i+2] = (byte) 'c';
+    	e[3*i] = (byte) 'x';
+    	e[3*i+1] = (byte) 'y';
+    	e[3*i+2] = (byte) 'z';
+    }
     assert (writeBlock(mhlc, 4101, 0, 0, a.length(), a.getBytes()) == 0);
     writeLine("Block 4101 was written.");
     assert (writeBlock(mhlc, 4100, 0, 0, 20, a.getBytes()) == -1);
@@ -151,6 +162,10 @@ public class JNIBlog
     writeLine("Block 4101 was written.");
     assert (writeBlock(mhlc, 5000, 0, 0, c.length(), c.getBytes()) == 0);
     writeLine("Block 5000 was written.");
+    assert (writeBlock(mhlc, 5000, 40, 0, 4096*3, d) == 0);
+    writeLine("Block 5000 was appended.");
+    assert (writeBlock(mhlc, 5000, 40+4096, 4096, 4096, e) == 0);
+    writeLine("Block 5000 was written randomly.");
     
     return rtc;
   }
@@ -162,13 +177,27 @@ public class JNIBlog
 	String c = "Laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
 	String temp;
     byte[] mybuf = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".getBytes();
-
+    byte[] d = new byte[4096*3];
+    byte[] e = new byte[4096*3];
+    
+    for (int i = 0; i < 4096; i++) {
+    	d[3*i] = (byte) 'a';
+    	d[3*i+1] = (byte) 'b';
+    	d[3*i+2] = (byte) 'c';
+    	e[3*i] = (byte) 'x';
+    	e[3*i+1] = (byte) 'y';
+    	e[3*i+2] = (byte) 'z';
+    }
+    for (int i = 4096; i < 4096*2; i++)
+    	d[i] = e[i];
     assert (readBlock(4100, 0, 0, 40, mybuf) == -1);
     assert (readBlock(4101, 100, 0, 40, mybuf) == -2);
     assert (readBlock(4101, 0, 0, 40, mybuf) == 40);
     temp = new String(mybuf, Charset.forName("UTF-8"));
     writeLine("Block 4101: " + temp);
     assert (b.compareTo(temp) == 0);
+    assert (readBlock(5000, 40, 0, 3*4096, e) == 3*4096);
+    // assert (Arrays.equals(d, e));
   }
   
   public void testSnapshot(long rtc)
@@ -178,8 +207,6 @@ public class JNIBlog
 	String c = "Laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
 	String temp;
     byte[] mybuf = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".getBytes();
-    long cut;
-    int nrBytes;
     
     assert (readBlock(4101, rtc+10000, 0, 0, 40, mybuf) == -1);
     assert (readBlock(5001, rtc, 0, 0, 40, mybuf) == -2);
@@ -189,7 +216,7 @@ public class JNIBlog
     writeLine("Snapshot " + Long.toString(rtc)  + ", Block 4101: " + temp);
     assert (a.compareTo(temp) == 0);
     assert (getNumberOfBytes(4101,rtc) == 40);
-    assert (getNumberOfBytes(5000) == 40);
+    assert (getNumberOfBytes(5000) == 40+4096*3);
   }
   
   static public void writeLine(String str) {
