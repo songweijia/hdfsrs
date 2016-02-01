@@ -972,7 +972,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     }
     // printf("Filled all the intermediate pages.\n");
     // fflush(stdout);
-    write_page_length = ((block_offset + write_length) %page_size);
+    write_page_length = (block_offset + write_length) % page_size == 0 ? page_size
+                                                                       : (block_offset + write_length) % page_size;
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
     temp_data += write_page_length;
     last_page_length = write_page_length;
