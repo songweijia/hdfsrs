@@ -954,6 +954,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     write_page_length = write_length;
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
     temp_data += write_page_length;
+    last_page_length = first_page_offset + write_page_length;
     // printf("Filled the last page up to %" PRIu32 "\n", write_page_length+first_page_offset);
     // fflush(stdout);
   } else {
@@ -974,11 +975,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     write_page_length = ((block_offset + write_length) %page_size);
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
     temp_data += write_page_length;
+    last_page_length = write_page_length;
     // printf("Filled the last page up to %" PRIu32 "\n", write_page_length);
     // fflush(stdout);
   }
-  last_page_length = write_page_length;
-  block_length = last_page * filesystem->page_size + last_page_length;
+  block_length = last_page * page_size + last_page_length;
   if (block_length < block->length) {
     write_page_length = last_page*(page_size+1) <= block->length ? page_size - last_page_length
                                                                  : block_length%page_size - last_page_length;
