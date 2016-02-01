@@ -197,7 +197,10 @@ public class JNIBlog
     writeLine("Block 4101: " + temp);
     assert (b.compareTo(temp) == 0);
     assert (readBlock(5000, 40, 0, 3*4096, e) == 3*4096);
-    // assert (Arrays.equals(d, e));
+    writeLine("Block 5000.40: " + new String(e));
+    assert (Arrays.equals(d, e));
+    assert (getNumberOfBytes(5000) == 40+4096*3);
+    assert (getNumberOfBytes(4101) == 40);
   }
   
   public void testSnapshot(long rtc)
@@ -216,7 +219,6 @@ public class JNIBlog
     writeLine("Snapshot " + Long.toString(rtc)  + ", Block 4101: " + temp);
     assert (a.compareTo(temp) == 0);
     assert (getNumberOfBytes(4101,rtc) == 40);
-    assert (getNumberOfBytes(5000) == 40+4096*3);
   }
   
   static public void writeLine(String str) {

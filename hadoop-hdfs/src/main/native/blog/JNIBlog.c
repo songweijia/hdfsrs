@@ -14,7 +14,7 @@ MAP_DEFINE(snapshot, snapshot_t, SNAPSHOT_MAP_SIZE);
 // Printer Functions.
 char *log_to_string(log_t *log, size_t page_size)
 {
-  char *res = (char *) malloc(4096 * sizeof(char));
+  char *res = (char *) malloc(1024 * 1024 * sizeof(char));
   char buf[1024];
   uint32_t length, i;
   
@@ -822,14 +822,25 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
   (JNIEnv *env, jobject thisObj, jlong blockId)
 {
   filesystem_t *filesystem = get_filesystem(env, thisObj);
+  log_t *log = filesystem->log;
   uint64_t log_index;
+  uint64_t block_id = (uint64_t) blockId;
   
   // Find the last entry.
   pthread_rwlock_rdlock(&filesystem->log_lock);
   log_index = filesystem->log_length-1;
   pthread_rwlock_unlock(&filesystem->log_lock);
   
-  return (jint) filesystem->log[log_index].block_length;
+  // Find the last entry with 
+  while ((log_index > 0) && (log[log_index].block_id != block_id))
+    log_index--;
+    
+  if (log[log_index].block_id != block_id) {
+    fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active.\n", block_id);
+    return -1;
+  }
+
+  return (jint) log[log_index].block_length;
 }
 
 /*
@@ -952,7 +963,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     temp_data += write_page_length;
     // printf("Filled the initial page completely\n");
     // fflush(stdout);
-    for (i = 1; i < last_page-first_page-1; i++) {
+    for (i = 1; i < last_page-first_page; i++) {
       write_page_length = page_size;
       (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
       buffer_offset += write_page_length;
@@ -1009,6 +1020,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   }
   for (i = 0; i < log_entry->nr_pages; i++)
     block->pages[log_entry->page_id+i] = data + i * filesystem->page_size;
+
   return 0;
 }
 
