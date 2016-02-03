@@ -1,12 +1,17 @@
 package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
+
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_MEMBLOCK_PAGESIZE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_MEMBLOCK_PAGESIZE;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,18 +31,21 @@ import edu.cornell.cs.sa.*;
 
 public class MemDatasetManager {
   static final Log LOG = LogFactory.getLog(MemDatasetManager.class);
-  
+
+  /*  
   class PoolData{
     HashMap<Long,MemBlockMeta> blockMaps; // blockId->MemBlockMeta data
     JNIBlog blog; // blog for the memory
   }
-  
+*/  
+
 //  private HashMap<ExtendedBlockId, String> diskMaps;
 //  private MemDatasetImpl dataset;
-  private Map<String, PoolData> poolMap; // where data is stored.
+  private Map<String, JNIBlog> blogMap; // where data is stored.
   private final long capacity;
   private final long blocksize; 
   private final int pagesize;
+  private final String perspath; // the path for persistent files
 
   
   public class MemBlockMeta extends Block implements Replica {
@@ -46,17 +54,25 @@ public class MemDatasetManager {
     ReplicaState state;
     long accBytes;
     
-    MemBlockMeta(String bpid, long genStamp, long blockId, ReplicaState state) {
+    public MemBlockMeta(String bpid, long genStamp, long blockId, ReplicaState state) {
       super(blockId,(int)JNIBlog.CURRENT_SNAPSHOT_ID,0l,genStamp);
-      PoolData pd = null;
-      synchronized(poolMap){
-        pd = poolMap.get(bpid);
-        if(pd==null){
-      	  pd = newPoolData();
-      	  poolMap.put(bpid, pd);
+      JNIBlog blog = null;
+      synchronized(blogMap){
+        blog = blogMap.get(bpid);
+        if(blog==null){
+      	  blog = newJNIBlog(bpid);
+      	  blogMap.put(bpid, blog);
         }
       }
-      this.blog = pd.blog;
+      this.blog = blog;
+      this.blockId = blockId;
+      this.state = state;
+      this.isDeleted = false;
+    }
+    
+    public MemBlockMeta(JNIBlog blog, long genStamp, long blockId, ReplicaState state) {
+      super(blockId,(int)JNIBlog.CURRENT_SNAPSHOT_ID,0l,genStamp);
+      this.blog = blog;
       this.blockId = blockId;
       this.state = state;
       this.isDeleted = false;
@@ -151,7 +167,7 @@ public class MemDatasetManager {
      * @param snapshotId
      */
     BlogInputStream(String bpid,long blockId, int offset, long snapshotId){
-    	this.blog = poolMap.get(bpid).blog;
+    	this.blog = blogMap.get(bpid);
     	this.blockId = blockId;
     	this.offset = offset;
     	this.snapshotId = snapshotId;
@@ -204,7 +220,7 @@ public class MemDatasetManager {
     MemBlockMeta meta;
 
     BlogOutputStream(String bpid,long blockId, int offset, MemBlockMeta meta){
-    	this.blog = poolMap.get(bpid).blog;
+    	this.blog = blogMap.get(bpid);
     	this.blockId = blockId;
     	this.offset = offset;
         this.meta = meta;
@@ -218,11 +234,11 @@ public class MemDatasetManager {
     }
     
     public synchronized void write(int b) throws IOException {
-      throw new IOException("Blog allows write with vector clock only.");
+      throw new IOException("Blog allows write with HLC clock only.");
     }
 
     public synchronized void write(byte[] bytes, int off, int len) throws IOException {
-        throw new IOException("Blog allows write with vector clock only.");
+        throw new IOException("Blog allows write with HLC clock only.");
     }
 
     @Override
@@ -244,13 +260,18 @@ public class MemDatasetManager {
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
-    this.poolMap = new HashMap<String, PoolData>();
+    this.blogMap = new HashMap<String, JNIBlog>();
+    String[] dataDirs = conf.getTrimmedStrings(DFS_DATANODE_DATA_DIR_KEY);
+    if(dataDirs.length > 0)
+      this.perspath = dataDirs[0];
+    else
+      this.perspath = "/tmp"; // the default persistent path is in /tmp
 //    this.diskMaps = new HashMap<ExtendedBlockId, String>();
   }
   
   void shutdown() {
-    for (Map.Entry<String, PoolData> entry : this.poolMap.entrySet()){
-    	entry.getValue().blog.destroy();
+    for (Map.Entry<String, JNIBlog> entry : this.blogMap.entrySet()){
+    	entry.getValue().destroy();
     }
   }
   
@@ -260,24 +281,40 @@ public class MemDatasetManager {
   
   /**
    * get the metadata
- * @param bpid bpid
- * @param blockId blockId
- * @return
- */
-MemBlockMeta get(String bpid, long blockId) {
-    PoolData pd = poolMap.get(bpid);
-    return (pd==null)?null:pd.blockMaps.get(blockId);
+   * @param bpid bpid
+   * @param blockId blockId
+   * @return
+   */
+  MemBlockMeta get(String bpid, long blockId) {
+    JNIBlog blog = blogMap.get(bpid);
+    return (blog==null)?null:blog.blockMaps.get(blockId);
   }
   
-  private PoolData newPoolData(){
-  	PoolData pd;
-  	pd = new PoolData();
-    pd.blockMaps = new HashMap<Long,MemBlockMeta>();
-    pd.blog = new JNIBlog();
-    pd.blog.initialize((int)blocksize, pagesize);
-    return pd;
+  private JNIBlog newJNIBlog(String bpid){
+    JNIBlog rBlog = new JNIBlog();
+    // If path does not exists, create it firs.
+    File fPers = new File(this.perspath+System.getProperty("file.separator")+"pers-"+bpid);
+    if(fPers.exists()&&fPers.isFile())fPers.delete();
+    if(!fPers.exists()){
+      if(fPers.mkdir()==false)
+        LOG.error("Initialize Blog: cannot create path:" + fPers.getAbsolutePath());
+    }
+    rBlog.initialize(this, bpid, (int)blocksize, pagesize, fPers.getAbsolutePath());
+    return rBlog;
   }
-
+  
+  JNIBlog getJNIBlog(String bpid){
+    JNIBlog blog = null;
+    synchronized(blogMap){
+      blog = blogMap.get(bpid);
+      if(blog == null){
+        blog = newJNIBlog(bpid);
+        blogMap.put(bpid, blog);
+      }
+    }
+    return blog;
+  }
+  
   /**
    * create a block
    * @param bpid
@@ -287,18 +324,12 @@ MemBlockMeta get(String bpid, long blockId) {
    * @return metadata
    */
   MemBlockMeta createBlock(String bpid, long blockId, long genStamp, HybridLogicalClock mhlc) {
-  	PoolData pd = null;
-  	synchronized(poolMap){
-  		pd = poolMap.get(bpid);
-      if(pd == null){
-      	pd = newPoolData();
-      	poolMap.put(bpid, pd);
-      }
-  	}
-    synchronized(pd){
-      pd.blog.createBlock(mhlc, blockId);
+    JNIBlog blog = getJNIBlog(bpid);
+    synchronized(blog){
+      blog.createBlock(mhlc, blockId);
       MemBlockMeta meta = new MemBlockMeta(bpid, genStamp, blockId, ReplicaState.TEMPORARY); 
-      pd.blockMaps.put(blockId, meta);
+      blog.blockMaps.put(blockId, meta);
+      //TODO:flush???
       return meta;
     }
   }
@@ -306,15 +337,15 @@ MemBlockMeta get(String bpid, long blockId) {
   /**
    * delete a block:  this is used for invalidation, but keep the
    * history.
- * @param bpid
- * @param blockId
- * @param mhlc message vector clock : input/output
- */
+   * @param bpid
+   * @param blockId
+   * @param mhlc message vector clock : input/output
+   */
   void deleteBlock(String bpid, long blockId, HybridLogicalClock mhlc) {
-    PoolData pd = poolMap.get(bpid);
-    synchronized(pd){
-      pd.blockMaps.get(blockId).delete();
-      pd.blog.deleteBlock(mhlc, blockId);
+    JNIBlog blog = getJNIBlog(bpid);
+    synchronized(blog){
+      blog.blockMaps.get(blockId).delete();
+      blog.deleteBlock(mhlc, blockId);
     }
   }
   
@@ -324,8 +355,8 @@ MemBlockMeta get(String bpid, long blockId) {
  * @param blockId
  */
 void removeBlock(String bpid, long blockId){
-	  PoolData pd = poolMap.get(bpid);
-	  pd.blockMaps.remove(blockId);
+    JNIBlog blog = getJNIBlog(bpid);
+    blog.blockMaps.remove(blockId);
   }
 
   /**
@@ -336,16 +367,14 @@ void removeBlock(String bpid, long blockId){
  */
 List<Block> getBlockMetas(String bpid, ReplicaState state) {
     LinkedList<Block> results = new LinkedList<Block>();
-    PoolData pd = poolMap.get(bpid);
-    if(pd!=null){
-      synchronized(pd){
-        for(Entry<Long,MemBlockMeta> entry:pd.blockMaps.entrySet()){
-          MemBlockMeta mbm = entry.getValue();
-          if(!mbm.isDeleted() && (state == null || mbm.getState() == state)){
-            results.add(mbm);
-          }
-        } 
-      }
+    JNIBlog blog = getJNIBlog(bpid);
+    synchronized(blog){
+      for(Entry<Long,MemBlockMeta> entry:blog.blockMaps.entrySet()){
+        MemBlockMeta mbm = entry.getValue();
+        if(!mbm.isDeleted() && (state == null || mbm.getState() == state)){
+          results.add(mbm);
+        }
+      } 
     }
     return results;
   }
@@ -358,16 +387,9 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
  * @throws IOException
  */
   void snapshot(String bpid, long rtc)throws IOException{
-    PoolData pd = null;
-    synchronized(poolMap){
-      pd = poolMap.get(bpid);
-      if(pd == null){
-        pd = newPoolData();
-        poolMap.put(bpid, pd);
-      }
-    }
-    synchronized(pd){
-      pd.blog.createSnapshot(rtc);
+    JNIBlog blog = getJNIBlog(bpid);
+    synchronized(blog){
+      blog.createSnapshot(rtc);
     }
   }
 }

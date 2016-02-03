@@ -19,7 +19,7 @@ typedef struct NAME##_map_t {                                                   
  * Initialize and allocate all the appropriate structures.                                       
  * Return 0 for success and -1 otherwise.
  */                                                                                             \
-MAP_TYPE(NAME) *NAME##_map_initialize();                                                        \
+BLOG_MAP_TYPE(NAME) *NAME##_map_initialize();                                                   \
                                                                                                 \
 /**
  * Release all memory occupied by the map.
@@ -84,7 +84,7 @@ int NAME##_map_unlock(NAME##_map_t *map, uint64_t id);
 #define ENTRY_TYPE(NAME)                                                                        \
 NAME##_entry_t
 
-#define MAP_TYPE(NAME)                                                                          \
+#define BLOG_MAP_TYPE(NAME)                                                                     \
 NAME##_map_t
 
 #define MAP_DEFINE(NAME,TYPE,SIZE)                                                                  \

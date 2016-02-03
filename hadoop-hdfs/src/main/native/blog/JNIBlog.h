@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *, jobject, jint, jint);
+  (JNIEnv *, jobject, jint, jint, jstring);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog

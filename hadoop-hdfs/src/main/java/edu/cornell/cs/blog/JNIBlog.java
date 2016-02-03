@@ -4,6 +4,19 @@ import edu.cornell.cs.sa.HybridLogicalClock;
 import java.nio.charset.*;
 import java.util.Arrays;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.*;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
+import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager;
+import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager.MemBlockMeta;
+
 public class JNIBlog
 {
   static {
@@ -13,15 +26,102 @@ public class JNIBlog
   static public long CURRENT_SNAPSHOT_ID = -1l;
   private HybridLogicalClock hlc;
   private long jniData;
+  private String persPath;
+  private String bpid; // initialize it!!!
+  private MemDatasetManager dsmgr;
+  final String BLOCKMAP_FILE = "bmap._dat";
+
+  /**
+   * Initialize both the block log and the block map.
+   * @param blockSize
+   * @param pageSize
+   * @param persPath
+   */
+  public void initialize(MemDatasetManager dsmgr, String bpid, int blockSize, int pageSize, String persPath){
+    this.dsmgr = dsmgr;
+    this.bpid = bpid;
+    this.persPath = persPath;
+    // initialize blog
+    initialize((int)blockSize, pageSize, persPath);
+    // LOAD blockmap
+    loadBlockMap();
+    Runtime.getRuntime().addShutdownHook(new Thread(){
+      @Override
+      public void run(){
+        JNIBlog.this.destroy();
+      }
+    });
+  }
+  
+  // write the block map to disk
+  // format:
+  // int: number of blocks
+  // for each block:
+  //   [long:block id][long:timestamp][boolean:isdeleted][int:state]
+  private void flushBlockMap(){
+    FileOutputStream fos = null;
+    DataOutputStream dos = null;
+    try{
+      fos = new FileOutputStream(this.persPath+System.getProperty("file.separator")+BLOCKMAP_FILE);
+      dos = new DataOutputStream(fos);
+      dos.writeInt(this.blockMaps.size()); // write number of blocks
+      for(Entry<Long, MemBlockMeta> entry: this.blockMaps.entrySet()){
+        MemBlockMeta mbm = entry.getValue();
+        dos.writeLong(entry.getKey()); // write block id
+        dos.writeLong(mbm.getGenerationStamp()); // write timestamp
+        dos.writeBoolean(mbm.isDeleted()); // write delete
+        dos.writeInt(mbm.getState().getValue()); // write state
+      }
+    }catch(IOException ioe){
+      //LOG error
+      System.err.println("ERROR:Cannot open blockmap file for write:"+ioe);
+    }finally{
+      try{
+        if(dos!=null)dos.close();
+        if(fos!=null)fos.close();
+      }catch(IOException e){
+        //do nothing
+      }
+    }
+  }
+  // load the block map from disk
+  private void loadBlockMap(){
+    FileInputStream fis = null;
+    DataInputStream dis = null;
+    try{
+      this.blockMaps = new HashMap<Long, MemBlockMeta>();
+      fis = new FileInputStream(this.persPath+System.getProperty("file.separator")+BLOCKMAP_FILE);
+      dis = new DataInputStream(fis);
+      int nblock = dis.readInt();
+      while(nblock-- > 0){
+        long bid = dis.readLong();
+        long gen = dis.readLong();
+        boolean del = dis.readBoolean();
+        ReplicaState rs = ReplicaState.getState(dis.readInt());
+        MemBlockMeta mbm = dsmgr.new MemBlockMeta(this, gen, bid, rs);
+        if(del)mbm.delete();
+        this.blockMaps.put(bid, mbm);
+      }
+    }catch(IOException ioe){
+      System.err.println("WARNING:Cannot open blockmap file for read: "+ioe+". This may be caused by a new startup");
+    }finally{
+      try{
+        if(dis!=null)dis.close();
+        if(fis!=null)fis.close();
+      }catch(IOException e){
+        //do nothing
+      }
+    }
+  }
   
   /**
    * initialization
-   * @param rank - rank of the current node
    * @param blockSize - block size for each block
    * @param pageSize - page size
+   * @param persPath - initialize it
    * @return error code, 0 for success.
    */
-  public native int initialize(int blockSize, int pageSize);
+  private native int initialize(int blockSize, int pageSize, String persPath);
   
   /**
    * destroy the blog
@@ -103,6 +203,12 @@ public class JNIBlog
    * @return microseconds from the Epoch(1970-01-01 00:00:00 +0000(UTC))
    */
   public static native long readLocalRTC();
+  
+  
+  //////////////////////////////////////////////////////////////////////
+  // Move Pool Data to JNIBlog.
+  public HashMap<Long,MemBlockMeta> blockMaps;
+  //////////////////////////////////////////////////////////////////////
   
   // Tests.
   public void testBlockCreation(HybridLogicalClock mhlc)
@@ -221,7 +327,8 @@ public class JNIBlog
     assert (getNumberOfBytes(4101,rtc) == 40);
   }
   
-  static public void writeLine(String str) {
+  static public void writeLine(String str)
+  {
     System.out.println(str);
     System.out.flush();
   }
@@ -230,7 +337,8 @@ public class JNIBlog
    * Test stub
    * @param args
    */
-  public static void main(String[] args) throws InterruptedException{
+  public static void main(String[] args) throws InterruptedException
+  {
     JNIBlog bl = new JNIBlog();
     HybridLogicalClock mhlc = new HybridLogicalClock();
     long rtc;
