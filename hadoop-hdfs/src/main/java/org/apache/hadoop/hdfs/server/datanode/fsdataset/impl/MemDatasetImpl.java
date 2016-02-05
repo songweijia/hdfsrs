@@ -280,7 +280,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     }
 
     replicaInfo.setGenerationStamp(newGS);
-    replicaInfo.state = ReplicaState.RBW;
+    replicaInfo.setState(ReplicaState.RBW);
 
     return replicaInfo;
   }
@@ -444,7 +444,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           + visible + ", temp=" + r.getBlockId());
     }
 
-    r.state = ReplicaState.RBW;
+    r.setState(ReplicaState.RBW);
     return r;
   }
 /*
@@ -510,7 +510,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       replicaInfo.accBytes = 0l;
 //      LOG.info("SONIC-incDfsUsed:+replicaInfo.getNumBytes()="+replicaInfo.getNumBytes());
     }
-    replicaInfo.state = ReplicaState.FINALIZED;
+    replicaInfo.setState(ReplicaState.FINALIZED);
     return replicaInfo;
   }
 
@@ -785,7 +785,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     }
 
     if (replica.getState() != ReplicaState.RUR) {
-      ((MemDatasetManager.MemBlockMeta)replica).state = ReplicaState.RUR;
+      ((MemDatasetManager.MemBlockMeta)replica).setState(ReplicaState.RUR);
     }
     return null;
   }

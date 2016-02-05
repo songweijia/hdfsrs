@@ -51,7 +51,7 @@ public class MemDatasetManager {
   public class MemBlockMeta extends Block implements Replica {
     boolean isDeleted;
     JNIBlog blog;
-    ReplicaState state;
+    private ReplicaState state;
     long accBytes;
     
     public MemBlockMeta(String bpid, long genStamp, long blockId, ReplicaState state) {

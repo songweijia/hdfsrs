@@ -41,10 +41,9 @@ public class JNIBlog
     this.dsmgr = dsmgr;
     this.bpid = bpid;
     this.persPath = persPath;
+    this.blockMaps = new HashMap<Long, MemBlockMeta>();
     // initialize blog
     initialize((int)blockSize, pageSize, persPath);
-    // LOAD blockmap
-    loadBlockMap();
     Runtime.getRuntime().addShutdownHook(new Thread(){
       @Override
       public void run(){
@@ -53,12 +52,14 @@ public class JNIBlog
     });
   }
   
+/** we do not need to flush block map meta data anymore. 
+ * we just reconstruct them from the blog.
   // write the block map to disk
   // format:
   // int: number of blocks
   // for each block:
   //   [long:block id][long:timestamp][boolean:isdeleted][int:state]
-  private void flushBlockMap(){
+  private synchronized void flushBlockMap(){
     FileOutputStream fos = null;
     DataOutputStream dos = null;
     try{
@@ -84,8 +85,9 @@ public class JNIBlog
       }
     }
   }
+  
   // load the block map from disk
-  private void loadBlockMap(){
+  private synchronized void loadBlockMap(){
     FileInputStream fis = null;
     DataInputStream dis = null;
     try{
@@ -113,7 +115,7 @@ public class JNIBlog
       }
     }
   }
-  
+*/  
   /**
    * initialization
    * @param blockSize - block size for each block
@@ -122,6 +124,24 @@ public class JNIBlog
    * @return error code, 0 for success.
    */
   private native int initialize(int blockSize, int pageSize, String persPath);
+  
+  /**
+   * Replay block log on startup. This will materialize blockMaps. This
+   * will be called from native initialize(). 
+   * op:
+   *   BOL = 0
+   *   CREATE_BLOCK = 1
+   *   DELETE_BLOCK = 2
+   *   WRITE_BLOCK = 3
+   */
+  private void replayLogOnMetadata(long blockId, int op){
+    MemBlockMeta mbm = this.blockMaps.get(blockId);
+    if(mbm == null)
+      mbm = dsmgr.new MemBlockMeta(this,1000l,blockId,ReplicaState.FINALIZED);
+    if(op == 2)
+      mbm.delete();
+    this.blockMaps.put(blockId, mbm);
+  }
   
   /**
    * destroy the blog
@@ -344,7 +364,7 @@ public class JNIBlog
     long rtc;
     
     writeLine("Initialize.");
-    bl.initialize(1024*1024, 1024);
+    bl.initialize(1024*1024, 1024, ".");
     writeLine("Create Blocks.");
     bl.testBlockCreation(mhlc);
     writeLine("Delete Blocks.");
