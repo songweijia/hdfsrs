@@ -486,17 +486,6 @@ static void * blog_writer_routine(void * param)
   filesystem_t *fs = (filesystem_t*) param;
   long time_next_write = 0L;
   struct timeval tv;
-
-  JavaVM *jvm;
-  if((*fs->env)->GetJavaVM(fs->env,&jvm)!=0){
-    fprintf(stderr,"blog_writer_routine:cannot get JVM handle\n");
-    return NULL;
-  }
-  if((*jvm)->AttachCurrentThread(jvm, (void*)&(fs->env), NULL) > 0){
-    fprintf(stderr,"blog_writer_routine:cannot attach current thread to JVM\n");
-    return NULL;
-  }
-
   while(fs->alive){
     // STEP 1 - test if a flush is required.
     gettimeofday(&tv,NULL);
@@ -517,7 +506,7 @@ static void * blog_writer_routine(void * param)
       fprintf(stderr,"cannot msync() page file,error=%d\n",errno);
       exit(-1);
     }
-    if(msync((void*)fs->log_length,((uint64_t)(&fs->log[*fs->log_length])-(uint64_t)fs->log_length),MS_SYNC)!=0){
+    if(msync((void*)fs->log_base,((uint64_t)(&fs->log[*fs->log_length])-(uint64_t)fs->log_base),MS_SYNC)!=0){
       fprintf(stderr,"cannot msync() log file,error=%d\n",errno);
       exit(-1);
     }
@@ -701,6 +690,7 @@ static void replayLog(JNIEnv *env, jobject thisObj, filesystem_t *fs){
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   (JNIEnv *env, jobject thisObj, jint blockSize, jint pageSize, jstring persPath)
 {
+DEBUG_PRINT("initialize is called\n");
   const char * pp = (*env)->GetStringUTFChars(env,persPath,NULL); // get the presistent path
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jfieldID long_id = (*env)->GetFieldID(env, thisCls, "jniData", "J");
@@ -744,7 +734,9 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   pthread_rwlock_init(&(filesystem->log_lock), NULL);
   pthread_mutex_init(&(filesystem->page_lock), NULL);
 
+DEBUG_PRINT("before replayLog\n");
   replayLog(env, thisObj, filesystem);
+DEBUG_PRINT("after replayLog\n");
 
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
   (*env)->SetLongField(env, thisObj, long_id, (uint64_t) filesystem);
@@ -752,16 +744,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   // start the write thread.
   filesystem->int_sec = FLUSH_INTERVAL_SEC;
   filesystem->alive = 1; // alive.
-  filesystem->env = env; // java environment
-  filesystem->blogObj = (*env)->NewGlobalRef(env, thisObj); // java this object
   
   //start blog writer thread
-  if (pthread_create(&filesystem->writer_thrd, NULL, blog_writer_routine, (void*)&filesystem)) {
+  if (pthread_create(&filesystem->writer_thrd, NULL, blog_writer_routine, (void*)filesystem)) {
     fprintf(stderr,"CANNOT create blogWriter thread, exit\n");
     exit(-1);
   }
 
   (*env)->ReleaseStringUTFChars(env, persPath, pp);
+DEBUG_PRINT("initialize() done\n");
   return 0;
 }
 
@@ -773,6 +764,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId)
 {
+DEBUG_PRINT("begin createBlock\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
   block_t *block;
@@ -814,6 +806,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
     exit(0);
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
+DEBUG_PRINT("end createBlock\n");
   return 0;
 }
 
@@ -825,6 +818,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId)
 {
+DEBUG_PRINT("begin deleteBlock.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
   block_t *block;
@@ -866,6 +860,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
     exit(0);
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
+DEBUG_PRINT("end deleteBlock.\n");
   return 0;
 }
 
@@ -878,6 +873,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
   (JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint bufOfst, jint length,
    jbyteArray buf)
 {
+DEBUG_PRINT("begin readBlock_JIII.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   snapshot_block_t *block;
@@ -956,6 +952,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
       page_id++;
     }
   }
+DEBUG_PRINT("end readBlock_JIII.\n");
   return read_length;
 }
   
@@ -968,6 +965,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint bufOfst, jint length, jbyteArray buf)
 {
+DEBUG_PRINT("begin readBlock_JJIII.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   snapshot_block_t *block;
@@ -1038,6 +1036,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
       page_id++;
     }
   }
+DEBUG_PRINT("end readBlock_JJIII.\n");
   return read_length;
 }
 
@@ -1049,6 +1048,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
   (JNIEnv *env, jobject thisObj, jlong blockId)
 {
+DEBUG_PRINT("begin getNumberOfBytes__J.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   log_t *log = filesystem->log;
   uint64_t log_index;
@@ -1067,7 +1067,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
     fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active.\n", block_id);
     return -1;
   }
-
+DEBUG_PRINT("end getNumberOfBytes__J.\n");
   return (jint) log[log_index].block_length;
 }
 
@@ -1079,6 +1079,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong t)
 {
+DEBUG_PRINT("debing getNumberOfBytes_JJ.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);;
   snapshot_t *snapshot;
   snapshot_block_t *block;
@@ -1112,6 +1113,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
       return -1;
   }
   
+DEBUG_PRINT("end getNumberOfBytes_JJ.\n");
   return (jint) block->length;
 }
 
@@ -1136,6 +1138,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst,
   jint bufOfst, jint length, jbyteArray buf)
 {
+DEBUG_PRINT("beging writeBlock.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
   uint32_t block_offset = (uint32_t) blkOfst;
@@ -1262,7 +1265,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   }
   for (i = 0; i < log_entry->nr_pages; i++)
     block->pages[log_entry->page_id+i] = data + i * filesystem->page_size;
-
+DEBUG_PRINT("end writeBlock.\n");
   return 0;
 }
 
@@ -1274,6 +1277,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
   (JNIEnv *env, jobject thisObj, jlong t)
 {
+DEBUG_PRINT("begin createSnapshot.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t snapshot_time = (uint64_t) t;
   snapshot_t *snapshot;
@@ -1286,6 +1290,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
       fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
       return -2;
     case 1:
+DEBUG_PRINT("end createSnapshot.\n");
       return 0;
     default:
       fprintf(stderr, "ERROR: Unknown error code for find_or_create_snapshot function.\n");
@@ -1307,6 +1312,7 @@ JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
 JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
   (JNIEnv *env, jobject thisObj)
 {
+DEBUG_PRINT("beging destroy.\n");
   //TODO: release all memory data? currently we leave it for OS.
   // kill blog writer
   filesystem_t *fs;
@@ -1328,4 +1334,5 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
     close(fs->log_fd);
     fs->log_fd=-1;
   }
+DEBUG_PRINT("end destroy.\n");
 }

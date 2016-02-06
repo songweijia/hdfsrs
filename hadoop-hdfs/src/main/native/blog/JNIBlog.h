@@ -96,7 +96,7 @@ JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
   (JNIEnv *, jclass);
 
 #ifdef DEBUG
-#define DEBUG_PRINT(arg,fmt...) fprintf(stdout,arg, ##fmt )
+#define DEBUG_PRINT(arg,fmt...) {fprintf(stdout,arg, ##fmt );fflush(stdout);}
 #else
 #define DEBUG_PRINT(arg,fmt...)
 #endif

@@ -134,7 +134,5 @@ struct filesystem {
 // persistent configuration
   uint32_t int_sec;
   uint32_t alive; // is the persistent thread is alive
-  JNIEnv *env;
-  jobject blogObj; // JNIBlog object
   pthread_t writer_thrd;
 };
