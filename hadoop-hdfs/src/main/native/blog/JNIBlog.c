@@ -441,7 +441,7 @@ int find_or_create_snapshot_block(filesystem_t *filesystem, snapshot_t *snapshot
     block->pages_cap = 0;
     block->pages = NULL;
   } else {
-  	block->status = ACTIVE;
+    block->status = ACTIVE;
     block->length = log[log_index].block_length;
     if (block->length == 0)
       block->pages_cap = 0;
@@ -680,7 +680,7 @@ static void replayLog(JNIEnv *env, jobject thisObj, filesystem_t *fs){
       break;// do nothing
     }
     //STEP 2: replay the log for JNIBlog.blockMaps
-    DEBUG_PRINT("replay_2:op=%d,genStamp=%ld\n",fs->log[l].op,fs->log[l].first_pn);
+    DEBUG_PRINT("replay_2:op=%d,block_id=%ld,first_pn/genStamp=%ld\n",fs->log[l].op,fs->log[l].block_id,fs->log[l].first_pn);
     (*env)->CallObjectMethod(env,thisObj,rl_mid,fs->log[l].block_id,fs->log[l].op,fs->log[l].first_pn);
     DEBUG_PRINT("replay_2:op=%d...done\n",fs->log[l].op);
   }
@@ -1251,6 +1251,7 @@ DEBUG_PRINT("beging writeBlock.\n");
   log_entry->previous = block->log_index;
   update_log_clock(env, mhlc, log_entry);
   log_entry->first_pn = ((uint64_t)data - (uint64_t)filesystem->page_base)/filesystem->page_size;
+  DEBUG_PRINT("writeBlock:log[%ld],len=%d\n",*(filesystem->log_length),log_entry->block_length);
   (*filesystem->log_length) += 1;
   pthread_rwlock_unlock(&(filesystem->log_lock));
   
@@ -1367,8 +1368,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_setGenStamp
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   log_entry = filesystem->log + log_index;
   log_entry->block_id = block_id;
+  log_entry->block_length = block->length;
   log_entry->op = SET_GENSTAMP;
   log_entry->first_pn = (uint64_t)genStamp;
+  log_entry->nr_pages = 0;
   log_entry->previous = block->log_index;
   update_log_clock(env, mhlc, log_entry);
   (*filesystem->log_length) += 1;
