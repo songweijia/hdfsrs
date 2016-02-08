@@ -220,7 +220,7 @@ class BlockReceiver implements Closeable {
           break;
         case PIPELINE_SETUP_APPEND:
         case PIPELINE_SETUP_OVERWRITE:
-          replicaInfo = (ReplicaInPipelineInterface)datanode.data.append(block, newGs, minBytesRcvd);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.append(block, mhlc, newGs, minBytesRcvd);
           if (datanode.blockScanner != null) { // remove from block scanner
             datanode.blockScanner.deleteBlock(block.getBlockPoolId(),
                 block.getLocalBlock());
@@ -230,7 +230,7 @@ class BlockReceiver implements Closeable {
               block, replicaInfo.getStorageUuid());
           break;
         case PIPELINE_SETUP_APPEND_RECOVERY:
-          replicaInfo = (ReplicaInPipelineInterface)datanode.data.recoverAppend(block, newGs, minBytesRcvd);
+          replicaInfo = (ReplicaInPipelineInterface)datanode.data.recoverAppend(block, mhlc, newGs, minBytesRcvd);
           if (datanode.blockScanner != null) { // remove from block scanner
             datanode.blockScanner.deleteBlock(block.getBlockPoolId(),
                 block.getLocalBlock());

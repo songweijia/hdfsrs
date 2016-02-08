@@ -186,7 +186,7 @@ public class TestWriteToReplica {
     try {
       v.decDfsUsed(bpid, -available);
       blocks[FINALIZED].setNumBytes(expectedLen+100);
-      dataSet.append(blocks[FINALIZED], newGS, expectedLen);
+      dataSet.append(blocks[FINALIZED], null, newGS, expectedLen);
       Assert.fail("Should not have space to append to an RWR replica" + blocks[RWR]);
     } catch (DiskOutOfSpaceException e) {
       Assert.assertTrue(e.getMessage().startsWith(
@@ -196,12 +196,12 @@ public class TestWriteToReplica {
     blocks[FINALIZED].setNumBytes(expectedLen);
 
     newGS = blocks[RBW].getGenerationStamp()+1;
-    dataSet.append(blocks[FINALIZED], newGS, 
+    dataSet.append(blocks[FINALIZED],null, newGS, 
         blocks[FINALIZED].getNumBytes());  // successful
     blocks[FINALIZED].setGenerationStamp(newGS);
         
     try {
-      dataSet.append(blocks[TEMPORARY], blocks[TEMPORARY].getGenerationStamp()+1, 
+      dataSet.append(blocks[TEMPORARY], null, blocks[TEMPORARY].getGenerationStamp()+1, 
           blocks[TEMPORARY].getNumBytes());
       Assert.fail("Should not have appended to a temporary replica " 
           + blocks[TEMPORARY]);
@@ -211,7 +211,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.append(blocks[RBW], blocks[RBW].getGenerationStamp()+1,
+      dataSet.append(blocks[RBW], null, blocks[RBW].getGenerationStamp()+1,
           blocks[RBW].getNumBytes());
       Assert.fail("Should not have appended to an RBW replica" + blocks[RBW]);
     } catch (ReplicaNotFoundException e) {
@@ -220,7 +220,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.append(blocks[RWR], blocks[RWR].getGenerationStamp()+1,
+      dataSet.append(blocks[RWR], null, blocks[RWR].getGenerationStamp()+1,
           blocks[RBW].getNumBytes());
       Assert.fail("Should not have appended to an RWR replica" + blocks[RWR]);
     } catch (ReplicaNotFoundException e) {
@@ -229,7 +229,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.append(blocks[RUR], blocks[RUR].getGenerationStamp()+1,
+      dataSet.append(blocks[RUR], null, blocks[RUR].getGenerationStamp()+1,
           blocks[RUR].getNumBytes());
       Assert.fail("Should not have appended to an RUR replica" + blocks[RUR]);
     } catch (ReplicaNotFoundException e) {
@@ -238,7 +238,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.append(blocks[NON_EXISTENT], 
+      dataSet.append(blocks[NON_EXISTENT], null, 
           blocks[NON_EXISTENT].getGenerationStamp(), 
           blocks[NON_EXISTENT].getNumBytes());
       Assert.fail("Should not have appended to a non-existent replica " + 
@@ -249,12 +249,12 @@ public class TestWriteToReplica {
     }
     
     newGS = blocks[FINALIZED].getGenerationStamp()+1;
-    dataSet.recoverAppend(blocks[FINALIZED], newGS, 
+    dataSet.recoverAppend(blocks[FINALIZED],null, newGS, 
         blocks[FINALIZED].getNumBytes());  // successful
     blocks[FINALIZED].setGenerationStamp(newGS);
     
     try {
-      dataSet.recoverAppend(blocks[TEMPORARY], blocks[TEMPORARY].getGenerationStamp()+1, 
+      dataSet.recoverAppend(blocks[TEMPORARY], null, blocks[TEMPORARY].getGenerationStamp()+1, 
           blocks[TEMPORARY].getNumBytes());
       Assert.fail("Should not have appended to a temporary replica " 
           + blocks[TEMPORARY]);
@@ -264,11 +264,11 @@ public class TestWriteToReplica {
     }
 
     newGS = blocks[RBW].getGenerationStamp()+1;
-    dataSet.recoverAppend(blocks[RBW], newGS, blocks[RBW].getNumBytes());
+    dataSet.recoverAppend(blocks[RBW], null, newGS, blocks[RBW].getNumBytes());
     blocks[RBW].setGenerationStamp(newGS);
 
     try {
-      dataSet.recoverAppend(blocks[RWR], blocks[RWR].getGenerationStamp()+1,
+      dataSet.recoverAppend(blocks[RWR], null, blocks[RWR].getGenerationStamp()+1,
           blocks[RBW].getNumBytes());
       Assert.fail("Should not have appended to an RWR replica" + blocks[RWR]);
     } catch (ReplicaNotFoundException e) {
@@ -277,7 +277,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.recoverAppend(blocks[RUR], blocks[RUR].getGenerationStamp()+1,
+      dataSet.recoverAppend(blocks[RUR], null, blocks[RUR].getGenerationStamp()+1,
           blocks[RUR].getNumBytes());
       Assert.fail("Should not have appended to an RUR replica" + blocks[RUR]);
     } catch (ReplicaNotFoundException e) {
@@ -286,7 +286,7 @@ public class TestWriteToReplica {
     }
 
     try {
-      dataSet.recoverAppend(blocks[NON_EXISTENT], 
+      dataSet.recoverAppend(blocks[NON_EXISTENT], null, 
           blocks[NON_EXISTENT].getGenerationStamp(), 
           blocks[NON_EXISTENT].getNumBytes());
       Assert.fail("Should not have appended to a non-existent replica " + 

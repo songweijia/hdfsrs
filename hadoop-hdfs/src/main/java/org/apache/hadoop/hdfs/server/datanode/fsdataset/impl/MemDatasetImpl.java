@@ -220,7 +220,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   }
 
   @Override  // FsDatasetSpi
-  public synchronized Replica append(ExtendedBlock b,
+  public synchronized Replica append(ExtendedBlock b, HybridLogicalClock mhlc,
       long newGS, long expectedBlockLen) throws IOException {
     // If the block was successfully finalized because all packets
     // were successfully processed at the Datanode but the ack for
@@ -248,7 +248,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           " expected length is " + expectedBlockLen);
     }
 
-    return append(b.getBlockPoolId(), replicaInfo, newGS,
+    return append(mhlc, b.getBlockPoolId(), replicaInfo, newGS,
         b.getNumBytes());
   }
   
@@ -256,6 +256,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
    * Change a finalized replica to be a RBW replica and 
    * bump its generation stamp to be the newGS
    * 
+   * @param mhlc message hybrid clock
    * @param bpid block pool Id
    * @param replicaInfo a finalized replica
    * @param newGS new generation stamp
@@ -264,7 +265,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
    * @throws IOException if moving the replica from finalized directory 
    *         to rbw directory fails
    */
-  private synchronized Replica append(String bpid,
+  private synchronized Replica append(HybridLogicalClock mhlc,String bpid,
       MemDatasetManager.MemBlockMeta replicaInfo, long newGS, long estimateBlockLen)
       throws IOException {
     // If the block is cached, start uncaching it.
@@ -279,7 +280,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           + replicaInfo.getBlockId());
     }
 
-    replicaInfo.setGenerationStamp(newGS);
+    replicaInfo.setGenerationStamp(mhlc, newGS);
     replicaInfo.setState(ReplicaState.RBW);
 
     return replicaInfo;
@@ -320,7 +321,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   }
   
   @Override  // FsDatasetSpi
-  public synchronized Replica recoverAppend(ExtendedBlock b,
+  public synchronized Replica recoverAppend(ExtendedBlock b, HybridLogicalClock mhlc,
       long newGS, long expectedBlockLen) throws IOException {
     LOG.info("Recover failed append to " + b);
 
@@ -328,7 +329,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
 
     // change the replica's state/gs etc.
     if (replicaInfo.getState() == ReplicaState.FINALIZED ) {
-      return append(b.getBlockPoolId(), replicaInfo, newGS, 
+      return append(mhlc, b.getBlockPoolId(), replicaInfo, newGS, 
           b.getNumBytes());
     } else { //RBW
       replicaInfo.setGenerationStamp(newGS);

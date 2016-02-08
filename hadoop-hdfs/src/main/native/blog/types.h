@@ -24,6 +24,12 @@ typedef struct disk_log disk_log_t;
 #define LOG_FILE_SIZE (LOG_CAP*sizeof(log_t))
 #define FLUSH_INTERVAL_SEC (10)
 
+#ifdef DEBUG
+#define DEBUG_PRINT(arg,fmt...) {fprintf(stdout,arg, ##fmt );fflush(stdout);}
+#else
+#define DEBUG_PRINT(arg,fmt...)
+#endif
+
 MAP_DECLARE(block, block_t);
 MAP_DECLARE(snapshot_block, snapshot_block_t);
 MAP_DECLARE(log, uint64_t);
@@ -33,7 +39,8 @@ enum OPERATION {
   BOL = 0,
   CREATE_BLOCK = 1,
   DELETE_BLOCK = 2,
-  WRITE = 3
+  WRITE = 3,
+  SET_GENSTAMP = 4
 };
 
 enum STATUS {
@@ -47,13 +54,14 @@ enum STATUS {
  * pages_offset :   -1 for CREATE BLOCK,
  *                  -2 for DELETE BLOCK,
  *                  N for WRITE that starts at N page.
- * page_id      :   page in the block
+ * page_id      :   page in the block; 
  * pages_length :   number of pages written at WRITE,
  *                  0 otherwise.
  * previous     :   previous Log Entry of the same block.
  * r            :   real-time component of HLC.
  * c            :   logical component of HLC.
  * first_pn     :   page number of the first page we write.
+ *              :   reused as generation time stamp for SET_GENSTAMP log
  */
 struct log {
   uint64_t block_id;
@@ -135,4 +143,5 @@ struct filesystem {
   uint32_t int_sec;
   uint32_t alive; // is the persistent thread is alive
   pthread_t writer_thrd;
+
 };

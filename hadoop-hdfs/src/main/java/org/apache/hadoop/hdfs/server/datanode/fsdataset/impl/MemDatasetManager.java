@@ -94,6 +94,14 @@ public class MemDatasetManager {
     public void setState(ReplicaState state){
     	this.state = state;
     }
+    
+    public void setGenerationStamp(HybridLogicalClock mhlc,long genStamp)
+    throws IOException{
+      if(this.blog.setGenStamp(mhlc, this.blockId, genStamp) != 0)
+        throw new IOException("Cannot setGenerationStamp on block:"+this.blockId);
+      super.setGenerationStamp(genStamp);
+    }
+
 
     @Override
     public long getBytesOnDisk() {
@@ -326,10 +334,9 @@ public class MemDatasetManager {
   MemBlockMeta createBlock(String bpid, long blockId, long genStamp, HybridLogicalClock mhlc) {
     JNIBlog blog = getJNIBlog(bpid);
     synchronized(blog){
-      blog.createBlock(mhlc, blockId);
+      blog.createBlock(mhlc, blockId, genStamp);
       MemBlockMeta meta = new MemBlockMeta(bpid, genStamp, blockId, ReplicaState.TEMPORARY); 
       blog.blockMaps.put(blockId, meta);
-      //TODO:flush???
       return meta;
     }
   }

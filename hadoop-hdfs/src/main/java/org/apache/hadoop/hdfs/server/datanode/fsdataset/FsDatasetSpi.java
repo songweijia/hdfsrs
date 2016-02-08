@@ -228,12 +228,13 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * Append to a finalized replica and returns the meta info of the replica
    * 
    * @param b block
+   * @param mhlc message clock
    * @param newGS the new generation stamp for the replica
    * @param expectedBlockLen the number of bytes the replica is expected to have
    * @return the meata info of the replica which is being written to
    * @throws IOException
    */
-  public Replica append(ExtendedBlock b, long newGS,
+  public Replica append(ExtendedBlock b, HybridLogicalClock mhlc, long newGS,
       long expectedBlockLen) throws IOException;
 
   /**
@@ -241,12 +242,13 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * and returns the meta info of the replica
    * 
    * @param b block
+   * @param mhlc message clock
    * @param newGS the new generation stamp for the replica
    * @param expectedBlockLen the number of bytes the replica is expected to have
    * @return the meta info of the replica which is being written to
    * @throws IOException
    */
-  public Replica recoverAppend(ExtendedBlock b, long newGS,
+  public Replica recoverAppend(ExtendedBlock b, HybridLogicalClock mhlc, long newGS,
       long expectedBlockLen) throws IOException;
   
   /**

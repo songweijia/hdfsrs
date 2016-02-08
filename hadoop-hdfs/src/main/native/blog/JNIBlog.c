@@ -624,11 +624,12 @@ static void replayLog(JNIEnv *env, jobject thisObj, filesystem_t *fs){
   long l;
   // STEP 1:
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
-  jmethodID rl_mid = (*env)->GetMethodID(env, thisCls, "replayLogOnMetadata", "(JI)V");
+  jmethodID rl_mid = (*env)->GetMethodID(env, thisCls, "replayLogOnMetadata", "(JIJ)V");
   block_t *block;
   int i,pages_cap;
   // replay the log
   for(l=0;l<*fs->log_length;l++){
+    DEBUG_PRINT("replay_1:op=%d\n",fs->log[l].op);
     //STEP 1: replay the log for fs->block_map
     switch(fs->log[l].op){
     case CREATE_BLOCK:
@@ -674,11 +675,14 @@ static void replayLog(JNIEnv *env, jobject thisObj, filesystem_t *fs){
         block->pages[fs->log[l].page_id+i] = (page_t)(fs->page_base + (fs->log[l].first_pn + i) * fs->page_size);
       break;
     case BOL:
+    case SET_GENSTAMP:
     default:
       break;// do nothing
     }
     //STEP 2: replay the log for JNIBlog.blockMaps
-    (*env)->CallObjectMethod(env,thisObj,rl_mid,fs->log[l].block_id,fs->log[l].op);
+    DEBUG_PRINT("replay_2:op=%d,genStamp=%ld\n",fs->log[l].op,fs->log[l].first_pn);
+    (*env)->CallObjectMethod(env,thisObj,rl_mid,fs->log[l].block_id,fs->log[l].op,fs->log[l].first_pn);
+    DEBUG_PRINT("replay_2:op=%d...done\n",fs->log[l].op);
   }
 }
 
@@ -759,10 +763,10 @@ DEBUG_PRINT("initialize() done\n");
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createBlock
- * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;J)I
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;JJ)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
-  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId)
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jlong genStamp)
 {
 DEBUG_PRINT("begin createBlock\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
@@ -788,7 +792,7 @@ DEBUG_PRINT("begin createBlock\n");
   log_entry->op = CREATE_BLOCK;
   log_entry->block_length = 0;
   update_log_clock(env, mhlc, log_entry);
-  log_entry->first_pn = 0l;
+  log_entry->first_pn = (uint64_t)genStamp;
   (*filesystem->log_length) += 1;
   pthread_rwlock_unlock(&(filesystem->log_lock));
   
@@ -1067,7 +1071,7 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
     fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active.\n", block_id);
     return -1;
   }
-DEBUG_PRINT("end getNumberOfBytes__J.\n");
+DEBUG_PRINT("end getNumberOfBytes__J log[%ld].block_length=%d.\n",log_index,log[log_index].block_length);
   return (jint) log[log_index].block_length;
 }
 
@@ -1335,4 +1339,42 @@ DEBUG_PRINT("beging destroy.\n");
     fs->log_fd=-1;
   }
 DEBUG_PRINT("end destroy.\n");
+}
+
+/**
+ * set generation stamp a block. // this is for Datanode.
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_setGenStamp
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jlong genStamp){
+  filesystem_t *filesystem;
+  uint64_t block_id = (uint64_t)blockId, log_index;
+  block_t *block;
+  log_t *log_entry;
+
+  filesystem = get_filesystem(env,thisObj);
+  //STEP 1: check if blockId is included
+  MAP_LOCK(block, filesystem->block_map, block_id, 'r');
+  if (MAP_READ(block, filesystem->block_map, block_id, &block) == -1) {
+    fprintf(stderr, "WARNING: It is not possible to set generation stamp for block with ID %" PRIu64 " because it does not exist.\n",
+            block_id);
+    MAP_UNLOCK(block, filesystem->block_map, block_id);
+    return -1;
+  }
+  MAP_UNLOCK(block, filesystem->block_map, block_id);
+  //STEP 2: append log
+  pthread_rwlock_wrlock(&(filesystem->log_lock));
+  log_index = *filesystem->log_length;
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  log_entry = filesystem->log + log_index;
+  log_entry->block_id = block_id;
+  log_entry->op = SET_GENSTAMP;
+  log_entry->first_pn = (uint64_t)genStamp;
+  log_entry->previous = block->log_index;
+  update_log_clock(env, mhlc, log_entry);
+  (*filesystem->log_length) += 1;
+  pthread_rwlock_unlock(&(filesystem->log_lock));
+  //STEP 3: update block;
+  block->log_index = log_index;
+
+  return 0;
 }

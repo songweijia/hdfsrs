@@ -10,7 +10,7 @@ extern "C" {
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    initialize
- * Signature: (II)I
+ * Signature: (IILjava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   (JNIEnv *, jobject, jint, jint, jstring);
@@ -25,11 +25,19 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_destroy
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    setGenStamp
+ * Signature: (JJ)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_setGenStamp
+  (JNIEnv *, jobject, jobject, jlong, jlong);
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createBlock
- * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;J)I
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;JJ)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
-  (JNIEnv *, jobject, jobject, jlong);
+  (JNIEnv *, jobject, jobject, jlong, jlong);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -94,12 +102,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
   (JNIEnv *, jclass);
-
-#ifdef DEBUG
-#define DEBUG_PRINT(arg,fmt...) {fprintf(stdout,arg, ##fmt );fflush(stdout);}
-#else
-#define DEBUG_PRINT(arg,fmt...)
-#endif
 
 #ifdef __cplusplus
 }
