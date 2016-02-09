@@ -8,8 +8,8 @@ public class HybridLogicalClock implements Comparable<HybridLogicalClock>
   public long c;
   
   public HybridLogicalClock() {
-	this.r = 0;
-	this.c = 0;
+	  this.r = 0;
+	  this.c = 0;
   }
   
   public HybridLogicalClock(HybridLogicalClock hlc) {

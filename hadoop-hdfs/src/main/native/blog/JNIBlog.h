@@ -81,14 +81,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    createSnapshot
- * Signature: (J)I
- */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createSnapshot
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    readLocalRTC
  * Signature: ()J
  */

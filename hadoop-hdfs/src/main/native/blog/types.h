@@ -17,6 +17,7 @@ MAP_DECLARE(log, uint64_t);
 MAP_DECLARE(snapshot, snapshot_t);
 
 enum OPERATION {
+  BOL,
   CREATE_BLOCK,
   DELETE_BLOCK,
   WRITE
@@ -41,7 +42,8 @@ struct block {
   uint64_t id;
   uint64_t log_length;
   uint64_t log_cap;
-  uint32_t length;
+  uint32_t status : 4;
+  uint32_t length : 28;
   uint32_t pages_cap;
   page_t *pages;
   log_t *log;
