@@ -19,9 +19,15 @@ typedef struct filesystem filesystem_t;
 typedef struct snapshot snapshot_t;
 typedef struct disk_log disk_log_t;
 
-#define PAGE_FILE_SIZE (1024L*1024*1024*1024)
-#define LOG_CAP	(1024L*1024*1024)
-#define LOG_FILE_SIZE (LOG_CAP*sizeof(log_t))
+#ifdef PRELOAD_MAPPED_FILE
+  #define PAGE_FILE_SIZE (1024L*1024*1024*32)
+  #define LOG_CAP	(1024L*1024*32)
+  #define LOG_FILE_SIZE (LOG_CAP*sizeof(log_t))
+#else
+  #define PAGE_FILE_SIZE (1024L*1024*1024*1024)
+  #define LOG_CAP	(1024L*1024*1024)
+  #define LOG_FILE_SIZE (LOG_CAP*sizeof(log_t))
+#endif
 #define FLUSH_INTERVAL_SEC (10)
 
 #ifdef DEBUG

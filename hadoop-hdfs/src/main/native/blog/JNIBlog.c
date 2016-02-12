@@ -605,6 +605,15 @@ static void loadBlog(filesystem_t *fs, const char *pp)
     fprintf(stderr,"Cannot mmap() file: %s, exit...with errno=%d\n",fullpath,errno);
     exit(-1);
   }
+#ifdef PRELOAD_MAPPED_FILE
+  uint64_t i;
+  for(i=0l;i<(PAGE_FILE_SIZE>>3);i++){
+    *((uint64_t*)fs->page_base+i) = 0l;
+  }
+  for(i=0l;i<(LOG_FILE_SIZE>>3);i++){
+    *((uint64_t*)fs->log_base+i) = 0l;
+  }
+#endif
 }
 
 /* Replay the block log of a file system. This is called during 
