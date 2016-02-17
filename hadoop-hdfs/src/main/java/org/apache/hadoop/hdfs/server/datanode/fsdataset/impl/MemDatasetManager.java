@@ -387,9 +387,11 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
  * @throws IOException
  */
   void snapshot(String bpid, long rtc)throws IOException{
+/* TODO: remove create Snapshot for datanode.
     JNIBlog blog = getJNIBlog(bpid);
     synchronized(blog){
       blog.createSnapshot(rtc);
     }
+*/
   }
 }

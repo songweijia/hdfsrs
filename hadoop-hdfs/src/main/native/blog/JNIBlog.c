@@ -437,8 +437,10 @@ int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_
  * Method:    initialize
  * Signature: (II)I
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *env, jobject thisObj, jint blockSize, jint pageSize)
+  (JNIEnv *env, jobject thisObj, jint blockSize, jint pageSize, jstring persPath)
 {
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jfieldID long_id = (*env)->GetFieldID(env, thisCls, "jniData", "J");
@@ -465,6 +467,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   
   return 0;
 }
+#pragma GCC diagnostic pop
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
