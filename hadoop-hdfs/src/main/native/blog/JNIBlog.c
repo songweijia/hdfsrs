@@ -683,8 +683,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
   uint32_t block_offset = (uint32_t) blkOfst;
   uint32_t buffer_offset = (uint32_t) bufOfst;
   uint32_t read_length = (uint32_t) length;
-  uint64_t *log_ptr;
-  uint64_t log_index;
+//  uint64_t *log_ptr;
+//  uint64_t log_index;
   uint32_t cur_length, page_id, page_offset;
   char *page_data;
   
@@ -782,8 +782,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
   filesystem_t *filesystem = get_filesystem(env, thisObj);;
   snapshot_t *snapshot;
   block_t *block;
-  uint64_t *log_ptr;
-  uint64_t log_index;
+  // uint64_t *log_ptr;
+  // uint64_t log_index;
   uint64_t block_id = (uint64_t) blockId;
   uint64_t snapshot_time = (uint64_t) t;
   
@@ -864,9 +864,9 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   
   // Write all the data from the packet.
   if (first_page == last_page) {
-    write_page_length = write_length;
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
-    temp_data += write_page_length;
+    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
+    temp_data += write_length;
+    last_page_length = first_page_offset + write_length;
   } else {
     write_page_length = filesystem->page_size - first_page_offset;
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
@@ -878,11 +878,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
       buffer_offset += write_page_length;
       temp_data += write_page_length;
     }
-    write_page_length = (block_offset + write_length) % page_size;
+    write_page_length = (block_offset + write_length - 1) % page_size + 1;
     (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
     temp_data += write_page_length;
+    last_page_length = write_page_length;
   }
-  last_page_length = write_page_length;
   block_length = last_page * filesystem->page_size + last_page_length;
   if (block_length < block->length) {
     write_page_length = last_page*(page_size+1) <= block->length ? page_size - last_page_length
@@ -890,7 +890,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
     strncpy(temp_data, block->pages[last_page] + last_page_length, write_page_length);
     block_length = block->length;
   }
-  
   // Create the corresponding log entry.
   log_index = block->log_length;
   check_and_increase_log_cap(block);
