@@ -307,6 +307,26 @@ public class DistributedFileSystem extends FileSystem {
       }
     }.resolve(this, absF);
   }
+  
+  @Override
+  public FSDataInputStream open(Path f, final int bufferSize, final long timestamp, final boolean bUserTimestamp)
+  throws IOException{
+    statistics.incrementReadOps(1);
+    Path absF = fixRelativePart(f);
+    return new FileSystemLinkResolver<FSDataInputStream>() {
+      @Override
+      public FSDataInputStream doCall(final Path p)
+          throws IOException, UnresolvedLinkException {
+        return new HdfsDataInputStream(
+            dfs.open(getPathName(p), bufferSize, verifyChecksum, timestamp, bUserTimestamp));
+      }
+      @Override
+      public FSDataInputStream next(final FileSystem fs, final Path p)
+          throws IOException {
+        return fs.open(p, bufferSize, timestamp, bUserTimestamp);
+      }
+    }.resolve(this, absF);
+  }
 
   @Override
   public FSDataOutputStream append(Path f, final int bufferSize,

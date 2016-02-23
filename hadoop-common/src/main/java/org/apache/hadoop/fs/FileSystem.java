@@ -763,6 +763,18 @@ public abstract class FileSystem extends Configured implements Closeable {
   public FSDataInputStream open(Path f) throws IOException {
     return open(f, getConf().getInt("io.file.buffer.size", 4096));
   }
+  
+  /**
+   * Opens an FSDataInputStream at the indicated Path. 
+   * @param f
+   * @param bufferSize
+   * @param timestamp - the timestamp we are using 
+   * @param bUserTimestamp
+   */
+  public FSDataInputStream open(Path f, int bufferSize,
+      long timestamp, boolean bUserTimestamp)throws IOException{
+    throw new IOException("open with timestamp is not implemented");
+  }
 
   /**
    * Create an FSDataOutputStream at the indicated Path.

@@ -94,6 +94,9 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   private long blockEnd = -1;
   private CachingStrategy cachingStrategy;
   private final ReadStatistics readStatistics = new ReadStatistics();
+  
+  private long timestamp = -1; // from which snapshot should we read from.
+  private boolean bUserTimestamp = false; // are we using user timestamp or not.
 
   /**
    * Track the ByteBuffers that we have handed out to readers.
@@ -213,14 +216,17 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     deadNodes.put(dnInfo, dnInfo);
   }
   
-  DFSInputStream(DFSClient dfsClient, String src, int buffersize, boolean verifyChecksum
-                 ) throws IOException, UnresolvedLinkException {
+  DFSInputStream(DFSClient dfsClient, String src, int buffersize, boolean verifyChecksum,
+                 long timestamp, boolean bUserTimestamp) 
+    throws IOException, UnresolvedLinkException {
     this.dfsClient = dfsClient;
     this.verifyChecksum = verifyChecksum;
     this.buffersize = buffersize;
     this.src = src;
     this.cachingStrategy =
         dfsClient.getDefaultReadCachingStrategy();
+    this.timestamp = timestamp;
+    this.bUserTimestamp = bUserTimestamp;
     openInfo();
   }
 
@@ -228,6 +234,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * Grab the open-file info from namenode
    */
   synchronized void openInfo() throws IOException, UnresolvedLinkException {
+    //TODO: get metadata from namenode.
     lastBlockBeingWrittenLength = fetchLocatedBlocksAndGetLastBlockLength();
     int retriesForLastBlockLength = dfsClient.getConf().retryTimesForGetLastBlockLength;
     while (retriesForLastBlockLength > 0) {
