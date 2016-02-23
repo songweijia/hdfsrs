@@ -52,6 +52,9 @@ import static org.apache.hadoop.util.Time.now;
 
 import org.apache.hadoop.conf.Configuration;
 
+import edu.cornell.cs.blog.DefaultRecordParser;
+import edu.cornell.cs.blog.IRecordParser;
+import edu.cornell.cs.blog.IRecordParser.RecordParserException;
 import edu.cornell.cs.perf.PerformanceTraceSwitch;
 
 /** A class that receives a block and writes to its own disk, meanwhile
@@ -65,6 +68,7 @@ class MemBlockReceiver extends BlockReceiver {
   
   /** the replica to write */
   private MemDatasetManager.MemBlockMeta replicaInfo;
+  private IRecordParser rp;
   
   BlockWriter blockWriter = null;
 
@@ -74,9 +78,12 @@ class MemBlockReceiver extends BlockReceiver {
       final long newGs, final long minBytesRcvd, final long maxBytesRcvd, 
       final String clientname, final DatanodeInfo srcDataNode,
       final DataNode datanode, DataChecksum requestedChecksum,
-      long offset/*HDFSRS_RWAPI*/,HybridLogicalClock mhlc/*HDFSRS_HLC*/) throws IOException {
+      long offset/*HDFSRS_RWAPI*/,HybridLogicalClock mhlc/*HDFSRS_HLC*/,
+      IRecordParser rp) throws IOException {
     
     super(block, in, inAddr, myAddr, stage,clientname, srcDataNode, datanode, requestedChecksum);
+    //Record Parser:
+    this.rp = (rp==null)?new DefaultRecordParser():rp;
     //acclocate a buffer from pool:
     this.getBuf();
   
@@ -411,7 +418,7 @@ class MemBlockReceiver extends BlockReceiver {
       }
       
       //start blockWriter
-      blockWriter = new BlockWriter((HLCOutputStream)this.out, this.buffers, this.replicaInfo);
+      blockWriter = new BlockWriter((HLCOutputStream)this.out, this.buffers, this.replicaInfo, this.rp);
 
       this.packetRecvTime = 0;
       while (receivePacket() >= 0) { /* Receive until the last packet */ }
@@ -444,7 +451,6 @@ class MemBlockReceiver extends BlockReceiver {
         }
         datanode.metrics.incrBlocksWritten();
       }
-
     } catch (IOException ioe) {
       if (datanode.isRestarting()) {
         // Do not throw if shutting down for restart. Otherwise, it will cause
@@ -974,14 +980,16 @@ class MemBlockReceiver extends BlockReceiver {
     boolean isRunning;
     Thread thread;
     MemDatasetManager.MemBlockMeta replica;
+    IRecordParser rp;
     
-    public BlockWriter(HLCOutputStream vcout, ByteBuffer[] bufs, MemDatasetManager.MemBlockMeta replicaInfo){
+    public BlockWriter(HLCOutputStream vcout, ByteBuffer[] bufs, MemDatasetManager.MemBlockMeta replicaInfo, IRecordParser rp){
       this.hlcout = vcout;
       this.bufs = bufs;
       isRunning = true;
       thread = new Thread(this);
       thread.start();
       this.replica = replicaInfo;
+      this.rp = rp;
     }
     
     void requestWrite(int icb, HybridLogicalClock hlc, long offsetInBlock ,int len){
@@ -1028,7 +1036,15 @@ class MemBlockReceiver extends BlockReceiver {
           try{
             if(curBufIdx == 0 || curBufIdx == 1){
               sanityCheck();
-              hlcout.write(hlc,bufs[curBufIdx].array(), 0, len);
+              // we assume that 
+              // 1) each buffer has one or multiple records.
+              // 2) records are not splitted across buffer boundary.
+              int sRec = 0,eRec; // start and end of Record
+              while(sRec != len){
+                eRec = rp.ParseRecord(bufs[curBufIdx].array(), sRec, len);
+                hlcout.write(hlc,rp.getUserTimestamp(),bufs[curBufIdx].array(),sRec,eRec);
+                sRec = eRec;
+              }
               if(replica.getNumBytes() < replica.getBytesOnDisk())
                 replica.setNumBytes(replica.getBytesOnDisk());
               curBufIdx = -1;
@@ -1039,9 +1055,9 @@ class MemBlockReceiver extends BlockReceiver {
           {
             //do nothing
           }catch(IOException ioe){
-            //do something
-            System.out.println(ioe);
-            ioe.printStackTrace();
+            LOG.error("BlockWriter Error:"+ioe);
+          }catch(RecordParserException rpe){
+            LOG.error("BlockWriter Error:"+rpe);
           }
         }while(isRunning || curBufIdx != -1);
       }

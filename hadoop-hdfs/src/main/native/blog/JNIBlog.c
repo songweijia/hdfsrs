@@ -142,16 +142,16 @@ char *block_to_string(block_t *block, size_t page_size)
   // Print Snapshots.
   strcat(res, "Snapshots:\n");
   for (i = 0; i < LOG_MAP_SIZE; i++)
-    MAP_LOCK(log, block->log_map, i, 'r');
-  map_length = MAP_LENGTH(log, block->log_map);
+    MAP_LOCK(log, block->log_map_hlc, i, 'r');
+  map_length = MAP_LENGTH(log, block->log_map_hlc);
   sprintf(buf, "Number of Snapshots: %" PRIu64 "\n", map_length);
   strcat(res, buf);
   if (map_length > 0)
-    snapshot_ids = MAP_GET_IDS(log, block->log_map, map_length);
+    snapshot_ids = MAP_GET_IDS(log, block->log_map_hlc, map_length);
   for (i = 0; i < map_length; i++) {
     sprintf(buf, "RTC: %" PRIu64 "\n", snapshot_ids[i]);
     strcat(res, buf);
-    if (MAP_READ(log, block->log_map, snapshot_ids[i], &log_ptr) != 0) {
+    if (MAP_READ(log, block->log_map_hlc, snapshot_ids[i], &log_ptr) != 0) {
       fprintf(stderr, "ERROR: Cannot read log index whose time is contained in log map.\n");
       exit(0);
     }
@@ -168,7 +168,7 @@ char *block_to_string(block_t *block, size_t page_size)
     MAP_UNLOCK(snapshot, block->snapshot_map, *log_ptr);
   }
   for (i = 0; i < LOG_MAP_SIZE; i++)
-    MAP_UNLOCK(log, block->log_map, i);
+    MAP_UNLOCK(log, block->log_map_hlc, i);
   if (map_length > 0)
     free(snapshot_ids);
   strcat(res, "--------------------------------------------------\n");
@@ -305,6 +305,27 @@ int find_last_entry(block_t *block, uint64_t r, uint64_t l, uint64_t *last_entry
   *last_entry = log_index;
   return 0;
 }
+// Find last log entry that has user timestamp less or equal than ut.
+void find_last_entry_by_ut(block_t *block, uint64_t ut, uint64_t *last_entry){
+  log_t *log = block->log;
+  uint64_t length, log_index, cur_diff;
+
+  length = block->log_length;
+  if(log[length-1].u <= ut){
+    log_index = length - 1;
+  }else{
+    log_index = length/2>0 ? length/2-1 : 0;
+    cur_diff = length/4>1 ? length/4 : 1;
+    while(log[log_index].u > ut || log[log_index+1].u <= ut){
+      if(log[log_index].u > ut)
+        log_index -= cur_diff;
+      else
+        log_index += cur_diff;
+      cur_diff = cur_diff > 1 ? cur_diff/2 : 1;
+    }
+  }
+  *last_entry = log_index;
+}
 
 /**
  * Check if the log capacity needs to be increased.
@@ -375,11 +396,12 @@ snapshot_t *fill_snapshot(log_t *log_entry, uint32_t page_size) {
  * snapshot_time- Time to take the snapshot.
  *                Must be lower or equal than a timestamp that might appear in the future.
  * snapshot_ptr - Snapshot pointer used for returning the correct snapshot instance.
+ * by_ut        - if it is for user timestamp or not.
  * return  1, if created snapshot,
  *         0, if found snapshot,
  *         error code, otherwise. 
  */
-int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_size, snapshot_t **snapshot_ptr)
+int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_size, snapshot_t **snapshot_ptr, int by_ut)
 {
   log_t *log = block->log;
 	snapshot_t *snapshot;
@@ -387,8 +409,8 @@ int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_
   uint64_t log_index;
   
   // If snapshot already exists return the existing snapshot.
-  MAP_LOCK(log, block->log_map, snapshot_time, 'w');
-  if (MAP_READ(log, block->log_map, snapshot_time, &log_ptr) == 0) {
+  MAP_LOCK(log, by_ut?block->log_map_ut:block->log_map_hlc, snapshot_time, 'w');
+  if (MAP_READ(log, by_ut?block->log_map_ut:block->log_map_hlc, snapshot_time, &log_ptr) == 0) {
     log_index = *log_ptr;
     MAP_LOCK(snapshot, block->snapshot_map, log_index, 'r');
     if (MAP_READ(snapshot, block->snapshot_map, log_index, snapshot_ptr) == -1) {
@@ -396,21 +418,28 @@ int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_
       exit(0);
     }
     MAP_UNLOCK(snapshot, block->snapshot_map, log_index);
-    MAP_UNLOCK(log, block->log_map, snapshot_time);
+    MAP_UNLOCK(log, by_ut?block->log_map_ut:block->log_map_hlc, snapshot_time);
     return 0;
   }
  	
- 	// If snapshot can include future references do not create it.
+  // for hlc: If snapshot can include future references do not create it. //TOD //TODO
   log_ptr = (uint64_t *) malloc(sizeof(uint64_t));
-  if (find_last_entry(block, snapshot_time-1, ULLONG_MAX, log_ptr) == -1) {
-    free(log_ptr);
-    fprintf(stderr, "WARNING: Snapshot was not created because it might have future entries.\n");
-  	return -1;
+  if(by_ut){
+    find_last_entry_by_ut(block, snapshot_time, log_ptr);
+  }else{
+    if (find_last_entry(block, snapshot_time-1, ULLONG_MAX, log_ptr) == -1) {
+      free(log_ptr);
+      fprintf(stderr, "WARNING: Snapshot was not created because it might have future entries.\n");
+        return -1;
+    }
   }
   log_index = *log_ptr;
   
   // Create snapshot.
-  if (MAP_CREATE_AND_WRITE(log, block->log_map, snapshot_time, log_ptr) == -1) {
+  if(by_ut && log[log_index].u < snapshot_time){
+    // we do not create a log_map entry at this point because
+    // future data may come later.
+  }else if (MAP_CREATE_AND_WRITE(log, by_ut?block->log_map_ut:block->log_map_hlc, snapshot_time, log_ptr) == -1) {
       fprintf(stderr, "ERROR: Could not create snapshot although it does not exist in the log map.\n");
       exit(0);
   }
@@ -428,7 +457,7 @@ int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_
     (*snapshot_ptr) = snapshot;
   }
   MAP_UNLOCK(snapshot, block->snapshot_map, log_index);
-  MAP_UNLOCK(log, block->log_map, snapshot_time);
+  MAP_UNLOCK(log, by_ut?block->log_map_ut:block->log_map_hlc, snapshot_time);
   return 1;
 }
 
@@ -507,6 +536,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   log_entry->nr_pages = 0;
   log_entry->r = 0;
   log_entry->l = 0;
+  log_entry->u = 0;
   log_entry->pages = NULL;
   log_entry++;
   log_entry->op = CREATE_BLOCK;
@@ -515,6 +545,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   log_entry->nr_pages = 0;
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env,mhlc,log_entry);
+  log_entry->u = 0;
   log_entry->pages = NULL;
   
   // Update current state.
@@ -524,7 +555,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   block->pages = NULL;
   
   // Create snapshot structures.
-  block->log_map = MAP_INITIALIZE(log);
+  block->log_map_hlc = MAP_INITIALIZE(log);
+  block->log_map_ut = MAP_INITIALIZE(log);
   block->snapshot_map = MAP_INITIALIZE(snapshot);
   
   // Put block to block map.
@@ -536,6 +568,21 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   return 0;
+}
+
+/*
+ * estimate the user's timestamp where it is not avaialbe.
+ * For deleteBlock(), we need this.
+ * we assume that u = K*r; where K is a linear coefficient.
+ * so u2 = u1/r1*r2
+ */
+long estimate_user_timestamp(block_t *block, long r){
+  log_t *le = block->log+block->log_length-1;
+
+  if(block->log_length == 0 || le->r == 0)
+    return r;
+  else
+    return (long)((double)le->u/(double)le->r*r);
 }
 
 /*
@@ -570,6 +617,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   log_entry->nr_pages = 0;
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, log_entry);
+  log_entry->u = estimate_user_timestamp(block,log_entry->r);
   log_entry->pages = NULL;
   
   // Release the current state of the block.
@@ -670,10 +718,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    readBlock
- * Signature: (JJIII[B)I
+ * Signature: (JJIII[BZ)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
-  (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint bufOfst, jint length, jbyteArray buf)
+  (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint bufOfst, jint length, jbyteArray buf, jboolean byUserTimestamp)
 {
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
@@ -697,7 +745,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Create snapshot.
-  if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot) < 0) {
+  if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, byUserTimestamp==JNI_TRUE) < 0) {
       fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
       return -1;
   }
@@ -774,10 +822,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    getNumberOfBytes
- * Signature: (JJ)I
+ * Signature: (JJZ)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
-  (JNIEnv *env, jobject thisObj, jlong blockId, jlong t)
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ
+  (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jboolean by_ut)
 {
   filesystem_t *filesystem = get_filesystem(env, thisObj);;
   snapshot_t *snapshot;
@@ -796,7 +844,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Find the corresponding block.
-  if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot) < 0) {
+  if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, by_ut==JNI_TRUE) < 0) {
       fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
       return -2;
   }
@@ -817,9 +865,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
  * Signature: (Ledu/cornell/cs/sa/VectorClock;JIII[B)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
-  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst,
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong userTimestamp, jlong blockId, jint blkOfst,
   jint bufOfst, jint length, jbyteArray buf)
 {
+fprintf(stderr,"writeBlock:id=%ld\tofst=%d\tlength=%d\n",blockId,blkOfst,length);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
   uint32_t block_offset = (uint32_t) blkOfst;
@@ -900,6 +949,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   log_entry->nr_pages = last_page-first_page+1;
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, log_entry);
+  log_entry->u = userTimestamp;
   log_entry->pages = data;
   block->log_length += 1;
   

@@ -639,7 +639,7 @@ class DataXceiver extends Receiver implements Runnable {
               peer.getLocalAddressString(),
               stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
               clientname, srcDataNode, datanode, requestedChecksum,
-              offset/*HDFSRS_RWAPI*/, mhlc/*HDFSRS_VC*/);
+              offset/*HDFSRS_RWAPI*/, mhlc/*HDFSRS_VC*/, null);
         } else {
           blockReceiver = new BlockReceiver(block, in, 
               peer.getRemoteAddressString(),
@@ -1071,7 +1071,8 @@ class DataXceiver extends Receiver implements Runnable {
         blockReceiver = new MemBlockReceiver(block, proxyReply, 
             proxySock.getRemoteSocketAddress().toString(),
             proxySock.getLocalSocketAddress().toString(),
-            null, 0, 0, 0, "", null, datanode, remoteChecksum, -1/*HDFSRS_RWAPI*/, null/*HDFSRS_VC*/);
+            null, 0, 0, 0, "", null, datanode, remoteChecksum, -1/*HDFSRS_RWAPI*/, null/*HDFSRS_VC*/,
+            null);
       } else {
         blockReceiver = new BlockReceiver(
             block, proxyReply, proxySock.getRemoteSocketAddress().toString(),

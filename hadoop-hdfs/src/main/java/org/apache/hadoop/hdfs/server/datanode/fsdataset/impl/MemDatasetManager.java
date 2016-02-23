@@ -132,7 +132,7 @@ public class MemDatasetManager {
   	}
   	
   	public long getNumBytes(long sid){
-  		long nb = (sid == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,sid);
+  		long nb = (sid == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,sid,false);
 		if(nb == -1L)nb = 0L; // -1 means block does not exists.
 		return nb;
   	}
@@ -199,7 +199,7 @@ public class MemDatasetManager {
      */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
     	if(offset < ((snapshotId==JNIBlog.CURRENT_SNAPSHOT_ID)?
-            blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, snapshotId))){
+            blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, snapshotId, false))){
     		int ret = ((snapshotId == JNIBlog.CURRENT_SNAPSHOT_ID)? 
                     blog.readBlock(blockId, offset, off, len, bytes):
                     blog.readBlock(blockId, snapshotId, offset, off, len, bytes));
@@ -242,9 +242,9 @@ public class MemDatasetManager {
     }
 
     @Override
-    public synchronized void write(HybridLogicalClock mhlc, byte[] b, int off, int len)
+    public synchronized void write(HybridLogicalClock mhlc, long userTimestamp, byte[] b, int off, int len)
     throws IOException {
-      int ret = blog.writeBlock(mhlc, blockId, offset, off, len, b);
+      int ret = blog.writeBlock(mhlc, userTimestamp, blockId, offset, off, len, b);
       if(ret < 0)
         throw new IOException("error in JNIBlog.write("+mhlc+","+
           blockId+","+offset+","+off+","+len+",b):"+ret);

@@ -21,5 +21,18 @@ abstract public class HLCOutputStream extends OutputStream {
 	 * @param len length
 	 * @throws IOException
 	 */
-	public abstract void write(HybridLogicalClock mhlc, byte[] b, int off, int len) throws IOException;
+	final public void write(HybridLogicalClock mhlc, byte[] b, int off, int len)
+	    throws IOException{
+	  this.write(mhlc,mhlc.r,b,off,len);
+	}
+	
+	/**
+	 * @param mhlc
+	 * @param userTimestamp
+	 * @param b
+	 * @param off
+	 * @param len
+	 * @throws IOException
+	 */
+	public abstract void write(HybridLogicalClock mhlc, long userTimestamp, byte[] b, int off, int len) throws IOException;
 }

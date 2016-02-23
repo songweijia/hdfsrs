@@ -35,6 +35,7 @@ struct log {
   uint32_t nr_pages;
   uint64_t r;
   uint64_t l;
+  uint64_t u; // user timestamp
   page_t pages;
 };
 
@@ -47,7 +48,8 @@ struct block {
   uint32_t pages_cap;
   page_t *pages;
   log_t *log;
-  MAP_TYPE(log) *log_map;
+  MAP_TYPE(log) *log_map_hlc; // by hlc
+  MAP_TYPE(log) *log_map_ut; // by user timestamp
   MAP_TYPE(snapshot) *snapshot_map;
 };
 

@@ -160,9 +160,24 @@ public class JNIBlog
    * @param bufOfst - buffer offset
    * @param length - how many bytes to read
    * @param buf[OUTPUT] - for read data
+   * @param byUserTimestamp
    * @return error code, number of bytes read for success.
    */
-  public native int readBlock(long blockId, long t, int blkOfst, int bufOfst, int length, byte buf[]);
+  public native int readBlock(long blockId, long t, int blkOfst, int bufOfst, int length, byte buf[], boolean byUserTimestamp);
+  
+  /**
+   * for compatibility:
+   * @param blockId
+   * @param t
+   * @param blkOfst
+   * @param bufOfst
+   * @param length
+   * @param buf
+   * @return
+   */
+  public int readBlock(long blockId, long t, int blkOfst, int bufOfst, int length, byte buf[]){
+    return readBlock(blockId,t,blkOfst,bufOfst,length,buf,false);
+  }
   
   /**
    * get number of bytes we have in the block
@@ -175,9 +190,10 @@ public class JNIBlog
    * get number of bytes we have in the block
    * @param blockId
    * @param t
+   * @param byUserTimestamp
    * @return
    */
-  public native int getNumberOfBytes(long blockId, long t);
+  public native int getNumberOfBytes(long blockId, long t, boolean byUserTimestamp);
   
   /**
    * @param mhlc
@@ -188,7 +204,7 @@ public class JNIBlog
    * @param buf
    * @return
    */
-  public native int writeBlock(HybridLogicalClock mhlc, long blockId, int blkOfst, int bufOfst, int length, byte buf[]);
+  public native int writeBlock(HybridLogicalClock mhlc, long userTimestamp, long blockId, int blkOfst, int bufOfst, int length, byte buf[]);
   
   /**
    * readLocalRTC clock. all timestamp in the log should read
@@ -250,19 +266,19 @@ public class JNIBlog
     	e[3*i+1] = (byte) 'y';
     	e[3*i+2] = (byte) 'z';
     }
-    assert (writeBlock(mhlc, 4101, 0, 0, a.length(), a.getBytes()) == 0);
+    assert (writeBlock(mhlc, mhlc.r, 4101, 0, 0, a.length(), a.getBytes()) == 0);
     writeLine("Block 4101 was written.");
-    assert (writeBlock(mhlc, 4100, 0, 0, 20, a.getBytes()) == -1);
-    assert (writeBlock(mhlc, 4101, 100, 0, 20, a.getBytes()) == -2);
+    assert (writeBlock(mhlc, mhlc.r, 4100, 0, 0, 20, a.getBytes()) == -1);
+    assert (writeBlock(mhlc, mhlc.r, 4101, 100, 0, 20, a.getBytes()) == -2);
     Thread.sleep(1);
     rtc = readLocalRTC();
-    assert (writeBlock(mhlc, 4101, 0, 0, b.length(), b.getBytes()) == 0);
+    assert (writeBlock(mhlc, mhlc.r, 4101, 0, 0, b.length(), b.getBytes()) == 0);
     writeLine("Block 4101 was written.");
-    assert (writeBlock(mhlc, 5000, 0, 0, c.length(), c.getBytes()) == 0);
+    assert (writeBlock(mhlc, mhlc.r, 5000, 0, 0, c.length(), c.getBytes()) == 0);
     writeLine("Block 5000 was written.");
-    assert (writeBlock(mhlc, 5000, 40, 0, 4096*3, d) == 0);
+    assert (writeBlock(mhlc, mhlc.r, 5000, 40, 0, 4096*3, d) == 0);
     writeLine("Block 5000 was appended.");
-    assert (writeBlock(mhlc, 5000, 40+4096, 4096, 4096, e) == 0);
+    assert (writeBlock(mhlc, mhlc.r, 5000, 40+4096, 4096, 4096, e) == 0);
     writeLine("Block 5000 was written randomly.");
     
     return rtc;
@@ -316,7 +332,7 @@ public class JNIBlog
     temp = new String(mybuf, Charset.forName("UTF-8"));
     writeLine("Snapshot " + Long.toString(rtc)  + ", Block 4101: " + temp);
     assert (a.compareTo(temp) == 0);
-    assert (getNumberOfBytes(4101,rtc) == 40);
+    assert (getNumberOfBytes(4101,rtc,false) == 40);
   }
   
   static public void writeLine(String str)

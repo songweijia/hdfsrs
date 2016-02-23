@@ -50,10 +50,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    readBlock
- * Signature: (JJIII[B)I
+ * Signature: (JJIII[BZ)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
-  (JNIEnv *, jobject, jlong, jlong, jint, jint, jint, jbyteArray);
+  (JNIEnv *, jobject, jlong, jlong, jint, jint, jint, jbyteArray, jboolean);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -66,18 +66,18 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    getNumberOfBytes
- * Signature: (JJ)I
+ * Signature: (JJZ)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJ
-  (JNIEnv *, jobject, jlong, jlong);
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ
+  (JNIEnv *, jobject, jlong, jlong, jboolean);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    writeBlock
- * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;JIII[B)I
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;JJIII[B)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
-  (JNIEnv *, jobject, jobject, jlong, jint, jint, jint, jbyteArray);
+  (JNIEnv *, jobject, jobject, jlong, jlong, jint, jint, jint, jbyteArray);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
