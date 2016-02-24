@@ -39,6 +39,8 @@ import "hdfs.proto";
  */
 message GetReplicaVisibleLengthRequestProto {
   required ExtendedBlockProto block = 1;
+  optional uint64 timestamp = 2;
+  optional bool bUserTimestamp = 3;
 }
 
 /**

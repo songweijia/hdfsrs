@@ -99,16 +99,21 @@ public class MemDatasetManager {
     public long getBytesOnDisk() {
     	return getNumBytes();
     }
-    public long getBytesOnDisk(long sid){
-    	return getNumBytes(sid);
+    public long getBytesOnDisk(long timestamp, boolean bUserTimestamp){
+    	return getNumBytes(timestamp, bUserTimestamp);
     }
 
     @Override
     public long getVisibleLength() {
     	return getNumBytes();
     }
-    public long getVisibleLength(long sid){
-    	return getNumBytes(sid);
+    
+//    public long getVisibleLength(long sid){
+//    	return getNumBytes(sid);
+//    }
+    
+    public long getVisibleLength(long timestamp, boolean bUserTimestamp){
+      return getNumBytes(timestamp,bUserTimestamp);
     }
 
     public String getStorageUuid() {
@@ -118,23 +123,21 @@ public class MemDatasetManager {
     public long getBytesAcked() {
     	return getNumBytes();
     }
-    public long getBytesAcked(long sid){
-    	return getNumBytes(sid);
-    }
-  	@Override
+
+    @Override
   	public long getBlockId() {
   		return this.blockId;
   	}
 
   	@Override
   	public long getNumBytes() {
-  		return getNumBytes(JNIBlog.CURRENT_SNAPSHOT_ID);
+  		return getNumBytes(JNIBlog.CURRENT_SNAPSHOT_ID,false);
   	}
   	
-  	public long getNumBytes(long sid){
-  		long nb = (sid == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,sid,false);
-		if(nb == -1L)nb = 0L; // -1 means block does not exists.
-		return nb;
+  	public long getNumBytes(long timestamp, boolean bUserTimestamp){
+  		long nb = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,timestamp,false);
+      if(nb == -1L)nb = 0L; // -1 means block does not exists.
+      return nb;
   	}
   	
   	public BlogOutputStream getOutputStream(){

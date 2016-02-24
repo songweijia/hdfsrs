@@ -80,7 +80,12 @@ public class ClientDatanodeProtocolServerSideTranslatorPB implements
       throws ServiceException {
     long len;
     try {
-      len = impl.getReplicaVisibleLength(PBHelper.convert(request.getBlock()));
+      if(request.hasTimestamp())
+        len = impl.getReplicaVisibleLength(
+          PBHelper.convert(request.getBlock()),
+          request.getTimestamp(),request.getBUserTimestamp());
+      else
+        len = impl.getReplicaVisibleLength(PBHelper.convert(request.getBlock()));
     } catch (IOException e) {
       throw new ServiceException(e);
     }

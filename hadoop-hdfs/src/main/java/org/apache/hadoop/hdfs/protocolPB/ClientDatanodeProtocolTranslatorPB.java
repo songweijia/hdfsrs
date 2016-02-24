@@ -176,6 +176,19 @@ public class ClientDatanodeProtocolTranslatorPB implements
   }
 
   @Override
+  public long getReplicaVisibleLength(ExtendedBlock b, long timestamp, boolean bUserTimestamp) 
+      throws IOException {
+    GetReplicaVisibleLengthRequestProto req = GetReplicaVisibleLengthRequestProto
+        .newBuilder().setBlock(PBHelper.convert(b)).setTimestamp(timestamp)
+        .setBUserTimestamp(bUserTimestamp).build();
+    try {
+      return rpcProxy.getReplicaVisibleLength(NULL_CONTROLLER, req).getLength();
+    } catch (ServiceException e) {
+      throw ProtobufHelper.getRemoteException(e);
+    }
+  }
+
+  @Override
   public void refreshNamenodes() throws IOException {
     try {
       rpcProxy.refreshNamenodes(NULL_CONTROLLER, VOID_REFRESH_NAMENODES);

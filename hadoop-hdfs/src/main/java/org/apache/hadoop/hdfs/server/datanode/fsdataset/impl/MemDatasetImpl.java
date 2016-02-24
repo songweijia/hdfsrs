@@ -197,7 +197,7 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   public long getLength(ExtendedBlock b) throws IOException {
     memManager.get(b.getBlockPoolId(), b.getBlockId());
     MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
-    if (meta != null) return meta.getNumBytes(b.getLocalBlock().getLongSid());
+    if (meta != null) return meta.getNumBytes();
     return -1;
   }
 
@@ -865,7 +865,20 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
           "replica.getGenerationStamp() < block.getGenerationStamp(), block="
           + block + ", replica=" + replica);
     }
-    return replica.getVisibleLength((long)block.getLocalBlock().getLongSid());
+    return replica.getVisibleLength();
+  }
+  
+  @Override // FsDatasetSpi
+  public synchronized long getReplicaVisibleLength(final ExtendedBlock block,
+      long timestamp,boolean bUserTimestamp)
+  throws IOException {
+    final MemDatasetManager.MemBlockMeta replica = memManager.get(block.getBlockPoolId(), block.getBlockId());
+    if (replica.getGenerationStamp() < block.getGenerationStamp()) {
+      throw new IOException(
+          "replica.getGenerationStamp() < block.getGenerationStamp(), block="
+          + block + ", replica=" + replica);
+    }
+    return replica.getVisibleLength(timestamp,bUserTimestamp);
   }
   
   @Override

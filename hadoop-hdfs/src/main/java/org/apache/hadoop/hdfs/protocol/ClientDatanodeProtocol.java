@@ -65,6 +65,10 @@ public interface ClientDatanodeProtocol {
   /** Return the visible length of a replica. */
   long getReplicaVisibleLength(ExtendedBlock b) throws IOException;
   
+  /** Return the visible length of a replica. */
+  long getReplicaVisibleLength(ExtendedBlock b, long timestamp, 
+      boolean bUserTimestamp) throws IOException;
+  
   /**
    * Refresh the list of federated namenodes from updated configuration
    * Adds new namenodes and stops the deleted namenodes.

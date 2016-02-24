@@ -1745,6 +1745,13 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
     return replica.getVisibleLength();
   }
   
+  @Override // FsDatasetSpi
+  public synchronized long getReplicaVisibleLength(final ExtendedBlock block,
+      long timestamp, boolean bUserTimestamp)
+  throws IOException {
+    throw new IOException("FsDatasetImpl does not support this api.");
+  }
+  
   @Override
   public void addBlockPool(String bpid, Configuration conf)
       throws IOException {

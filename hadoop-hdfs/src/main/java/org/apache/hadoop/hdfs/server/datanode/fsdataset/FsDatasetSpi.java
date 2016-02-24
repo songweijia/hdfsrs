@@ -375,6 +375,11 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    * Get visible length of the specified replica.
    */
   long getReplicaVisibleLength(final ExtendedBlock block) throws IOException;
+  
+  /**
+   * Get visible length of the specified replica.
+   */
+  long getReplicaVisibleLength(final ExtendedBlock block, long timestamp, boolean bUserTimestamp)throws IOException;
 
   /**
    * Initialize a replica recovery.

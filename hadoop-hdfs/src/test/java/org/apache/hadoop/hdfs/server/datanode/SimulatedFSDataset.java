@@ -1017,6 +1017,12 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   }
 
   @Override // FsDatasetSpi
+  public long getReplicaVisibleLength(ExtendedBlock block, 
+      long timestamp, boolean bUserTimestamp) throws IOException {
+    throw new IOException("not implemented.");
+  }
+
+  @Override // FsDatasetSpi
   public void addBlockPool(String bpid, Configuration conf) {
     Map<Block, BInfo> map = new HashMap<Block, BInfo>();
     blockMap.put(bpid, map);

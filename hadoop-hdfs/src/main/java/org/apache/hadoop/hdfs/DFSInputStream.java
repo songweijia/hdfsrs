@@ -97,6 +97,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   
   private long timestamp = -1; // from which snapshot should we read from.
   private boolean bUserTimestamp = false; // are we using user timestamp or not.
+  private long fileLength = 0; // fileLength at the given timestamp.
 
   /**
    * Track the ByteBuffers that we have handed out to readers.
@@ -234,7 +235,6 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * Grab the open-file info from namenode
    */
   synchronized void openInfo() throws IOException, UnresolvedLinkException {
-    //TODO: get metadata from namenode.
     lastBlockBeingWrittenLength = fetchLocatedBlocksAndGetLastBlockLength();
     int retriesForLastBlockLength = dfsClient.getConf().retryTimesForGetLastBlockLength;
     while (retriesForLastBlockLength > 0) {
@@ -255,6 +255,20 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     }
     if (retriesForLastBlockLength == 0) {
       throw new IOException("Could not obtain the last block locations.");
+    }
+    //find length of the file
+    if(this.locatedBlocks == null)
+      this.fileLength = 0L;
+    if(this.timestamp != -1L){
+      this.fileLength = 0L;
+      long blockSize = dfsClient.getBlockSize(this.src);
+      for(LocatedBlock lb:locatedBlocks.getLocatedBlocks()){
+        long bl = readBlockLength(lb,this.timestamp,this.bUserTimestamp);
+        this.fileLength +=bl;
+        if(bl < blockSize )break;
+      }
+    }else{
+      this.fileLength =  locatedBlocks.getFileLength() + lastBlockBeingWrittenLength;
     }
   }
 
@@ -298,7 +312,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
           }
           return -1;
         }
-        final long len = readBlockLength(last);
+        final long len = readBlockLength(last,this.timestamp,this.bUserTimestamp);
         last.getBlock().setNumBytes(len);
         lastBlockBeingWrittenLength = len; 
       }
@@ -309,7 +323,8 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   }
 
   /** Read the block length from one of the datanodes. */
-  private long readBlockLength(LocatedBlock locatedblock) throws IOException {
+  private long readBlockLength(LocatedBlock locatedblock, long timestamp, boolean bUserTimestamp) throws IOException {
+    //TODO::::
     assert locatedblock != null : "LocatedBlock cannot be null";
     int replicaNotFoundCount = locatedblock.getLocations().length;
     
@@ -358,8 +373,9 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   }
   
   public synchronized long getFileLength() {
-    return locatedBlocks == null? 0:
-        locatedBlocks.getFileLength() + lastBlockBeingWrittenLength;
+//    return locatedBlocks == null? 0:
+//        locatedBlocks.getFileLength() + lastBlockBeingWrittenLength;
+    return this.fileLength;
   }
 
   // Short circuit local reads are forbidden for files that are
