@@ -104,6 +104,20 @@ public class Sender implements DataTransferProtocol {
       final long length,
       final boolean sendChecksum,
       final CachingStrategy cachingStrategy) throws IOException {
+    readBlock(blk,blockToken,clientName,blockOffset,
+        length,sendChecksum,cachingStrategy,-1L,false);
+  }
+  
+  @Override
+  public void readBlock(final ExtendedBlock blk,
+      final Token<BlockTokenIdentifier> blockToken,
+      final String clientName,
+      final long blockOffset,
+      final long length,
+      final boolean sendChecksum,
+      final CachingStrategy cachingStrategy,
+      final long timestamp,
+      final boolean bUserTimestamp) throws IOException {
 
     OpReadBlockProto proto = OpReadBlockProto.newBuilder()
       .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName, blockToken))
@@ -111,6 +125,8 @@ public class Sender implements DataTransferProtocol {
       .setLen(length)
       .setSendChecksums(sendChecksum)
       .setCachingStrategy(getCachingStrategy(cachingStrategy))
+      .setTimestamp(timestamp)
+      .setBUserTimestamp(bUserTimestamp)
       .build();
 
     send(out, Op.READ_BLOCK, proto);

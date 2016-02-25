@@ -165,6 +165,17 @@ public interface FsDatasetSpi<V extends FsVolumeSpi> extends FSDatasetMBean {
    */
   public InputStream getBlockInputStream(ExtendedBlock b, long seekOffset)
             throws IOException;
+  
+  /**
+   * @param b
+   * @param seekOffset
+   * @param timestamp
+   * @param bUserTimestamp
+   * @return
+   * @throws IOException
+   */
+  public InputStream getBlockInputStream(ExtendedBlock b, long seekOffset, 
+      long timestamp, boolean bUserTimestamp) throws IOException;
 
   public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
             throws IOException;

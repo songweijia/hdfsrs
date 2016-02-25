@@ -204,12 +204,19 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   @Override // FsDatasetSpi
   public InputStream getBlockInputStream(ExtendedBlock b,
       long seekOffset) throws IOException {
-    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
-    if(meta != null)
-    	return meta.getInputStream((int)seekOffset, b.getLocalBlock().getLongSid());
-    else return null;
+    return getBlockInputStream(b,seekOffset, -1L, false);
   }
   
+  @Override // FsDatasetSpi
+  public InputStream getBlockInputStream(ExtendedBlock b,
+      long seekOffset, long timestamp, boolean bUserTimestamp ) throws IOException {
+    LOG.debug("WEIJIA:getBlockInputStream:timestamp="+timestamp+",bUserTimestamp="+bUserTimestamp);
+    MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
+    if(meta != null)
+      return meta.getInputStream((int)seekOffset, timestamp, bUserTimestamp);
+    else return null;
+  }
+
   /**
    * Returns handles to the block file and its metadata file
    */

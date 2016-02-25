@@ -150,10 +150,10 @@ public class MemDatasetManager {
   		  return new BlogOutputStream(blog,blockId,offset,this);
   	}
   	public BlogInputStream getInputStream(int offset){
-  		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID);
+  		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID, false);
   	}
-  	protected BlogInputStream getInputStream(int offset, long snapshotId){
-  		return new BlogInputStream(blog,blockId,offset,snapshotId);
+  	protected BlogInputStream getInputStream(int offset, long timestamp, boolean bUserTimestamp){
+  		return new BlogInputStream(blog,blockId,offset,timestamp,bUserTimestamp);
   	}
   }
   
@@ -161,7 +161,8 @@ public class MemDatasetManager {
     JNIBlog blog;
     long blockId;
     int offset;
-    long snapshotId;
+    long timestamp;
+    boolean bUserTimestamp;
     
     /**
      * @param bpid
@@ -169,18 +170,22 @@ public class MemDatasetManager {
      * @param offset
      * @param snapshotId
      */
-    BlogInputStream(String bpid,long blockId, int offset, long snapshotId){
+    BlogInputStream(String bpid,long blockId, int offset, 
+        long timestamp, boolean bUserTimestamp){
     	this.blog = blogMap.get(bpid);
     	this.blockId = blockId;
     	this.offset = offset;
-    	this.snapshotId = snapshotId;
+    	this.timestamp = timestamp;
+    	this.bUserTimestamp = bUserTimestamp;
     }
     
-    BlogInputStream(JNIBlog blog,long blockId, int offset, long snapshotId){
+    BlogInputStream(JNIBlog blog,long blockId, int offset, 
+        long timestamp, boolean bUserTimestamp){
     	this.blog = blog;
     	this.blockId = blockId;
     	this.offset = offset;
-    	this.snapshotId = snapshotId;
+      this.timestamp = timestamp;
+      this.bUserTimestamp = bUserTimestamp;
     }
     
     /**
@@ -188,7 +193,7 @@ public class MemDatasetManager {
      * @param offset
      */
     BlogInputStream(String bpid, int blockId, int offset){
-    	this(bpid, blockId,offset,JNIBlog.CURRENT_SNAPSHOT_ID);
+    	this(bpid, blockId,offset,JNIBlog.CURRENT_SNAPSHOT_ID,false);
     }
     
     public synchronized int read() throws IOException {
@@ -201,16 +206,16 @@ public class MemDatasetManager {
      * @see java.io.InputStream#read(byte[], int, int)
      */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
-    	if(offset < ((snapshotId==JNIBlog.CURRENT_SNAPSHOT_ID)?
-            blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, snapshotId, false))){
-    		int ret = ((snapshotId == JNIBlog.CURRENT_SNAPSHOT_ID)? 
+    	if(offset < ((this.timestamp==JNIBlog.CURRENT_SNAPSHOT_ID)?
+            blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp))){
+    		int ret = ((this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)? 
                     blog.readBlock(blockId, offset, off, len, bytes):
-                    blog.readBlock(blockId, snapshotId, offset, off, len, bytes));
+                    blog.readBlock(blockId, timestamp, offset, off, len, bytes, bUserTimestamp));
     		if(ret > 0){
     			this.offset+=ret;
     			return ret;
     		}else throw new IOException("error in JNIBlog.read("+
-    			blockId+","+snapshotId+","+offset+","+off+","+len+",b):"+ret);
+    			blockId+","+timestamp+","+bUserTimestamp+","+offset+","+off+","+len+",b):"+ret);
     	}else
     		throw new IOException("no more data available");
     }

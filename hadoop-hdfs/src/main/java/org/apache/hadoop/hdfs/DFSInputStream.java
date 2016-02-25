@@ -87,7 +87,6 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   private BlockReader blockReader = null;
   private final boolean verifyChecksum;
   private LocatedBlocks locatedBlocks = null;
-  private long lastBlockBeingWrittenLength = 0;
   private DatanodeInfo currentNode = null;
   private LocatedBlock currentLocatedBlock = null;
   private long pos = 0;
@@ -235,7 +234,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * Grab the open-file info from namenode
    */
   synchronized void openInfo() throws IOException, UnresolvedLinkException {
-    lastBlockBeingWrittenLength = fetchLocatedBlocksAndGetLastBlockLength();
+    long lastBlockBeingWrittenLength = fetchLocatedBlocksAndGetLastBlockLength();
     int retriesForLastBlockLength = dfsClient.getConf().retryTimesForGetLastBlockLength;
     while (retriesForLastBlockLength > 0) {
       // Getting last block length as -1 is a special case. When cluster
@@ -603,6 +602,8 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
             setClientCacheContext(dfsClient.getClientContext()).
             setUserGroupInformation(dfsClient.ugi).
             setConfiguration(dfsClient.getConfiguration()).
+            setTimestamp(timestamp).
+            setBUserTimestamp(bUserTimestamp).
             build();
         if(connectFailedOnce) {
           DFSClient.LOG.info("Successfully connected to " + targetAddr +

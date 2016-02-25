@@ -380,12 +380,14 @@ public class RemoteBlockReader2  implements BlockReader {
                                      String clientName,
                                      Peer peer, DatanodeID datanodeID,
                                      PeerCache peerCache,
-                                     CachingStrategy cachingStrategy) throws IOException {
+                                     CachingStrategy cachingStrategy,
+                                     long timestamp,
+                                     boolean bUserTimestamp) throws IOException {
     // in and out will be closed when sock is closed (by the caller)
     final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
           peer.getOutputStream()));
     new Sender(out).readBlock(block, blockToken, clientName, startOffset, len,
-        verifyChecksum, cachingStrategy);
+        verifyChecksum, cachingStrategy,timestamp,bUserTimestamp);
 
     //
     // Get bytes in block

@@ -158,7 +158,17 @@ public class BlockReaderFactory implements ShortCircuitReplicaCreator {
    * cache.
    */
   private int remainingCacheTries;
-
+  
+  /**
+   * At which timestamp the block reader is trying to read from.
+   */
+  private long timestamp;
+  
+  /**
+   * Is the timestamp a user timestamp or platform timestamp.
+   */
+  private boolean bUserTimestamp;
+  
   public BlockReaderFactory(DFSClient.Conf conf) {
     this.conf = conf;
     this.remainingCacheTries = conf.nCachedConnRetry;
@@ -243,6 +253,17 @@ public class BlockReaderFactory implements ShortCircuitReplicaCreator {
   public BlockReaderFactory setConfiguration(
       Configuration configuration) {
     this.configuration = configuration;
+    return this;
+  }
+  
+  public BlockReaderFactory setTimestamp(
+      long timestamp){
+    this.timestamp = timestamp;
+    return this;
+  }
+  
+  public BlockReaderFactory setBUserTimestamp(boolean bUserTimestamp){
+    this.bUserTimestamp = bUserTimestamp;
     return this;
   }
 
@@ -786,7 +807,8 @@ public class BlockReaderFactory implements ShortCircuitReplicaCreator {
       return RemoteBlockReader2.newBlockReader(
           fileName, block, token, startOffset, length,
           verifyChecksum, clientName, peer, datanode,
-          clientContext.getPeerCache(), cachingStrategy);
+          clientContext.getPeerCache(), cachingStrategy, 
+          timestamp, bUserTimestamp);
     }
   }
 

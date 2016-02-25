@@ -638,6 +638,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
   (JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint bufOfst, jint length, jbyteArray buf)
 {
+
+DEBUG_PRINT("readBlock:blockId=%ld\n\tblkOfst=%d\n\tlen=%d\n",blockId,blkOfst,length);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   block_t *block;
@@ -723,6 +725,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint bufOfst, jint length, jbyteArray buf, jboolean byUserTimestamp)
 {
+DEBUG_PRINT("readBlock:blockId=%ld\n\tblkOfst=%d\n\tlen=%d\ntimestamp=%ld\n\tbyUserTimestamp=%d\n",blockId,blkOfst,length,t,byUserTimestamp);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   block_t *block;

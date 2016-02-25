@@ -58,6 +58,7 @@ import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.DiskChecker.DiskErrorException;
 
+import edu.cornell.cs.blog.JNIBlog;
 import edu.cornell.cs.sa.HybridLogicalClock;
 
 /**
@@ -1137,6 +1138,15 @@ public class SimulatedFSDataset implements FsDatasetSpi<FsVolumeSpi> {
   public void snapshot(long rtc, String bpid)
   throws IOException {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public InputStream getBlockInputStream(ExtendedBlock b, long seekOffset, long timestamp, boolean bUserTimestamp)
+      throws IOException {
+    if(timestamp != JNIBlog.CURRENT_SNAPSHOT_ID)
+      throw new UnsupportedOperationException();
+    else
+      return getBlockInputStream(b,seekOffset);
   }
 }
 

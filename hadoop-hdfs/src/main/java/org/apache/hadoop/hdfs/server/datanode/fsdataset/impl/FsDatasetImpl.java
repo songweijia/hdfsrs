@@ -44,6 +44,7 @@ import org.apache.hadoop.util.DiskChecker.DiskOutOfSpaceException;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Time;
 
+import edu.cornell.cs.blog.JNIBlog;
 import edu.cornell.cs.sa.HybridLogicalClock;
 
 import javax.management.NotCompliantMBeanException;
@@ -1934,6 +1935,15 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
   throws IOException{
     //do nothing
     return;
+  }
+
+  @Override
+  public InputStream getBlockInputStream(ExtendedBlock b, long seekOffset, long timestamp, boolean bUserTimestamp)
+      throws IOException {
+    if(timestamp != JNIBlog.CURRENT_SNAPSHOT_ID)
+      throw new IOException("read from snapshot is not supported!");
+    else
+      return getBlockInputStream(b,seekOffset);
   }
   
 }

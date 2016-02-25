@@ -65,3 +65,9 @@ struct filesystem {
   size_t page_size;
   MAP_TYPE(block) *block_map;
 };
+
+#ifdef DEBUG
+#define DEBUG_PRINT(arg,fmt...) {fprintf(stdout,arg, ##fmt );fflush(stdout);}
+#else
+#define DEBUG_PRINT(arg,fmt...)
+#endif

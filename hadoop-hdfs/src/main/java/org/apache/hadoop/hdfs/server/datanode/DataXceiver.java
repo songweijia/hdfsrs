@@ -88,6 +88,7 @@ import org.apache.hadoop.util.DataChecksum;
 import com.google.common.net.InetAddresses;
 import com.google.protobuf.ByteString;
 
+import edu.cornell.cs.blog.JNIBlog;
 import edu.cornell.cs.sa.HybridLogicalClock;
 
 
@@ -470,7 +471,9 @@ class DataXceiver extends Receiver implements Runnable {
       final long blockOffset,
       final long length,
       final boolean sendChecksum,
-      final CachingStrategy cachingStrategy) throws IOException {
+      final CachingStrategy cachingStrategy,
+      final long timestamp,
+      final boolean bUserTimestamp) throws IOException {
     previousOpClientName = clientName;
 
     OutputStream baseStream = getOutputStream();
@@ -495,7 +498,8 @@ class DataXceiver extends Receiver implements Runnable {
     try {
       try {
         if (datanode.isInMemoryStorage()) {
-          blockSender = new MemBlockSender(block, blockOffset, length, datanode, clientTraceFmt,null/*HDFSRS_VC*/);
+          blockSender = new MemBlockSender(block, blockOffset, length, datanode, clientTraceFmt,null, /*HDFSRS_VC*/
+              timestamp, bUserTimestamp);
         } else {
           blockSender = new BlockSender(block, blockOffset, length,
               true, false, sendChecksum, datanode, clientTraceFmt,
@@ -933,7 +937,8 @@ class DataXceiver extends Receiver implements Runnable {
     try {
       // check if the block exists or not
       if (datanode.isInMemoryStorage()) {
-        blockSender = new MemBlockSender(block, 0, -1, datanode, null, null/*HDFSRS_VC*/);
+        blockSender = new MemBlockSender(block, 0, -1, datanode, null, null,/*HDFSRS_VC*/
+            JNIBlog.CURRENT_SNAPSHOT_ID, false);
       } else {
         blockSender = new BlockSender(block, 0, -1, false, false, true, datanode, 
             null, CachingStrategy.newDropBehind(), null/*HDFSRS_VC*/);
@@ -1201,5 +1206,11 @@ class DataXceiver extends Receiver implements Runnable {
         }
       }
     }
+  }
+
+  @Override
+  public void readBlock(ExtendedBlock blk, Token<BlockTokenIdentifier> blockToken, String clientName, long blockOffset,
+      long length, boolean sendChecksum, CachingStrategy cachingStrategy) throws IOException {
+    readBlock(blk,blockToken,clientName,blockOffset,length,sendChecksum,cachingStrategy,-1L,false);
   }
 }

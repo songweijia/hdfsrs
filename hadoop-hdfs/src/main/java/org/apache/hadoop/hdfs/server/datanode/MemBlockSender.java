@@ -90,7 +90,8 @@ class MemBlockSender extends BlockSender {
    * @throws IOException
    */
   MemBlockSender(ExtendedBlock block, long startOffset, long length,
-                 DataNode datanode, String clientTraceFmt, HybridLogicalClock myHLC)
+                 DataNode datanode, String clientTraceFmt, HybridLogicalClock myHLC,
+                 long timestamp, boolean bUserTimestamp)
       throws IOException {
     super(block, datanode, clientTraceFmt, myHLC);
     try {
@@ -147,7 +148,8 @@ class MemBlockSender extends BlockSender {
       if (DataNode.LOG.isDebugEnabled()) {
         DataNode.LOG.debug("replica=" + replica);
       }
-      blockIn = datanode.data.getBlockInputStream(block, offset); // seek to offset
+      blockIn = datanode.data.getBlockInputStream(block, offset, 
+          timestamp, bUserTimestamp); // seek to offset
     } catch (IOException ioe) {
       IOUtils.closeStream(this);
       IOUtils.closeStream(blockIn);
