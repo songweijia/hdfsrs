@@ -119,7 +119,7 @@ class MemBlockSender extends BlockSender {
       length = length < 0 ? replicaVisibleLength : length;
 
       // end is either last byte on memory
-      long end = replica.getBytesOnDisk();
+      long end = replica.getBytesOnDisk(timestamp, bUserTimestamp);
       if (startOffset < 0 || startOffset > end
           || (length + startOffset) > end) {
         String msg = " Offset " + startOffset + " and length " + length

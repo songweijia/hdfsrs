@@ -474,6 +474,7 @@ class DataXceiver extends Receiver implements Runnable {
       final CachingStrategy cachingStrategy,
       final long timestamp,
       final boolean bUserTimestamp) throws IOException {
+    
     previousOpClientName = clientName;
 
     OutputStream baseStream = getOutputStream();

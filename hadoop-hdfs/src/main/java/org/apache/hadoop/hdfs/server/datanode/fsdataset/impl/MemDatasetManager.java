@@ -206,8 +206,9 @@ public class MemDatasetManager {
      * @see java.io.InputStream#read(byte[], int, int)
      */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
-    	if(offset < ((this.timestamp==JNIBlog.CURRENT_SNAPSHOT_ID)?
-            blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp))){
+        int endOfBlock = ((this.timestamp==JNIBlog.CURRENT_SNAPSHOT_ID)?
+            blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp));
+    	if(offset < endOfBlock){
     		int ret = ((this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)? 
                     blog.readBlock(blockId, offset, off, len, bytes):
                     blog.readBlock(blockId, timestamp, offset, off, len, bytes, bUserTimestamp));

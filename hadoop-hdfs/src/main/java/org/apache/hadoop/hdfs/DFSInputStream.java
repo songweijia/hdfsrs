@@ -68,6 +68,7 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.IdentityHashStore;
+import org.mortbay.log.Log;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -335,7 +336,8 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
             dfsClient.getConfiguration(), dfsClient.getConf().socketTimeout,
             dfsClient.getConf().connectToDnViaHostname, locatedblock);
         
-        final long n = cdp.getReplicaVisibleLength(locatedblock.getBlock());
+//      final long n = cdp.getReplicaVisibleLength(locatedblock.getBlock());
+        final long n = cdp.getReplicaVisibleLength(locatedblock.getBlock(), timestamp, bUserTimestamp); //TODO: fix this!
         
         if (n >= 0) {
           return n;
@@ -864,7 +866,6 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   @Override
   public synchronized int read(final ByteBuffer buf) throws IOException {
     ReaderStrategy byteBufferReader = new ByteBufferStrategy(buf);
-
     return readWithStrategy(byteBufferReader, 0, buf.remaining());
   }
 

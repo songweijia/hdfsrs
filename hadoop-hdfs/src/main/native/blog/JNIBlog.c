@@ -362,6 +362,7 @@ snapshot_t *fill_snapshot(log_t *log_entry, uint32_t page_size) {
     snapshot->pages = NULL;
     return snapshot;
   case DELETE_BLOCK:
+  case BOL:
     snapshot->status = NON_ACTIVE;
     snapshot->length = 0;
     snapshot->pages = NULL;
@@ -434,7 +435,6 @@ int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_
     }
   }
   log_index = *log_ptr;
-  
   // Create snapshot.
   if(by_ut && log[log_index].u < snapshot_time){
     // we do not create a log_map entry at this point because
@@ -830,7 +830,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jboolean by_ut)
 {
-  filesystem_t *filesystem = get_filesystem(env, thisObj);;
+  filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   block_t *block;
   // uint64_t *log_ptr;
@@ -847,10 +847,12 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Find the corresponding block.
+  DEBUG_PRINT("find_or_create_snapshot(snapshot_time=%ld,by_ut=%d)\n",snapshot_time,by_ut==JNI_TRUE);
   if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, by_ut==JNI_TRUE) < 0) {
       fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
       return -2;
   }
+  DEBUG_PRINT("snapshot->length=%d\n",snapshot->length);
   
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
