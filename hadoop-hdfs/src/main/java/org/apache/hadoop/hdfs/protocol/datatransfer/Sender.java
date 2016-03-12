@@ -151,8 +151,9 @@ public class Sender implements DataTransferProtocol {
       //}
       //HDFSRS_VC{
       //VectorClock mvc //we are not using it so far.
-      final HybridLogicalClock mhlc
+      final HybridLogicalClock mhlc,
       //}
+      final String suffix
       ) throws IOException {
     ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
         blk, clientName, blockToken);
@@ -177,6 +178,10 @@ public class Sender implements DataTransferProtocol {
     
     if (source != null) {
       proto.setSource(PBHelper.convertDatanodeInfo(source));
+    }
+ 
+    if(suffix!=null){
+      proto.setSuffix(suffix);
     }
 
     send(out, Op.WRITE_BLOCK, proto.build());

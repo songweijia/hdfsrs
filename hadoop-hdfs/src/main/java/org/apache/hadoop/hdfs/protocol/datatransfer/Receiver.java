@@ -158,8 +158,9 @@ public abstract class Receiver implements DataTransferProtocol {
         	proto.getOffset():-1),
         //}
         //HDFSRS_VC{
-        (proto.hasMhlc()?PBHelper.convert(proto.getMhlc()):null)
+        (proto.hasMhlc()?PBHelper.convert(proto.getMhlc()):null),
         //}
+        (proto.hasSuffix()?proto.getSuffix():null)
         );
   }
 

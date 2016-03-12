@@ -123,6 +123,7 @@ message OpWriteBlockProto {
   //HDFSRS_VC{
   optional HybridLogicalClockProto mhlc = 12;
   //}
+  optional string suffix = 13;
 }
   
 message OpTransferBlockProto {

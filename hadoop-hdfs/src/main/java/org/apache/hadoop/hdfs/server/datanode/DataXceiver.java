@@ -89,6 +89,8 @@ import com.google.common.net.InetAddresses;
 import com.google.protobuf.ByteString;
 
 import edu.cornell.cs.blog.JNIBlog;
+import edu.cornell.cs.blog.RecordParserFactory;
+import edu.cornell.cs.blog.IRecordParser;
 import edu.cornell.cs.sa.HybridLogicalClock;
 
 
@@ -580,8 +582,9 @@ class DataXceiver extends Receiver implements Runnable {
       final long offset,
       //}
       //HDFSRS_VC{
-      final HybridLogicalClock mhlc
+      final HybridLogicalClock mhlc,
       //}
+      final String suffix
       ) throws IOException {
     previousOpClientName = clientname;
     updateCurrentThreadName("Receiving block " + block);
@@ -634,6 +637,15 @@ class DataXceiver extends Receiver implements Runnable {
     String firstBadLink = "";           // first datanode that failed in connection setup
     Status mirrorInStatus = SUCCESS;
     final String storageUuid;
+    IRecordParser rp = null;
+    try{
+      rp = RecordParserFactory.getRecordParser(suffix);
+    }catch(Exception e){
+      LOG.warn("Cannot instantiate RecordParser by suffix:"+suffix+", falling back to default");
+      try{rp = RecordParserFactory.getRecordParser(null);}catch(Exception ex){
+        //do nothing
+      }
+    }
     try {
       if (isDatanode || 
           stage != BlockConstructionStage.PIPELINE_CLOSE_RECOVERY) {
@@ -644,7 +656,7 @@ class DataXceiver extends Receiver implements Runnable {
               peer.getLocalAddressString(),
               stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
               clientname, srcDataNode, datanode, requestedChecksum,
-              offset/*HDFSRS_RWAPI*/, mhlc/*HDFSRS_VC*/, null);
+              offset/*HDFSRS_RWAPI*/, mhlc/*HDFSRS_VC*/, rp);
         } else {
           blockReceiver = new BlockReceiver(block, in, 
               peer.getRemoteAddressString(),
@@ -703,7 +715,8 @@ class DataXceiver extends Receiver implements Runnable {
               clientname, targets, srcDataNode, stage, pipelineSize,
               minBytesRcvd, maxBytesRcvd, latestGenerationStamp, requestedChecksum,
               cachingStrategy,offset/*HDFSRS_RWAPI:add offset*/,
-              mhlc/*HDFSRS_VC: we just transfer it to downstream, but we don't have down stream so far. */); 
+              mhlc/*HDFSRS_VC: we just transfer it to downstream, but we don't have down stream so far. */,
+              suffix); 
 
           mirrorOut.flush();
 

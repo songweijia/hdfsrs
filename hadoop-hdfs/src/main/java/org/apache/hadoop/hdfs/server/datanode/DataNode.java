@@ -1703,7 +1703,7 @@ public class DataNode extends Configured
         //    stage, 0, 0, 0, 0, blockSender.getChecksum(), cachingStrategy);
         //TODO: ADD offset
         	    stage, 0, 0, 0, 0, blockSender.getChecksum(), cachingStrategy,-1/*offset*/,
-        	    null/*HDFSRS_VC:we don't count vc during data transfer*/);
+        	    null/*HDFSRS_VC:we don't count vc during data transfer*/, null);
         //}
         
 
@@ -2359,6 +2359,13 @@ public class DataNode extends Configured
   public long getReplicaVisibleLength(final ExtendedBlock block) throws IOException {
     checkWriteAccess(block);
     return data.getReplicaVisibleLength(block);
+  }
+  
+  @Override // ClientDataNodeProtocol
+  public long getReplicaVisibleLength(final ExtendedBlock block, long timestamp,
+      boolean bUserTimestamp) throws IOException {
+    checkWriteAccess(block);
+    return data.getReplicaVisibleLength(block,timestamp,bUserTimestamp);
   }
 
   private void checkWriteAccess(final ExtendedBlock block) throws IOException {

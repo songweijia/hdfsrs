@@ -128,8 +128,9 @@ public interface DataTransferProtocol {
       final long offset,
       //}
       //HDFSRS_VC
-      final HybridLogicalClock mhlc
+      final HybridLogicalClock mhlc,
       //}
+      final String suffix
       ) throws IOException;
 
   /**

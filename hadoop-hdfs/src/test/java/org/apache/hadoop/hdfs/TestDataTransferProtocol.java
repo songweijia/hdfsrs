@@ -202,7 +202,7 @@ public class TestDataTransferProtocol {
         new DatanodeInfo[1], null, stage,
         0, block.getNumBytes(), block.getNumBytes(), newGS,
         DEFAULT_CHECKSUM, CachingStrategy.newDefaultStrategy(),-1,
-        hlc);
+        hlc,null);
     if (eofExcepted) {
       sendResponse(Status.ERROR, null, null, recvOut);
       sendRecvData(description, true);
@@ -402,7 +402,7 @@ public class TestDataTransferProtocol {
         BlockConstructionStage.PIPELINE_SETUP_CREATE,
         0, 0L, 0L, 0L,
         badChecksum, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/,
-        hlc);
+        hlc,null);
     recvBuf.reset();
     sendResponse(Status.ERROR, null, null, recvOut);
     sendRecvData("wrong bytesPerChecksum while writing", true);
@@ -414,7 +414,7 @@ public class TestDataTransferProtocol {
         new DatanodeInfo[1], null,
         BlockConstructionStage.PIPELINE_SETUP_CREATE, 0, 0L, 0L, 0L,
         DEFAULT_CHECKSUM, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/,
-        hlc);
+        hlc,null);
 
     PacketHeader hdr = new PacketHeader(
       4,     // size of packet
@@ -438,7 +438,7 @@ public class TestDataTransferProtocol {
         new DatanodeInfo[1], null,
         BlockConstructionStage.PIPELINE_SETUP_CREATE, 0, 0L, 0L, 0L,
         DEFAULT_CHECKSUM, CachingStrategy.newDefaultStrategy(),-1/*TODO:HDFSRS_RWAPI send offset*/,
-        hlc/*HDFSRS_VC*/);
+        hlc/*HDFSRS_VC*/,null);
 
     hdr = new PacketHeader(
       8,     // size of packet
