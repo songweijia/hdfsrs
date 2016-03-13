@@ -13,7 +13,7 @@ public interface IRecordParser {
    * @param record
    * @return user defined timestamp parsed. -1L for invalid timestamp.
    */
-  long getUserTimestamp();
+  public long getUserTimestamp();
   
   /**
    * ParseRecord for a 
@@ -23,7 +23,7 @@ public interface IRecordParser {
    * @return beginning of the next record. -1L for incomplete record.
    * @throws RecordParserException: parse failed. 
    */
-  int ParseRecord(byte[] buf, int offset, int len)throws RecordParserException;
+  public int ParseRecord(byte[] buf, int offset, int len)throws RecordParserException;
   
   @SuppressWarnings("serial")
   public class RecordParserException extends Exception{

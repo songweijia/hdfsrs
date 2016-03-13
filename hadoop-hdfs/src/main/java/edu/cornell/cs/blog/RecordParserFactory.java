@@ -10,6 +10,7 @@ public class RecordParserFactory{
   static{
     rpMap = new HashMap<String,String>();
     rpMap.put(null,DefaultRecordParser.class.getName());
+    rpMap.put("ts64",DefaultRecordParser.class.getName());
   }
 
   /*
