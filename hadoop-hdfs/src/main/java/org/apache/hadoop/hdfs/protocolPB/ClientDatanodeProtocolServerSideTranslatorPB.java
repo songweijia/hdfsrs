@@ -46,6 +46,7 @@ import org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier;
 import org.apache.hadoop.security.proto.SecurityProtos.TokenProto;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.VersionInfo;
+import org.mortbay.log.Log;
 
 import com.google.common.primitives.Longs;
 import com.google.protobuf.ByteString;

@@ -722,7 +722,7 @@ DEBUG_PRINT("readBlock:blockId=%ld\n\tblkOfst=%d\n\tlen=%d\n",blockId,blkOfst,le
  * Method:    readBlock
  * Signature: (JJIII[BZ)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3BZ
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint bufOfst, jint length, jbyteArray buf, jboolean byUserTimestamp)
 {
 DEBUG_PRINT("readBlock:blockId=%ld\n\tblkOfst=%d\n\tlen=%d\ntimestamp=%ld\n\tbyUserTimestamp=%d\n",blockId,blkOfst,length,t,byUserTimestamp);
@@ -957,6 +957,9 @@ fprintf(stderr,"writeBlock:id=%ld\tofst=%d\tlength=%d\n",blockId,blkOfst,length)
   log_entry->u = userTimestamp;
   log_entry->pages = data;
   block->log_length += 1;
+
+  DEBUG_PRINT("log_entry:op=%d,block_length=%d,u=%lx,r=%lx,l=%lx\n",
+    log_entry->op,log_entry->block_length,log_entry->u,log_entry->r,log_entry->l);
   
   // Fill block with the appropriate information.
   block->length = block_length;

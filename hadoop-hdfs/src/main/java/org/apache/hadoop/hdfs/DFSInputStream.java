@@ -324,7 +324,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
 
   /** Read the block length from one of the datanodes. */
   private long readBlockLength(LocatedBlock locatedblock, long timestamp, boolean bUserTimestamp) throws IOException {
-    //TODO::::
+    //TODO...
     assert locatedblock != null : "LocatedBlock cannot be null";
     int replicaNotFoundCount = locatedblock.getLocations().length;
     
@@ -337,7 +337,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
             dfsClient.getConf().connectToDnViaHostname, locatedblock);
         
 //      final long n = cdp.getReplicaVisibleLength(locatedblock.getBlock());
-        final long n = cdp.getReplicaVisibleLength(locatedblock.getBlock(), timestamp, bUserTimestamp); //TODO: fix this!
+        final long n = cdp.getReplicaVisibleLength(locatedblock.getBlock(), timestamp, bUserTimestamp);
         
         if (n >= 0) {
           return n;
@@ -454,6 +454,9 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     if (updatePosition) {
       pos = offset;
       blockEnd = blk.getStartOffset() + blk.getBlockSize() - 1;
+      // because the last block may appears shorter at given "timetamp".
+      if(blockEnd>this.fileLength)
+        blockEnd = this.fileLength; 
       currentLocatedBlock = blk;
     }
     return blk;
@@ -580,6 +583,8 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
       LocatedBlock targetBlock = getBlockAt(target, true);
       assert (target==pos) : "Wrong postion " + pos + " expect " + target;
       long offsetIntoBlock = target - targetBlock.getStartOffset();
+      long visibleBlockLength = blockEnd - targetBlock.getStartOffset();
+      
 
       DNAddrPair retval = chooseDataNode(targetBlock, null);
       chosenNode = retval.info;
@@ -598,7 +603,8 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
             setStartOffset(offsetIntoBlock).
             setVerifyChecksum(verifyChecksum).
             setClientName(dfsClient.clientName).
-            setLength(blk.getNumBytes() - offsetIntoBlock).
+            //setLength(blk.getNumBytes() - offsetIntoBlock).///// problematic with timestamp
+            setLength(visibleBlockLength).
             setCachingStrategy(cachingStrategy).
             setAllowShortCircuitLocalReads(!shortCircuitForbidden()).
             setClientCacheContext(dfsClient.getClientContext()).

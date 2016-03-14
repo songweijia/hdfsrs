@@ -640,6 +640,7 @@ class DataXceiver extends Receiver implements Runnable {
     IRecordParser rp = null;
     try{
       rp = RecordParserFactory.getRecordParser(suffix);
+      LOG.debug("writeBlock: suffix="+suffix+",rp = "+rp.getClass().getName());
     }catch(Exception e){
       LOG.warn("Cannot instantiate RecordParser by suffix:"+suffix+", falling back to default");
       try{rp = RecordParserFactory.getRecordParser(null);}catch(Exception ex){

@@ -52,7 +52,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
  * Method:    readBlock
  * Signature: (JJIII[BZ)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3B
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3BZ
   (JNIEnv *, jobject, jlong, jlong, jint, jint, jint, jbyteArray, jboolean);
 
 /*

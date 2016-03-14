@@ -135,7 +135,7 @@ public class MemDatasetManager {
   	}
   	
   	public long getNumBytes(long timestamp, boolean bUserTimestamp){
-  		long nb = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,timestamp,false);
+  		long nb = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,timestamp,bUserTimestamp);
       if(nb == -1L)nb = 0L; // -1 means block does not exists.
       return nb;
   	}
@@ -152,7 +152,7 @@ public class MemDatasetManager {
   	public BlogInputStream getInputStream(int offset){
   		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID, false);
   	}
-  	protected BlogInputStream getInputStream(int offset, long timestamp, boolean bUserTimestamp){
+  	public BlogInputStream getInputStream(int offset, long timestamp, boolean bUserTimestamp){
   		return new BlogInputStream(blog,blockId,offset,timestamp,bUserTimestamp);
   	}
   }
