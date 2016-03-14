@@ -639,7 +639,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
   (JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint bufOfst, jint length, jbyteArray buf)
 {
 
-DEBUG_PRINT("readBlock:blockId=%ld\n\tblkOfst=%d\n\tlen=%d\n",blockId,blkOfst,length);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   block_t *block;
@@ -725,7 +724,6 @@ DEBUG_PRINT("readBlock:blockId=%ld\n\tblkOfst=%d\n\tlen=%d\n",blockId,blkOfst,le
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3BZ
   (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint bufOfst, jint length, jbyteArray buf, jboolean byUserTimestamp)
 {
-DEBUG_PRINT("readBlock:blockId=%ld\n\tblkOfst=%d\n\tlen=%d\ntimestamp=%ld\n\tbyUserTimestamp=%d\n",blockId,blkOfst,length,t,byUserTimestamp);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   block_t *block;
@@ -847,12 +845,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Find the corresponding block.
-  DEBUG_PRINT("find_or_create_snapshot(snapshot_time=%ld,by_ut=%d)\n",snapshot_time,by_ut==JNI_TRUE);
   if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, by_ut==JNI_TRUE) < 0) {
       fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
       return -2;
   }
-  DEBUG_PRINT("snapshot->length=%d\n",snapshot->length);
   
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
@@ -873,7 +869,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong userTimestamp, jlong blockId, jint blkOfst,
   jint bufOfst, jint length, jbyteArray buf)
 {
-fprintf(stderr,"writeBlock:id=%ld\tofst=%d\tlength=%d\n",blockId,blkOfst,length);
+
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
   uint32_t block_offset = (uint32_t) blkOfst;
@@ -912,7 +908,7 @@ fprintf(stderr,"writeBlock:id=%ld\tofst=%d\tlength=%d\n",blockId,blkOfst,length)
   // Write the first page until block_offset;
   temp_data = data;
   if (first_page_offset > 0) {
-    strncpy(temp_data, block->pages[first_page], first_page_offset);
+    memcpy(temp_data, block->pages[first_page], first_page_offset);
     temp_data += first_page_offset;
   }
   
@@ -941,7 +937,7 @@ fprintf(stderr,"writeBlock:id=%ld\tofst=%d\tlength=%d\n",blockId,blkOfst,length)
   if (block_length < block->length) {
     write_page_length = last_page*(page_size+1) <= block->length ? page_size - last_page_length
                                                                  : block_length%page_size - last_page_length;
-    strncpy(temp_data, block->pages[last_page] + last_page_length, write_page_length);
+    memcpy(temp_data, block->pages[last_page] + last_page_length, write_page_length);
     block_length = block->length;
   }
   // Create the corresponding log entry.
@@ -958,9 +954,6 @@ fprintf(stderr,"writeBlock:id=%ld\tofst=%d\tlength=%d\n",blockId,blkOfst,length)
   log_entry->pages = data;
   block->log_length += 1;
 
-  DEBUG_PRINT("log_entry:op=%d,block_length=%d,u=%lx,r=%lx,l=%lx\n",
-    log_entry->op,log_entry->block_length,log_entry->u,log_entry->r,log_entry->l);
-  
   // Fill block with the appropriate information.
   block->length = block_length;
   if (block->pages_cap == 0)
@@ -975,6 +968,7 @@ fprintf(stderr,"writeBlock:id=%ld\tofst=%d\tlength=%d\n",blockId,blkOfst,length)
   }
   for (i = 0; i < log_entry->nr_pages; i++)
     block->pages[log_entry->start_page+i] = data + i * filesystem->page_size;
+
   return 0;
 }
 
