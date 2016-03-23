@@ -10,10 +10,18 @@ extern "C" {
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    initialize
- * Signature: (II)I
+ * Signature: (JIILjava/lang/String;I)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *, jobject, jint, jint, jstring);
+  (JNIEnv *, jobject, jlong, jint, jint, jstring, jint);
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    destroy
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_destroy
+  (JNIEnv *, jobject);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -41,6 +49,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    readBlockRDMA
+ * Signature: (JJII[BIJ)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA
+  (JNIEnv *, jobject, jlong, jlong, jint, jint, jbyteArray, jint, jlong);
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    getNumberOfBytes
  * Signature: (JJ)I
  */
@@ -54,6 +70,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
   (JNIEnv *, jobject, jobject, jlong, jint, jint, jint, jbyteArray);
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    writeBlockRDMA
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;JII[BIJ)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
+  (JNIEnv *, jobject, jobject, jlong, jint, jint, jbyteArray, jint, jlong);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -73,19 +97,19 @@ JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    destroy
- * Signature: ()V
+ * Method:    getPid
+ * Signature: ()I
  */
-JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_destroy
-  (JNIEnv *, jobject);
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getPid
+  (JNIEnv *, jclass);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    rbpInitialize
- * Signature: (JJ)J
+ * Signature: (III)J
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize
-  (JNIEnv *, jclass, jlong, jlong);
+  (JNIEnv *, jclass, jint, jint, jint);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -97,36 +121,47 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    rbpAllocateBuffer
+ * Method:    rbpAllocateBlockBuffer
  * Signature: (J)Ledu/cornell/cs/blog/JNIBlog/RBPBuffer;
  */
-JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBuffer
+JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffer
   (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    rbpReleaseBuffer
- * Signature: (Ledu/cornell/cs/blog/JNIBlog/RBPBuffer;)V
+ * Signature: (JLedu/cornell/cs/blog/JNIBlog/RBPBuffer;)V
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
-  (JNIEnv *, jclass, jobject);
+  (JNIEnv *, jclass, jlong, jobject);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    rbpConnect
- * Signature: (JII)V
+ * Signature: (J[B)V
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
-  (JNIEnv *, jclass, jlong, jint, jint);
+  (JNIEnv *, jclass, jlong, jbyteArray);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    rbpRDMAWrite
- * Signature: (IJJ[J)V
+ * Signature: ([BJ[J)V
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
-  (JNIEnv *, jclass, jint, jlong, jlong, jlongArray);
+  (JNIEnv *, jobject, jbyteArray, jlong, jlongArray);
 
+#ifdef __cplusplus
+}
+#endif
+#endif
+/* Header for class edu_cornell_cs_blog_JNIBlog_RBPBuffer */
+
+#ifndef _Included_edu_cornell_cs_blog_JNIBlog_RBPBuffer
+#define _Included_edu_cornell_cs_blog_JNIBlog_RBPBuffer
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifdef __cplusplus
 }
 #endif

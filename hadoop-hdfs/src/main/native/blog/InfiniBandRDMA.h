@@ -19,6 +19,14 @@
 ////////////////////////////////////////////////
 typedef struct rdma_ctxt   RDMACtxt;
 typedef struct rdma_conn   RDMAConnection;
+typedef struct ibcon_exchange IbConEx;
+typedef union lid_gid      LIDGID;
+#pragma pack(push,1)
+union lid_gid{
+    uint32_t            lid;
+    union ibv_gid       gid;
+};
+#pragma pack(pop)
 /* rdma context */
 MAP_DECLARE(con,RDMAConnection);
 struct rdma_ctxt {
@@ -59,7 +67,10 @@ struct rdma_conn {
   struct ibv_qp           *qp;  // queue pair
   struct ibv_comp_channel *ch;  // completion channel
   int32_t                 port; // infiniband port
-  int32_t                 l_lid,r_lid;
+  int32_t                 global; // if it is global
+  
+  LIDGID                  l_lgid,r_lgid;
+
   int32_t                 l_qpn,r_qpn;
   int32_t                 l_psn,r_psn;
   uint32_t                l_rkey,r_rkey;
@@ -67,6 +78,21 @@ struct rdma_conn {
 };
 #define RDMA_WRID	(3)
 #define RDMA_RDID	(4)
+/*ib connection config for exchange*/
+#pragma pack(push,1)
+struct ibcon_exchange{
+#define REQ_DISCONNECT          (0)
+#define REQ_CONNECT_BY_LID      (1)
+#define	REQ_CONNECT_BY_GID      (2)
+  uint32_t              req; // the operation requested
+  LIDGID                lgid; // local id or global id
+  int32_t               qpn;
+  int32_t               psn;
+  uint32_t              rkey;
+  int32_t               pid;
+  uint64_t              vaddr;
+};
+#pragma pack(pop)
 
   ////////////////////////////////////////////////
  // Definition of RDMA PRIMITIVES.             //

@@ -19,7 +19,6 @@
 #define TEST_NZ(x,y) do { if ((x)) die(y); } while (0)
 #define TEST_Z(x,y) do { if (!(x)) die(y); } while (0)
 #define TEST_N(x,y) do { if ((x)<0) die(y); } while (0)
-#define CONFIG_STR_LEN (sizeof "00000000:0000:000000:000000:00000000:0000000000000000")
 #define MAKE_CON_KEY(host,port_or_pid) ((((long)(host))<<32)|(port_or_pid))
 #define GET_IP_FROM_KEY(key)	((const uint32_t)(((key)>>32)&0x00000000FFFFFFFF))
 
@@ -65,7 +64,17 @@ static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
   attr->max_dest_rd_atomic = 1;
   attr->min_rnr_timer = 12;
   attr->ah_attr.is_global = 0;
-  attr->ah_attr.dlid = conn->r_lid;
+#ifdef USE_GRH
+  attr->ah_attr.grh.dgid = conn->r_lgid.gid;
+  attr->ah_attr.grh.flow_label = 0;
+  attr->ah_attr.grh.sgid_index = 0;
+  attr->ah_attr.grh.hop_limit = 10; // allow 10 hops
+  attr->ah_attr.grh.traffic_class = 0;
+  attr->ah_attr.is_global = 1;
+#else
+  attr->ah_attr.is_global = 0;
+#endif
+  attr->ah_attr.dlid = conn->r_lgid.lid;
   attr->ah_attr.sl = 1;
   attr->ah_attr.src_path_bits = 0;
   attr->ah_attr.port_num = conn->port;
@@ -108,10 +117,18 @@ static int qp_change_state_rts(struct ibv_qp *qp, RDMAConnection * conn){
   return 0;
 }
 
-static void setibcfg(char *ibcfg, RDMAConnection *conn){
-  sprintf(ibcfg, "%08x:%04x:%06x:%06x:%08x:%016Lx",
-    getpid(), conn->l_lid, conn->l_qpn, conn->l_psn, 
-    conn->l_rkey, (unsigned long long)conn->l_vaddr);
+static void setibcfg(IbConEx *ex, RDMAConnection *conn){
+#ifdef USE_GRH
+  ex->req = REQ_CONNECT_BY_GID;
+#else
+  ex->req = REQ_CONNECT_BY_LID;
+#endif
+  ex->lgid = conn->l_lgid;
+  ex->qpn = conn->l_qpn;
+  ex->psn = conn->l_psn;
+  ex->rkey = conn->l_rkey;
+  ex->pid = getpid();
+  ex->vaddr = conn->l_vaddr;
 }
 
 static void destroyRDMAConn(RDMAConnection *conn){
@@ -121,11 +138,10 @@ static void destroyRDMAConn(RDMAConnection *conn){
   if(conn->ch)ibv_destroy_comp_channel(conn->ch);
 }
 
-static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const char* cfgstr, int clientip){
+static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_exm, int clientip){
     int bDup;
     // STEP 0 - get rpid
-    int rpid;
-    sscanf(cfgstr,"%x",&rpid);
+    int rpid = r_exm->pid;
     uint64_t cipkey = MAKE_CON_KEY(clientip,rpid);
     // STEP 1 - if this is included in map
     MAP_LOCK(con, ctxt->con_map, cipkey, 'r');
@@ -140,7 +156,7 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const char* cfgstr,
     rdmaConn->rcq  = NULL;
     rdmaConn->qp   = NULL;
     rdmaConn->ch   = NULL;
-    rdmaConn->port = 1; // always use 1?
+    rdmaConn->port = 1; // always use port 1? so far so good. let's make it configurable later.
     TEST_Z(rdmaConn->ch=ibv_create_comp_channel(ctxt->ctxt),"Could not create completion channel, ibv_create_comp_channel");
     TEST_Z(rdmaConn->rcq=ibv_create_cq(ctxt->ctxt,1,NULL,NULL,0),"Could not create receive completion queue, ibv_create_cq");
     TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_SQE,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
@@ -160,25 +176,28 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const char* cfgstr,
     qp_change_state_init(rdmaConn->qp,rdmaConn->port);
     struct ibv_port_attr port_attr;
     TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could not get port attributes, ibv_query_port");
-    rdmaConn->l_lid = port_attr.lid;
+#ifdef USE_GRH
+    TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_lgid.gid),"Could not get gid from port");
+#else
+    rdmaConn->l_lgid.lid = port_attr.lid;
+#endif
     rdmaConn->l_qpn = rdmaConn->qp->qp_num;
     rdmaConn->l_psn = lrand48() & 0xffffff;
     rdmaConn->l_rkey = ctxt->mr->rkey;
     rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
-    char mmsg[sizeof "00000000:0000:000000:000000:00000000:0000000000000000"];
     // STEP 6 Exchange connection information(initialize client connection first.)
+    IbConEx l_exm; // exchange message
     /// server --> client | connection string
-    setibcfg(mmsg,rdmaConn);
-    if(write(connfd, mmsg, sizeof mmsg) != sizeof mmsg){
+    setibcfg(&l_exm,rdmaConn);
+    if(write(connfd, &l_exm, sizeof l_exm) != sizeof l_exm){
       perror("Could not send ibcfg to peer");
       return -1;
     }
-    int parsed = sscanf(cfgstr, "%x:%x:%x:%x:%x:%Lx", &rpid, // we've get rpid, here is just for a place holder.
-    &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,(long long unsigned*)&rdmaConn->r_vaddr);
-    if(parsed!=6){
-      perror("Could not parse message from peer.");
-      return -2;
-    }
+    /// copy from remote configuration message
+    rdmaConn->r_lgid = r_exm->lgid;
+    rdmaConn->r_qpn = r_exm->qpn;
+    rdmaConn->r_psn = r_exm->rkey;
+    rdmaConn->r_vaddr = r_exm->vaddr;
     /// change pair to RTS
     qp_change_state_rts(rdmaConn->qp,rdmaConn);
     // STEP 7 Put the connection to map.
@@ -229,17 +248,15 @@ static void* blog_rdma_daemon_routine(void* param){
     clientip = clientAddr.sin_addr.s_addr;
     //uint64_t cipkey = (uint64_t)clientip;
     // STEP 3.2 - read connection string...
-    char msg[CONFIG_STR_LEN];
+    IbConEx exm;
     /// client --> server | connection string | put connection to map
-    if(read(connfd, msg, sizeof msg)!= sizeof msg){
+    if(read(connfd, &exm, sizeof exm)!= sizeof exm){
       perror("Could not receive ibcfg from peer");
       return NULL;
     }
-    if(strlen(msg) == 8){//only pid for disconnection.
-      int rpid;
-      sscanf(msg, "%x", &rpid);
-      DEBUG_PRINT("Client %x:%x trying to disconnect.\n", clientip, rpid);
-      uint64_t cipkey = MAKE_CON_KEY(clientip,rpid);
+    if(exm.req == REQ_DISCONNECT){//only pid for disconnection.
+      DEBUG_PRINT("Client %x:%x trying to disconnect.\n", clientip, exm.pid);
+      uint64_t cipkey = MAKE_CON_KEY(clientip,exm.pid);
       RDMAConnection * readConn = NULL;
       // find the connection, destroy and clean it up.
       MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
@@ -252,10 +269,10 @@ static void* blog_rdma_daemon_routine(void* param){
       DEBUG_PRINT("destroyed connection for %lx\n",cipkey);
       free(readConn);
       DEBUG_PRINT("released space for %lx\n",cipkey);
-      DEBUG_PRINT("Client %x:%x successfully disconnected!\n",clientip, rpid);
+      DEBUG_PRINT("Client %x:%x successfully disconnected!\n",clientip, exm.pid);
     }else{
       // setup connection.
-      if(serverConnectInternal(ctxt,connfd,msg,clientip)!=0)
+      if(serverConnectInternal(ctxt,connfd,&exm,clientip)!=0)
         return NULL;
     }
     close(connfd);
@@ -528,7 +545,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   rdmaConn->rcq  = NULL;
   rdmaConn->qp   = NULL;
   rdmaConn->ch   = NULL;
-  rdmaConn->port = 1; // always use 1?
+  rdmaConn->port = 1; // always use 1? // lets make it configurable later.
   TEST_Z(rdmaConn->ch=ibv_create_comp_channel(ctxt->ctxt),"Could not create completion channel, ibv_create_comp_channel");
   TEST_Z(rdmaConn->rcq=ibv_create_cq(ctxt->ctxt,1,NULL,NULL,0),"Could not create receive completion queue, ibv_create_cq");
   TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_SQE,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
@@ -548,30 +565,32 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   qp_change_state_init(rdmaConn->qp,rdmaConn->port);
   struct ibv_port_attr port_attr;
   TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could get port attributes, ibv_query_port");
-  rdmaConn->l_lid = port_attr.lid;
+#ifdef USE_GRH
+    TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_lgid.gid),"Could not get gid from port");
+#else
+    rdmaConn->l_lgid.lid = port_attr.lid;
+#endif
   rdmaConn->l_qpn = rdmaConn->qp->qp_num;
   rdmaConn->l_psn = lrand48() & 0xffffff;
   rdmaConn->l_rkey = ctxt->mr->rkey;
   rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
-  char msg[sizeof "00000000:0000:000000:000000:00000000:0000000000000000"];
   // STEP 3: exchange the RDMA info
+  IbConEx l_exm,r_exm; // echange message
   //// client --> server | connection string
-  setibcfg(msg,rdmaConn);
-  if(write(connfd,msg, sizeof msg)!=sizeof msg){
+  setibcfg(&l_exm,rdmaConn);
+  if(write(connfd, &l_exm, sizeof l_exm)!=sizeof l_exm){
     perror("Could not send ibcfg to peer");
     return -3;
   }
   //// server --> client | connection string | put connection to map
-  if(read(connfd, msg, sizeof msg)!=sizeof msg){
+  if(read(connfd, &r_exm, sizeof r_exm)!=sizeof r_exm){
     perror("Could not receive ibcfg from peer.");
     return -4;
   }
-  int rpid; // server pid is unimportant.
-  int parsed = sscanf(msg, "%x:%x:%x:%x:%x:%Lx", &rpid, &rdmaConn->r_lid,&rdmaConn->r_qpn,&rdmaConn->r_psn,&rdmaConn->r_rkey,(long long unsigned*)&rdmaConn->r_vaddr);
-  if(parsed!=6){
-    fprintf(stderr, "Could not parse message from peer.");
-    return -5;
-  }
+  rdmaConn->r_lgid = r_exm.lgid;
+  rdmaConn->r_qpn = r_exm.qpn;
+  rdmaConn->r_psn = r_exm.rkey;
+  rdmaConn->r_vaddr = r_exm.vaddr;
   close(connfd);
   /// change pair to RTR
   qp_change_state_rtr(rdmaConn->qp,rdmaConn);
@@ -609,8 +628,10 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
   }
   
   // STEP 2: send an empty cfg
-  char msg[CONFIG_STR_LEN] = "";
-  if(write(connfd, msg, sizeof msg) != sizeof msg){
+  IbConEx exm;
+  exm.req = REQ_DISCONNECT;
+  exm.pid = getpid();
+  if(write(connfd, &exm, sizeof exm) != sizeof exm){
     perror("Could not send ibcfg to peer");
     return -1;
   }
