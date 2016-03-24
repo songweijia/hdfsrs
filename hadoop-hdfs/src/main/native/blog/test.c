@@ -94,19 +94,19 @@ int main(int argc, char **argv){
     while(1){
       int pns[4];
       uint64_t len, *ids, rvaddr;
-      int cipkey;
+      uint64_t cipkey;
       int i,j;
       RDMAConnection *conn;
       printf("please give the remote ip(like:):\n");
-      scanf("%x",&cipkey);
+      scanf("%lx",&cipkey);
       printf("please give the remote address(like:):\n");
       scanf("%p",(void **)&rvaddr);
       printf("please name four pages to transfer (like 1 2 3 4):\n");
       scanf("%d %d %d %d",&pns[0],&pns[1],&pns[2],&pns[3]);
-      printf("OK, I'm talking to client:%x\n",cipkey);
+      printf("OK, I'm talking to client:%lx\n",cipkey);
       // step 3: do transfer
       if(MAP_READ(con,rdma_ctxt.con_map,(uint64_t)cipkey,&conn) != 0){
-        fprintf(stderr, "cannot get connection %x from connection map.\n",cipkey);
+        fprintf(stderr, "cannot get connection %lx from connection map.\n",cipkey);
         return -1;
       }
       const void *pagelist[4];
@@ -115,11 +115,14 @@ int main(int argc, char **argv){
         pagelist[j] = (void*)conn->l_vaddr+(pns[j]<<align);
         printf("transfer pagelist[%d]=%p\n",j,pagelist[j]);
       }
-      if(mode == 1)
-        rdmaWrite(&rdma_ctxt,cipkey,getpid(),rvaddr,pagelist,4,0);
+      if(mode == 1){
+        rdmaWrite(&rdma_ctxt,(uint32_t)(cipkey>>32),(uint32_t)(cipkey&0xffffffff),rvaddr,pagelist,4,0);
+      }
       else
-        rdmaRead(&rdma_ctxt,cipkey,getpid(),rvaddr,pagelist,4,0);
-      fprintf(stdout, "transfer with client %x ... done.\n",cipkey);
+      {
+        rdmaRead(&rdma_ctxt,(uint32_t)(cipkey>>32),(uint32_t)(cipkey&0xffffffff),rvaddr,pagelist,4,0);
+      }
+      fprintf(stdout, "transfer with client %lx ... done.\n",cipkey);
       // step 5: wait for data being transfered.
       printf("Data(len=%d):[%c...%c...%c...%c]\n",1<<align,
         *(char *)pagelist[0],

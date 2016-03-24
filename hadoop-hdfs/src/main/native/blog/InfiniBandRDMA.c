@@ -52,6 +52,25 @@ static int qp_change_state_init(struct ibv_qp *qp, int port){
   return 0;
 }
 
+/*
+static dumpConn(RDMAConnection * conn){
+  printf("RDMAConnection:\n");
+  printf("===============\n");
+  printf("global:%d\n",conn->global);
+  printf("local subnet_prefix=%lx,interface_id=%lx\n",
+    conn->l_lgid.gid.global.subnet_prefix,
+    conn->l_lgid.gid.global.interface_id);
+  printf("remote subnet_prefix=%lx,interface_id=%lx\n",
+    conn->r_lgid.gid.global.subnet_prefix,
+    conn->r_lgid.gid.global.interface_id);
+  printf("l_qpn:%d,r_qpn:%d\n",conn->l_qpn,conn->r_qpn);
+  printf("l_psn:%d,r_psn:%d\n",conn->l_psn,conn->r_psn);
+  printf("l_rkey:%d,r_rkey:%d\n",conn->l_rkey,conn->r_rkey);
+  printf("l_vaddr:%p,r_vaddr:%p\n",(void*)conn->l_vaddr,(void*)conn->r_vaddr);
+  printf("===============\n");
+}
+*/
+
 static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
   struct ibv_qp_attr *attr;
   attr = malloc(sizeof *attr);
@@ -63,7 +82,6 @@ static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
   attr->rq_psn = conn->r_psn;
   attr->max_dest_rd_atomic = 1;
   attr->min_rnr_timer = 12;
-  attr->ah_attr.is_global = 0;
 #ifdef USE_GRH
   attr->ah_attr.grh.dgid = conn->r_lgid.gid;
   attr->ah_attr.grh.flow_label = 0;
@@ -177,8 +195,10 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
     struct ibv_port_attr port_attr;
     TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could not get port attributes, ibv_query_port");
 #ifdef USE_GRH
+    rdmaConn->global=1;
     TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_lgid.gid),"Could not get gid from port");
 #else
+    rdmaConn->global=0;
     rdmaConn->l_lgid.lid = port_attr.lid;
 #endif
     rdmaConn->l_qpn = rdmaConn->qp->qp_num;
@@ -196,7 +216,8 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
     /// copy from remote configuration message
     rdmaConn->r_lgid = r_exm->lgid;
     rdmaConn->r_qpn = r_exm->qpn;
-    rdmaConn->r_psn = r_exm->rkey;
+    rdmaConn->r_psn = r_exm->psn;
+    rdmaConn->r_rkey = r_exm->rkey;
     rdmaConn->r_vaddr = r_exm->vaddr;
     /// change pair to RTS
     qp_change_state_rts(rdmaConn->qp,rdmaConn);
@@ -310,6 +331,7 @@ int initializeContext(
   struct ibv_device **dev_list;
   TEST_Z(dev_list = ibv_get_device_list(NULL),"No IB-device available. get_device_list returned NULL");
   TEST_Z(dev_list[0],"IB-device could not be assigned. Maybe dev_list array is empty");
+  DEBUG_PRINT("using dev:%s\n%s\n%s\n",dev_list[0]->dev_name,dev_list[0]->dev_path,dev_list[0]->ibdev_path);
   TEST_Z(ctxt->ctxt=ibv_open_device(dev_list[0]),"Could not create context, ibv_open_device");
   ibv_free_device_list(dev_list);
   TEST_Z(ctxt->pd=ibv_alloc_pd(ctxt->ctxt),"Could not allocate protection domain, ibv_alloc_pd");
@@ -566,9 +588,11 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   struct ibv_port_attr port_attr;
   TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could get port attributes, ibv_query_port");
 #ifdef USE_GRH
-    TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_lgid.gid),"Could not get gid from port");
+  rdmaConn->global=1;
+  TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_lgid.gid),"Could not get gid from port");
 #else
-    rdmaConn->l_lgid.lid = port_attr.lid;
+  rdmaConn->global=0;
+  rdmaConn->l_lgid.lid = port_attr.lid;
 #endif
   rdmaConn->l_qpn = rdmaConn->qp->qp_num;
   rdmaConn->l_psn = lrand48() & 0xffffff;
@@ -589,7 +613,8 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   }
   rdmaConn->r_lgid = r_exm.lgid;
   rdmaConn->r_qpn = r_exm.qpn;
-  rdmaConn->r_psn = r_exm.rkey;
+  rdmaConn->r_psn = r_exm.psn;
+  rdmaConn->r_rkey = r_exm.rkey;
   rdmaConn->r_vaddr = r_exm.vaddr;
   close(connfd);
   /// change pair to RTR
