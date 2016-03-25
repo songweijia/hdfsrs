@@ -117,6 +117,7 @@ add_library(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer SHAR
 )
 output_directory(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer target/usr/local/lib)
 
+add_definitions(-DUSE_GRH)
 add_library(edu_cornell_cs_blog_JNIBlog SHARED
     main/native/blog/JNIBlog.c
     main/native/blog/InfiniBandRDMA.c

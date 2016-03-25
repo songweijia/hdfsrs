@@ -19,6 +19,7 @@ package org.apache.hadoop.hdfs.client;
 
 import java.io.IOException;
 import java.util.List;
+import java.nio.ByteBuffer;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hdfs.DFSInputStream;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedBlock;
+
 
 /**
  * The Hdfs implementation of {@link FSDataInputStream}.
@@ -77,5 +79,13 @@ public class HdfsDataInputStream extends FSDataInputStream {
    */
   public synchronized DFSInputStream.ReadStatistics getReadStatistics() {
     return ((DFSInputStream) in).getReadStatistics();
+  }
+
+  public ByteBuffer rdmaRead(int readSize) throws IOException{
+    return ((DFSInputStream) in).rdmaRead(readSize);
+  }
+
+  public ByteBuffer rdmaRead() throws IOException{
+    return ((DFSInputStream) in).rdmaRead();
   }
 }
