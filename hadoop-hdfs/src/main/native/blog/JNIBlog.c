@@ -699,9 +699,10 @@ static int loadBlog(filesystem_t *fs, int log_fd, int page_fd, int snap_fd)
  * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *env, jobject thisObj, jlong poolSize, jint blockSize, jint pageSize, jstring persPath, jint port)
+  (JNIEnv *env, jobject thisObj, jlong poolSize, jint blockSize, jint pageSize, jstring persPath, jstring dev, jint port)
 {
   const char * pp = (*env)->GetStringUTFChars(env,persPath,NULL); // get the presistent path
+  const char * devname = (*env)->GetStringUTFChars(env,dev,NULL); // get the RDMA device name.
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jfieldID long_id = (*env)->GetFieldID(env, thisCls, "jniData", "J");
   jfieldID hlc_id = (*env)->GetFieldID(env, thisCls, "hlc", "Ledu/cornell/cs/sa/HybridLogicalClock;");
@@ -722,19 +723,22 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->block_map = MAP_INITIALIZE(block);
   if (filesystem->block_map == NULL) {
     fprintf(stderr, "Initialize: Allocation of block_map failed.\n");
-    (*env)->ReleaseStringUTFChars(env, persPath, pp);
+    if(pp)(*env)->ReleaseStringUTFChars(env, persPath, pp);
+    if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
     return -1;
   }
   filesystem->log_map = MAP_INITIALIZE(log);
   if (filesystem->log_map == NULL) {
     fprintf(stderr, "Initialize: Allocation of log_map failed.\n");
-    (*env)->ReleaseStringUTFChars(env, persPath, pp);
+    if(pp)(*env)->ReleaseStringUTFChars(env, persPath, pp);
+    if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
     return -1;
   }
   filesystem->snapshot_map = MAP_INITIALIZE(snapshot);
   if (filesystem->snapshot_map == NULL) {
     fprintf(stderr, "Initialize: Allocation of snapshot_map failed.\n");
-    (*env)->ReleaseStringUTFChars(env, persPath, pp);
+    if(pp)(*env)->ReleaseStringUTFChars(env, persPath, pp);
+    if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
     return -1;
   }
   filesystem->log_cap = 1024;
@@ -744,9 +748,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   DEBUG_PRINT("JNIBlog.initialize:(),poolSize=%ld,LOG2(poolSize)=%d\n",poolSize,LOG2(poolSize));
   struct timeval tv1,tv2;
   gettimeofday(&tv1,NULL);
-  if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),(const uint16_t)port,0)){//this is for server
+  if(initializeContext(filesystem->rdmaCtxt,LOG2(poolSize),LOG2(pageSize),devname,(const uint16_t)port,0)){//this is for server
     fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
-    (*env)->ReleaseStringUTFChars(env, persPath, pp);
+    if(pp)(*env)->ReleaseStringUTFChars(env, persPath, pp);
+    if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
     return -2;
   }
   gettimeofday(&tv2,NULL);
@@ -799,12 +804,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
   filesystem->bwc.thisObj = (*env)->NewGlobalRef(env, thisObj); // java this object
   
   //start blog writer thread
+#ifdef PERSISTENT
   if (pthread_create(&filesystem->writer_thrd, NULL, blog_writer_routine, (void*)&filesystem->bwc)) {
     fprintf(stderr,"CANNOT create blogWriter thread, exit\n");
     exit(1);
   }
+#endif
 
-  (*env)->ReleaseStringUTFChars(env, persPath, pp);
+  if(pp)(*env)->ReleaseStringUTFChars(env, persPath, pp);
+  if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
   return 0;
 }
 
@@ -1473,7 +1481,7 @@ gettimeofday(&tv3, NULL);
   }
   for(i=0;i<new_pages_length;i++)
     block->pages[first_page+i] = new_pages + i;
-  DEBUG_PRINT("writeBlockRDMA(): new_page_length=%d\n",new_pages_length);
+  DEBUG_PRINT("writeBlockRDMA(): new_pages_length=%d\n",new_pages_length);
 
   // create log entry
   DEBUG_PRINT("writeBlockRDMA(): create log entry\n");
@@ -1498,7 +1506,7 @@ gettimeofday(&tv3, NULL);
 
 #if PERF_RDMA
   gettimeofday(&tv4, NULL);
-  fprintf(stdout,"%ld %ld us\n",
+  fprintf(stderr,"%ld %ld us\n",
     (tv3.tv_sec-tv2.tv_sec)*1000000+tv3.tv_usec-tv2.tv_usec,
     (tv4.tv_sec-tv1.tv_sec)*1000000+tv4.tv_usec-tv1.tv_usec);
 #endif
@@ -1617,8 +1625,10 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
   
   fs = get_filesystem(env,thisObj);
   fs->bwc.alive = 0;
+#ifdef PERSISTENT
   if(pthread_join(fs->writer_thrd, &ret))
     fprintf(stderr,"waiting for blogWriter thread error...disk data may be corrupted\n");
+#endif
 
   // close files
   if(fs->bwc.log_fd!=-1){close(fs->bwc.log_fd),fs->bwc.log_fd=-1;}
@@ -1632,13 +1642,16 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
  * Signature: (JJ)J
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize
-  (JNIEnv *env, jclass thisCls, jint psz, jint align, jint port){
+  (JNIEnv *env, jclass thisCls, jint psz, jint align, jstring dev, jint port){
   RDMACtxt *ctxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
-  if(initializeContext(ctxt,(const uint32_t)psz,(const uint32_t)align,(const uint16_t)port,1)){ // this is for client
+  const char * devname = (*env)->GetStringUTFChars(env,dev,NULL); // get the RDMA device name.
+  if(initializeContext(ctxt,(const uint32_t)psz,(const uint32_t)align,devname,(const uint16_t)port,1)){ // this is for client
     free(ctxt);
     fprintf(stderr, "Cannot initialize rdma context.\n");
+    if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
     return (jlong)0;
   }
+  if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
   return (jlong)ctxt;
 }
 

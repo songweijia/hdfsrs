@@ -52,9 +52,10 @@ public class JNIBlog {
         DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
     int align = 0;
     int port = conf.getInt(DFSConfigKeys.DFS_RDMA_CON_PORT_KEY, DFSConfigKeys.DFS_RDMA_CON_PORT_DEFAULT);
+    String dev = conf.getTrimmed(DFSConfigKeys.DFS_RDMA_DEVICE_KEY, DFSConfigKeys.DFS_RDMA_DEVICE_DEFAULT);
     while(((bs>>align)&1) == 0)align++;
     try{
-      hRDMABufferPool = JNIBlog.rbpInitialize(psz, align, port);
+      hRDMABufferPool = JNIBlog.rbpInitialize(psz, align, dev, port);
       if(hRDMABufferPool != 0L){
         //add shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(){
@@ -86,14 +87,15 @@ public class JNIBlog {
    * @param blockSize
    * @param pageSize
    * @param persPath
+   * @param dev - the device name for the RDMA device. 'mlx5_0' for example. if null, it chooses the first device found.
    * @param port - the port number for RDMA based Blog
    */
-  public void initialize(MemDatasetManager dsmgr, String bpid, long poolSize, int blockSize, int pageSize, String persPath, int port){
+  public void initialize(MemDatasetManager dsmgr, String bpid, long poolSize, int blockSize, int pageSize, String persPath, String dev, int port){
     this.dsmgr = dsmgr;
     this.bpid = bpid;
     this.persPath = persPath;
     // initialize blog
-    initialize(poolSize, (int)blockSize, pageSize, persPath, port);
+    initialize(poolSize, (int)blockSize, pageSize, persPath, dev, port);
     // LOAD blockmap
     loadBlockMap();
     Runtime.getRuntime().addShutdownHook(new Thread(){
@@ -170,11 +172,12 @@ public class JNIBlog {
    * @param blockSize - block size for each block
    * @param poolSize - memory pool size
    * @param pageSize - page size
+   * @param dev - the device name for the RDMA device. 'mlx5_0' for example. if null, it chooses the first device found.
    * @param persPath - initialize it
    * @param port - server port for the RDMA datanode.
    * @return error code, 0 for success.
    */
-  private native int initialize(long poolSize, int blockSize, int pageSize, String persPath, int port);
+  private native int initialize(long poolSize, int blockSize, int pageSize, String persPath, String dev, int port);
   
   /**
    * destroy the blog
@@ -287,11 +290,12 @@ public class JNIBlog {
    * function: initialize an RDMA Buffer Pool.
    * @param psz - size of the buffer pool = 1l<<psz.
    * @param align - alignment for the buffer/page allocation = 1l<<align
+   * @param dev - the device name for the RDMA device. 'mlx5_0' for example. if null, it chooses the first device found.
    * @param port - port for the blog server to listen for. ZERO FOR CLIENT.
    * @return handle of the RDMA Block Pool
    * @throws Exception
    */
-  static public native long rbpInitialize(int psz, int align, int port) throws IOException;
+  static public native long rbpInitialize(int psz, int align, String dev, int port) throws IOException;
   /**
    * function: destroy the RDMA buffer Pool.
    * @param size - size of the buffer tool
@@ -449,7 +453,7 @@ public class JNIBlog {
     long rtc;
   
     writeLine("Begin Initialize.");
-    bl.initialize(null,null,1l<<30,1024*1024, 1024, "testbpid", 0); // TODO: modify
+    bl.initialize(null,null,1l<<30,1024*1024, 1024, "testbpid", null, 0); // TODO: modify
 /*
     writeLine(bl.hlc.toString());
     bl.testBlockCreation(mhlc);

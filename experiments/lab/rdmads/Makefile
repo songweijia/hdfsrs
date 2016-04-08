@@ -1,6 +1,7 @@
 C=gcc
 PROG=ds
-CFLAGS=-Wall -g
+#CFLAGS=-Wall -g -D PRINT_WAITTIME
+CFLAGS=-Wall -g 
 LDFLAGS= -lrdmacm -libverbs -lpthread
 
 # all: server client

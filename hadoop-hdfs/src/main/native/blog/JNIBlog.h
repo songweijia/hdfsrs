@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    initialize
- * Signature: (JIILjava/lang/String;I)I
+ * Signature: (JIILjava/lang/String;Ljava/lang/String;I)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *, jobject, jlong, jint, jint, jstring, jint);
+  (JNIEnv *, jobject, jlong, jint, jint, jstring, jstring, jint);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
@@ -106,10 +106,10 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getPid
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    rbpInitialize
- * Signature: (III)J
+ * Signature: (IILjava/lang/String;I)J
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize
-  (JNIEnv *, jclass, jint, jint, jint);
+  (JNIEnv *, jclass, jint, jint, jstring, jint);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog

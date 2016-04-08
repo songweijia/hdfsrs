@@ -52,24 +52,6 @@ static int qp_change_state_init(struct ibv_qp *qp, int port){
   return 0;
 }
 
-/*
-static dumpConn(RDMAConnection * conn){
-  printf("RDMAConnection:\n");
-  printf("===============\n");
-  printf("global:%d\n",conn->global);
-  printf("local subnet_prefix=%lx,interface_id=%lx\n",
-    conn->l_lgid.gid.global.subnet_prefix,
-    conn->l_lgid.gid.global.interface_id);
-  printf("remote subnet_prefix=%lx,interface_id=%lx\n",
-    conn->r_lgid.gid.global.subnet_prefix,
-    conn->r_lgid.gid.global.interface_id);
-  printf("l_qpn:%d,r_qpn:%d\n",conn->l_qpn,conn->r_qpn);
-  printf("l_psn:%d,r_psn:%d\n",conn->l_psn,conn->r_psn);
-  printf("l_rkey:%d,r_rkey:%d\n",conn->l_rkey,conn->r_rkey);
-  printf("l_vaddr:%p,r_vaddr:%p\n",(void*)conn->l_vaddr,(void*)conn->r_vaddr);
-  printf("===============\n");
-}
-*/
 
 static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
   struct ibv_qp_attr *attr;
@@ -82,17 +64,13 @@ static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
   attr->rq_psn = conn->r_psn;
   attr->max_dest_rd_atomic = 1;
   attr->min_rnr_timer = 12;
-#ifdef USE_GRH
-  attr->ah_attr.grh.dgid = conn->r_lgid.gid;
+  attr->ah_attr.grh.dgid = conn->r_gid;
   attr->ah_attr.grh.flow_label = 0;
   attr->ah_attr.grh.sgid_index = 0;
   attr->ah_attr.grh.hop_limit = 10; // allow 10 hops
   attr->ah_attr.grh.traffic_class = 0;
   attr->ah_attr.is_global = 1;
-#else
-  attr->ah_attr.is_global = 0;
-#endif
-  attr->ah_attr.dlid = conn->r_lgid.lid;
+  attr->ah_attr.dlid = conn->r_lid;
   attr->ah_attr.sl = 1;
   attr->ah_attr.src_path_bits = 0;
   attr->ah_attr.port_num = conn->port;
@@ -117,9 +95,9 @@ static int qp_change_state_rts(struct ibv_qp *qp, RDMAConnection * conn){
   memset(attr, 0, sizeof *attr);
 
   attr->qp_state = IBV_QPS_RTS;
-  attr->timeout = 20;
-  attr->retry_cnt = 7;
-  attr->rnr_retry = 7;
+  attr->timeout = 4;
+  attr->retry_cnt = 6;
+  attr->rnr_retry = 6;
   attr->sq_psn = conn->l_psn;
   attr->max_rd_atomic = 1;
 
@@ -136,12 +114,9 @@ static int qp_change_state_rts(struct ibv_qp *qp, RDMAConnection * conn){
 }
 
 static void setibcfg(IbConEx *ex, RDMAConnection *conn){
-#ifdef USE_GRH
-  ex->req = REQ_CONNECT_BY_GID;
-#else
-  ex->req = REQ_CONNECT_BY_LID;
-#endif
-  ex->lgid = conn->l_lgid;
+  ex->req = REQ_CONNECT;
+  ex->gid = conn->l_gid;
+  ex->lid = conn->l_lid;
   ex->qpn = conn->l_qpn;
   ex->psn = conn->l_psn;
   ex->rkey = conn->l_rkey;
@@ -194,13 +169,9 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
     qp_change_state_init(rdmaConn->qp,rdmaConn->port);
     struct ibv_port_attr port_attr;
     TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could not get port attributes, ibv_query_port");
-#ifdef USE_GRH
     rdmaConn->global=1;
-    TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_lgid.gid),"Could not get gid from port");
-#else
-    rdmaConn->global=0;
-    rdmaConn->l_lgid.lid = port_attr.lid;
-#endif
+    TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_gid),"Could not get gid from port");
+    rdmaConn->l_lid = port_attr.lid;
     rdmaConn->l_qpn = rdmaConn->qp->qp_num;
     rdmaConn->l_psn = lrand48() & 0xffffff;
     rdmaConn->l_rkey = ctxt->mr->rkey;
@@ -214,7 +185,8 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
       return -1;
     }
     /// copy from remote configuration message
-    rdmaConn->r_lgid = r_exm->lgid;
+    rdmaConn->r_lid = r_exm->lid;
+    rdmaConn->r_gid = r_exm->gid;
     rdmaConn->r_qpn = r_exm->qpn;
     rdmaConn->r_psn = r_exm->psn;
     rdmaConn->r_rkey = r_exm->rkey;
@@ -305,9 +277,11 @@ int initializeContext(
   RDMACtxt *ctxt,
   const uint32_t psz,   // pool size
   const uint32_t align, // alignment
+  const char* dev, // RDMA device name, if null, we use the first one we see.
   const uint16_t port, // port number
   const uint16_t bClient){ // is client or not?
   struct ibv_device_attr dev_attr;
+  int i,num_device;
   ctxt->port = port;
   ctxt->isClient = bClient;
   // initialize sizes and counters
@@ -329,10 +303,20 @@ int initializeContext(
   // get InfiniBand data structures
   DEBUG_PRINT("debug:before initialize infiniband data structures\n");
   struct ibv_device **dev_list;
-  TEST_Z(dev_list = ibv_get_device_list(NULL),"No IB-device available. get_device_list returned NULL");
-  TEST_Z(dev_list[0],"IB-device could not be assigned. Maybe dev_list array is empty");
-  DEBUG_PRINT("using dev:%s\n%s\n%s\n",dev_list[0]->dev_name,dev_list[0]->dev_path,dev_list[0]->ibdev_path);
-  TEST_Z(ctxt->ctxt=ibv_open_device(dev_list[0]),"Could not create context, ibv_open_device");
+  TEST_Z(dev_list = ibv_get_device_list(&num_device),"No IB-device available. get_device_list returned NULL");
+  for(i = 0;i<num_device;i++){
+    const char * devname = ibv_get_device_name(dev_list[i]);
+    DEBUG_PRINT("check device:%s\n",devname);
+    if(dev==NULL || strcmp(devname,dev)==0){
+      break;
+    }
+    DEBUG_PRINT("skip.\n");
+  }
+  if(i == num_device)// cannot find device
+    return -1;
+  TEST_Z(dev_list[i],"IB-device could not be assigned. Maybe dev_list array is empty");
+  DEBUG_PRINT("using dev:%s\n%s\n%s\n",dev_list[i]->dev_name,dev_list[i]->dev_path,dev_list[i]->ibdev_path);
+  TEST_Z(ctxt->ctxt=ibv_open_device(dev_list[i]),"Could not create context, ibv_open_device");
   ibv_free_device_list(dev_list);
   TEST_Z(ctxt->pd=ibv_alloc_pd(ctxt->ctxt),"Could not allocate protection domain, ibv_alloc_pd");
   TEST_Z(ctxt->mr=ibv_reg_mr(
@@ -587,13 +571,9 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   qp_change_state_init(rdmaConn->qp,rdmaConn->port);
   struct ibv_port_attr port_attr;
   TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could get port attributes, ibv_query_port");
-#ifdef USE_GRH
   rdmaConn->global=1;
-  TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_lgid.gid),"Could not get gid from port");
-#else
-  rdmaConn->global=0;
-  rdmaConn->l_lgid.lid = port_attr.lid;
-#endif
+  TEST_NZ(ibv_query_gid(ctxt->ctxt,rdmaConn->port,0,&rdmaConn->l_gid),"Could not get gid from port");
+  rdmaConn->l_lid = port_attr.lid;
   rdmaConn->l_qpn = rdmaConn->qp->qp_num;
   rdmaConn->l_psn = lrand48() & 0xffffff;
   rdmaConn->l_rkey = ctxt->mr->rkey;
@@ -611,7 +591,8 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
     perror("Could not receive ibcfg from peer.");
     return -4;
   }
-  rdmaConn->r_lgid = r_exm.lgid;
+  rdmaConn->r_gid = r_exm.gid;
+  rdmaConn->r_lid = r_exm.lid;
   rdmaConn->r_qpn = r_exm.qpn;
   rdmaConn->r_psn = r_exm.psn;
   rdmaConn->r_rkey = r_exm.rkey;
@@ -670,15 +651,18 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
 
 int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
 DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr=%p\nhostip=%x,pid=%d\n",iswrite,npage,*pagelist,(void*)r_vaddr,hostip,pid);
+  struct timeval tv1,tv2,tv3,tv4,tv21,tv22,tv23,tv221,tv222;
   const uint64_t cipkey = (const uint64_t)MAKE_CON_KEY(hostip,pid);
   RDMAConnection *rdmaConn = NULL;
   // STEP 1: get the connection
+  gettimeofday(&tv1,NULL);
   MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
   if(MAP_READ(con, ctxt->con_map, cipkey, &rdmaConn)!=0){
     fprintf(stderr, "Cannot find the context for ip:%lx",cipkey);
     return -1;
   }
   // STEP 2: finish transfer and return
+  gettimeofday(&tv2,NULL);
   struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*ctxt->max_sge);
   struct ibv_send_wr wr;
   wr.wr.rdma.remote_addr = r_vaddr;
@@ -693,6 +677,7 @@ DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr
   TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
   int opCnt=0;//number of transfer
   int npageToProcess=npage;
+  gettimeofday(&tv21,NULL);
   while(npageToProcess > 0){
     int i;
     int batchSize = (npageToProcess > ctxt->max_sge)?ctxt->max_sge:npageToProcess;
@@ -713,12 +698,16 @@ DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr
     }
     wr.wr.rdma.remote_addr += batchSize * RDMA_CTXT_PAGE_SIZE(ctxt);
   }
+  gettimeofday(&tv22,NULL);
   DEBUG_PRINT("rdmaTransfer: batchSize=%d\n",opCnt);
   struct ibv_wc *wc = (struct ibv_wc*)malloc(opCnt*sizeof(struct ibv_wc));
+  gettimeofday(&tv221,NULL);
   // wait on completion queue
   void *cq_ctxt;
   TEST_NZ(ibv_get_cq_event(rdmaConn->ch, &rdmaConn->scq, &cq_ctxt), "ibv_get_cq_event failed!");
+  gettimeofday(&tv222,NULL);
   ibv_ack_cq_events(rdmaConn->scq,1);
+  gettimeofday(&tv23,NULL);
   // get completion event.
   int ne=0;
   while(ne<opCnt){
@@ -737,9 +726,23 @@ DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr
     }
     ne += npe;
   }
+  gettimeofday(&tv3,NULL);
   free(sge_list);
   free(wc);
   MAP_UNLOCK(con, ctxt->con_map, cipkey);
+  gettimeofday(&tv4,NULL);
+  DEBUG_PRINT("rdmaTransfer:\t%ld\t%ld\n",
+    (tv2.tv_sec-tv1.tv_sec)*1000000+tv2.tv_usec-tv1.tv_usec,
+    (tv3.tv_sec-tv2.tv_sec)*1000000+tv3.tv_usec-tv2.tv_usec);
+  DEBUG_PRINT("break down:\t%ld\t%ld\t%ld\t%ld\n",
+    (tv21.tv_sec-tv2.tv_sec)*1000000+tv21.tv_usec-tv2.tv_usec,
+    (tv22.tv_sec-tv21.tv_sec)*1000000+tv22.tv_usec-tv21.tv_usec,
+    (tv23.tv_sec-tv22.tv_sec)*1000000+tv23.tv_usec-tv22.tv_usec,
+    (tv3.tv_sec-tv23.tv_sec)*1000000+tv3.tv_usec-tv23.tv_usec);
+  DEBUG_PRINT("bbd:\t%ld\t%ld\t%ld\n",
+    (tv221.tv_sec-tv22.tv_sec)*1000000+tv221.tv_usec-tv21.tv_usec,
+    (tv222.tv_sec-tv221.tv_sec)*1000000+tv222.tv_usec-tv221.tv_usec,
+    (tv23.tv_sec-tv222.tv_sec)*1000000+tv23.tv_usec-tv222.tv_usec);
   return 0;
 }
 

@@ -652,5 +652,7 @@ public class DFSConfigKeys extends CommonConfigurationKeys {
 //  public static final int DFS_RDMA_PAGE_SIZE_EXPONENT_DEFAULT = 12;
   public static final String DFS_RDMA_CON_PORT_KEY = "dfs.rdma.con.port";
   public static final int DFS_RDMA_CON_PORT_DEFAULT = 7362;
+  public static final String DFS_RDMA_DEVICE_KEY = "dfs.rdma.device";
+  public static final String DFS_RDMA_DEVICE_DEFAULT = null;
   //HDFSRS_RDMA
 }

@@ -5,25 +5,27 @@
 #define TEST_NZ(x,y) do { if ((x)) die(y); } while (0)
 #define TEST_Z(x,y) do { if (!(x)) die(y); } while (0)
 #define TEST_N(x,y) do { if ((x)<0) die(y); } while (0)
+
+#define DEFAULT_PORT (18515)
 static int die(const char *reason){                                                                     
   fprintf(stderr, "Err: %s - %s \n ", strerror(errno), reason);
   exit(EXIT_FAILURE);
   return -1;
 }
 
-// test -c -h host -p port
-// test -s -p port
+// test -c -h host -p port -d mlx5_0
+// test -s -p port -d mlx5_1
 // options:
 // -z poolsize order, default is 20 for 1MB
 // -a page/buffer size order, default value is 12 for 4KB
 int main(int argc, char **argv){
   int c;
   int mode = -1; // 0 - client; 1 - writing server; 2 - reading server; -1 - init
-  char *host=NULL;
-  unsigned short port=0;
+  char *host=NULL, *dev=NULL;
+  unsigned short port=DEFAULT_PORT;
   uint32_t psz=20;// the default pool size is 1MB.
   uint32_t align=12;// the default page or buffer size is 4KB.
-  while((c=getopt(argc,argv,"cs:h:p:a:z:"))!=-1){
+  while((c=getopt(argc,argv,"cs:h:p:a:z:d:"))!=-1){
     switch(c){
     case 'c':
       if(mode!=-1){
@@ -45,6 +47,9 @@ int main(int argc, char **argv){
     case 'h':
       host = optarg;
       break;
+    case 'd':
+      dev = optarg;
+      break;
     case 'p':
       port = (unsigned short)atoi(optarg);
       break;
@@ -56,13 +61,13 @@ int main(int argc, char **argv){
       break;
     }
   }
-  printf("mode=%d,host=%s,port=%d,psz=%d,align=%d\n",mode,host,port,psz,align);
+  printf("mode=%d,host=%s,dev=%s,port=%d,psz=%d,align=%d\n",mode,host,dev,port,psz,align);
   if(mode == 0){
     // client
     RDMACtxt rdma_ctxt;
     int i;
     // step 1: initialize client
-    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,port,1),"initializeContext");
+    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,dev,port,1),"initializeContext");
     for(i=0;i<(1<<(psz-align));i++)
       memset((void*)rdma_ctxt.pool+(i<<align),'A'+i,1<<align);
     // step 2: connect
@@ -72,8 +77,9 @@ int main(int argc, char **argv){
     while(1){
       TEST_NZ(allocateBuffer(&rdma_ctxt, &buf),"allocateBuffer");
       // step 4: initialize buffer
-      bzero(buf,1<<align);
-      printf("ipkey=%llx,vaddr=%p\n",(unsigned long long)inet_addr(host),buf);
+      printf("ipkey=%llx,vaddr=%p\n",
+        ((unsigned long long)inet_addr(host))<<32|getpid(), buf);
+      printf("to show the data received, press any ENTER\n");
       getchar();
       // step 5: wait for data being transfered.
       printf("Data(len=%d):[%c...%c...%c...%c]\n",1<<align,
@@ -87,19 +93,19 @@ int main(int argc, char **argv){
     RDMACtxt rdma_ctxt;
     int i;
     // step 1: initialize server
-    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,port,0),"initializeContext");
+    TEST_NZ(initializeContext(&rdma_ctxt,psz,align,dev,port,0),"initializeContext");
     for(i=0;i<(1<<(psz-align));i++)
-      memset((void*)rdma_ctxt.pool+(i<<align),'0'+i,1<<align);
-    // step 2:
+      memset((void*)rdma_ctxt.pool+(i<<align),'Z',1<<align);
+    // step 2: 
     while(1){
       int pns[4];
       uint64_t len, *ids, rvaddr;
       uint64_t cipkey;
       int i,j;
       RDMAConnection *conn;
-      printf("please give the remote ip(like:):\n");
+      printf("please give the remote ip(like:1c09a8c0000078e8):\n");
       scanf("%lx",&cipkey);
-      printf("please give the remote address(like:):\n");
+      printf("please give the remote address(like:0x7f3d32923000):\n");
       scanf("%p",(void **)&rvaddr);
       printf("please name four pages to transfer (like 1 2 3 4):\n");
       scanf("%d %d %d %d",&pns[0],&pns[1],&pns[2],&pns[3]);
@@ -135,6 +141,7 @@ int main(int argc, char **argv){
     fprintf(stderr,"\t-c client mode\n");
     fprintf(stderr,"\t-s <r|w> reading or writing server mode\n");
     fprintf(stderr,"\t-h <hostip>\n");
+    fprintf(stderr,"\t-d <devname>\n");
     fprintf(stderr,"\t-p <port>\n");
     fprintf(stderr,"\t-z <psz> pool size, default to 20 (1MB)\n");
     fprintf(stderr,"\t-a <align> page/buf size, default to 12 (4KB page/buffer)\n");

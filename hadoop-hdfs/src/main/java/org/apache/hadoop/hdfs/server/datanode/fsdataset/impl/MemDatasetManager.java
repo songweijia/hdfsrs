@@ -9,6 +9,8 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_MEMBLOCK_PAGESIZE
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_CON_PORT_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_CON_PORT_DEFAULT;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_DEVICE_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_DEVICE_DEFAULT;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,6 +52,7 @@ public class MemDatasetManager {
   private final int pagesize;
   private final String perspath; // the path for persistent files
   private final int rdmaport; // port...
+  private final String rdmadev; // the rdmadev name
 
   
   public class MemBlockMeta extends Block implements Replica {
@@ -288,6 +291,7 @@ public class MemDatasetManager {
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
     this.rdmaport = conf.getInt(DFS_RDMA_CON_PORT_KEY, DFS_RDMA_CON_PORT_DEFAULT);
+    this.rdmadev = conf.getTrimmed(DFS_RDMA_DEVICE_KEY, DFS_RDMA_DEVICE_DEFAULT);
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
     this.blogMap = new HashMap<String, JNIBlog>();
     String[] dataDirs = conf.getTrimmedStrings(DFS_DATANODE_DATA_DIR_KEY);
@@ -329,7 +333,7 @@ public class MemDatasetManager {
       if(fPers.mkdir()==false)
         LOG.error("Initialize Blog: cannot create path:" + fPers.getAbsolutePath());
     }
-    rBlog.initialize(this, bpid, capacity, (int)blocksize, pagesize, fPers.getAbsolutePath(), rdmaport);
+    rBlog.initialize(this, bpid, capacity, (int)blocksize, pagesize, fPers.getAbsolutePath(), rdmadev, rdmaport);
     return rBlog;
   }
   

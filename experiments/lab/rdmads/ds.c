@@ -11,6 +11,10 @@
 #include <sys/socket.h>
 #include <infiniband/verbs.h>
 #include <sys/time.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <signal.h>
 #define RDMA_WRID 3
 
 
@@ -19,10 +23,16 @@
 #define TEST_Z(x,y) do { if (!(x)) die(y); } while (0)
 #define TEST_N(x,y) do { if ((x)<0) die(y); } while (0)
 
+#define SPAN(tv1,tv2) (((tv2).tv_sec-(tv1).tv_sec)*1000000 + (tv2).tv_usec - (tv1).tv_usec)
+#define THP(npage,us) (((double)(npage)*page_size)/(us))
+#define NREQ(n,us) ((double)(n)/(us))
+
 //64MB page
 #define MAX_PAGE (16)
 #define	SVR_PORT (18515)
-#define MAX_SQE (100)
+//#define MAX_SQE (100)
+#define MAX_SQE (64)
+//#define MAX_SQE (1)
 
 /*
  * All clients and server has 16 pages. The client requests
@@ -30,8 +40,8 @@
  */
 
 const char * hlp_info = " Usage: \n \
- ds svr <pagesize> <nloop> \n \
- ds cli <server> <pagesize> 0 3 6 9 12 ... \n";
+ ds svr <dev> <pagesize> <nloop> \n \
+ ds cli <dev> <server> <pagesize> 0 3 6 9 12 ... \n";
 
 static int die(const char *reason){
   fprintf(stderr, "Err: %s - %s \n ", strerror(errno), reason);
@@ -48,20 +58,55 @@ typedef struct app_context{
 } AppCtxt;
 
 static AppCtxt ctxt;
+static char *dev = NULL;
 static int page_size = 0;
 static int nloop = 0;
 
+static void list_devices(void){
+  struct ibv_device ** dev_list = NULL;
+  int num_device,i;
+  TEST_Z(dev_list = ibv_get_device_list(&num_device),"No IB-device available. get_device_list returned NULL");
+
+  for(i=0;i<num_device;i++){
+    const char * devname = ibv_get_device_name(dev_list[i]);
+    printf("[%d]\t%s\n",i,devname);
+  }
+
+  ibv_free_device_list(dev_list);
+}
+
 static void init_ctxt(int page_size){
+
   // STEP 1 context
   TEST_NZ(posix_memalign(&ctxt.pages, page_size, page_size*MAX_PAGE),"could not allocate working buffer ctx->pages");
   memset(ctxt.pages, 0, page_size*MAX_PAGE);
+/*
+#define GIGA (1<<30)
+  int fd = open("file.img",O_RDWR);
+  //ctxt.pages=mmap(NULL,GIGA,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+  ctxt.pages=mmap(NULL,GIGA,PROT_READ|PROT_WRITE,MAP_PRIVATE,fd,0);
+*/
+  int num_device,i;
   struct ibv_device **dev_list;
-  TEST_Z(dev_list = ibv_get_device_list(NULL),"No IB-device available. get_device_list returned NULL");
-  TEST_Z(ctxt.dev=dev_list[0],"IB-device could not be assigned. Maybe dev_list array is empty");
+  TEST_Z(dev_list = ibv_get_device_list(&num_device),"No IB-device available. get_device_list returned NULL");
+
+  for(i=0;i<num_device;i++){
+    const char * devname = ibv_get_device_name(dev_list[i]);
+    if(strcmp(devname,dev)){
+      printf("skipping device:%s...\n",devname);
+    }else
+      break;
+  }
+  if(i==num_device){
+    die("Cannot find RDMA device.");
+  }
+
+  TEST_Z(ctxt.dev=dev_list[i],"IB-device could not be assigned. Maybe dev_list array is empty");
   TEST_Z(ctxt.context=ibv_open_device(ctxt.dev),"Could not create context, ibv_open_device");
   TEST_Z(ctxt.pd=ibv_alloc_pd(ctxt.context),"Could not allocate protection domain, ibv_alloc_pd");
   TEST_Z(ctxt.mr=ibv_reg_mr(ctxt.pd, ctxt.pages, page_size*MAX_PAGE, 
-         IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE), "Could not allocate mr, ibv_reg_mr. Do you have root access?");
+         IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_ATOMIC ), "Could not allocate mr, ibv_reg_mr. Do you have root access?");
+  ibv_free_device_list(dev_list);
 }
 
 static void init_pages(int isServer){
@@ -100,25 +145,72 @@ typedef struct _connection{
   struct ibv_qp *qp;
   struct ibv_comp_channel *ch;
   int port;
-  int l_lid,r_lid;
-  int l_qpn,r_qpn;
-  int l_psn,r_psn;
-  unsigned l_rkey,r_rkey;
-  unsigned long long l_vaddr,r_vaddr; // we dont need l_vaddr because it is decided by request?
+//  uint32_t l_lid,r_lid;
+  union ibv_gid l_gid,r_gid;
+  uint32_t l_lid,r_lid;
+  uint32_t l_qpn,r_qpn;
+  uint32_t l_psn,r_psn;
+  uint32_t l_rkey,r_rkey;
+  uint64_t l_vaddr,r_vaddr; // we dont need l_vaddr because it is decided by request?
 } Connection;
 
 static void print_ib_con(Connection *ibcon){
-  printf("Local:  LID %#04x, QPN %#06x, PSN %#06x RKey %#08x VAddr %#016Lx\n",
-    ibcon->l_lid, ibcon->l_qpn, ibcon->l_psn, ibcon->l_rkey, ibcon->l_vaddr);
-  printf("Remote: LID %#04x, QPN %#06x, PSN %#06x RKey %#08x VAddr %#016Lx\n",
-    ibcon->r_lid, ibcon->r_qpn, ibcon->r_psn, ibcon->r_rkey, ibcon->r_vaddr);
+  printf("Local:\nLID\t%#8x\nGID\t%#16Lx.%#16Lx\nQPN\t%#08x\nPSN\t%#08x\nRKey\t%#08x\nVAddr\t%#016Lx\n",
+    ibcon->l_lid,
+    (long long unsigned)ibcon->l_gid.global.subnet_prefix,
+    (long long unsigned)ibcon->l_gid.global.interface_id,
+    ibcon->l_qpn, ibcon->l_psn, ibcon->l_rkey, (long long unsigned)ibcon->l_vaddr);
+  printf("Local:\nLID\t%#8x\nGID\t%#16Lx.%#16Lx\nQPN\t%#08x\nPSN\t%#08x\nRKey\t%#08x\nVAddr\t%#016Lx\n",
+    ibcon->r_lid,
+    (long long unsigned)ibcon->r_gid.global.subnet_prefix,
+    (long long unsigned)ibcon->r_gid.global.interface_id,
+    ibcon->r_qpn, ibcon->r_psn, ibcon->r_rkey, (long long unsigned)ibcon->r_vaddr);
 }
 
-char ibcfg[sizeof "0000:000000:000000:00000000:0000000000000000"];
+#define LID_SZ  (sizeof(uint32_t))
+#define GID_SZ	(sizeof(union ibv_gid))
+#define PSN_SZ	(sizeof(uint32_t))
+#define QPN_SZ	(sizeof(uint32_t))
+#define RKEY_SZ	(sizeof(uint32_t))
+#define VADDR_SZ        (sizeof(uint64_t))
+#define CONF_SZ (LID_SZ + PSN_SZ + QPN_SZ + GID_SZ + RKEY_SZ + VADDR_SZ)
+#define LOC_LID (0)
+#define LOC_GID (LOC_LID + LID_SZ)
+#define LOC_QPN (LOC_GID + GID_SZ)
+#define LOC_PSN (LOC_QPN + QPN_SZ)
+#define LOC_RKEY (LOC_PSN + PSN_SZ)
+#define LOC_VADDR (LOC_RKEY + RKEY_SZ)
+char ibcfg[CONF_SZ];
 
 static void setibcfg(char *ibcfg, Connection *ibcon){
-  sprintf(ibcfg, "%04x:%06x:%06x:%08x:%016Lx", 
-    ibcon->l_lid, ibcon->l_qpn, ibcon->l_psn, ibcon->l_rkey, ibcon->l_vaddr);
+  // 0 LID
+  *((uint32_t *)(ibcfg + LOC_LID)) = ibcon->l_lid;
+  // 1 GID
+  *((union ibv_gid *)(ibcfg + LOC_GID)) = ibcon->l_gid;
+  // 2 QPN
+  *((uint32_t *)(ibcfg + LOC_QPN)) = ibcon->l_qpn;
+  // 3 PSN
+  *((uint32_t *)(ibcfg + LOC_PSN)) = ibcon->l_psn;
+  // 4 RKEY
+  *((uint32_t *)(ibcfg + LOC_RKEY)) = ibcon->l_rkey;
+  // 5 VADDR
+  *((uint64_t *)(ibcfg + LOC_VADDR)) = ibcon->l_vaddr;
+}
+
+static void getibcfg(const char *ibcfg, Connection *ibcon){
+  // 0 LID
+  ibcon->r_lid = *((uint32_t *)(ibcfg + LOC_LID));
+  // 1 GID
+  ibcon->r_gid = *((union ibv_gid *)(ibcfg + LOC_GID));
+  // 2 QPN
+  ibcon->r_qpn = *((uint32_t *)(ibcfg + LOC_QPN));
+  // 3 PSN
+  ibcon->r_psn = *((uint32_t *)(ibcfg + LOC_PSN));
+  // 4 RKEY
+  ibcon->r_rkey = *((uint32_t *)(ibcfg + LOC_RKEY));
+  // 5 VADDR
+  ibcon->r_vaddr = *((uint64_t *)(ibcfg + LOC_VADDR));
+  
 }
 
 static int qp_change_state_init(struct ibv_qp *qp, int port){
@@ -128,7 +220,7 @@ static int qp_change_state_init(struct ibv_qp *qp, int port){
   attr->qp_state=IBV_QPS_INIT;
   attr->pkey_index=0;
   attr->port_num=port;
-  attr->qp_access_flags=IBV_ACCESS_REMOTE_WRITE;
+  attr->qp_access_flags=IBV_ACCESS_REMOTE_WRITE|IBV_ACCESS_REMOTE_READ|IBV_ACCESS_REMOTE_ATOMIC;
   TEST_NZ(ibv_modify_qp(qp,attr,
     IBV_QP_STATE|IBV_QP_PKEY_INDEX|IBV_QP_PORT|IBV_QP_ACCESS_FLAGS),
     "Could not modify QP to INIT, ibv_modify_qp");
@@ -141,14 +233,20 @@ static int qp_change_state_rtr(struct ibv_qp *qp, Connection * ibcon){
   memset(attr, 0, sizeof *attr);
 
   attr->qp_state = IBV_QPS_RTR;
-  attr->path_mtu = IBV_MTU_2048;
+  attr->path_mtu = IBV_MTU_4096;
   attr->dest_qp_num = ibcon->r_qpn;
   attr->rq_psn = ibcon->r_psn;
   attr->max_dest_rd_atomic = 1;
   attr->min_rnr_timer = 12;
-  attr->ah_attr.is_global = 0;
   attr->ah_attr.dlid = ibcon->r_lid;
-  attr->ah_attr.sl = 1;
+  // we use port 1, gid index 0
+  attr->ah_attr.grh.dgid = ibcon->r_gid;
+  attr->ah_attr.grh.flow_label = 0;
+  attr->ah_attr.grh.sgid_index = 0;
+  attr->ah_attr.grh.hop_limit = 10; // allow 10 hops
+  attr->ah_attr.grh.traffic_class = 0;
+  attr->ah_attr.is_global = 1;
+  attr->ah_attr.sl = 0;
   attr->ah_attr.src_path_bits = 0;
   attr->ah_attr.port_num = ibcon->port;
 
@@ -172,9 +270,9 @@ static int qp_change_state_rts(struct ibv_qp *qp, Connection * ibcon){
   memset(attr, 0, sizeof *attr);
 
   attr->qp_state = IBV_QPS_RTS;
-  attr->timeout = 20;
-  attr->retry_cnt = 7;
-  attr->rnr_retry = 7;
+  attr->timeout = 2; // 16.384ms because we are in lan
+  attr->retry_cnt = 6; // try at most 6 times on timeout.
+  attr->rnr_retry = 6; // try at most 6 times on NACK
   attr->sq_psn = ibcon->l_psn;
   attr->max_rd_atomic = 1;
 
@@ -230,11 +328,12 @@ gettimeofday(&tv1,NULL);
   struct ibv_port_attr attr;
   TEST_NZ(ibv_query_port(ctxt.context,ibcon.port,&attr),"Could not get port attributes, ibv_query_port");
   ibcon.l_lid = attr.lid;
+  TEST_NZ(ibv_query_gid(ctxt.context,ibcon.port,0,&ibcon.l_gid),"Could not get gid of local port, ibv_query_port");
   ibcon.l_qpn = ibcon.qp->qp_num;
   ibcon.l_psn = lrand48() & 0xffffff;
   ibcon.l_rkey = ctxt.mr->rkey;
   ibcon.l_vaddr = (uintptr_t)ctxt.pages;
-  char msg[sizeof "0000:000000:000000:00000000:0000000000000000"];
+  char msg[CONF_SZ];
   setibcfg(msg,&ibcon);
   //Exchange connection information(initialize client connection first.)
   if(write(connfd, msg, sizeof ibcfg) != sizeof ibcfg){
@@ -245,11 +344,7 @@ gettimeofday(&tv1,NULL);
     perror("Could not receive ibcfg from peer");
     return NULL;
   }
-  int parsed = sscanf(msg, "%x:%x:%x:%x:%Lx",
-    &ibcon.r_lid,&ibcon.r_qpn,&ibcon.r_psn,&ibcon.r_rkey,&ibcon.r_vaddr);
-  if(parsed!=5){
-    fprintf(stderr, "Could not parse message from peer.");
-  }
+  getibcfg(msg,&ibcon);
   print_ib_con(&ibcon);
   //change to RTS
   qp_change_state_rts(ibcon.qp,&ibcon);
@@ -278,7 +373,9 @@ gettimeofday(&tv2,NULL);
   int nl=nloop,pcnt=0,rcnt=0;
   int nwr=0;
   do{
-//fprintf(stdout, "[begin]nl=%d.\n", nl);
+#ifdef PRINT_WAITTIME
+    struct timeval tx1,tx2;
+#endif//PRINT_WAITTIME
 /////////////////////////////////////////////////////
 // use completion queue
     TEST_NZ(ibv_req_notify_cq(ibcon.scq,0),"Could not request notify from sending completion queue, ibv_req_notify_cq");
@@ -299,6 +396,9 @@ gettimeofday(&tv2,NULL);
       exit(-1);
     }
     int ne;
+#ifdef PRINT_WAITTIME
+    gettimeofday(&tx1,NULL);
+#endif//PRINT_WAITTIME
     struct ibv_wc *wc = (struct ibv_wc*)malloc(MAX_SQE*sizeof(struct ibv_wc));
 //////////////////////////////////////////////////////////
 // wait on completion queue
@@ -313,18 +413,21 @@ gettimeofday(&tv2,NULL);
       fprintf(stderr, "%s: poll CQ failed %d\n", __func__, ne);
     }else{
       nwr -= ne;
-      // fprintf(stdout, "I received %d wc entries.\n", ne);
+      //fprintf(stdout, "I received %d wc entries.\n", ne);
     }
   int i;
   for(i=0;i<ne;i++)
     if((wc+i)->status != IBV_WC_SUCCESS) {
       fprintf(stderr, "%d:%s: Completion with error at %s:\n", getpid(), __func__, "server");
-      fprintf(stderr, "%d:%s: Failed status %d: wr_id %ld\n", getpid(), __func__, (wc+i)->status, (wc+i)->wr_id);
+      fprintf(stderr, "%d:%s: Failed status %d: wr_id %ld, qp_num = %d, vendor_err = %d\n", getpid(), __func__, (wc+i)->status, (wc+i)->wr_id, (wc+i)->qp_num, (wc+i)->vendor_err);
       res.err_code = 1;
     }
-//fprintf(stdout, "[end]nl=%d.\n", nl);
+#ifdef PRINT_WAITTIME
+    gettimeofday(&tx2,NULL);
+    printf("[%d] %ld\n",ne,SPAN(tx1,tx2));
+#endif//PRINT_WAITTIME
   }while(nl>0);
-gettimeofday(&tv3,NULL);
+  gettimeofday(&tv3,NULL);
   free(sge_list);
   // write notification: a byte: 0 for success, otherwise failure.
   send(connfd,(void*)&res.err_code,1,0);
@@ -334,9 +437,6 @@ gettimeofday(&tv3,NULL);
   TEST_NZ(ibv_destroy_cq(ibcon.scq),"Could not destroy send completion queue, ibv_destroy_cq");
   TEST_NZ(ibv_destroy_cq(ibcon.rcq),"Could not destroy receive completion queue, ibv_destroy_cq");
   TEST_NZ(ibv_destroy_comp_channel(ibcon.ch),"Cloud not destroy completion channel, ibv_destroy_comp_channel");
-#define SPAN(tv1,tv2) (((tv2).tv_sec-(tv1).tv_sec)*1000000 + (tv2).tv_usec - (tv1).tv_usec)
-#define THP(npage,us) (((double)(npage)*page_size)/(us))
-#define NREQ(n,us) ((double)(n)/(us))
 /*
 printf("[%d] %ld %ld %ld.%ld %ld.%ld %ld.%ld %.3f\n", connfd,
   SPAN(tv1,tv2),SPAN(tv2,tv3),
@@ -345,18 +445,50 @@ printf("[%d] %ld %ld %ld.%ld %ld.%ld %ld.%ld %.3f\n", connfd,
   tv3.tv_sec,tv3.tv_usec,
   THP(pcnt,SPAN(tv2,tv3)));
 */
-printf("%.3f %.3f\n",THP(pcnt,SPAN(tv2,tv3)), NREQ(rcnt,SPAN(tv2,tv3)));
+printf("thp=%.3fGb/s rate=%.3fMT/s dur=%ldus\n",THP(pcnt,SPAN(tv2,tv3))*8/1000, NREQ(rcnt,SPAN(tv2,tv3)), SPAN(tv2,tv3));
   return NULL;
 }
 
+
+int sockfd = -1; //the server socket.
+
+sighandler_t int_handler; //the original SIGINT handler
+sighandler_t quit_handler; //the original SIGQUIT handler
+sighandler_t kill_handler; //the original SIGKILL handler
+sighandler_t term_handler; //the original SIGTERM handler
+
+void sig_handler(int sig){
+  fprintf(stdout,"closing server socket...\n");
+  if(sockfd != -1)
+    close(sockfd);
+  switch(sig){
+    case SIGINT:
+      signal(sig, int_handler);
+      break;
+    case SIGQUIT:
+      signal(sig, quit_handler);
+      break;
+    case SIGKILL:
+      signal(sig, kill_handler);
+      break;
+    case SIGTERM:
+      signal(sig, term_handler);
+      break;
+    default:
+      fprintf(stderr, "unknown singal:%d", sig);
+  }
+  raise(sig);
+}
+
 static void doServer(int argc, char ** argv){
-  if(argc!=4){
-    fprintf(stderr,"Error: we expected 4 args, but we got %d\n", argc);
+  if(argc!=5){
+    fprintf(stderr,"Error: we expected 5 args, but we got %d\n", argc);
     return;
   }
 
-  page_size = atoi(argv[2]);
-  nloop = atoi(argv[3]);
+  dev = argv[2];
+  page_size = atoi(argv[3]);
+  nloop = atoi(argv[4]);
   // STEP 1 initialization
   struct addrinfo *res;
   struct addrinfo hints = {
@@ -365,8 +497,7 @@ static void doServer(int argc, char ** argv){
     .ai_socktype = SOCK_STREAM
   };
   char *service;
-  int sockfd = -1;
-  int n,connfd;
+  int n,connfd,reuse=1;
   // initialize context
   init_ctxt(page_size);
   // initialize page data;
@@ -375,21 +506,39 @@ static void doServer(int argc, char ** argv){
   TEST_N(asprintf(&service,"%d", SVR_PORT), "ERROR writing port number to port string.");
   TEST_N(n=getaddrinfo(NULL,service,&hints,&res), "getaddrinfo threw error");
   TEST_N(sockfd=socket(res->ai_family, res->ai_socktype, res->ai_protocol), "Could not create server socket");
-  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &n, sizeof n);
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof reuse);
+#ifdef SO_REUSEPORT
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof reuse);
+#endif
   // STEP 2 binding
   TEST_N(bind(sockfd,res->ai_addr,res->ai_addrlen), "Could not bind addr to socket");
   listen(sockfd, 1);
+  // STEP 2.9 register signal handler
+  int_handler = signal(SIGINT,sig_handler);
+  quit_handler = signal(SIGQUIT,sig_handler);
+  kill_handler = signal(SIGKILL,sig_handler);
+  term_handler = signal(SIGTERM,sig_handler);
   // STEP 3 receiving requests
   while(1){
     pthread_t tid;
     TEST_N(connfd = accept(sockfd, NULL, 0), "server accept failed.");
+    setsockopt(connfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof reuse);
+#ifdef SO_REUSEPORT
+    setsockopt(connfd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof reuse);
+#endif
     pthread_create(&tid,NULL,server_routine,&connfd);
   }
 }
 
 static void doClient(int argc, char ** argv){
-  char * server = argv[2];
-  int page_size = atoi(argv[3]);
+  if(argc<6){
+    fprintf(stderr,"Error: we expected 6 args, but we got %d\n", argc);
+    return;
+  }
+
+  dev = argv[2];
+  char * server = argv[3];
+  int page_size = atoi(argv[4]);
   // STEP 1 initialization
   init_ctxt(page_size);
   init_pages(0);
@@ -421,9 +570,9 @@ static void doClient(int argc, char ** argv){
   struct ibv_port_attr attr;
   TEST_NZ(ibv_query_port(ctxt.context,ibcon.port,&attr),"Could not get port attributes, ibv_query_port");
   ibcon.l_lid = attr.lid;
+  TEST_NZ(ibv_query_gid(ctxt.context,ibcon.port,0,&ibcon.l_gid),"Could not get gid of local port, ibv_query_port");
   ibcon.l_qpn = ibcon.qp->qp_num;
   ibcon.l_psn = lrand48() & 0xffffff;
-printf("l_psn=%d\n",ibcon.l_psn);
   ibcon.l_rkey = ctxt.mr->rkey;
   ibcon.l_vaddr = (uintptr_t)ctxt.pages;
   //STEP 1.2 prepare my ib connection info
@@ -446,6 +595,7 @@ printf("l_psn=%d\n",ibcon.l_psn);
   for(t = res; t; t=t->ai_next){
     TEST_N(sockfd = socket(t->ai_family, t->ai_socktype, t->ai_protocol),"Could not create client socket");
     TEST_N(connect(sockfd,t->ai_addr,t->ai_addrlen),"Could not connect to server");
+    break;
   }
   freeaddrinfo(res);
   //STEP 3.0 exchange ibcfg
@@ -457,11 +607,7 @@ printf("l_psn=%d\n",ibcon.l_psn);
     perror("Could not receive ibcfg from peer");
     return;
   }
-  int parsed = sscanf(ibcfg, "%x:%x:%x:%x:%Lx",
-    &ibcon.r_lid,&ibcon.r_qpn,&ibcon.r_psn,&ibcon.r_rkey,&ibcon.r_vaddr);
-  if(parsed!=5){
-    fprintf(stderr, "Could not parse message from peer.");
-  }
+  getibcfg(ibcfg,&ibcon);
   print_ib_con(&ibcon);
   
   //STEP 3.1 change to RTR
@@ -470,15 +616,15 @@ printf("l_psn=%d\n",ibcon.l_psn);
   Request req;
   uint8_t err_code=0;
   int i = 0;
-  for(;i<argc-4;i++)
-    req.page_flags[i]=(uint8_t)atoi(argv[i+4]);
+  for(;i<argc-5;i++)
+    req.page_flags[i]=(uint8_t)atoi(argv[i+5]);
   if(i<MAX_PAGE)req.page_flags[i]=255;
   send(sockfd,(void*)&req.page_flags,16,0);
   recv(sockfd,(void*)&err_code,1,MSG_WAITALL);
   close(sockfd);
   printf("err_code=%d\n",err_code);
   if(err_code==0){
-    for(i=0;i<argc-4;i++)
+    for(i=0;i<argc-5;i++)
       printf("%c%c%c\n",
         ((char*)ctxt.pages)[i*page_size],
         ((char*)ctxt.pages)[i*page_size+page_size/2],
@@ -495,8 +641,11 @@ printf("l_psn=%d\n",ibcon.l_psn);
 
 
 int main(int argc, char ** argv){
-  if(argc < 2){
+  if(argc < 4){
     fprintf(stderr, hlp_info, NULL);
+    fprintf(stderr,"available devices:\n");
+    list_devices();
+    fprintf(stderr,"please use `ibstat` to show port details.\n");
     return -1;
   }
 
