@@ -426,7 +426,7 @@ gettimeofday(&tv2,NULL);
     gettimeofday(&tx2,NULL);
     printf("[%d] %ld\n",ne,SPAN(tx1,tx2));
 #endif//PRINT_WAITTIME
-  }while(nl>0);
+  }while(nl>0||nwr>0);
   gettimeofday(&tv3,NULL);
   free(sge_list);
   // write notification: a byte: 0 for success, otherwise failure.
