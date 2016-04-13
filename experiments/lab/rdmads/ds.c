@@ -270,7 +270,7 @@ static int qp_change_state_rts(struct ibv_qp *qp, Connection * ibcon){
   memset(attr, 0, sizeof *attr);
 
   attr->qp_state = IBV_QPS_RTS;
-  attr->timeout = 2; // 16.384ms because we are in lan
+  attr->timeout = 20; // 16.384ms because we are in lan
   attr->retry_cnt = 6; // try at most 6 times on timeout.
   attr->rnr_retry = 6; // try at most 6 times on NACK
   attr->sq_psn = ibcon->l_psn;
@@ -371,6 +371,7 @@ gettimeofday(&tv1,NULL);
   struct ibv_send_wr *bad_wr;
 gettimeofday(&tv2,NULL);
   int nl=nloop,pcnt=0,rcnt=0;
+printf("wr.num_sge=%d,nloop=%d\n",i,nloop);
   int nwr=0;
   do{
 #ifdef PRINT_WAITTIME
@@ -381,7 +382,7 @@ gettimeofday(&tv2,NULL);
     TEST_NZ(ibv_req_notify_cq(ibcon.scq,0),"Could not request notify from sending completion queue, ibv_req_notify_cq");
 /////////////////////////////////////////////////////
     int rSend = 0;
-    do{
+    while(rSend==0 && nl>0 && nwr<MAX_SQE){
 //    TEST_NZ(ibv_post_send(ibcon.qp,&wr,&bad_wr),"ibv_post_send failed. This is bad mkay");
       rSend = ibv_post_send(ibcon.qp,&wr,&bad_wr);
       if(rSend==0){
@@ -389,7 +390,7 @@ gettimeofday(&tv2,NULL);
         pcnt += wr.num_sge;
         rcnt ++;
       }
-    }while(rSend==0 && nl>0 && nwr<MAX_SQE);
+    }
     // if(rSend!=0 && rSend!=ENOMEM){
     if(rSend!=0){
       fprintf(stderr,"ERROR in ibv_post_send:%d\n",rSend);
@@ -424,7 +425,7 @@ gettimeofday(&tv2,NULL);
     }
 #ifdef PRINT_WAITTIME
     gettimeofday(&tx2,NULL);
-    printf("[%d] %ld\n",ne,SPAN(tx1,tx2));
+//    printf("[%d] %ld nl=%d\n",ne,SPAN(tx1,tx2),nl);
 #endif//PRINT_WAITTIME
   }while(nl>0||nwr>0);
   gettimeofday(&tv3,NULL);
