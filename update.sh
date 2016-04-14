@@ -9,6 +9,7 @@ src/main/java/edu/cornell/cs/blog/IRecordParser.java \
 src/main/java/edu/cornell/cs/blog/DefaultRecordParser.java \
 src/main/java/edu/cornell/cs/blog/ts64RecordParser.java \
 src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java \
+src/main/java/org/apache/hadoop/hdfs/DFSClient.java \
 src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java \
 src/main/java/org/apache/hadoop/hdfs/BlockReaderFactory.java \
 src/main/java/org/apache/hadoop/hdfs/RemoteBlockReader2.java \

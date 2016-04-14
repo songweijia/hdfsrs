@@ -1295,6 +1295,14 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     return open(src, buffersize, verifyChecksum);
   }
   
+  public DFSInputStream open(String src, int buffersize, boolean verifyChecksum,
+      long timestamp, boolean bUserTimestamp)
+      throws IOException, UnresolvedLinkException {
+    checkOpen();
+    //    Get block info from namenode
+    return new DFSInputStream(this, src, buffersize, verifyChecksum, timestamp, bUserTimestamp);
+  }
+  
 
   /**
    * Create an input stream that obtains a nodelist from the
@@ -1304,9 +1312,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    */
   public DFSInputStream open(String src, int buffersize, boolean verifyChecksum)
       throws IOException, UnresolvedLinkException {
-    checkOpen();
-    //    Get block info from namenode
-    return new DFSInputStream(this, src, buffersize, verifyChecksum);
+    return open(src, buffersize, verifyChecksum, -1, false);
   }
 
   /**
