@@ -30,9 +30,7 @@
 //64MB page
 #define MAX_PAGE (16)
 #define	SVR_PORT (18515)
-//#define MAX_SQE (100)
 #define MAX_SQE (64)
-//#define MAX_SQE (1)
 
 /*
  * All clients and server has 16 pages. The client requests
@@ -317,9 +315,9 @@ gettimeofday(&tv1,NULL);
     .qp_type = IBV_QPT_RC,
     .cap = {
       .max_send_wr = MAX_SQE,
-      .max_recv_wr = 1,
+      .max_recv_wr = MAX_SQE,
       .max_send_sge = MAX_PAGE,
-      .max_recv_sge = 1,
+      .max_recv_sge = MAX_PAGE,
       .max_inline_data = 0
     }
   };
@@ -383,7 +381,6 @@ printf("wr.num_sge=%d,nloop=%d\n",i,nloop);
 /////////////////////////////////////////////////////
     int rSend = 0;
     while(rSend==0 && nl>0 && nwr<MAX_SQE){
-//    TEST_NZ(ibv_post_send(ibcon.qp,&wr,&bad_wr),"ibv_post_send failed. This is bad mkay");
       rSend = ibv_post_send(ibcon.qp,&wr,&bad_wr);
       if(rSend==0){
         nl--;nwr++;
@@ -560,9 +557,9 @@ static void doClient(int argc, char ** argv){
     .qp_type = IBV_QPT_RC,
     .cap = {
       .max_send_wr = MAX_SQE,
-      .max_recv_wr = 1,
+      .max_recv_wr = MAX_SQE,
       .max_send_sge = MAX_PAGE,
-      .max_recv_sge = 1,
+      .max_recv_sge = MAX_PAGE,
       .max_inline_data = 0
     }
   };

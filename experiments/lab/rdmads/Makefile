@@ -1,8 +1,10 @@
+OFED_INCLUDE=/usr
+OFED_LIBRARY=/lib
 C=gcc
 PROG=ds
 #CFLAGS=-Wall -g -D PRINT_WAITTIME
-CFLAGS=-Wall -g 
-LDFLAGS= -lrdmacm -libverbs -lpthread
+CFLAGS=-Wall -g -I$(OFED_INCLUDE)
+LDFLAGS= -lrdmacm -libverbs -lpthread -L$(OFED_LIBRARY)
 
 # all: server client
 
