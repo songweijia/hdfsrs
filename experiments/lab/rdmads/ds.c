@@ -27,6 +27,8 @@
 #define THP(npage,us) (((double)(npage)*page_size)/(us))
 #define NREQ(n,us) ((double)(n)/(us))
 
+#define MIN(x,y) ((x)<(y)?(x):(y))
+
 //64MB page
 #define MAX_PAGE (16)
 #define	SVR_PORT (18515)
@@ -53,6 +55,8 @@ typedef struct app_context{
   struct ibv_pd		*pd;
   struct ibv_mr		*mr;
   void			*pages;
+
+  struct ibv_device_attr  dev_attr;
 } AppCtxt;
 
 static AppCtxt ctxt;
@@ -78,12 +82,7 @@ static void init_ctxt(int page_size){
   // STEP 1 context
   TEST_NZ(posix_memalign(&ctxt.pages, page_size, page_size*MAX_PAGE),"could not allocate working buffer ctx->pages");
   memset(ctxt.pages, 0, page_size*MAX_PAGE);
-/*
-#define GIGA (1<<30)
-  int fd = open("file.img",O_RDWR);
-  //ctxt.pages=mmap(NULL,GIGA,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
-  ctxt.pages=mmap(NULL,GIGA,PROT_READ|PROT_WRITE,MAP_PRIVATE,fd,0);
-*/
+
   int num_device,i;
   struct ibv_device **dev_list;
   TEST_Z(dev_list = ibv_get_device_list(&num_device),"No IB-device available. get_device_list returned NULL");
@@ -101,6 +100,7 @@ static void init_ctxt(int page_size){
 
   TEST_Z(ctxt.dev=dev_list[i],"IB-device could not be assigned. Maybe dev_list array is empty");
   TEST_Z(ctxt.context=ibv_open_device(ctxt.dev),"Could not create context, ibv_open_device");
+  TEST_NZ(ibv_query_device(ctxt.context,&ctxt.dev_attr), "Could not query device attributes");
   TEST_Z(ctxt.pd=ibv_alloc_pd(ctxt.context),"Could not allocate protection domain, ibv_alloc_pd");
   TEST_Z(ctxt.mr=ibv_reg_mr(ctxt.pd, ctxt.pages, page_size*MAX_PAGE, 
          IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_ATOMIC ), "Could not allocate mr, ibv_reg_mr. Do you have root access?");
@@ -150,19 +150,23 @@ typedef struct _connection{
   uint32_t l_psn,r_psn;
   uint32_t l_rkey,r_rkey;
   uint64_t l_vaddr,r_vaddr; // we dont need l_vaddr because it is decided by request?
+  uint32_t l_mtu,r_mtu; // we chose the minimum of the two
+  uint32_t l_qp_rd_atom,r_qp_rd_atom; //qp read out standing
 } Connection;
 
 static void print_ib_con(Connection *ibcon){
-  printf("Local:\nLID\t%#8x\nGID\t%#16Lx.%#16Lx\nQPN\t%#08x\nPSN\t%#08x\nRKey\t%#08x\nVAddr\t%#016Lx\n",
+  printf("Local:\nLID\t%#8x\nGID\t%#16Lx.%#16Lx\nQPN\t%#08x\nPSN\t%#08x\nRKey\t%#08x\nVAddr\t%#016Lx\nMTU\t%#08x\nRD_ATOM\t%#08x\n",
     ibcon->l_lid,
     (long long unsigned)ibcon->l_gid.global.subnet_prefix,
     (long long unsigned)ibcon->l_gid.global.interface_id,
-    ibcon->l_qpn, ibcon->l_psn, ibcon->l_rkey, (long long unsigned)ibcon->l_vaddr);
-  printf("Local:\nLID\t%#8x\nGID\t%#16Lx.%#16Lx\nQPN\t%#08x\nPSN\t%#08x\nRKey\t%#08x\nVAddr\t%#016Lx\n",
+    ibcon->l_qpn, ibcon->l_psn, ibcon->l_rkey, (long long unsigned)ibcon->l_vaddr,
+    ibcon->l_mtu, ibcon->l_qp_rd_atom);
+  printf("Local:\nLID\t%#8x\nGID\t%#16Lx.%#16Lx\nQPN\t%#08x\nPSN\t%#08x\nRKey\t%#08x\nVAddr\t%#016Lx\nMTU\t%#08x\nRD_ATOM\t%#08x\n",
     ibcon->r_lid,
     (long long unsigned)ibcon->r_gid.global.subnet_prefix,
     (long long unsigned)ibcon->r_gid.global.interface_id,
-    ibcon->r_qpn, ibcon->r_psn, ibcon->r_rkey, (long long unsigned)ibcon->r_vaddr);
+    ibcon->r_qpn, ibcon->r_psn, ibcon->r_rkey, (long long unsigned)ibcon->r_vaddr,
+    ibcon->r_mtu, ibcon->r_qp_rd_atom);
 }
 
 #define LID_SZ  (sizeof(uint32_t))
@@ -171,13 +175,17 @@ static void print_ib_con(Connection *ibcon){
 #define QPN_SZ	(sizeof(uint32_t))
 #define RKEY_SZ	(sizeof(uint32_t))
 #define VADDR_SZ        (sizeof(uint64_t))
-#define CONF_SZ (LID_SZ + PSN_SZ + QPN_SZ + GID_SZ + RKEY_SZ + VADDR_SZ)
+#define MTU_SZ  (sizeof(uint32_t))
+#define RDATOM_SZ       (sizeof(uint32_t))
+#define CONF_SZ (LID_SZ + PSN_SZ + QPN_SZ + GID_SZ + RKEY_SZ + VADDR_SZ + MTU_SZ + RDATOM_SZ)
 #define LOC_LID (0)
 #define LOC_GID (LOC_LID + LID_SZ)
 #define LOC_QPN (LOC_GID + GID_SZ)
 #define LOC_PSN (LOC_QPN + QPN_SZ)
 #define LOC_RKEY (LOC_PSN + PSN_SZ)
 #define LOC_VADDR (LOC_RKEY + RKEY_SZ)
+#define LOC_MTU (LOC_VADDR + VADDR_SZ)
+#define LOC_RDATOM (LOC_MTU + MTU_SZ)
 char ibcfg[CONF_SZ];
 
 static void setibcfg(char *ibcfg, Connection *ibcon){
@@ -193,6 +201,10 @@ static void setibcfg(char *ibcfg, Connection *ibcon){
   *((uint32_t *)(ibcfg + LOC_RKEY)) = ibcon->l_rkey;
   // 5 VADDR
   *((uint64_t *)(ibcfg + LOC_VADDR)) = ibcon->l_vaddr;
+  // 6 MTU
+  *((uint32_t *)(ibcfg + LOC_MTU)) = ibcon->l_mtu;
+  // 7 RD_ATOM
+  *((uint32_t *)(ibcfg + LOC_RDATOM)) = ibcon->l_qp_rd_atom;
 }
 
 static void getibcfg(const char *ibcfg, Connection *ibcon){
@@ -208,7 +220,10 @@ static void getibcfg(const char *ibcfg, Connection *ibcon){
   ibcon->r_rkey = *((uint32_t *)(ibcfg + LOC_RKEY));
   // 5 VADDR
   ibcon->r_vaddr = *((uint64_t *)(ibcfg + LOC_VADDR));
-  
+  // 6 MTU
+  ibcon->r_mtu = *((uint32_t *)(ibcfg + LOC_MTU));
+  // 7 RD_ATOM
+  ibcon->r_qp_rd_atom = *((uint32_t *)(ibcfg + LOC_RDATOM));
 }
 
 static int qp_change_state_init(struct ibv_qp *qp, int port){
@@ -231,10 +246,10 @@ static int qp_change_state_rtr(struct ibv_qp *qp, Connection * ibcon){
   memset(attr, 0, sizeof *attr);
 
   attr->qp_state = IBV_QPS_RTR;
-  attr->path_mtu = IBV_MTU_4096;
+  attr->path_mtu = MIN(ibcon->l_mtu,ibcon->r_mtu);
   attr->dest_qp_num = ibcon->r_qpn;
   attr->rq_psn = ibcon->r_psn;
-  attr->max_dest_rd_atomic = 1;
+  attr->max_dest_rd_atomic = ibcon->r_qp_rd_atom;
   attr->min_rnr_timer = 12;
   attr->ah_attr.dlid = ibcon->r_lid;
   // we use port 1, gid index 0
@@ -268,11 +283,11 @@ static int qp_change_state_rts(struct ibv_qp *qp, Connection * ibcon){
   memset(attr, 0, sizeof *attr);
 
   attr->qp_state = IBV_QPS_RTS;
-  attr->timeout = 20; // 16.384ms because we are in lan
+  attr->timeout = 4;
   attr->retry_cnt = 6; // try at most 6 times on timeout.
   attr->rnr_retry = 6; // try at most 6 times on NACK
   attr->sq_psn = ibcon->l_psn;
-  attr->max_rd_atomic = 1;
+  attr->max_rd_atomic = ibcon->l_qp_rd_atom;
 
   TEST_NZ(ibv_modify_qp(qp, attr,
     IBV_QP_STATE |
@@ -331,6 +346,8 @@ gettimeofday(&tv1,NULL);
   ibcon.l_psn = lrand48() & 0xffffff;
   ibcon.l_rkey = ctxt.mr->rkey;
   ibcon.l_vaddr = (uintptr_t)ctxt.pages;
+  ibcon.l_mtu = attr.active_mtu;
+  ibcon.l_qp_rd_atom = ctxt.dev_attr.max_qp_rd_atom;
   char msg[CONF_SZ];
   setibcfg(msg,&ibcon);
   //Exchange connection information(initialize client connection first.)
@@ -363,7 +380,7 @@ gettimeofday(&tv1,NULL);
   wr.wr_id = RDMA_WRID;
   wr.sg_list = sge_list;
   wr.num_sge = i;
-  wr.opcode = IBV_WR_RDMA_WRITE;
+  wr.opcode = IBV_WR_RDMA_WRITE;//IBV_WR_RDMA_READ
   wr.send_flags = IBV_SEND_SIGNALED;
   wr.next = NULL;
   struct ibv_send_wr *bad_wr;
@@ -573,6 +590,8 @@ static void doClient(int argc, char ** argv){
   ibcon.l_psn = lrand48() & 0xffffff;
   ibcon.l_rkey = ctxt.mr->rkey;
   ibcon.l_vaddr = (uintptr_t)ctxt.pages;
+  ibcon.l_mtu = attr.active_mtu;
+  ibcon.l_qp_rd_atom = ctxt.dev_attr.max_qp_rd_atom;
   //STEP 1.2 prepare my ib connection info
   setibcfg(ibcfg,&ibcon);
   
