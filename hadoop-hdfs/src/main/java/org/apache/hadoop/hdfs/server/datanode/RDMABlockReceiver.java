@@ -209,7 +209,7 @@ public class RDMABlockReceiver implements Closeable {
     ts5 = System.nanoTime();
 
     // SEQNO RECV WRITE/FINAL ENQ-ACK FLUSH
-    LOG.error(seqno+" "+(ts2-ts1)+" "+(ts3-ts2)+" "+(ts4-ts3)+" "+(ts5-ts4));
+    //LOG.error(seqno+" "+(ts2-ts1)+" "+(ts3-ts2)+" "+(ts4-ts3)+" "+(ts5-ts4));
     
     return bRet;
   }

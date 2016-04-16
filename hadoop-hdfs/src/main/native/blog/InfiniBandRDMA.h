@@ -37,10 +37,7 @@ struct rdma_ctxt {
   pthread_mutex_t    lock;     // mutex lock.
   BLOG_MAP_TYPE(con) *con_map; // map: ip -> rdma connection
 /////below are device capabilities
-  int32_t            max_sge;
-  int32_t            max_mr;
-  int32_t            max_cq;
-  int32_t            max_cqe;
+  struct ibv_device_attr    dev_attr; // device attrs.
 };
 #define RDMA_CTXT_POOL_SIZE(c) (1l<<((c)->psz))
 #define RDMA_CTXT_PAGE_SIZE(c) (1l<<((c)->align))
@@ -67,6 +64,8 @@ struct rdma_conn {
   int32_t                 l_psn,r_psn;
   uint32_t                l_rkey,r_rkey;
   uint64_t                l_vaddr,r_vaddr;
+  uint32_t                l_mtu,r_mtu;
+  uint32_t                l_qp_rd_atom,r_qp_rd_atom;
 };
 #define RDMA_WRID	(3)
 #define RDMA_RDID	(4)
@@ -83,6 +82,8 @@ struct ibcon_exchange{
   uint32_t              rkey;
   int32_t               pid;
   uint64_t              vaddr;
+  uint32_t              mtu;
+  uint32_t              qp_rd_atom;
 };
 #pragma pack(pop)
 

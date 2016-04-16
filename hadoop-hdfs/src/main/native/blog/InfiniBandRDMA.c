@@ -21,6 +21,7 @@
 #define TEST_N(x,y) do { if ((x)<0) die(y); } while (0)
 #define MAKE_CON_KEY(host,port_or_pid) ((((long)(host))<<32)|(port_or_pid))
 #define GET_IP_FROM_KEY(key)	((const uint32_t)(((key)>>32)&0x00000000FFFFFFFF))
+#define MIN(x,y) ((x)>(y)?(y):(x))
 
 static int die(const char *reason){
   fprintf(stderr, "Err: %s - %s \n ", strerror(errno), reason);
@@ -36,7 +37,10 @@ static int die(const char *reason){
 */
 MAP_DEFINE(con,RDMAConnection,10);
 
-#define MAX_SQE (1024)  // MAX_SQE * MAX_SGE * PAGE_SIZE = 128M
+#define MAX_RD_ATOM (0x10) // maximum outstanding read/atomic requests
+#define MAX_QP_WR (0x400) // maximum requests allow in the queue pair. MAX_QP_WR * MAX_SGE * PAGE_SIZE = 128M - this is the maximum amount of data we can read/write once by rdmaTransfer/rdmaRead/rdmaWrite
+#define MAX_SGE (0x10) // maximum scatter gather should not more than 16.
+#define CQM (64) // completion queue moderation number.
 
 static int qp_change_state_init(struct ibv_qp *qp, int port){
   struct ibv_qp_attr *attr;
@@ -59,10 +63,10 @@ static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
   memset(attr, 0, sizeof *attr);
 
   attr->qp_state = IBV_QPS_RTR;
-  attr->path_mtu = IBV_MTU_2048;
+  attr->path_mtu = MIN(conn->l_mtu, conn->r_mtu);
   attr->dest_qp_num = conn->r_qpn;
   attr->rq_psn = conn->r_psn;
-  attr->max_dest_rd_atomic = 1;
+  attr->max_dest_rd_atomic = conn->r_qp_rd_atom,MAX_RD_ATOM;
   attr->min_rnr_timer = 12;
   attr->ah_attr.grh.dgid = conn->r_gid;
   attr->ah_attr.grh.flow_label = 0;
@@ -99,7 +103,7 @@ static int qp_change_state_rts(struct ibv_qp *qp, RDMAConnection * conn){
   attr->retry_cnt = 6;
   attr->rnr_retry = 6;
   attr->sq_psn = conn->l_psn;
-  attr->max_rd_atomic = 1;
+  attr->max_rd_atomic = conn->l_qp_rd_atom,MAX_RD_ATOM;
 
   TEST_NZ(ibv_modify_qp(qp, attr,
     IBV_QP_STATE |
@@ -113,7 +117,7 @@ static int qp_change_state_rts(struct ibv_qp *qp, RDMAConnection * conn){
   return 0;
 }
 
-static void setibcfg(IbConEx *ex, RDMAConnection *conn){
+static void setibcfg(IbConEx *ex, const RDMAConnection *conn){
   ex->req = REQ_CONNECT;
   ex->gid = conn->l_gid;
   ex->lid = conn->l_lid;
@@ -122,6 +126,32 @@ static void setibcfg(IbConEx *ex, RDMAConnection *conn){
   ex->rkey = conn->l_rkey;
   ex->pid = getpid();
   ex->vaddr = conn->l_vaddr;
+  ex->mtu = conn->l_mtu;
+  ex->qp_rd_atom = conn->l_qp_rd_atom;
+}
+
+static void getibcfg(const IbConEx *ex, RDMAConnection *conn){
+  conn->r_gid = ex->gid;
+  conn->r_lid = ex->lid;
+  conn->r_qpn = ex->qpn;
+  conn->r_psn = ex->psn;
+  conn->r_rkey = ex->rkey;
+  conn->r_vaddr = ex->vaddr;
+  conn->r_mtu = ex->mtu;
+  conn->r_qp_rd_atom = ex->qp_rd_atom;
+}
+
+static void printConn(RDMAConnection *cn){
+  DEBUG_PRINT("LOCAL:\n\tgid:\t%#16Lx.%#16Lx\n\tlid:\t%#8x\n\tqpn:\t%#8x\n\tpsn:\t%#8x\n\trkey:\t%#8x\n\tvaddr:\t%#16Lx\n\tmtu:\t%d\n\tqp_rd_atom:\t%d\n",
+    (long long unsigned)cn->l_gid.global.subnet_prefix,
+    (long long unsigned)cn->l_gid.global.interface_id,
+    cn->l_lid,cn->l_qpn,cn->l_psn,cn->l_rkey,(long long unsigned)cn->l_vaddr,
+    cn->l_mtu,cn->l_qp_rd_atom);
+  DEBUG_PRINT("REMOTE:\n\tgid:\t%#16Lx.%#16Lx\n\tlid:\t%#8x\n\tqpn:\t%#8x\n\tpsn:\t%#8x\n\trkey:\t%#8x\n\tvaddr:\t%#16Lx\n\tmtu:\t%d\n\tqp_rd_atom:\t%d\n",
+    (long long unsigned)cn->r_gid.global.subnet_prefix,
+    (long long unsigned)cn->r_gid.global.interface_id,
+    cn->r_lid,cn->r_qpn,cn->r_psn,cn->r_rkey,(long long unsigned)cn->r_vaddr,
+    cn->r_mtu,cn->r_qp_rd_atom);
 }
 
 static void destroyRDMAConn(RDMAConnection *conn){
@@ -152,16 +182,16 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
     rdmaConn->port = 1; // always use port 1? so far so good. let's make it configurable later.
     TEST_Z(rdmaConn->ch=ibv_create_comp_channel(ctxt->ctxt),"Could not create completion channel, ibv_create_comp_channel");
     TEST_Z(rdmaConn->rcq=ibv_create_cq(ctxt->ctxt,1,NULL,NULL,0),"Could not create receive completion queue, ibv_create_cq");
-    TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_SQE,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
+    TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_QP_WR,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
     struct ibv_qp_init_attr qp_init_attr = {
       .send_cq = rdmaConn->scq,
       .recv_cq = rdmaConn->rcq,
       .qp_type = IBV_QPT_RC,
       .cap = {
-        .max_send_wr = MAX_SQE, // MAX_SQE must be less than ctxt->max_cqe
-        .max_recv_wr = 1,
-        .max_send_sge = ctxt->max_sge,
-        .max_recv_sge = 1,
+        .max_send_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR),
+        .max_recv_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR),
+        .max_send_sge = MIN(ctxt->dev_attr.max_sge,MAX_SGE),
+        .max_recv_sge = MIN(ctxt->dev_attr.max_sge_rd,MAX_SGE),
         .max_inline_data = 0
       }
     };
@@ -176,6 +206,8 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
     rdmaConn->l_psn = lrand48() & 0xffffff;
     rdmaConn->l_rkey = ctxt->mr->rkey;
     rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
+    rdmaConn->l_mtu = port_attr.active_mtu;
+    rdmaConn->l_qp_rd_atom = MIN(ctxt->dev_attr.max_qp_rd_atom,MAX_RD_ATOM);
     // STEP 6 Exchange connection information(initialize client connection first.)
     IbConEx l_exm; // exchange message
     /// server --> client | connection string
@@ -185,12 +217,7 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
       return -1;
     }
     /// copy from remote configuration message
-    rdmaConn->r_lid = r_exm->lid;
-    rdmaConn->r_gid = r_exm->gid;
-    rdmaConn->r_qpn = r_exm->qpn;
-    rdmaConn->r_psn = r_exm->psn;
-    rdmaConn->r_rkey = r_exm->rkey;
-    rdmaConn->r_vaddr = r_exm->vaddr;
+    getibcfg(r_exm,rdmaConn);
     /// change pair to RTS
     qp_change_state_rts(rdmaConn->qp,rdmaConn);
     // STEP 7 Put the connection to map.
@@ -204,6 +231,7 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
     }
     MAP_UNLOCK(con, ctxt->con_map, cipkey);
     DEBUG_PRINT("new client:%lx\n",cipkey);
+    printConn(rdmaConn);
     // end setup connection
     return 0;
 }
@@ -273,6 +301,51 @@ static void* blog_rdma_daemon_routine(void* param){
   return NULL;
 }
 
+static void printDevAttr(struct ibv_device_attr * attr){
+  DEBUG_PRINT("RDMA Devive attributes\n");
+  DEBUG_PRINT("========================\n");
+  DEBUG_PRINT("fw_ver:\t%s\n",attr->fw_ver);
+  DEBUG_PRINT("node_guid:\t\n");
+  DEBUG_PRINT("sys_image_guid:\t\n");
+  DEBUG_PRINT("max_mr_size:\t0x%lx\n",attr->max_mr_size);
+  DEBUG_PRINT("page_size_cap:\t0x%lx\n",attr->page_size_cap);
+  DEBUG_PRINT("vendor_id:\t0x%x\n",attr->vendor_id);
+  DEBUG_PRINT("hw_ver:\t0x%x\n",attr->hw_ver);
+  DEBUG_PRINT("max_qp:\t0x%x\n",attr->max_qp);
+  DEBUG_PRINT("max_qp_wr:\t0x%x\n",attr->max_qp_wr);
+  DEBUG_PRINT("device_cap_flags:\t0x%x\n",attr->device_cap_flags);
+  DEBUG_PRINT("max_sge:\t0x%x\n",attr->max_sge);
+  DEBUG_PRINT("max_sge_rd:\t0x%x\n",attr->max_sge_rd);
+  DEBUG_PRINT("max_cq:\t0x%x\n",attr->max_cq);
+  DEBUG_PRINT("max_cqe:\t0x%x\n",attr->max_cqe);
+  DEBUG_PRINT("max_mr:\t0x%x\n",attr->max_mr);
+  DEBUG_PRINT("max_pd:\t0x%x\n",attr->max_pd);
+  DEBUG_PRINT("max_qp_rd_atom:\t0x%x\n",attr->max_qp_rd_atom);
+  DEBUG_PRINT("max_ee_rd_atom:\t0x%x\n",attr->max_ee_rd_atom);
+  DEBUG_PRINT("max_res_rd_atom:\t0x%x\n",attr->max_res_rd_atom);
+  DEBUG_PRINT("max_qp_init_rd_atom:\t0x%x\n",attr->max_qp_init_rd_atom);
+  DEBUG_PRINT("max_ee_init_rd_atom:\t0x%x\n",attr->max_ee_init_rd_atom);
+  DEBUG_PRINT("atomic_cap:\t\n");
+  DEBUG_PRINT("max_ee:\t0x%x\n",attr->max_ee);
+  DEBUG_PRINT("max_rdd:\t0x%x\n",attr->max_rdd);
+  DEBUG_PRINT("max_mw:\t0x%x\n",attr->max_mw);
+  DEBUG_PRINT("max_raw_ipv6_qp:\t0x%x\n",attr->max_raw_ipv6_qp);
+  DEBUG_PRINT("max_raw_ethy_qp:\t0x%x\n",attr->max_raw_ethy_qp);
+  DEBUG_PRINT("max_mcast_grp:\t0x%x\n",attr->max_mcast_grp);
+  DEBUG_PRINT("max_mcast_qp_attach:\t0x%x\n",attr->max_mcast_qp_attach);
+  DEBUG_PRINT("max_total_mcast_qp_attach:\t0x%x\n",attr->max_total_mcast_qp_attach);
+  DEBUG_PRINT("max_ah:\t0x%x\n",attr->max_ah);
+  DEBUG_PRINT("max_fmr:\t0x%x\n",attr->max_fmr);
+  DEBUG_PRINT("max_map_per_fmr:\t0x%x\n",attr->max_map_per_fmr);
+  DEBUG_PRINT("max_srq:\t0x%x\n",attr->max_srq);
+  DEBUG_PRINT("max_srq_wr:\t0x%x\n",attr->max_srq_wr);
+  DEBUG_PRINT("max_srq_sge:\t0x%x\n",attr->max_srq_sge);
+  DEBUG_PRINT("max_pkeys:\t0x%x\n",attr->max_pkeys);
+  DEBUG_PRINT("local_ca_ack_delay:\t0x%x\n",attr->local_ca_ack_delay);
+  DEBUG_PRINT("phys_port_cnt:\t0x%x\n",attr->phys_port_cnt);
+  DEBUG_PRINT("==========================\n");
+}
+
 int initializeContext(
   RDMACtxt *ctxt,
   const uint32_t psz,   // pool size
@@ -290,6 +363,7 @@ int initializeContext(
   ctxt->cnt   = 0;
   // malloc pool
   DEBUG_PRINT("debug-bClient=%d,psz=%d,align=%d\n",bClient,psz,align);
+  DEBUG_PRINT("debug-rdma dev=%s,port=%d\n",dev,port);
   DEBUG_PRINT("debug-RDMA_CTXT_BUF_SIZE=%ld\n",RDMA_CTXT_BUF_SIZE(ctxt));
   DEBUG_PRINT("debug-RDMA_CTXT_PAGE_SIZE=%ld\n",RDMA_CTXT_PAGE_SIZE(ctxt));
   DEBUG_PRINT("debug-RDMA_CTXT_POOL_SIZE=%ld\n",RDMA_CTXT_POOL_SIZE(ctxt));
@@ -316,7 +390,8 @@ int initializeContext(
     return -1;
   TEST_Z(dev_list[i],"IB-device could not be assigned. Maybe dev_list array is empty");
   DEBUG_PRINT("using dev:%s\n%s\n%s\n",dev_list[i]->dev_name,dev_list[i]->dev_path,dev_list[i]->ibdev_path);
-  TEST_Z(ctxt->ctxt=ibv_open_device(dev_list[i]),"Could not create context, ibv_open_device");
+  TEST_Z(ctxt->ctxt=ibv_open_device(dev_list[i]),"Could not create context, ibv_open_device.");
+  TEST_NZ(ibv_query_device(ctxt->ctxt,&ctxt->dev_attr),"Could not get device attributes.");
   ibv_free_device_list(dev_list);
   TEST_Z(ctxt->pd=ibv_alloc_pd(ctxt->ctxt),"Could not allocate protection domain, ibv_alloc_pd");
   TEST_Z(ctxt->mr=ibv_reg_mr(
@@ -325,15 +400,7 @@ int initializeContext(
       RDMA_CTXT_POOL_SIZE(ctxt),
       bClient?(IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE):(IBV_ACCESS_REMOTE_READ | IBV_ACCESS_LOCAL_WRITE )),
     "Could not allocate mr, ibv_reg_mr. Do you have root privileges?");
-  TEST_NZ(ibv_query_device(ctxt->ctxt,&dev_attr),"Could not query device values");
-  // ctxt->max_sge = dev_attr.max_sge;
-  ctxt->max_sge = 16; // it turns out that if we use a number greater than 16, Mellanox Infiniband card will report error.
-  // TYPE of the card: InfiniBand: Mellanox Technologies MT26428 [ConnectX VPI PCIe 2.0 5GT/s - IB QDR / 10GigE] (rev a0)
-  
-  DEBUG_PRINT("initialization:max_sge=%d,max_cqe=%d\n",ctxt->max_sge,dev_attr.max_cqe);
-  ctxt->max_mr  = dev_attr.max_mr;
-  ctxt->max_cq  = dev_attr.max_cq;
-  ctxt->max_cqe = dev_attr.max_cqe;
+  printDevAttr(&ctxt->dev_attr);// For Debug purpose
   // initialize mutex lock
   TEST_NZ(pthread_mutex_init(&ctxt->lock,NULL), "Could not initialize context mutex");
   // con_map
@@ -554,16 +621,16 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   rdmaConn->port = 1; // always use 1? // lets make it configurable later.
   TEST_Z(rdmaConn->ch=ibv_create_comp_channel(ctxt->ctxt),"Could not create completion channel, ibv_create_comp_channel");
   TEST_Z(rdmaConn->rcq=ibv_create_cq(ctxt->ctxt,1,NULL,NULL,0),"Could not create receive completion queue, ibv_create_cq");
-  TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_SQE,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
+  TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_QP_WR,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
   struct ibv_qp_init_attr qp_init_attr = {
     .send_cq = rdmaConn->scq,
     .recv_cq = rdmaConn->rcq,
     .qp_type = IBV_QPT_RC,
     .cap = {
-      .max_send_wr = 1, // actuall the client does not send
-      .max_recv_wr = MAX_SQE, // MAX_SQE must less than ctxt->max_cqe
-      .max_send_sge = 1,
-      .max_recv_sge = ctxt->max_sge,
+      .max_send_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR),
+      .max_recv_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR),
+      .max_send_sge = MIN(ctxt->dev_attr.max_sge,MAX_SGE),
+      .max_recv_sge = MIN(ctxt->dev_attr.max_sge_rd,MAX_SGE),
       .max_inline_data = 0
     }
   };
@@ -578,6 +645,8 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   rdmaConn->l_psn = lrand48() & 0xffffff;
   rdmaConn->l_rkey = ctxt->mr->rkey;
   rdmaConn->l_vaddr = (uintptr_t)ctxt->pool;
+  rdmaConn->l_mtu = port_attr.active_mtu;
+  rdmaConn->l_qp_rd_atom = MIN(ctxt->dev_attr.max_qp_rd_atom,MAX_RD_ATOM);
   // STEP 3: exchange the RDMA info
   IbConEx l_exm,r_exm; // echange message
   //// client --> server | connection string
@@ -591,13 +660,10 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
     perror("Could not receive ibcfg from peer.");
     return -4;
   }
-  rdmaConn->r_gid = r_exm.gid;
-  rdmaConn->r_lid = r_exm.lid;
-  rdmaConn->r_qpn = r_exm.qpn;
-  rdmaConn->r_psn = r_exm.psn;
-  rdmaConn->r_rkey = r_exm.rkey;
-  rdmaConn->r_vaddr = r_exm.vaddr;
+  getibcfg(&r_exm, rdmaConn);
   close(connfd);
+  DEBUG_PRINT("Connected to the datanode...\n");
+  printConn(rdmaConn);
   /// change pair to RTR
   qp_change_state_rtr(rdmaConn->qp,rdmaConn);
   // STEP 4: setup the RDMA map
@@ -649,68 +715,80 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
   return 0;
 }
 
+#ifdef DEBUG
+  #define DEBUG_TIMESTAMP(x) gettimeofday(&(x),NULL)
+#else
+  #define DEBUG_TIMESTAMP(x)
+#endif
+
+#define TIMESPAN(t1,t2) ((t2.tv_sec-t1.tv_sec)*1000000+(t2.tv_usec-t1.tv_usec))
+
 int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
-DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr=%p\nhostip=%x,pid=%d\n",iswrite,npage,*pagelist,(void*)r_vaddr,hostip,pid);
-  struct timeval tv1,tv2,tv3,tv4,tv21,tv22,tv23,tv221,tv222;
+DEBUG_PRINT("rdmaTransfer:r_vaddr=%p,npage=%d,iswrite=%d,pagesize=%d\n",(void *)r_vaddr,npage,iswrite,pagesize);
+  struct timeval tv1,tv2,tv3,tv4,tv5,tvs,tve;
+  DEBUG_TIMESTAMP(tvs);
   const uint64_t cipkey = (const uint64_t)MAKE_CON_KEY(hostip,pid);
   RDMAConnection *rdmaConn = NULL;
   // STEP 1: get the connection
-  gettimeofday(&tv1,NULL);
   MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
   if(MAP_READ(con, ctxt->con_map, cipkey, &rdmaConn)!=0){
     fprintf(stderr, "Cannot find the context for ip:%lx",cipkey);
     return -1;
   }
   // STEP 2: finish transfer and return
-  gettimeofday(&tv2,NULL);
-  struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*ctxt->max_sge);
+  struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*ctxt->dev_attr.max_sge);
   struct ibv_send_wr wr;
   wr.wr.rdma.remote_addr = r_vaddr;
   wr.wr.rdma.rkey = rdmaConn->r_rkey;
   wr.wr_id = iswrite?RDMA_WRID:RDMA_RDID;
   wr.sg_list = sge_list;
-//  wr.num_sge = npage;
   wr.opcode = iswrite?IBV_WR_RDMA_WRITE:IBV_WR_RDMA_READ;
-  wr.send_flags = IBV_SEND_SIGNALED;
+  wr.send_flags = 0; // we only set IBV_SEND_SIGNALED every CQM(cq moderation);
   wr.next = NULL;
   struct ibv_send_wr *bad_wr;
+
   TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
+
   int opCnt=0;//number of transfer
   int npageToProcess=npage;
-  gettimeofday(&tv21,NULL);
+  DEBUG_TIMESTAMP(tv1);
   while(npageToProcess > 0){
     int i;
-    int batchSize = (npageToProcess > ctxt->max_sge)?ctxt->max_sge:npageToProcess;
+    int batchSize = (npageToProcess > ctxt->dev_attr.max_sge)?ctxt->dev_attr.max_sge:npageToProcess;
     // prepare the sge_list
     for(i=0;i<batchSize;i++){
       (sge_list+i)->addr = (uintptr_t)pagelist[npage-npageToProcess+i];
+      (sge_list+i)->addr = (uintptr_t)pagelist[i]; // CAUTION: only for test!!!
       (sge_list+i)->length = (pagesize==0)?RDMA_CTXT_PAGE_SIZE(ctxt):pagesize;
       (sge_list+i)->lkey = rdmaConn->l_rkey;
     }
     wr.num_sge = batchSize;
     npageToProcess-=batchSize;
     opCnt ++;
-    // 
+    if(opCnt % CQM == 0 || npageToProcess == 0)
+      wr.send_flags |= IBV_SEND_SIGNALED;
+    else
+      wr.send_flags &= ~IBV_SEND_SIGNALED;
+
     int rSend = ibv_post_send(rdmaConn->qp,&wr,&bad_wr);
     if(rSend!=0){
       fprintf(stderr,"ibv_post_send failed with error code:%d\n",rSend);
       return -1; // write failed.
     }
-    wr.wr.rdma.remote_addr += batchSize * RDMA_CTXT_PAGE_SIZE(ctxt);
+
+    wr.wr.rdma.remote_addr += pagesize*batchSize;
   }
-  gettimeofday(&tv22,NULL);
-  DEBUG_PRINT("rdmaTransfer: batchSize=%d\n",opCnt);
+  DEBUG_TIMESTAMP(tv3);
   struct ibv_wc *wc = (struct ibv_wc*)malloc(opCnt*sizeof(struct ibv_wc));
-  gettimeofday(&tv221,NULL);
   // wait on completion queue
   void *cq_ctxt;
-  TEST_NZ(ibv_get_cq_event(rdmaConn->ch, &rdmaConn->scq, &cq_ctxt), "ibv_get_cq_event failed!");
-  gettimeofday(&tv222,NULL);
-  ibv_ack_cq_events(rdmaConn->scq,1);
-  gettimeofday(&tv23,NULL);
-  // get completion event.
   int ne=0;
-  while(ne<opCnt){
+
+  do{
+    DEBUG_TIMESTAMP(tv4);
+    TEST_NZ(ibv_get_cq_event(rdmaConn->ch, &rdmaConn->scq, &cq_ctxt), "ibv_get_cq_event failed!");
+    ibv_ack_cq_events(rdmaConn->scq,1);
+    // get completion event.
     int i,npe = 0; // polled entry;
     do{
       npe = ibv_poll_cq(rdmaConn->scq,opCnt,wc);
@@ -719,30 +797,24 @@ DEBUG_PRINT("rdmaTransfer:\n\tisWrite=%d\n\tnpage=%d\n\tfirst page=%p\n\tr_vaddr
       fprintf(stderr, "%s: poll CQ failed %d\n", __func__, ne);
       return -2;
     }
-    for(i=0;i<npe;i++)
-    if((wc+i)->status != IBV_WC_SUCCESS) {
-      fprintf(stderr, "%s: rdma transfer failed,wc[%d]->status=%d.\n",__func__,i,(wc+i)->status);
-      return -3;
+    for(i=0;i<npe;i++){
+      if((wc+i)->status != IBV_WC_SUCCESS) {
+        fprintf(stderr, "%s: rdma transfer failed,wc[%d]->status=%d.\n",__func__,i,(wc+i)->status);
+        return -3;
+      }
     }
     ne += npe;
-  }
-  gettimeofday(&tv3,NULL);
+    TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
+    DEBUG_TIMESTAMP(tv5);
+    DEBUG_PRINT("loop:[%d] %ld\n",npe,TIMESPAN(tv4,tv5));
+  }while(ne<opCnt);
+
+  DEBUG_TIMESTAMP(tv2);
   free(sge_list);
   free(wc);
   MAP_UNLOCK(con, ctxt->con_map, cipkey);
-  gettimeofday(&tv4,NULL);
-  DEBUG_PRINT("rdmaTransfer:\t%ld\t%ld\n",
-    (tv2.tv_sec-tv1.tv_sec)*1000000+tv2.tv_usec-tv1.tv_usec,
-    (tv3.tv_sec-tv2.tv_sec)*1000000+tv3.tv_usec-tv2.tv_usec);
-  DEBUG_PRINT("break down:\t%ld\t%ld\t%ld\t%ld\n",
-    (tv21.tv_sec-tv2.tv_sec)*1000000+tv21.tv_usec-tv2.tv_usec,
-    (tv22.tv_sec-tv21.tv_sec)*1000000+tv22.tv_usec-tv21.tv_usec,
-    (tv23.tv_sec-tv22.tv_sec)*1000000+tv23.tv_usec-tv22.tv_usec,
-    (tv3.tv_sec-tv23.tv_sec)*1000000+tv3.tv_usec-tv23.tv_usec);
-  DEBUG_PRINT("bbd:\t%ld\t%ld\t%ld\n",
-    (tv221.tv_sec-tv22.tv_sec)*1000000+tv221.tv_usec-tv21.tv_usec,
-    (tv222.tv_sec-tv221.tv_sec)*1000000+tv222.tv_usec-tv221.tv_usec,
-    (tv23.tv_sec-tv222.tv_sec)*1000000+tv23.tv_usec-tv222.tv_usec);
+  DEBUG_TIMESTAMP(tve);
+  DEBUG_PRINT("rdmatransfer %d*%dB %ld %ld %ld us\n", npage, pagesize, TIMESPAN(tvs,tve),TIMESPAN(tv1,tv2), TIMESPAN(tv3,tv2));
   return 0;
 }
 

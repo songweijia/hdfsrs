@@ -1386,7 +1386,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
 #endif//PERF_RDMA
   
   // Find block;
-  DEBUG_PRINT("writeBlockRDMA(): blkOfst=%d,length=%d,bufAddr=%p\n",blkOfst,length,(void*)bufaddr);
+//  DEBUG_PRINT("writeBlockRDMA(): blkOfst=%d,length=%d,bufAddr=%p\n",blkOfst,length,(void*)bufaddr);
   filesystem = get_filesystem(env,thisObj);
   MAP_LOCK(block, filesystem->block_map, blockId, 'r');
   if(MAP_READ(block, filesystem->block_map, blockId, &block) != 0){
@@ -1402,7 +1402,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
     return -3;
   }
   // create the new pages.
-  DEBUG_PRINT("writeBlockRDMA(): create new pages.\n");
+//  DEBUG_PRINT("writeBlockRDMA(): create new pages.\n");
   block_offset = (int) blkOfst;
   first_page = block_offset / filesystem->page_size;
   last_page = (block_offset + length) / filesystem->page_size;// How many full pages ahead the end of the write. this is different from writeBlock(), last_page could be 1 if you only write one page, and last_page_length is zero. On the contrary, in writeBlock(), last_page means the page last byte is written to.
@@ -1414,14 +1414,14 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
     fprintf(stderr, "writeBlockRDMA: cannot allocate page from RDMA pool.\n");
     return -4;
   }
-  DEBUG_PRINT("allocatePageArray:address=%p,npage=%d\n",allData, new_pages_length);
+//  DEBUG_PRINT("allocatePageArray:address=%p,npage=%d\n",allData, new_pages_length);
   new_pages = (page_t*) malloc(new_pages_length*sizeof(page_t));
-//  void **paddrlist = (void**)malloc(new_pages_length*sizeof(void*));//page list for rdma transfer
+  void **paddrlist = (void**)malloc(new_pages_length*sizeof(void*));//page list for rdma transfer
   for(i=0;i<new_pages_length;i++){
     new_pages[i].data = (char*)MALLOCPAGE;
-//    paddrlist[i] = (void*)new_pages[i].data;
+    paddrlist[i] = (void*)new_pages[i].data;
   }
-  void *paddr = (void*)new_pages[0].data;
+//  void *paddr = (void*)new_pages[0].data;
 
   // do write by rdma read...
   // - get ipkey
@@ -1430,37 +1430,38 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
   (*env)->GetByteArrayRegion(env,clientIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
   uint32_t ipkey = inet_addr((const char*)ipStr);
-  DEBUG_PRINT("writeBlockRDMA:ip=%s\n",(char*)ipStr);
+//  DEBUG_PRINT("writeBlockRDMA:ip=%s\n",(char*)ipStr);
   // - get pagelist: done with paddrlist
-  DEBUG_PRINT("writeBlockRDMA:page range=%d-%d(%d)\n",first_page,last_page,last_page_length);
+//  DEBUG_PRINT("writeBlockRDMA:page range=%d-%d(%d)\n",first_page,last_page,last_page_length);
   // - get remote address:
   const uint64_t address = bufaddr + first_page*filesystem->page_size;
-  DEBUG_PRINT("writeBlockRDMA:address=%p\n", (const void *)address);
+//  DEBUG_PRINT("writeBlockRDMA:address=%p\n", (const void *)address);
   // - rdma read ...
 #if PERF_RDMA
 gettimeofday(&tv2, NULL);
 #endif
-  int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, rpid, (const uint64_t)address, (const void**)&paddr, 1, new_pages_length*filesystem->page_size);
+//  int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, rpid, (const uint64_t)address, (const void**)&paddr, 1, new_pages_length*filesystem->page_size);
+  int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, rpid, (const uint64_t)address, (const void**)paddrlist, new_pages_length, filesystem->page_size);
 #if PERF_RDMA
 gettimeofday(&tv3, NULL);
 #endif
-  //free(paddrlist);
+  free(paddrlist);
   if(rc != 0){
     fprintf(stderr, "writeBlockRDMA: rdmaRead failed with error code = %d.\n", rc);
     return -5;
   }
   
   // fill pages overlapping with existing data, if required
-  DEBUG_PRINT("writeBlockRDMA(): fill pages with existing data.\n");
+//  DEBUG_PRINT("writeBlockRDMA(): fill pages with existing data.\n");
   for (i = 0;i< page_offset; i++)
     new_pages[0].data[i] = block->pages[first_page]->data[i];
-  DEBUG_PRINT("writeBlockRDMA(): [0~%d] is filled, block->length=%d\n", page_offset,block->length);
+//  DEBUG_PRINT("writeBlockRDMA(): [0~%d] is filled, block->length=%d\n", page_offset,block->length);
   if(last_page*filesystem->page_size + last_page_length > block->length){
     block->length = last_page*filesystem->page_size + last_page_length;
-    DEBUG_PRINT("writeBlockRDMA(): block length is updated to %d\n", block->length);
+//    DEBUG_PRINT("writeBlockRDMA(): block length is updated to %d\n", block->length);
   }
   else if(last_page_length != 0 && block->length > last_page_length + (last_page)*filesystem->page_size){//we need to fill the end part...
-    DEBUG_PRINT("writeBlockRDMA(): last_page_length=%d;first_page=%d;last_page=%d\n",last_page_length,first_page,last_page);
+//    DEBUG_PRINT("writeBlockRDMA(): last_page_length=%d;first_page=%d;last_page=%d\n",last_page_length,first_page,last_page);
     for( i = last_page_length; 
          i < ((block->length/filesystem->page_size>last_page)?filesystem->page_size:block->length%filesystem->page_size);
          i++ )
@@ -1468,7 +1469,7 @@ gettimeofday(&tv3, NULL);
   }
  
   // Fill block with thr appropriate information
-  DEBUG_PRINT("writeBlockRDMA(): fill block metadata.\n");
+//  DEBUG_PRINT("writeBlockRDMA(): fill block metadata.\n");
   if (block->cap == 0)
     new_pages_capacity = 1;
   else
@@ -1481,10 +1482,10 @@ gettimeofday(&tv3, NULL);
   }
   for(i=0;i<new_pages_length;i++)
     block->pages[first_page+i] = new_pages + i;
-  DEBUG_PRINT("writeBlockRDMA(): new_pages_length=%d\n",new_pages_length);
+//  DEBUG_PRINT("writeBlockRDMA(): new_pages_length=%d\n",new_pages_length);
 
   // create log entry
-  DEBUG_PRINT("writeBlockRDMA(): create log entry\n");
+//  DEBUG_PRINT("writeBlockRDMA(): create log entry\n");
   pthread_rwlock_wrlock(&(filesystem->lock));
   check_and_increase_log_length(filesystem);
   log_pos = filesystem->log_length;
@@ -1496,13 +1497,13 @@ gettimeofday(&tv3, NULL);
   filesystem->log[log_pos].previous = block->last_entry;
 
   // tick my clock.
-  DEBUG_PRINT("writeBlockRDMA(): tick clock\n");
+//  DEBUG_PRINT("writeBlockRDMA(): tick clock\n");
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, filesystem->log+log_pos);
   filesystem->log_length += 1;
   pthread_rwlock_unlock(&(filesystem->lock));
   block->last_entry = log_pos;
-  DEBUG_PRINT("writeBlockRDMA(): finished\n");
+//  DEBUG_PRINT("writeBlockRDMA(): finished\n");
 
 #if PERF_RDMA
   gettimeofday(&tv4, NULL);

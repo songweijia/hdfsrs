@@ -83,10 +83,19 @@ int main(int argc, char **argv){
       getchar();
       // step 5: wait for data being transfered.
       printf("Data(len=%d):[%c...%c...%c...%c]\n",1<<align,
-        *(char *)buf,
-        *(char *)(buf+(1<<12)),
-        *(char *)(buf+(2<<12)),
-        *(char *)(buf+(3<<12)));
+        *(volatile char *)buf,
+        *(volatile char *)(buf+(1<<12)),
+        *(volatile char *)(buf+(2<<12)),
+        *(volatile char *)(buf+(3<<12)));
+      //do it again:
+      getchar();
+//      asm volatile("" ::: "memory");
+      // step 5: wait for data being transfered.
+      printf("Data(len=%d):[%c...%c...%c...%c]\n",1<<align,
+        *(volatile char *)buf,
+        *(volatile char *)(buf+(1<<12)),
+        *(volatile char *)(buf+(2<<12)),
+        *(volatile char *)(buf+(3<<12)));
     }
   }else if(mode == 1/*writing*/||mode == 2/*reading*/){
     // server
@@ -101,7 +110,7 @@ int main(int argc, char **argv){
       int pns[4];
       uint64_t len, *ids, rvaddr;
       uint64_t cipkey;
-      int i,j;
+      int i,j,ret;
       RDMAConnection *conn;
       printf("please give the remote ip(like:1c09a8c0000078e8):\n");
       scanf("%lx",&cipkey);
@@ -119,16 +128,19 @@ int main(int argc, char **argv){
       for(j=0;j<4;j++)
       {
         pagelist[j] = (void*)conn->l_vaddr+(pns[j]<<align);
-        printf("transfer pagelist[%d]=%p\n",j,pagelist[j]);
+        printf("transfer pagelist[%d]=%p,value=%c\n",j,pagelist[j],*((char*)pagelist[j]));
       }
       if(mode == 1){
-        rdmaWrite(&rdma_ctxt,(uint32_t)(cipkey>>32),(uint32_t)(cipkey&0xffffffff),rvaddr,pagelist,4,0);
+        ret = rdmaWrite(&rdma_ctxt,(uint32_t)(cipkey>>32),(uint32_t)(cipkey&0xffffffff),rvaddr,pagelist,4,0);
       }
       else
       {
-        rdmaRead(&rdma_ctxt,(uint32_t)(cipkey>>32),(uint32_t)(cipkey&0xffffffff),rvaddr,pagelist,4,0);
+        ret = rdmaRead(&rdma_ctxt,(uint32_t)(cipkey>>32),(uint32_t)(cipkey&0xffffffff),rvaddr,pagelist,4,0);
       }
-      fprintf(stdout, "transfer with client %lx ... done.\n",cipkey);
+      if(ret != 0)
+        fprintf(stdout, "RDMA transfer failed with error!\n");
+      else
+        fprintf(stdout, "transfer with client %lx ... done.\n",cipkey);
       // step 5: wait for data being transfered.
       printf("Data(len=%d):[%c...%c...%c...%c]\n",1<<align,
         *(char *)pagelist[0],
