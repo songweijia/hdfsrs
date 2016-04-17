@@ -41,10 +41,9 @@ public class JNIBlog
     this.dsmgr = dsmgr;
     this.bpid = bpid;
     this.persPath = persPath;
+    this.blockMaps = new HashMap<Long, MemBlockMeta>();
     // initialize blog
     initialize((int)blockSize, pageSize, persPath);
-    // LOAD blockmap
-    loadBlockMap();
     Runtime.getRuntime().addShutdownHook(new Thread(){
       @Override
       public void run(){
@@ -53,12 +52,14 @@ public class JNIBlog
     });
   }
   
+/** we do not need to flush block map meta data anymore. 
+ * we just reconstruct them from the blog.
   // write the block map to disk
   // format:
   // int: number of blocks
   // for each block:
   //   [long:block id][long:timestamp][boolean:isdeleted][int:state]
-  private void flushBlockMap(){
+  private synchronized void flushBlockMap(){
     FileOutputStream fos = null;
     DataOutputStream dos = null;
     try{
@@ -84,8 +85,9 @@ public class JNIBlog
       }
     }
   }
+  
   // load the block map from disk
-  private void loadBlockMap(){
+  private synchronized void loadBlockMap(){
     FileInputStream fis = null;
     DataInputStream dis = null;
     try{
@@ -113,7 +115,7 @@ public class JNIBlog
       }
     }
   }
-  
+*/  
   /**
    * initialization
    * @param blockSize - block size for each block
@@ -124,9 +126,48 @@ public class JNIBlog
   private native int initialize(int blockSize, int pageSize, String persPath);
   
   /**
+   * Replay block log on startup. This will materialize blockMaps. This
+   * will be called from native initialize(). 
+   * op:
+   *   BOL = 0
+   *   CREATE_BLOCK = 1
+   *   DELETE_BLOCK = 2
+   *   WRITE_BLOCK = 3
+   *   SET_GENSTAMP = 4
+   * genStamp: for SET_GENSTAMP only.
+   */
+  private void replayLogOnMetadata(long blockId, int op, long genStamp){
+    if(op == 0) // do nothing for BOL
+      return;
+    MemBlockMeta mbm = this.blockMaps.get(blockId);
+    if(mbm == null && op == 1){ // CREATE_BLOCK
+      mbm = dsmgr.new MemBlockMeta(this,genStamp,blockId,ReplicaState.FINALIZED);
+    }
+    else if(mbm == null){
+      //create block on an existing block.
+    }else if(op == 2) // WRITE_BLOCK
+      mbm.delete();
+    else if(op==3){//WRITE_BLOCK
+      // do nothing
+    }
+    else if(op == 4)
+      mbm.setGenerationStamp(genStamp);
+    this.blockMaps.put(blockId, mbm);
+  }
+  
+  /**
    * destroy the blog
    */
   public native void destroy();
+  
+  /**
+   * set the generationStamp of a blog.
+   * @param mhlc message hybridLogicalClock
+   * @param blockId
+   * @param genStamp
+   * @return
+   */
+  public native int setGenStamp(HybridLogicalClock mhlc, long blockId, long genStamp);
   
   /**
    * create a block
@@ -134,7 +175,7 @@ public class JNIBlog
    * @param blockId - block identifier
    * @return error code, 0 for success.
    */
-  public native int createBlock(HybridLogicalClock mhlc, long blockId);
+  public native int createBlock(HybridLogicalClock mhlc, long blockId, long genStamp);
   
   /**
    * @param mvc - vector clock of the driven message
@@ -223,17 +264,17 @@ public class JNIBlog
   public void testBlockCreation(HybridLogicalClock mhlc)
   {
     for (long i = 0; i < 100; i++) {
-      assert (createBlock(mhlc,i) == 0);
+      assert (createBlock(mhlc,i,0l) == 0);
       writeLine("Block " + i + " was created.");
     }
     for (long i = 4096; i < 4196; i++) {
-      assert (createBlock(mhlc,i) == 0);
+      assert (createBlock(mhlc,i,0l) == 0);
       writeLine("Block " + i + " was created.");
     }
-    assert (createBlock(mhlc,1) == -1);
-    assert (createBlock(mhlc,4096) == -1);
-    assert (createBlock(mhlc,4100) == -1);
-    assert (createBlock(mhlc,5000) == 0);
+    assert (createBlock(mhlc,1,0l) == -1);
+    assert (createBlock(mhlc,4096,0l) == -1);
+    assert (createBlock(mhlc,4100,0l) == -1);
+    assert (createBlock(mhlc,5000,0l) == 0);
     writeLine("Block 5000 was created.");
   }
   
@@ -352,7 +393,7 @@ public class JNIBlog
     long rtc;
     
     writeLine("Initialize.");
-    bl.initialize(1024*1024, 1024, null);
+    bl.initialize(1024*1024, 1024, ".");
     writeLine("Create Blocks.");
     bl.testBlockCreation(mhlc);
     writeLine("Delete Blocks.");

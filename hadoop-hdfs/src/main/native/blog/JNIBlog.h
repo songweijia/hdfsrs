@@ -25,11 +25,19 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_destroy
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    setGenStamp
+ * Signature: (JJ)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_setGenStamp
+  (JNIEnv *, jobject, jobject, jlong, jlong);
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    createBlock
- * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;J)I
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;JJ)I
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
-  (JNIEnv *, jobject, jobject, jlong);
+  (JNIEnv *, jobject, jobject, jlong, jlong);
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog

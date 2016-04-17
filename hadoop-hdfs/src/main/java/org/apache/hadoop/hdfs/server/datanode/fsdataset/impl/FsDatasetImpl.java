@@ -533,7 +533,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
 
 
   @Override  // FsDatasetSpi
-  public synchronized ReplicaInPipeline append(ExtendedBlock b,
+  public synchronized ReplicaInPipeline append(ExtendedBlock b, HybridLogicalClock mhlc,
       long newGS, long expectedBlockLen) throws IOException {
     // If the block was successfully finalized because all packets
     // were successfully processed at the Datanode but the ack for
@@ -682,7 +682,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
   }
   
   @Override  // FsDatasetSpi
-  public synchronized ReplicaInPipeline recoverAppend(ExtendedBlock b,
+  public synchronized ReplicaInPipeline recoverAppend(ExtendedBlock b, HybridLogicalClock mhlc,
       long newGS, long expectedBlockLen) throws IOException {
     LOG.info("Recover failed append to " + b);
 

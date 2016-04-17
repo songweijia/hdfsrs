@@ -2,6 +2,7 @@ LIB=libedu_cornell_cs_blog_JNIBlog.so
 SRCS=JNIBlog.c
 HEADERS=JNIBlog.h map.h types.h
 CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall
+#CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall -D PRELOAD_MAPPED_FILE
 LDFLAGS=-shared -fpic -pthread
 
 all: $(LIB)
