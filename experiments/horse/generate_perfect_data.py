@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import Image
+from PIL import Image
 
 
 millsec=0;
