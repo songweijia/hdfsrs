@@ -544,7 +544,7 @@ static int flushBlog(filesystem_t *fs, block_t *block){
   // open blog file
   char fullname[256];
   sprintf(fullname,"%s/%ld."BLOGFILE_SUFFIX,fs->pers_path,block->id);
-  int blogfd = open(fullname,O_RDWR|O_CREAT);
+  int blogfd = open(fullname,O_RDWR|O_CREAT,S_IWUSR|S_IRUSR|S_IRGRP|S_IWGRP|S_IROTH);
   if(blogfd<0){
     fprintf(stderr,"Cannot open file for flushing: block id %ld, Error: %s.\n",
       block->id, strerror(errno));
@@ -684,7 +684,7 @@ static int createShmFile(const char *fn, uint64_t size){
     return -2;
   }
   // create file
-  int fd = open(fullname, O_RDWR|O_CREAT);
+  int fd = open(fullname, O_RDWR|O_CREAT,S_IWUSR|S_IRUSR|S_IRGRP|S_IWGRP|S_IROTH);
   if(fd<0){
     fprintf(stderr,"Cannot open/create file %s. Error: %s\n",fullname,strerror(errno));
     return -3;
@@ -735,7 +735,7 @@ static int loadPages(filesystem_t *fs, const char *pp){
   char fullname[256];
   sprintf(fullname,"%s/%s",pp,PAGEFILE);
   // STEP 1 Is file exists?
-  fs->page_fd = open(fullname,O_RDWR|O_CREAT|O_DIRECT);
+  fs->page_fd = open(fullname,O_RDWR|O_CREAT|O_DIRECT,S_IWUSR|S_IRUSR|S_IRGRP|S_IWGRP|S_IROTH);
   if(fs->page_fd < 0){
     fprintf(stderr, "Fail to open persistent page file %s. Error: %s\n",fullname, strerror(errno));
     return -1;
