@@ -90,6 +90,7 @@ import org.apache.hadoop.util.Daemon;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Time;
+import org.mortbay.log.Log;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
@@ -163,6 +164,23 @@ public class DFSOutputStream extends FSOutputSummer
   protected boolean shouldSyncBlock = false; // force blocks to disk upon close
   protected final AtomicReference<CachingStrategy> cachingStrategy;
   protected boolean failPacket = false;
+  protected final String suffix;
+  /**
+   * get the suffix of the 
+   * @return
+   */
+  static String getSuffix(String ffn){
+    String ret = null;
+    if(ffn != null){
+      int sidx = ffn.lastIndexOf(System.getProperty("file.separator"));
+      int didx = ffn.lastIndexOf(".");
+      if(didx == -1 || didx == (ffn.length() - 1) || sidx > didx)
+        ret = null;
+      else
+        ret = ffn.substring(didx+1);
+    }
+    return ret;
+  }
   
   protected class Packet {
     final long seqno;           // sequencenumber of buffer in block
@@ -1494,7 +1512,7 @@ public class DFSOutputStream extends FSOutputSummer
               nodes, null, recoveryFlag? stage.getRecoveryStage() : stage, 
               nodes.length, block.getNumBytes(), bytesSent, newGS, checksum,
               cachingStrategy.get(),this.blockWriteOffset/*HDFSRS_RWAPI:block write offset*/,
-              DFSClient.tickAndCopy());
+              DFSClient.tickAndCopy(), suffix);
   
           // receive ack for connect
           BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(
@@ -1712,6 +1730,7 @@ public class DFSOutputStream extends FSOutputSummer
     super(checksum, checksum.getBytesPerChecksum(), checksum.getChecksumSize());
     this.dfsClient = dfsClient;
     this.src = src;
+    this.suffix = getSuffix(src);
     this.fileId = stat.getFileId();
     this.blockSize = stat.getBlockSize();
     this.blockReplication = stat.getReplication();
@@ -1774,6 +1793,7 @@ public class DFSOutputStream extends FSOutputSummer
                                      UnresolvedPathException.class,
                                      SnapshotAccessControlException.class);
     }
+    Log.debug("Weijia:in newStreamForCreate, src="+src);
     final DFSOutputStream out = new DFSOutputStream(dfsClient, src, stat,
         flag, progress, checksum, favoredNodes);
     out.start();

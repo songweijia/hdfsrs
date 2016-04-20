@@ -13,6 +13,7 @@ src/main/java/org/apache/hadoop/hdfs/DFSClient.java \
 src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java \
 src/main/java/org/apache/hadoop/hdfs/BlockReaderFactory.java \
 src/main/java/org/apache/hadoop/hdfs/RemoteBlockReader2.java \
+src/main/java/org/apache/hadoop/hdfs/DFSOutputStream.java \
 src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java \
 src/main/java/org/apache/hadoop/hdfs/server/datanode/MemBlockReceiver.java \
 src/main/java/org/apache/hadoop/hdfs/server/datanode/MemBlockSender.java \

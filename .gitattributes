@@ -2,4 +2,4 @@
 *.h text eol=lf
 *.java text eol=lf
 *.txt text eol=lf
-Makefile text eol=lf
+*.cpp text eol=lf
