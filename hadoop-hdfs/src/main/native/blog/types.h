@@ -52,6 +52,7 @@ struct log {
   uint32_t block_length : 28;
   uint32_t start_page;
   uint32_t nr_pages;
+  uint32_t reserved; // padding
   uint64_t r;
   uint64_t l;
   uint64_t u;
@@ -83,17 +84,18 @@ struct block {
   uint32_t pages_cap;
   uint64_t *pages;
   log_t *log;
-  MAP_TYPE(log) *log_map_hlc; // by hlc
-  MAP_TYPE(log) *log_map_ut; // by user timestamp
-  MAP_TYPE(snapshot) *snapshot_map;
-  uint32_t blog_fd;
+  BLOG_MAP_TYPE(log) *log_map_hlc; // by hlc
+  BLOG_MAP_TYPE(log) *log_map_ut; // by user timestamp
+  BLOG_MAP_TYPE(snapshot) *snapshot_map;
+  //The following members are for data persistent routine
+  uint32_t log_length_pers;
 };
 
 struct snapshot {
   uint64_t ref_count;
   uint32_t status : 4;
   uint32_t length : 28;
-  uint64_t pages;
+  uint64_t *pages;
 };
 
 /**
@@ -103,19 +105,30 @@ struct snapshot {
  * block_map    :   hash map that contains all the blocks in the current state
  *                  (key: block id).
  * page_base    :   base address for the page
- * page_fd      :   page file descriptor
+ * nr_pages     :   number of pages in the filesystem
+ * page_shm_fd  :   ramdisk(tmpfs) page file descriptor
+ * page_fd      :   on-disk page file descriptor
  * alive        :   if the persistent thread is alive or not?
- * writer_thrd  :   thread responsible for pushing the blog to the disk for
+ * nr_pages_pers:   number of pages in persistent state.
+ * pers_thrd    :   thread responsible for pushing the blog to the disk for
  *                  persistance.
  */
 struct filesystem {
   size_t block_size;
   size_t page_size;
-  MAP_TYPE(block) *block_map;
-#define FS_PAGE(fs,pn) (fs->page_base+(fs->page_size*(pn)))
+  BLOG_MAP_TYPE(block) *block_map;
+  pthread_spinlock_t pages_spinlock;
+#define PAGE_NR_TO_PTR(fs,nr) ((fs)->page_base+((fs)->page_size*(nr)))
+#define PAGE_PTR_TO_NR(fs,ptr) (((void*)(ptr) - (fs)->page_base)/(fs)->page_size)
+#define INVALID_PAGE_NO  (0xFFFFFFFFFFFFFFFF)
   void   *page_base;
+  uint64_t nr_pages;
+  //The following members are for data persistent routine
   uint32_t page_fd;
+  uint32_t page_shm_fd;
   uint32_t int_sec;
   uint32_t alive;
-  pthread_t writer_thrd;
+  uint64_t nr_pages_pers;
+  pthread_t pers_thrd;
+  char pers_path[256];
 };
