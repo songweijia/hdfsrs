@@ -8,7 +8,6 @@
 typedef char* page_t;
 typedef struct log log_t;
 typedef struct block block_t;
-typedef struct snapshot_block snapshot_block_t;
 typedef struct filesystem filesystem_t;
 typedef struct snapshot snapshot_t;
 
@@ -121,14 +120,14 @@ struct filesystem {
 #define PAGE_NR_TO_PTR(fs,nr) ((fs)->page_base+((fs)->page_size*(nr)))
 #define PAGE_PTR_TO_NR(fs,ptr) (((void*)(ptr) - (fs)->page_base)/(fs)->page_size)
 #define INVALID_PAGE_NO  (0xFFFFFFFFFFFFFFFF)
-  void   *page_base;
+  void *page_base;
   uint64_t nr_pages;
+  uint64_t nr_pages_pers;
   //The following members are for data persistent routine
   uint32_t page_fd;
   uint32_t page_shm_fd;
   uint32_t int_sec;
   uint32_t alive;
-  uint64_t nr_pages_pers;
   pthread_t pers_thrd;
   char pers_path[256];
 };
