@@ -529,6 +529,7 @@ static int flushPages(filesystem_t *fs){
       return -1;
     }
   }
+  fsync(fs->page_fd);
   return 0;
 }
 
@@ -735,7 +736,7 @@ static int loadPages(filesystem_t *fs, const char *pp){
   char fullname[256];
   sprintf(fullname,"%s/%s",pp,PAGEFILE);
   // STEP 1 Is file exists?
-  fs->page_fd = open(fullname,O_RDWR|O_CREAT|O_DIRECT,S_IWUSR|S_IRUSR|S_IRGRP|S_IWGRP|S_IROTH);
+  fs->page_fd = open(fullname,O_RDWR|O_CREAT,S_IWUSR|S_IRUSR|S_IRGRP|S_IWGRP|S_IROTH);
   if(fs->page_fd < 0){
     fprintf(stderr, "Fail to open persistent page file %s. Error: %s\n",fullname, strerror(errno));
     return -1;
