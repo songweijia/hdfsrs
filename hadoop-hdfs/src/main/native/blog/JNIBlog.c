@@ -716,7 +716,7 @@ static int mapPages(filesystem_t *fs){
     return -1;
   }
   // 2 - map it in memory and setup file system parameters:
-  if((fs->page_base = mmap(NULL,CONF_PAGEFILE_MAXSIZE,PROT_READ|PROT_WRITE,MAP_PRIVATE,
+  if((fs->page_base = mmap(NULL,CONF_PAGEFILE_MAXSIZE,PROT_READ|PROT_WRITE,MAP_SHARED,
     fs->page_shm_fd,0)) < 0){
     fprintf(stderr,"Fail to mmap page file %s. Error: %s\n",SHM_FN,strerror(errno));
     return -2;
@@ -900,7 +900,7 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
   };
   // STEP 2 for each .blog file
   while((dir=readdir(d))!=NULL){
-    DEBUG_PRINT("Loading %s...",dir.d_name);
+    DEBUG_PRINT("Loading %s...",dir->d_name);
     /// 2.1 if it is not a .blog file, go to the next
     char fullname[256];
     if(strlen(dir->d_name) < strlen(BLOGFILE_SUFFIX) + 1 ||
@@ -1588,7 +1588,7 @@ DEBUG_PRINT("end destroy.\n");
  */
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_setGenStamp
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jlong genStamp){
-
+DEBUG_PRINT("begin setGenStamp.\n");
   filesystem_t *filesystem;
   uint64_t block_id = (uint64_t)blockId;
   block_t *block;
@@ -1620,5 +1620,6 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_setGenStamp
   //STEP 3: update block
   block->log_length ++;
 
+DEBUG_PRINT("end setGenStamp.\n");
   return 0;
 }
