@@ -411,7 +411,7 @@ snapshot_t *fill_snapshot(log_t *log_entry, uint32_t page_size) {
   snapshot->ref_count = 0;
 
   //skip the first SET_GENSTAMP
-  while(log_entry->op!=SET_GENSTAMP)
+  while(log_entry->op==SET_GENSTAMP)
     log_entry--;
 
   switch(log_entry->op) {
@@ -564,7 +564,7 @@ static int flushBlog(filesystem_t *fs, block_t *block){
     //write header
     bh.id = block->id;
     bh.log_length = 0;
-    if(write(blogfd,&bh,sizeof bh)!=sizeof(log_t)){
+    if(write(blogfd,&bh,sizeof bh)!=sizeof(bh)){
       fprintf(stderr,"Flush, cannot write header to blog file %s, Error:%s\n",fullname,strerror(errno));
       close(blogfd);
       return -2;
@@ -592,7 +592,7 @@ static int flushBlog(filesystem_t *fs, block_t *block){
   // update header
   bh.log_length = log_length;
   lseek(blogfd,0,SEEK_SET);
-  if(write(blogfd,&bh,sizeof bh)!=sizeof(log_t)){
+  if(write(blogfd,&bh,sizeof bh)!=sizeof(bh)){
     fprintf(stderr,"Flush, cannot write header to blog file %s, Error:%s\n",fullname,strerror(errno));
     close(blogfd);
     return -5;
@@ -902,8 +902,10 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
   while((dir=readdir(d))!=NULL){
     DEBUG_PRINT("Loading %s...",dir.d_name);
     /// 2.1 if it is not a .blog file, go to the next
-    char filename[256],fullname[256];
-    if(!sscanf(dir->d_name, "%s."BLOGFILE_SUFFIX, filename) || dir->d_type != DT_REG){
+    char fullname[256];
+    if(strlen(dir->d_name) < strlen(BLOGFILE_SUFFIX) + 1 ||
+       dir->d_type != DT_REG ||
+       strcmp(dir->d_name + strlen(dir->d_name) - strlen(BLOGFILE_SUFFIX) -1, "."BLOGFILE_SUFFIX)){
       DEBUG_PRINT("skipped.\n");
       continue;
     }
