@@ -8,7 +8,6 @@
 typedef char* page_t;
 typedef struct log log_t;
 typedef struct block block_t;
-typedef struct snapshot_block snapshot_block_t;
 typedef struct filesystem filesystem_t;
 typedef struct snapshot snapshot_t;
 
