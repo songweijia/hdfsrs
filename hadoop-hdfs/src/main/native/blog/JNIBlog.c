@@ -619,6 +619,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock
   update_log_clock(env, mhlc, log_entry);
   log_entry->u = estimate_user_timestamp(block,log_entry->r);
   log_entry->pages = NULL;
+  block->log_length += 1;
   
   // Release the current state of the block.
   block->status = NON_ACTIVE;
