@@ -330,6 +330,7 @@ int compare(uint64_t r1, uint64_t c1, uint64_t r2, uint64_t c2)
   return 0;
 }
 
+// NOTE: acquire read lock on blog before call this function.
 // Find last log entry that has timestamp less or equal than (r,l).
 int find_last_entry(block_t *block, uint64_t r, uint64_t l, uint64_t *last_entry)
 {
@@ -359,6 +360,8 @@ int find_last_entry(block_t *block, uint64_t r, uint64_t l, uint64_t *last_entry
   *last_entry = log_index;
   return 0;
 }
+
+// NOTE: acquire read lock on blog before call this function
 // Find last log entry that has user timestamp less or equal than ut.
 void find_last_entry_by_ut(block_t *block, uint64_t ut, uint64_t *last_entry){
   log_t *log = block->log;
@@ -400,6 +403,7 @@ int check_and_increase_log_cap(block_t *block)
 
 /**
  * Fills the snapshot from the log.
+ * NOTE: acquire read lock on the blog befaore call this
  * @param log_entry - Last log entry for snapshot.
  * @param page_size - Page size for the filesystem.
  * @return Snapshot object.
@@ -452,6 +456,7 @@ snapshot_t *fill_snapshot(log_t *log_entry, uint32_t page_size) {
 
 /**
  * Find a snapshot object with specific time. If not found, instatiate one.
+ * NOTE: acquire read lock on blog before call this function.
  * block        - Block object.
  * snapshot_time- Time to take the snapshot.
  *                Must be lower or equal than a timestamp that might appear in the future.
@@ -464,7 +469,7 @@ snapshot_t *fill_snapshot(log_t *log_entry, uint32_t page_size) {
 int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_size, snapshot_t **snapshot_ptr, int by_ut)
 {
   log_t *log = block->log;
-	snapshot_t *snapshot;
+  snapshot_t *snapshot;
   uint64_t *log_ptr;
   uint64_t log_index;
   
@@ -1109,7 +1114,6 @@ DEBUG_PRINT("begin createBlock\n");
   block->snapshot_map = MAP_INITIALIZE(snapshot);
   
   // initialize rwlock.
-  
   if(pthread_rwlock_init(&block->blog_rwlock,NULL)!=0){
     fprintf(stderr, "ERROR: cannot initialize rw lock for block:%ld\n", block->id);
     exit(-1);
@@ -1128,6 +1132,7 @@ DEBUG_PRINT("end createBlock\n");
 }
 
 /*
+ * NOTE: acquire write lock on blog before call this function.
  * estimate the user's timestamp where it is not avaialbe.
  * For deleteBlock(), we need this.
  * we assume that u = K*r; where K is a linear coefficient.
@@ -1167,6 +1172,11 @@ DEBUG_PRINT("begin deleteBlock.\n");
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Create the corresponding log entry.
+  if(BLOG_WRLOCK(block)!=0){
+    fprintf(stderr, "ERROR: Cannot acquire write lock on block:%ld, Error:%s\n",
+      block_id, strerror(errno));
+    return -2;
+  }
   check_and_increase_log_cap(block);
   log_entry = block->log + block->log_length;
   log_entry->op = DELETE_BLOCK;
@@ -1178,6 +1188,7 @@ DEBUG_PRINT("begin deleteBlock.\n");
   log_entry->u = estimate_user_timestamp(block,log_entry->r);
   log_entry->first_pn = 0;
   block->log_length += 1;
+  BLOG_UNLOCK(block);
   
   // Release the current state of the block.
   block->status = NON_ACTIVE;
@@ -1216,10 +1227,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
     fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
     return -1;
   }
-  log_index = block->log_length-1;
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Find if snapshot exists for this log index.
+  if(BLOG_RDLOCK(block)!=0){
+    fprintf(stderr, "ERROR: Cannot acquire read lock on block:%ld, Error:%s\n",
+      block_id, strerror(errno));
+    return -1;
+  }
+  log_index = block->log_length-1;
   log_entry = block->log + log_index;
   MAP_LOCK(snapshot, block->snapshot_map, log_index, 'w');
   if (MAP_READ(snapshot, block->snapshot_map, log_index, &snapshot) != 0) {
@@ -1231,6 +1247,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
     }
   }
   MAP_UNLOCK(snapshot, block->snapshot_map, log_index);
+  BLOG_UNLOCK(block);
   
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
@@ -1258,11 +1275,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
   if (cur_length >= read_length) {
     (*env)->SetByteArrayRegion(env, buf, buffer_offset, read_length, (jbyte*) page_data);
   } else {
-  	(*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
-  	page_id++;
-  	while (1) {
-  		page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
-  		if (cur_length + filesystem->page_size >= read_length) {
+    (*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
+    page_id++;
+    while (1) {
+      page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
+      if (cur_length + filesystem->page_size >= read_length) {
         (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, read_length - cur_length, (jbyte*) page_data);
         break;
       }
@@ -1305,10 +1322,17 @@ DEBUG_PRINT("begin readBlock_JJIII.\n");
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Create snapshot.
-  if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, byUserTimestamp==JNI_TRUE) < 0) {
-      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
-      return -1;
+  if(BLOG_RDLOCK(block)!=0){
+    fprintf(stderr, "ERROR: Cannot acquire read lock on block:%ld, Error:%s\n",
+      block_id, strerror(errno));
+    return -1;
   }
+  if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, byUserTimestamp==JNI_TRUE) < 0) {
+    fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
+    BLOG_UNLOCK(block);
+    return -1;
+  }
+  BLOG_UNLOCK(block);
   
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
@@ -1366,6 +1390,7 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
   block_t *block;
   uint64_t log_index;
   uint64_t block_id = (uint64_t) blockId;
+  jint ret;
   
   // Find the block.
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
@@ -1376,9 +1401,16 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Find the last entry.
+  if(BLOG_RDLOCK(block)!=0){
+    fprintf(stderr, "ERROR: Cannot acquire read lock on block:%ld, Error:%s\n",
+      block_id, strerror(errno));
+    return -1;
+  }
   log_index = block->log_length-1;
-  
-  return (jint) block->log[log_index].block_length;
+  ret = (jint) block->log[log_index].block_length;
+  BLOG_UNLOCK(block);
+
+  return ret;
 }
 
 /*
@@ -1406,16 +1438,23 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Find the corresponding block.
-  if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, by_ut==JNI_TRUE) < 0) {
-      fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
-      return -2;
+  if(BLOG_RDLOCK(block)!=0){
+    fprintf(stderr, "ERROR: Cannot acquire read lock on block:%ld, Error:%s\n",
+      block_id, strerror(errno));
+    return -1;
   }
+  if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, by_ut==JNI_TRUE) < 0) {
+    fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
+    BLOG_UNLOCK(block);
+    return -2;
+  }
+  BLOG_UNLOCK(block);
   
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
-      fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active at snapshot with rtc %" PRIu64 ".\n",
-        block_id, snapshot_time);
-      return -1;
+    fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active at snapshot with rtc %" PRIu64 ".\n",
+      block_id, snapshot_time);
+    return -1;
   }
   
   return (jint) snapshot->length;
@@ -1514,7 +1553,13 @@ DEBUG_PRINT("beging writeBlock.\n");
     memcpy(temp_data, PAGE_NR_TO_PTR(filesystem,block->pages[last_page]) + last_page_length, write_page_length);
     block_length = block->length;
   }
-  // Create the corresponding log entry.
+
+  // Create the corresponding log entry. 
+  if(BLOG_WRLOCK(block)!=0){
+    fprintf(stderr, "ERROR: Cannot acquire write lock on block:%ld, Error:%s\n",
+      block_id, strerror(errno));
+    return -2;
+  }
   log_index = block->log_length;
   check_and_increase_log_cap(block);
   log_entry = block->log + log_index;
@@ -1527,6 +1572,7 @@ DEBUG_PRINT("beging writeBlock.\n");
   log_entry->u = userTimestamp;
   log_entry->first_pn = PAGE_PTR_TO_NR(filesystem,data);
   block->log_length += 1;
+  BLOG_UNLOCK(block);
 
   // Fill block with the appropriate information.
   block->length = block_length;
@@ -1629,6 +1675,11 @@ DEBUG_PRINT("begin setGenStamp.\n");
   MAP_UNLOCK(block, filesystem->block_map, block_id);
 
   //STEP 2: append log
+  if(BLOG_WRLOCK(block)!=0){
+    fprintf(stderr, "ERROR: Cannot acquire write lock on block:%ld, Error:%s\n",
+      block_id, strerror(errno));
+    return -2;
+  }
   check_and_increase_log_cap(block);
   log_entry = block->log + block->log_length;
   log_entry->op = SET_GENSTAMP;
@@ -1639,9 +1690,8 @@ DEBUG_PRINT("begin setGenStamp.\n");
   update_log_clock(env, mhlc, log_entry);
   log_entry->u = (block->log + block->log_length - 1)->u; // we reuse the last userTimestamp
   log_entry->first_pn = genStamp;
-
-  //STEP 3: update block
-  block->log_length ++;
+  block->log_length += 1;
+  BLOG_UNLOCK(block);
 
 DEBUG_PRINT("end setGenStamp.\n");
   return 0;

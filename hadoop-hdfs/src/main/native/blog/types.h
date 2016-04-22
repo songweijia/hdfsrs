@@ -88,6 +88,9 @@ struct block {
   BLOG_MAP_TYPE(snapshot) *snapshot_map;
   //The following members are for data persistent routine
   uint32_t log_length_pers;
+#define BLOG_RDLOCK(b) pthread_rwlock_rdlock(&(b)->blog_rwlock)
+#define BLOG_WRLOCK(b) pthread_rwlock_wrlock(&(b)->blog_rwlock)
+#define BLOG_UNLOCK(b) pthread_rwlock_unlock(&(b)->blog_rwlock)
   pthread_rwlock_t blog_rwlock; // protect blog of a block.
 };
 
