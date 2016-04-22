@@ -1170,7 +1170,7 @@ DEBUG_PRINT("begin deleteBlock.\n");
   update_log_clock(env, mhlc, log_entry);
   log_entry->u = estimate_user_timestamp(block,log_entry->r);
   log_entry->first_pn = 0;
-  block->log_length++;
+  block->log_length += 1;
   
   // Release the current state of the block.
   block->status = NON_ACTIVE;
