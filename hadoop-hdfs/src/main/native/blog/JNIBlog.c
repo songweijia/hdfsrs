@@ -1072,7 +1072,7 @@ DEBUG_PRINT("begin createBlock\n");
   // Create the block structure.
   block = (block_t *) malloc(sizeof(block_t));
   block->id = block_id;
-  
+
   // Create the log.
   block->log_length = 2;
   block->log_cap = 2;
@@ -1108,6 +1108,13 @@ DEBUG_PRINT("begin createBlock\n");
   block->log_map_ut = MAP_INITIALIZE(log);
   block->snapshot_map = MAP_INITIALIZE(snapshot);
   
+  // initialize rwlock.
+  
+  if(pthread_rwlock_init(&block->blog_rwlock,NULL)!=0){
+    fprintf(stderr, "ERROR: cannot initialize rw lock for block:%ld\n", block->id);
+    exit(-1);
+  }
+
   // Put block to block map.
   MAP_LOCK(block, filesystem->block_map, block_id, 'w');
   if (MAP_CREATE_AND_WRITE(block, filesystem->block_map, block_id, block) != 0) {
@@ -1565,6 +1572,21 @@ DEBUG_PRINT("beging destroy.\n");
 
   // fs destroy the spin lock
   pthread_spin_destroy(&fs->pages_spinlock);
+
+  // fs destroy the blog locks
+  uint64_t nr_blog = MAP_LENGTH(block,fs->block_map);
+  uint64_t *ids = MAP_GET_IDS(block,fs->block_map,nr_blog);
+  while(nr_blog --){
+    uint64_t block_id = ids[nr_blog];
+    block_t *block;
+    MAP_LOCK(block,fs->block_map,block_id,'w');
+    if(MAP_READ(block,fs->block_map, block_id, &block) == -1) {
+      fprintf(stderr, "Warning: cannot read block from map, id=%ld.\n",block_id);
+      continue;
+    }
+    pthread_rwlock_destroy(&block->blog_rwlock);
+    MAP_UNLOCK(block,fs->block_map,block_id);
+  }
 
   // close files
   if(fs->page_fd!=-1){
