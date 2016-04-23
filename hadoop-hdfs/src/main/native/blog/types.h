@@ -140,9 +140,7 @@ struct filesystem {
 #define INVALID_PAGE_NO  (0xFFFFFFFFFFFFFFFF)
   void *page_base;
   uint64_t nr_pages;
-  uint64_t nr_pages_pers;
   //The following members are for data persistent routine
-  uint32_t page_fd;
   uint32_t page_shm_fd;
   uint32_t int_sec;
   uint32_t alive;

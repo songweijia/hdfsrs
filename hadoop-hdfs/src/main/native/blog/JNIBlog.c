@@ -528,6 +528,7 @@ int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_
 }
 
 static int flushPages(filesystem_t *fs){
+/* TODO: do not flush pages anymore
   uint64_t nr_pages = fs->nr_pages;
   off_t ofst = fs->nr_pages_pers*fs->page_size;
   for(;fs->nr_pages_pers < nr_pages;fs->nr_pages_pers++){
@@ -537,6 +538,7 @@ static int flushPages(filesystem_t *fs){
     }
   }
   fsync(fs->page_fd);
+*/
   return 0;
 }
 
@@ -711,6 +713,7 @@ static int createShmFile(const char *fn, uint64_t size){
  * mapPages:
  * filesystem.page_base
  * filesystem.page_shm_fd
+ * filesystem.nr_pages = 0;
  * 1) check if tmpfs ramdisk space is enough
  * 2) create a huge file in tmpfs
  * 3) map it to memory
@@ -718,18 +721,25 @@ static int createShmFile(const char *fn, uint64_t size){
  * return a negative integer on error
  */
 static int mapPages(filesystem_t *fs){
+
   // 1 - create a file in tmpfs
   if((fs->page_shm_fd = createShmFile(SHM_FN,CONF_PAGEFILE_MAXSIZE)) < 0){
     return -1;
   }
+
   // 2 - map it in memory and setup file system parameters:
   if((fs->page_base = mmap(NULL,CONF_PAGEFILE_MAXSIZE,PROT_READ|PROT_WRITE,MAP_SHARED,
     fs->page_shm_fd,0)) < 0){
     fprintf(stderr,"Fail to mmap page file %s. Error: %s\n",SHM_FN,strerror(errno));
     return -2;
   }
+
+  // 3 - nr_pages = 0
+  fs->nr_pages = 0;
+
   return 0;
 }
+
 /*
  * loadPages:
  * filesystem.page_fd
@@ -739,6 +749,7 @@ static int mapPages(filesystem_t *fs){
  * 2) load page file contents into memory
  * return a negative integer on error
  */
+/* TODO: do not load pages anymore
 static int loadPages(filesystem_t *fs, const char *pp){
   char fullname[256];
   sprintf(fullname,"%s/%s",pp,PAGEFILE);
@@ -818,21 +829,33 @@ static int loadPages(filesystem_t *fs, const char *pp){
   }
   return 0;
 }
+*/
 
 /*
  * replayBlog() will replay all log entries to reconstruct block info
- * The following members of blocks will be set:
- *   status
- *   length
- *   pages_cap
- *   pages
- * insert into fs;
+ * It assume the following entries to be intialized:
+ * 1) block->id
+ * 2) block->log and log_length are set.
+ * 3) block->log_cap is set.
+ * 4) block->blog_fd is set.
+ * 5) block->page_fd is set.
+ * 6) fs->page_base is set.
+ * 7) fs->page_shm_fd is set.
+ * The following will be set:
+ * 1) block->status
+ * 2) block->length
+ * 3) block->pages_cap
+ * 4) block->pages
+ * 5) fs->nr_pages
+ * 6) page is loaded to *page_base;
+ * 7) Java metadata is initialzied by JNIBlog.replayLogOnMetadata().
  */
 static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *block){
   uint64_t i;
   uint32_t j;
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jmethodID rl_mid = (*env)->GetMethodID(env, thisCls, "replayLogOnMetadata", "(JIJ)V");
+  off_t fsize = 0L; //page file size
 
   block->length = 0;
   block->status = NON_ACTIVE;
@@ -851,14 +874,34 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
           exit(1);
         }
         break;
+
       case WRITE:
         block->length = log->block_length;
         while(block->pages_cap < (block->length+fs->page_size-1)/fs->page_size)
           block->pages_cap=MAX(block->pages_cap*2,block->pages_cap+2);
         block->pages = (uint64_t*)realloc(block->pages,sizeof(uint64_t)*block->pages_cap);
-        for(j=0;j<log->nr_pages;j++)
+
+        //LOAD pages from disk file
+        lseek(fs->page_shm_fd,(off_t)log->first_pn*fs->page_size,SEEK_SET);
+        for(j=0;j<log->nr_pages;j++){
           block->pages[log->start_page+j] = log->first_pn + j;
+          if(sendfile(fs->page_shm_fd,block->blog_fd,&fsize,fs->page_size)!=fs->page_size){
+            fprintf(stderr,"Cannot load page for block %ld, Error: %s\n",
+              block->id,strerror(errno));
+            exit(1);
+          }
+        }
+
+        //UPDATE fs->nr_pages
+        fs->nr_pages = MAX(fs->nr_pages,log->first_pn+log->nr_pages);
+
+        //TRUNCATE PAGE file
+        if(lseek(block->page_fd,0,SEEK_END)>fsize){
+          ftruncate(block->page_fd,fsize);
+          lseek(block->page_fd,0,SEEK_END);
+        }
         break;
+
       case DELETE_BLOCK:
         block->status = NON_ACTIVE;
         block->log_length = 0;
@@ -866,6 +909,7 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
         block->log_cap = 0;
         block->pages = NULL;
         break;
+
       default:
         fprintf(stderr,"replayBlog: unknown log type:%d, %ld-th log entry of block-%ld\n",
           log->op,i,block->id);
@@ -881,10 +925,9 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
  *   we assume that the following members have been initialized already:
  *   - block_size
  *   - page_size
- *   - pages_spinlock
+ *   - page_base
  *   - int_sec
  *   - alive
- *   - env
  *   on success, the following members should have been initialized:
  *   - block_map
  * PARAM 
@@ -900,6 +943,7 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
   // STEP 1 find all <id>.blog files
   DIR *d;
   struct dirent *dir;
+  uint64_t block_id;
   d = opendir(pp);
   if(d==NULL){
     fprintf(stderr,"Cannot open directory:%s, Error:%s\n", pp, strerror(errno));
@@ -909,44 +953,47 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
   while((dir=readdir(d))!=NULL){
     DEBUG_PRINT("Loading %s...",dir->d_name);
     /// 2.1 if it is not a .blog file, go to the next
-    char fullname[256];
+    char blog_filename[256],page_filename[256];
     if(strlen(dir->d_name) < strlen(BLOGFILE_SUFFIX) + 1 ||
        dir->d_type != DT_REG ||
        strcmp(dir->d_name + strlen(dir->d_name) - strlen(BLOGFILE_SUFFIX) -1, "."BLOGFILE_SUFFIX)){
       DEBUG_PRINT("skipped.\n");
       continue;
     }
+    sscanf(dir->d_name,"%ld.blog",&block_id);
+
     /// 2.2 open file
-    sprintf(fullname,"%s/%s",pp,dir->d_name);
-    int blogfd = open(fullname,O_RDWR);
-    if(blogfd<0){
-      fprintf(stderr,"Cannot open file: %s, error:%s\n",fullname,strerror(errno));
+    sprintf(blog_filename,"%s/%ld.blog",pp,block_id);
+    sprintf(page_filename,"%s/%ld.pg",pp,block_id);
+    int blog_fd = open(blog_filename,O_RDWR);
+    int page_fd = open(page_filename,O_RDWR|O_DIRECT);
+    if(blog_fd < 0 || page_fd < 0){
+      fprintf(stderr,"Cannot open file: %s or %s, error:%s\n",blog_filename,page_filename,strerror(errno));
       return -2;
     }
     /// 2.3 load header
     BlogHeader bh;
-    if(read(blogfd,(void*)&bh,sizeof bh)!= sizeof bh){
-      fprintf(stderr,"WARNING: Cannot load blog: %s, error:%s\n",fullname,
+    if(read(blog_fd,(void*)&bh,sizeof bh)!= sizeof bh){
+      fprintf(stderr,"WARNING: Cannot load blog: %ld.blog, error:%s\n", block_id,
         (errno==0)?"File does not include a valid blog Header.":strerror(errno));
-      close(blogfd);
+      close(blog_fd);
       continue;
     }
     /// 2.4 check file length, truncate it when required.
-    off_t fsize = lseek(blogfd,0,SEEK_END);
+    off_t fsize = lseek(blog_fd,0,SEEK_END);
     off_t exp_fsize = sizeof bh + bh.log_length*(sizeof(log_t));
     if(fsize < exp_fsize){
       fprintf(stderr,"WARNING: Cannot load blog: %s, because file size %ld < expected %ld\n",
-        fullname, fsize, sizeof bh + bh.log_length);
-      close(blogfd);
+        blog_filename, fsize, sizeof bh + bh.log_length);
       continue;
     }else if(fsize > exp_fsize){//this is due to aborted log flush.
-      if(ftruncate(blogfd,exp_fsize)<0){
-        fprintf(stderr,"WARNING: Cannot load blog: %s, because it cannot be truncated to expected size:%ld, Error%s\n", fullname, exp_fsize, strerror(errno));
-        close(blogfd);
+      if(ftruncate(blog_fd,exp_fsize)<0){
+        fprintf(stderr,"WARNING: Cannot load blog: %ld.blog, because it cannot be truncated to expected size:%ld, Error%s\n", block_id, exp_fsize, strerror(errno));
+        close(blog_fd);
         continue;
       }
     }
-    lseek(blogfd,sizeof bh, SEEK_SET);
+    lseek(blog_fd,sizeof bh, SEEK_SET);
     /// 2.5 create a block structure;
     block_t *block = (block_t*)malloc(sizeof(block_t));
     block->id = bh.id;
@@ -961,19 +1008,22 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
     block->log_map_hlc = MAP_INITIALIZE(log);
     block->log_map_ut = MAP_INITIALIZE(log);
     block->snapshot_map = MAP_INITIALIZE(snapshot);
-    /// 2.6 load log entries, and close log file.
+    block->blog_fd = blog_fd;
+    block->page_fd = page_fd;
+    
+    /// 2.6 load log entries
     int i;
     for(i = 0;i<bh.log_length;i++){
-      if(read(blogfd,(void*)(block->log+i),sizeof(log_t))!=sizeof(log_t)){
-        fprintf(stderr, "WARNING: Cannot read log entry from %s, error:%s\n", fullname, strerror(errno));
-        close(blogfd);
+      if(read(blog_fd,(void*)(block->log+i),sizeof(log_t))!=sizeof(log_t)){
+        fprintf(stderr, "WARNING: Cannot read log entry from %s, error:%s\n", blog_filename, strerror(errno));
+        close(blog_fd);
         free(block->log);
         free(block);
         continue;
       }
     }
-    close(blogfd);
     /// 2.5 replay log entries: reconstruct the block status
+    //TODO: modify replayBlog
     replayBlog(env,thisObj,fs,block);
     DEBUG_PRINT("done.\n");
   }
@@ -1022,18 +1072,16 @@ DEBUG_PRINT("initialize is called\n");
     perror("mapPages Error");
     exit(1);
   }
-  if(loadPages(filesystem,pp)!=0){
-    perror("loadPages Error");
-    exit(1);
-  }
-  if(pthread_spin_init(&filesystem->pages_spinlock,PTHREAD_PROCESS_PRIVATE)!=0){
-    fprintf(stderr,"Fail to initialize spin lock, error: %s\n",strerror(errno));
-    exit(1);
-  }
 
   // STEP 3: load blogs.
   if(loadBlogs(env,thisObj,filesystem,pp)!=0){
     fprintf(stderr,"Fail to load blogs.\n");
+  }
+
+  // STEP 4: initialize page spin lock
+  if(pthread_spin_init(&filesystem->pages_spinlock,PTHREAD_PROCESS_PRIVATE)!=0){
+    fprintf(stderr,"Fail to initialize spin lock, error: %s\n",strerror(errno));
+    exit(1);
   }
   
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
@@ -1642,10 +1690,10 @@ DEBUG_PRINT("beging destroy.\n");
   }
 
   // close files
-  if(fs->page_fd!=-1){
+  if(fs->page_shm_fd!=-1){
     munmap(fs->page_base,CONF_PAGEFILE_MAXSIZE);
-    close(fs->page_fd);
-    fs->page_fd=-1;
+    close(fs->page_shm_fd);
+    fs->page_shm_fd=-1;
   }
   
   // remove shm file.
