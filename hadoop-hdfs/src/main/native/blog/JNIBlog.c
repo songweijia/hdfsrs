@@ -1,4 +1,6 @@
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <inttypes.h>
 #include <string.h>
@@ -96,7 +98,7 @@ char *log_to_string(filesystem_t *fs,log_t *log, size_t page_size)
     for (i = 0; i < log->nr_pages-1; i++) {
       sprintf(buf, "Page %" PRIu32 ":\n", log->start_page + i);
       strcat(res, buf);
-      snprintf(buf, page_size+1, "%s", (char *)(fs->page_base + (log->first_pn + i)*page_size));
+      snprintf(buf, page_size+1, "%s", (char *)((char*)fs->page_base + (log->first_pn + i)*page_size));
       strcat(res, buf);
       strcat(res, "\n");
     }
@@ -106,7 +108,7 @@ char *log_to_string(filesystem_t *fs,log_t *log, size_t page_size)
       length = log->block_length - (log->nr_pages-1)*page_size;
     sprintf(buf, "Page %" PRIu32 ":\n", log->start_page + log->nr_pages-1);
     strcat(res, buf);
-    snprintf(buf, length+1, "%s", (char *)(fs->page_base + (log->first_pn + log->nr_pages-1)*page_size));
+    snprintf(buf, length+1, "%s", (char *)((char*)fs->page_base + (log->first_pn + log->nr_pages-1)*page_size));
     strcat(res, buf);
     strcat(res, "\n");
     sprintf(buf, "HLC Value: (%" PRIu64 ",%" PRIu64 ")\n", log->r, log->l);
@@ -1037,7 +1039,12 @@ DEBUG_PRINT("initialize is called\n");
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
   (*env)->SetLongField(env, thisObj, long_id, (uint64_t) filesystem);
 
-  // start the write thread.
+  // STEP 4: initialize queues, semaphore and flags.
+  if(sem_init(&filesystem->pers_queue_sem,0,0)<0){
+    fprintf(stderr,"Cannot initialize semaphore, Error:%s\n",strerror(errno));
+    exit(-1);
+  }
+  TAILQ_INIT(&filesystem->pers_queue); // queue
   filesystem->alive = 1; // alive.
   
   //start blog writer thread

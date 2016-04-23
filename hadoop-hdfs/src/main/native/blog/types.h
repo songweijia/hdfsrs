@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <sys/queue.h>
+#include <semaphore.h>
 #include "map.h"
 
 #define BLOCK_MAP_SIZE 1024
@@ -72,7 +74,8 @@ struct log {
  * log_map_hlc  :   map from hlc to log entry
  * log_map_ut   :   map from ut to log entry
  * snapshot_map :   map from log entry to snapshot
- * blog_fd      :   fd to write to each of the block.
+ * blog_fd      :   blog file descriptor
+ * page_fd      :   page file descriptor
  */
 struct block {
   uint64_t id;
@@ -92,6 +95,8 @@ struct block {
 #define BLOG_WRLOCK(b) pthread_rwlock_wrlock(&(b)->blog_rwlock)
 #define BLOG_UNLOCK(b) pthread_rwlock_unlock(&(b)->blog_rwlock)
   pthread_rwlock_t blog_rwlock; // protect blog of a block.
+  int blog_fd;
+  int page_fd;
 };
 
 struct snapshot {
@@ -99,6 +104,13 @@ struct snapshot {
   uint32_t status : 4;
   uint32_t length : 28;
   uint64_t *pages;
+};
+
+TAILQ_HEAD(_pers_queue, pers_queue_entry);
+struct pers_queue_entry {
+  uint64_t block_id;   // block_id;
+  uint64_t log_length; // The latest log updated to this length.
+  TAILQ_ENTRY(pers_queue_entry) lnk; // link pointers
 };
 
 /**
@@ -115,14 +127,16 @@ struct snapshot {
  * nr_pages_pers:   number of pages in persistent state.
  * pers_thrd    :   thread responsible for pushing the blog to the disk for
  *                  persistance.
+ * pers_queue   :   persistent message queue.
+ * pers_queue_sem : semaphore for the persistent message queue.
  */
 struct filesystem {
   size_t block_size;
   size_t page_size;
   BLOG_MAP_TYPE(block) *block_map;
   pthread_spinlock_t pages_spinlock;
-#define PAGE_NR_TO_PTR(fs,nr) ((fs)->page_base+((fs)->page_size*(nr)))
-#define PAGE_PTR_TO_NR(fs,ptr) (((void*)(ptr) - (fs)->page_base)/(fs)->page_size)
+#define PAGE_NR_TO_PTR(fs,nr) ((void*)((char *)(fs)->page_base+((fs)->page_size*(nr))))
+#define PAGE_PTR_TO_NR(fs,ptr) (((char*)(ptr) - (char*)(fs)->page_base)/(fs)->page_size)
 #define INVALID_PAGE_NO  (0xFFFFFFFFFFFFFFFF)
   void *page_base;
   uint64_t nr_pages;
@@ -134,4 +148,6 @@ struct filesystem {
   uint32_t alive;
   pthread_t pers_thrd;
   char pers_path[256];
+  struct _pers_queue pers_queue;
+  sem_t pers_queue_sem;
 };
