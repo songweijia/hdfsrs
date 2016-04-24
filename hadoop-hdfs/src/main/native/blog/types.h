@@ -12,6 +12,7 @@ typedef struct log log_t;
 typedef struct block block_t;
 typedef struct filesystem filesystem_t;
 typedef struct snapshot snapshot_t;
+typedef struct _pers_queue_entry pers_event_t;
 
 #ifdef DEBUG
 #define DEBUG_PRINT(arg,fmt...) {fprintf(stdout,arg, ##fmt );fflush(stdout);}
@@ -85,7 +86,7 @@ struct block {
   uint32_t length : 28;
   uint32_t pages_cap;
   uint64_t *pages;
-  log_t *log;
+  volatile log_t *log;
   BLOG_MAP_TYPE(log) *log_map_hlc; // by hlc
   BLOG_MAP_TYPE(log) *log_map_ut; // by user timestamp
   BLOG_MAP_TYPE(snapshot) *snapshot_map;
@@ -106,12 +107,13 @@ struct snapshot {
   uint64_t *pages;
 };
 
-TAILQ_HEAD(_pers_queue, pers_queue_entry);
-struct pers_queue_entry {
-  uint64_t block_id;   // block_id;
-  uint64_t log_length; // The latest log updated to this length.
-  TAILQ_ENTRY(pers_queue_entry) lnk; // link pointers
-};
+TAILQ_HEAD(_pers_queue, _pers_queue_entry);
+struct _pers_queue_entry {
+  block_t *block;   // block pointer; NULL for End-OF-Queue
+  uint64_t log_length; // The latest log updated to this length
+  TAILQ_ENTRY(_pers_queue_entry) lnk; // link pointers
+}; 
+#define IS_EOQ(e) (e->block == NULL)
 
 /**
  * Filesystem structure.
@@ -122,8 +124,6 @@ struct pers_queue_entry {
  * page_base    :   base address for the page
  * nr_pages     :   number of pages in the filesystem
  * page_shm_fd  :   ramdisk(tmpfs) page file descriptor
- * page_fd      :   on-disk page file descriptor
- * alive        :   if the persistent thread is alive or not?
  * nr_pages_pers:   number of pages in persistent state.
  * pers_thrd    :   thread responsible for pushing the blog to the disk for
  *                  persistance.
@@ -137,15 +137,27 @@ struct filesystem {
   pthread_spinlock_t pages_spinlock;
 #define PAGE_NR_TO_PTR(fs,nr) ((void*)((char *)(fs)->page_base+((fs)->page_size*(nr))))
 #define PAGE_PTR_TO_NR(fs,ptr) (((char*)(ptr) - (char*)(fs)->page_base)/(fs)->page_size)
-#define INVALID_PAGE_NO  (0xFFFFFFFFFFFFFFFF)
+#define INVALID_PAGE_NO  (~0x0L)
   void *page_base;
   uint64_t nr_pages;
   //The following members are for data persistent routine
   uint32_t page_shm_fd;
-  uint32_t int_sec;
-  uint32_t alive;
   pthread_t pers_thrd;
   char pers_path[256];
+#define PERS_ENQ(fs,e) do{ \
+    pthread_spin_lock(&(fs)->queue_spinlock); \
+    TAILQ_INSERT_TAIL(&(fs)->pers_queue,e,lnk); \
+    pthread_spin_unlock(&(fs)->queue_spinlock); \
+  }while(0)
+#define PERS_DEQ(fs,pe) do{ \
+    pthread_spin_lock(&(fs)->queue_spinlock); \
+    if(!TAILQ_EMPTY(&(fs)->pers_queue)){ \
+      *(pe) = TAILQ_FIRST(&(fs)->pers_queue); \
+      TAILQ_INSERT_TAIL(&(fs)->pers_queue,*(pe),lnk); \
+    } else *pe = NULL; \
+    pthread_spin_unlock(&(fs)->queue_spinlock); \
+  }while(0)
   struct _pers_queue pers_queue;
+  pthread_spinlock_t queue_spinlock;
   sem_t pers_queue_sem;
 };
