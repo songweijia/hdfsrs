@@ -26,7 +26,7 @@
 
 // Define files for storing persistent data.
 #define BLOGFILE_SUFFIX "blog"
-#define PAGEFILE "fffspers.pg"
+#define PAGEFILE_SUFFIX "page"
 #define SHM_FN "fffs.pg"
 
 // Definitions to be substituted by configuration:
@@ -509,7 +509,6 @@ int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_
  * evt->log_length:     the log length;
  */
 static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
-
   block_t *block = evt->block;
 
   // no new log to be flushed
@@ -517,7 +516,7 @@ static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
     return 0;
 
   // flush to file
-  for(; block->log_length_pers < evt->log_length; block->log_length_pers++){
+  for(;block->log_length_pers < evt->log_length; block->log_length_pers++){
     
     log_t *log_entry;
     void *pages;
@@ -545,7 +544,7 @@ static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
     BLOG_RDLOCK(evt->block);
     log_entry = (log_t*)block->log + block->log_length_pers;
     if( write(block->blog_fd,log_entry,sizeof(log_t)) != sizeof(log_t) ){
-      fprintf(stderr,"Flush, cannot write to blog file %ld.blog, Error:%s\n",block->id,strerror(errno));
+      fprintf(stderr,"Flush, cannot write to blog file %ld."BLOGFILE_SUFFIX", Error:%s\n",block->id,strerror(errno));
       return -2;
     }
     BLOG_UNLOCK(evt->block);
@@ -572,12 +571,6 @@ static void * blog_pers_routine(void * param)
   pers_event_t * evt;
 
   while(1){
-
-    // wait on semaphore
-    if(sem_wait(&fs->pers_queue_sem) != 0){
-      fprintf(stderr,"Error: failed waiting on semaphore, Error: %s\n",strerror(errno));
-      exit(1);
-    }
 
     // get event
     PERS_DEQ(fs,&evt);
@@ -894,12 +887,12 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
       DEBUG_PRINT("skipped.\n");
       continue;
     }
-    sscanf(dir->d_name,"%ld.blog",&block_id);
+    sscanf(dir->d_name,"%ld."BLOGFILE_SUFFIX,&block_id);
     DEBUG_PRINT("Block id = %ld\n",block_id);
 
     /// 2.2 open file
-    sprintf(blog_filename,"%s/%ld.blog",pp,block_id);
-    sprintf(page_filename,"%s/%ld.pg",pp,block_id);
+    sprintf(blog_filename,"%s/%ld."BLOGFILE_SUFFIX,pp,block_id);
+    sprintf(page_filename,"%s/%ld."PAGEFILE_SUFFIX,pp,block_id);
     int blog_fd = open(blog_filename,O_RDWR);
     int page_fd = open(page_filename,O_RDWR|O_DIRECT);
     if(blog_fd < 0 || page_fd < 0){
@@ -913,7 +906,7 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
     off_t exp_fsize = fsize/(sizeof(log_t)) - corrupted_bytes;
     if(corrupted_bytes > 0){//this is due to aborted log flush.
       if(ftruncate(blog_fd,exp_fsize)<0){
-        fprintf(stderr,"WARNING: Cannot load blog: %ld.blog, because it cannot be truncated to expected size:%ld, Error%s\n", block_id, exp_fsize, strerror(errno));
+        fprintf(stderr,"WARNING: Cannot load blog: %ld."BLOGFILE_SUFFIX", because it cannot be truncated to expected size:%ld, Error%s\n", block_id, exp_fsize, strerror(errno));
         close(blog_fd);
         continue;
       }
@@ -1102,6 +1095,20 @@ DEBUG_PRINT("begin createBlock\n");
     fprintf(stderr, "ERROR: cannot initialize rw lock for block:%ld\n", block->id);
     exit(-1);
   }
+
+  // open files
+  char fullname[256];
+  sprintf(fullname,"%s/%ld."BLOGFILE_SUFFIX,filesystem->pers_path,block_id);
+  if((block->blog_fd = open(fullname,O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH))<0){
+    fprintf(stderr, "ERROR: cannot open blog file for write, block id=%ld, Error: %s\n",block_id,strerror(errno));
+    exit(-2);
+  }
+  sprintf(fullname,"%s/%ld."PAGEFILE_SUFFIX,filesystem->pers_path,block_id);
+  if((block->page_fd = open(fullname,O_DIRECT|O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH))<0){
+    fprintf(stderr, "ERROR: cannot open page file for write, block id=%ld, Error: %s\n",block_id,strerror(errno));
+    exit(-3);
+  }
+  block->log_length_pers = 0;
 
   // notify the persistent thread
   pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));

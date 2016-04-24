@@ -91,7 +91,7 @@ struct block {
   BLOG_MAP_TYPE(log) *log_map_ut; // by user timestamp
   BLOG_MAP_TYPE(snapshot) *snapshot_map;
   //The following members are for data persistent routine
-  uint32_t log_length_pers;
+  uint64_t log_length_pers;
 #define BLOG_RDLOCK(b) pthread_rwlock_rdlock(&(b)->blog_rwlock)
 #define BLOG_WRLOCK(b) pthread_rwlock_wrlock(&(b)->blog_rwlock)
 #define BLOG_UNLOCK(b) pthread_rwlock_unlock(&(b)->blog_rwlock)
@@ -148,12 +148,20 @@ struct filesystem {
     pthread_spin_lock(&(fs)->queue_spinlock); \
     TAILQ_INSERT_TAIL(&(fs)->pers_queue,e,lnk); \
     pthread_spin_unlock(&(fs)->queue_spinlock); \
+    if(sem_post(&fs->pers_queue_sem) !=0){ \
+      fprintf(stderr,"Error: failed post semphore, Error: %s\n", strerror(errno)); \
+      exit(1); \
+    } \
   }while(0)
 #define PERS_DEQ(fs,pe) do{ \
+    if(sem_wait(&fs->pers_queue_sem) != 0){ \
+      fprintf(stderr,"Error: failed waiting on semphore, Error: %s\n", strerror(errno)); \
+      exit(1); \
+    } \
     pthread_spin_lock(&(fs)->queue_spinlock); \
     if(!TAILQ_EMPTY(&(fs)->pers_queue)){ \
       *(pe) = TAILQ_FIRST(&(fs)->pers_queue); \
-      TAILQ_INSERT_TAIL(&(fs)->pers_queue,*(pe),lnk); \
+      TAILQ_REMOVE(&(fs)->pers_queue,*(pe),lnk); \
     } else *pe = NULL; \
     pthread_spin_unlock(&(fs)->queue_spinlock); \
   }while(0)
