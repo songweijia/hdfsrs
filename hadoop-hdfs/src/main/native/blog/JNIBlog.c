@@ -788,6 +788,7 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
   block->status = NON_ACTIVE;
   for(i=0;i<block->log_length;i++){
     log_t *log = (log_t*)block->log+i;
+
     switch(log->op){
       case BOL:
       case SET_GENSTAMP:
@@ -812,7 +813,7 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
         lseek(fs->page_shm_fd,(off_t)log->first_pn*fs->page_size,SEEK_SET);
         for(j=0;j<log->nr_pages;j++){
           block->pages[log->start_page+j] = log->first_pn + j;
-          if(sendfile(fs->page_shm_fd,block->blog_fd,&fsize,fs->page_size)!=fs->page_size){
+          if(sendfile(fs->page_shm_fd,block->page_fd,&fsize,fs->page_size)!=fs->page_size){
             fprintf(stderr,"Cannot load page for block %ld, Error: %s\n",
               block->id,strerror(errno));
             exit(1);
@@ -903,7 +904,7 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
     /// 2.3 check file length, truncate it when required.
     off_t fsize = lseek(blog_fd,0,SEEK_END);
     off_t corrupted_bytes = fsize % sizeof(log_t);
-    off_t exp_fsize = fsize/(sizeof(log_t)) - corrupted_bytes;
+    off_t exp_fsize = fsize - corrupted_bytes;
     if(corrupted_bytes > 0){//this is due to aborted log flush.
       if(ftruncate(blog_fd,exp_fsize)<0){
         fprintf(stderr,"WARNING: Cannot load blog: %ld."BLOGFILE_SUFFIX", because it cannot be truncated to expected size:%ld, Error%s\n", block_id, exp_fsize, strerror(errno));
@@ -943,7 +944,6 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
     }
 
     /// 2.6 replay log entries: reconstruct the block status
-    //TODO: modify replayBlog
     replayBlog(env,thisObj,fs,block);
     DEBUG_PRINT("done.\n");
   }
