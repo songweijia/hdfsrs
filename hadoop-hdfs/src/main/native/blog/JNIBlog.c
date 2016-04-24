@@ -1616,6 +1616,8 @@ DEBUG_PRINT("beging destroy.\n");
       continue;
     }
     pthread_rwlock_destroy(&block->blog_rwlock);
+    close(block->blog_fd);
+    close(block->page_fd);
     MAP_UNLOCK(block,fs->block_map,block_id);
   }
 
