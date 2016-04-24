@@ -1103,6 +1103,12 @@ DEBUG_PRINT("begin createBlock\n");
     exit(-1);
   }
 
+  // notify the persistent thread
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length;
+  PERS_ENQ(filesystem,evt);
+
   // Put block to block map.
   MAP_LOCK(block, filesystem->block_map, block_id, 'w');
   if (MAP_CREATE_AND_WRITE(block, filesystem->block_map, block_id, block) != 0) {
@@ -1172,7 +1178,13 @@ DEBUG_PRINT("begin deleteBlock.\n");
   log_entry->u = estimate_user_timestamp(block,log_entry->r);
   log_entry->first_pn = 0;
   block->log_length += 1;
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length;
   BLOG_UNLOCK(block);
+
+  // notify the persistent thread
+  PERS_ENQ(filesystem,evt);
   
   // Release the current state of the block.
   block->status = NON_ACTIVE;
@@ -1556,7 +1568,13 @@ DEBUG_PRINT("beging writeBlock.\n");
   log_entry->u = userTimestamp;
   log_entry->first_pn = PAGE_PTR_TO_NR(filesystem,data);
   block->log_length += 1;
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length;
   BLOG_UNLOCK(block);
+
+  // notify the persistent thread
+  PERS_ENQ(filesystem,evt);
 
   // Fill block with the appropriate information.
   block->length = block_length;
@@ -1591,13 +1609,16 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
   (JNIEnv *env, jobject thisObj)
 {
 DEBUG_PRINT("beging destroy.\n");
-  // kill blog writer
   filesystem_t *fs;
-  void * ret;
-  
   fs = get_filesystem(env,thisObj);
+  void * ret;
+
+  // kill blog writer
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = NULL;
+  PERS_ENQ(fs,evt);
   if(pthread_join(fs->pers_thrd, &ret))
-    fprintf(stderr,"waiting for blogWriter thread error...disk data may be corrupted\n");
+    fprintf(stderr,"waiting for blogWriter thread error...we may lose some data.\n");
 
   // fs destroy the spin locks and sempahores
   pthread_spin_destroy(&fs->pages_spinlock);
@@ -1634,7 +1655,6 @@ DEBUG_PRINT("beging destroy.\n");
   if(remove(fullname)!=0){
     fprintf(stderr,"WARNING: Fail to remove page cache file %s, error:%s.\n",fullname,strerror(errno));
   }
-
 
 DEBUG_PRINT("end destroy.\n");
 }
@@ -1678,7 +1698,13 @@ DEBUG_PRINT("begin setGenStamp.\n");
   log_entry->u = (block->log + block->log_length - 1)->u; // we reuse the last userTimestamp
   log_entry->first_pn = genStamp;
   block->log_length += 1;
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length;
   BLOG_UNLOCK(block);
+
+  // notify the persistent thread
+  PERS_ENQ(filesystem,evt);
 
 DEBUG_PRINT("end setGenStamp.\n");
   return 0;
