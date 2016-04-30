@@ -1,7 +1,3 @@
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include <inttypes.h>
 #include <string.h>
 #include <sys/time.h>
@@ -18,8 +14,12 @@
 #include <sys/statvfs.h>
 #include <dirent.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "JNIBlog.h"
 #include "types.h"
+#include "InfiniBandRDMA.h"
 
 #define MAKE_VERSION(x,y) ((((x)&0xffffl)<<16)|((y)&0xffff))
 #define FFFS_VERSION MAKE_VERSION(0,1)
@@ -30,7 +30,6 @@
 #define SHM_FN "fffs.pg"
 
 // Definitions to be substituted by configuration:
-#define CONF_PAGEFILE_MAXSIZE	(32L<<30)
 
 // misc
 #define MAX(x,y) (((x)>(y))?(x):(y))
@@ -39,6 +38,34 @@
 MAP_DEFINE(block, block_t, BLOCK_MAP_SIZE);
 MAP_DEFINE(log, uint64_t, LOG_MAP_SIZE);
 MAP_DEFINE(snapshot, snapshot_t, SNAPSHOT_MAP_SIZE);
+
+//local typedefs
+typedef struct transport_parameters {
+#define TP_LOCAL_BUFFER (0)
+#define TP_RDMA (1)
+  int mode;
+  union {
+    struct tp_local_buffer_param {
+      jbyteArray buf;
+      jint bufOfst;
+      jlong user_timestamp; // only for write.
+    } lbuf;
+    struct tp_rdma_param{
+      jbyteArray client_ip;
+      jint remote_pid;
+      jlong vaddr;
+      jobject record_parser; // only for write.
+    } rdma;
+  } param;
+} transport_parameters_t;
+
+// some internal tools
+#define LOG2(x) calc_log2(x)
+inline int calc_log2(uint64_t val){
+  int i=0;
+  while(((val>>i)&0x1)==0 && (i<64) )i++;
+  return i;
+}
 
 // Printer Functions.
 char *log_to_string(filesystem_t *fs,log_t *log, size_t page_size)
@@ -601,7 +628,7 @@ static void * blog_pers_routine(void * param)
 
 /*
  * createShmFile:
- * 1) create a file of size CONF_PAGEFILE_MAXSIZE in tmpfs
+ * 1) create a file of "size" in tmpfs
  * 2) return the file descriptor
  * 3) return a negative integer on error.
  */
@@ -650,12 +677,12 @@ static int createShmFile(const char *fn, uint64_t size){
 static int mapPages(filesystem_t *fs){
 
   // 1 - create a file in tmpfs
-  if((fs->page_shm_fd = createShmFile(SHM_FN,CONF_PAGEFILE_MAXSIZE)) < 0){
+  if((fs->page_shm_fd = createShmFile(SHM_FN,fs->pool_size)) < 0){
     return -1;
   }
 
   // 2 - map it in memory and setup file system parameters:
-  if((fs->page_base = mmap(NULL,CONF_PAGEFILE_MAXSIZE,PROT_READ|PROT_WRITE,MAP_SHARED,
+  if((fs->page_base = mmap(NULL,fs->pool_size,PROT_READ|PROT_WRITE,MAP_SHARED,
     fs->page_shm_fd,0)) < 0){
     fprintf(stderr,"Fail to mmap page file %s. Error: %s\n",SHM_FN,strerror(errno));
     return -2;
@@ -866,6 +893,7 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
  *   -1 for "log file is corrupted", 
  *   -2 for "page file is correupted".
  *   -3 for "block operation".
+ *   -4 for "unknown errors"
  */
 static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char *pp){
   // STEP 1 find all <id>.blog files
@@ -951,81 +979,135 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
   return 0;
 }
 
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    initialize
- * Signature: (II)I
- */
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
-  (JNIEnv *env, jobject thisObj, jint blockSize, jint pageSize, jstring persPath)
-{
-DEBUG_PRINT("initialize is called\n");
-  const char * pp = (*env)->GetStringUTFChars(env,persPath,NULL); // get the presistent path
+int initializeInternal(JNIEnv *env, jobject thisObj, uint64_t poolSize, 
+  uint32_t blockSize, uint32_t pageSize, const char *persPath, 
+  int useRDMA, const char *devname, const uint16_t rdmaPort){
+
+  DEBUG_PRINT("initializeInternal is called\n");
+
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jfieldID long_id = (*env)->GetFieldID(env, thisCls, "jniData", "J");
   jfieldID hlc_id = (*env)->GetFieldID(env, thisCls, "hlc", "Ledu/cornell/cs/sa/HybridLogicalClock;");
   jclass hlc_class = (*env)->FindClass(env, "edu/cornell/cs/sa/HybridLogicalClock");
   jmethodID cid = (*env)->GetMethodID(env, hlc_class, "<init>", "()V");
   jobject hlc_object = (*env)->NewObject(env, hlc_class, cid);
-  filesystem_t *filesystem;
-  
-  filesystem = (filesystem_t *) malloc (sizeof(filesystem_t));
-  if (filesystem == NULL) {
+  filesystem_t *fs = (filesystem_t *) malloc (sizeof(filesystem_t));
+  if (fs == NULL) {
     perror("Error");
     exit(1);
   }
-  // STEP 1: Initialize file system members.
-  filesystem->block_size = blockSize;
-  filesystem->page_size = pageSize;
-  filesystem->block_map = MAP_INITIALIZE(block);
-  if (filesystem->block_map == NULL) {
+
+
+  // STEP 1: Initialize file system members
+  fs->block_size = blockSize;
+  fs->pool_size = poolSize;
+  fs->page_size = pageSize;
+  fs->block_map = MAP_INITIALIZE(block);
+  if (fs->block_map == NULL) { 
     fprintf(stderr, "ERROR: Allocation of block_map failed.\n");
     exit(-1);
   }
-  strcpy(filesystem->pers_path,pp);
+  strcpy(fs->pers_path,persPath);
 
   // STEP 2: create ramdisk file and map it into memory.
-  if(mapPages(filesystem)!=0){
+  if(mapPages(fs)!=0){
     perror("mapPages Error");
     exit(1);
   }
 
+  // STEP 2.5: for RDMA
+  if(useRDMA){
+    fs->rdmaCtxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
+    if(initializeContext(fs->rdmaCtxt,fs->page_base,LOG2(poolSize),LOG2(pageSize),devname,rdmaPort,0/*this is for the server side*/)){
+      fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
+      exit(1);
+    }
+  } else {
+    fs->rdmaCtxt = NULL;
+  }
+
   // STEP 3: load blogs.
-  if(loadBlogs(env,thisObj,filesystem,pp)!=0){
+  if(loadBlogs(env,thisObj,fs,persPath)!=0){
     fprintf(stderr,"Fail to load blogs.\n");
   }
 
   // STEP 4: initialize page spin lock
-  if(pthread_spin_init(&filesystem->pages_spinlock,PTHREAD_PROCESS_PRIVATE)!=0){
+  if(pthread_spin_init(&fs->pages_spinlock,PTHREAD_PROCESS_PRIVATE)!=0){
     fprintf(stderr,"Fail to initialize page spin lock, error: %s\n",strerror(errno));
     exit(1);
   }
   
   (*env)->SetObjectField(env, thisObj, hlc_id, hlc_object);
-  (*env)->SetLongField(env, thisObj, long_id, (uint64_t) filesystem);
+  (*env)->SetLongField(env, thisObj, long_id, (uint64_t) fs);
 
-  // STEP 4: initialize queues, semaphore and flags.
-  if(sem_init(&filesystem->pers_queue_sem,0,0)<0){
+  // STEP 5: initialize queues, semaphore and flags.
+  if(sem_init(&fs->pers_queue_sem,0,0)<0){
     fprintf(stderr,"Cannot initialize semaphore, Error:%s\n",strerror(errno));
     exit(-1);
   }
-  TAILQ_INIT(&filesystem->pers_queue); // queue
-  if(pthread_spin_init(&filesystem->queue_spinlock,PTHREAD_PROCESS_PRIVATE)!=0){
+  TAILQ_INIT(&fs->pers_queue); // queue
+  if(pthread_spin_init(&fs->queue_spinlock,PTHREAD_PROCESS_PRIVATE)!=0){
     fprintf(stderr,"Fail to initialize queue spin lock, error: %s\n",strerror(errno));
     exit(1);
   }
-  
-  //start blog writer thread
-  if (pthread_create(&filesystem->pers_thrd, NULL, blog_pers_routine, (void*)filesystem)) {
+
+  // STEP 6: start the persistent thread.
+  if (pthread_create(&fs->pers_thrd, NULL, blog_pers_routine, (void*)fs)) {
     fprintf(stderr,"CANNOT create blogPersistent thread, exit\n");
     exit(-1);
   }
 
-  (*env)->ReleaseStringUTFChars(env, persPath, pp);
-DEBUG_PRINT("initialize() done\n");
+  DEBUG_PRINT("initializeInternal is done\n");
   return 0;
+}
+#pragma GCC diagnostic pop
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog_initialize
+ * Method:    initialize
+ * Signature: (JIILjava/lang/String;)I
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initialize
+  (JNIEnv *env, jobject thisObj, jlong poolSize, jint blockSize, jint pageSize, jstring persPath)
+{
+  const char * pp = (*env)->GetStringUTFChars(env,persPath,NULL); // get the presistent path
+  jint ret;
+
+  //call internal initializer:
+  ret = initializeInternal(env, thisObj, poolSize, blockSize, pageSize, pp, 0, NULL, 0);
+
+  (*env)->ReleaseStringUTFChars(env, persPath, pp);
+
+  return ret;
+}
+#pragma GCC diagnostic pop
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog_initializeRDMA
+ * Method:    initialize
+ * Signature: (II)I
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initializeRDMA
+  (JNIEnv *env, jobject thisObj, jlong poolSize, jint blockSize, jint pageSize, jstring persPath, jstring dev, jint port)
+{
+  const char * pp = (*env)->GetStringUTFChars(env,persPath,NULL); // get the presistent path
+  const char * devname = (*env)->GetStringUTFChars(env,dev,NULL); // get the device name
+  jint ret;
+
+  //call internal initializer:
+  ret = initializeInternal(env, thisObj, poolSize, blockSize, pageSize, pp, 1, devname, (const uint16_t )port);
+
+  (*env)->ReleaseStringUTFChars(env, persPath, pp);
+  (*env)->ReleaseStringUTFChars(env, dev, pp);
+
+  return ret;
 }
 #pragma GCC diagnostic pop
 
@@ -1185,12 +1267,12 @@ DEBUG_PRINT("begin deleteBlock.\n");
   log_entry->u = estimate_user_timestamp(block,log_entry->r);
   log_entry->first_pn = 0;
   block->log_length += 1;
-  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length;
   BLOG_UNLOCK(block);
 
   // notify the persistent thread
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length;
   PERS_ENQ(filesystem,evt);
   
   // Release the current state of the block.
@@ -1203,13 +1285,8 @@ DEBUG_PRINT("begin deleteBlock.\n");
   return 0;
 }
 
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    readBlock
- * Signature: (JJJIII[B)I
- */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
-  (JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint bufOfst, jint length, jbyteArray buf)
+// readBlockInternal: read the latest state of a block
+int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint length, const transport_parameters_t *tp)
 {
   DEBUG_PRINT("begin readBlock__JIII_3B.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
@@ -1218,10 +1295,8 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
   log_t *log_entry;
   uint64_t block_id = (uint64_t) blockId;
   uint32_t block_offset = (uint32_t) blkOfst;
-  uint32_t buffer_offset = (uint32_t) bufOfst;
   uint32_t read_length = (uint32_t) length;
   uint64_t log_index;
-  uint32_t cur_length, page_id, page_offset;
   char *page_data;
   
   // Find the block.
@@ -1264,54 +1339,117 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
     fprintf(stderr, "WARNING: Block %" PRIu64 " is not written at %" PRIu32 " byte.\n", block_id, block_offset);
     return -2;
   }
-  
+
   // See if the data is partially written.
   if (block_offset + read_length > snapshot->length)
     read_length = snapshot->length - block_offset;
   
-  // Fill the buffer.
-  page_id = block_offset / filesystem->page_size;
-  page_offset = block_offset % filesystem->page_size;
-  page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
-  page_data += page_offset;
-  cur_length = filesystem->page_size - page_offset;
-  if (cur_length >= read_length) {
-    (*env)->SetByteArrayRegion(env, buf, buffer_offset, read_length, (jbyte*) page_data);
-  } else {
-    (*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
-    page_id++;
-    while (1) {
-      page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
-      if (cur_length + filesystem->page_size >= read_length) {
-        (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, read_length - cur_length, (jbyte*) page_data);
-        break;
-      }
-      (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, filesystem->page_size, (jbyte*) page_data);
-      cur_length += filesystem->page_size;
+  if(tp->mode == TP_LOCAL_BUFFER){ // read to local buffer;
+    uint32_t cur_length, page_id, page_offset;
+    page_id = block_offset / filesystem->page_size;
+    jbyteArray buf = tp->param.lbuf.buf;
+    uint32_t buffer_offset = (uint32_t) tp->param.lbuf.bufOfst;
+    // Fill the buffer.
+    page_offset = block_offset % filesystem->page_size;
+    page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
+    page_data += page_offset;
+    cur_length = filesystem->page_size - page_offset;
+    if (cur_length >= read_length) {
+      (*env)->SetByteArrayRegion(env, buf, buffer_offset, read_length, (jbyte*) page_data);
+    } else {
+      (*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
       page_id++;
+      while (1) {
+        page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
+        if (cur_length + filesystem->page_size >= read_length) {
+          (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, read_length - cur_length, (jbyte*) page_data);
+          break;
+        }
+        (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, filesystem->page_size, (jbyte*) page_data);
+        cur_length += filesystem->page_size;
+        page_id++;
+      }
+    }
+  } else { // read to remote memory(RDMA)
+    uint32_t start_page_id = blkOfst / filesystem->page_size;
+    uint32_t end_page_id = (blkOfst+length-1) / filesystem->page_size;
+    uint32_t npage = 0;
+    void **paddrlist = (void**)malloc(sizeof(void*)*(end_page_id - start_page_id + 1));
+    while(start_page_id<=end_page_id){
+      paddrlist[npage] = PAGE_NR_TO_PTR(filesystem,snapshot->pages[start_page_id]);
+      start_page_id ++;
+      npage ++;
+    }
+
+    // get ip str
+    int ipSize = (int)(*env)->GetArrayLength(env,tp->param.rdma.client_ip);
+    jbyte ipStr[16];
+    (*env)->GetByteArrayRegion(env, tp->param.rdma.client_ip, 0, ipSize, ipStr);
+    ipStr[ipSize] = 0;
+    uint32_t ipkey = inet_addr((const char*)ipStr);
+
+    // get remote address
+    uint64_t vaddr = tp->param.rdma.vaddr;
+    const uint64_t address = vaddr - (vaddr % filesystem->page_size);
+    DEBUG_PRINT("readBlockRDMA:ip=%s,npage=%d,address=%p\n",
+      (char*)ipStr,npage,(const void *)address);
+
+    // rdma write...
+    int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void **)paddrlist,npage,0);
+    free(paddrlist);
+    if(rc !=0 ){
+      fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
+      return -2;
     }
   }
   DEBUG_PRINT("end readBlock__JIII_3B.\n");
   return read_length;
 }
-  
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    readBlock
- * Signature: (JJIII[BZ)I
+ * Signature: (JJJIII[B)I
  */
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3BZ
-  (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint bufOfst, jint length, jbyteArray buf, jboolean byUserTimestamp)
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JIII_3B
+  (JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint bufOfst, jint length, jbyteArray buf){
+  // setup transport parameter.
+  transport_parameters_t tp;
+  tp.mode = TP_LOCAL_BUFFER;
+  tp.param.lbuf.buf = buf;
+  tp.param.lbuf.bufOfst = bufOfst;
+  return (jint)readBlockInternal(env,thisObj,blockId,blkOfst,length,&tp);
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    readBlockRDMA
+ * Signature: (JII[BIJ)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA__JII_3BIJ
+  (JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, 
+    jint length, jbyteArray clientIp, jint rpid, jlong vaddr){
+
+  // setup transport parameter.
+  transport_parameters_t tp;
+  tp.mode = TP_RDMA;
+  tp.param.rdma.client_ip = clientIp;
+  tp.param.rdma.remote_pid = rpid;
+  tp.param.rdma.vaddr = vaddr;
+
+  return (jint)readBlockInternal(env,thisObj,blockId,blkOfst,length,&tp);
+}
+
+// readBlockInternalByTime(): read block state at given timestamp...
+int readBlockInternalByTime(JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint length, transport_parameters_t *tp, jboolean byUserTimestamp)
 {
-DEBUG_PRINT("begin readBlock_JJIII.\n");
+DEBUG_PRINT("begin readBlockInternalByTime.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   block_t *block;
   uint64_t snapshot_time = (uint64_t) t;
   uint64_t block_id = (uint64_t) blockId;
   uint32_t block_offset = (uint32_t) blkOfst;
-  uint32_t buffer_offset = (uint32_t) bufOfst;
   uint32_t read_length = (uint32_t) length;
   uint32_t cur_length, page_id, page_offset;
   char *page_data;
@@ -1355,29 +1493,99 @@ DEBUG_PRINT("begin readBlock_JJIII.\n");
     read_length = snapshot->length - block_offset;
   
   // Fill the buffer.
-  page_id = block_offset / filesystem->page_size;
-  page_offset = block_offset % filesystem->page_size;
-  page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
-  page_data += page_offset;
-  cur_length = filesystem->page_size - page_offset;
-  if (cur_length >= read_length) {
-    (*env)->SetByteArrayRegion(env, buf, buffer_offset, read_length, (jbyte*) page_data);
-  } else {
-    (*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
-    page_id++;
-    while (1) {
-      page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
-      if (cur_length + filesystem->page_size >= read_length) {
-        (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, read_length - cur_length, (jbyte*) page_data);
-        break;
-      }
-      (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, filesystem->page_size, (jbyte*) page_data);
-      cur_length += filesystem->page_size;
+  if(tp->mode == TP_LOCAL_BUFFER){//read to local buffer
+    jbyteArray buf = tp->param.lbuf.buf;
+    uint32_t buffer_offset = (uint32_t)tp->param.lbuf.bufOfst;
+    page_id = block_offset / filesystem->page_size;
+    page_offset = block_offset % filesystem->page_size;
+    page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
+    page_data += page_offset;
+    cur_length = filesystem->page_size - page_offset;
+    if (cur_length >= read_length) {
+      (*env)->SetByteArrayRegion(env, buf, buffer_offset, read_length, (jbyte*) page_data);
+    } else {
+      (*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
       page_id++;
+      while (1) {
+        page_data = PAGE_NR_TO_PTR(filesystem,snapshot->pages[page_id]);
+        if (cur_length + filesystem->page_size >= read_length) {
+          (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, read_length - cur_length, (jbyte*) page_data);
+          break;
+        }
+        (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, filesystem->page_size, (jbyte*) page_data);
+        cur_length += filesystem->page_size;
+        page_id++;
+      }
+    }
+  }else{ // read to remote buffer(RDMA)
+    uint32_t start_page_id = blkOfst / filesystem->page_size;
+    uint32_t end_page_id = (blkOfst+length-1) / filesystem->page_size;
+    uint32_t npage = 0;
+    void **paddrlist = (void**)malloc(sizeof(void*)*(end_page_id - start_page_id + 1));
+    while(start_page_id<=end_page_id){
+      paddrlist[npage] = PAGE_NR_TO_PTR(filesystem,snapshot->pages[start_page_id]);
+      start_page_id ++;
+      npage ++;
+    }
+
+    // get ip str
+    int ipSize = (int)(*env)->GetArrayLength(env,tp->param.rdma.client_ip);
+    jbyte ipStr[16];
+    (*env)->GetByteArrayRegion(env, tp->param.rdma.client_ip, 0, ipSize, ipStr);
+    ipStr[ipSize] = 0;
+    uint32_t ipkey = inet_addr((const char*)ipStr);
+
+    // get remote address
+    uint64_t vaddr = tp->param.rdma.vaddr;
+    const uint64_t address = vaddr - (vaddr % filesystem->page_size);
+    DEBUG_PRINT("readBlockRDMA:ip=%s,npage=%d,address=%p\n",
+      (char*)ipStr,npage,(const void *)address);
+
+    // rdma write...
+    int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void **)paddrlist,npage,0);
+    free(paddrlist);
+    if(rc !=0 ){
+      fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
+      return -2;
     }
   }
-DEBUG_PRINT("end readBlock_JJIII.\n");
+DEBUG_PRINT("end readBlockInternalByTime.\n");
   return read_length;
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    readBlock
+ * Signature: (JJIII[BZ)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlock__JJIII_3BZ
+  (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint bufOfst, jint length, jbyteArray buf, jboolean byUserTimestamp)
+{
+  // setup the transport parameter
+  transport_parameters_t tp;
+  tp.mode = TP_LOCAL_BUFFER;
+  tp.param.lbuf.buf = buf;
+  tp.param.lbuf.bufOfst = bufOfst;
+
+  return (jint)readBlockInternalByTime(env,thisObj,blockId,t,blkOfst,length, &tp, byUserTimestamp);
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    readBlockRDMA
+ * Signature: (JJII[BIJZ)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA__JJII_3BIJZ
+  (JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint length, jbyteArray clientIp, jint rpid, jlong vaddr, jboolean byUserTimestamp)
+{
+  // setup the transport parameter
+  transport_parameters_t tp;
+  tp.mode = TP_RDMA;
+  tp.param.rdma.client_ip = clientIp;
+  tp.param.rdma.remote_pid = rpid;
+  tp.param.rdma.vaddr = vaddr;
+
+  return (jint)readBlockInternalByTime(env,thisObj,blockId,t,blkOfst,length, &tp, byUserTimestamp);
 }
 
 /*
@@ -1401,6 +1609,7 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
     fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
     return -1;
   }
+
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Find the last entry.
@@ -1413,6 +1622,7 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
   ret = (jint) block->log[log_index].block_length;
   BLOG_UNLOCK(block);
 
+DEBUG_PRINT("end of getNumberOfBytes__J.\n");
   return ret;
 }
 
@@ -1467,35 +1677,28 @@ inline void * blog_allocate_pages(filesystem_t *fs,int npage){
   void *pages = NULL;
   
   pthread_spin_lock(&fs->pages_spinlock);
-  if(fs->nr_pages + npage <= (CONF_PAGEFILE_MAXSIZE/fs->page_size)){
+  if(fs->nr_pages + npage <= (fs->pool_size/fs->page_size)){
     pages = fs->page_base + fs->page_size*fs->nr_pages;
     fs->nr_pages += npage;
   }else
-    fprintf(stderr,"Cannot allocate pages: ask for %d, but we have only %ld\n",npage,(CONF_PAGEFILE_MAXSIZE/fs->page_size - fs->nr_pages));
+    fprintf(stderr,"Cannot allocate pages: ask for %d, but we have only %ld\n",npage,(fs->pool_size/fs->page_size - fs->nr_pages));
   pthread_spin_unlock(&fs->pages_spinlock);
   return pages;
 }
 
-/*
- * Class:     edu_cornell_cs_blog_JNIBlog
- * Method:    writeBlock
- * Signature: (Ledu/cornell/cs/sa/VectorClock;JIII[B)I
- *///TODO: check
-JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
-  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong userTimestamp, jlong blockId, jint blkOfst,
-  jint bufOfst, jint length, jbyteArray buf)
+// writeBlockInternal: write block
+int writeBlockInternal (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst, jint length, const transport_parameters_t * tp)
 {
 DEBUG_PRINT("beging writeBlock.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
   uint32_t block_offset = (uint32_t) blkOfst;
-  uint32_t buffer_offset = (uint32_t) bufOfst;
   uint32_t write_length = (uint32_t) length;
   size_t page_size = filesystem->page_size;
   log_t *log_entry;
   block_t *block;
-  uint64_t log_index;
-  uint32_t first_page, last_page, block_length, write_page_length, first_page_offset, last_page_length, pages_cap;
+  uint64_t log_index,userTimestamp;
+  uint32_t first_page, last_page, end_of_write, write_page_length, first_page_offset, last_page_length, pages_cap;
   char *data, *temp_data;
   uint32_t i;
 
@@ -1519,42 +1722,124 @@ DEBUG_PRINT("beging writeBlock.\n");
   first_page = block_offset / page_size;
   last_page = (block_offset + write_length - 1) / page_size;
   first_page_offset = block_offset % page_size;
-  //data = (char*) malloc((last_page-first_page+1) * page_size * sizeof(char));
-  // check this part:
   data = (char*)blog_allocate_pages(filesystem,last_page - first_page + 1);
-  temp_data = data;
-  if (first_page_offset > 0) {
-    memcpy(temp_data, PAGE_NR_TO_PTR(filesystem,block->pages[first_page]), first_page_offset);
-    temp_data += first_page_offset;
-  }
-  
-  // Write all the data from the packet.
-  if (first_page == last_page) {
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
-    temp_data += write_length;
-    last_page_length = first_page_offset + write_length;
-  } else {
-    write_page_length = filesystem->page_size - first_page_offset;
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
-    buffer_offset += write_page_length;
-    temp_data += write_page_length;
-    for (i = 1; i < last_page-first_page; i++) {
-      write_page_length = page_size;
+ 
+  if(tp->mode == TP_LOCAL_BUFFER){// write to local buffer
+    jbyteArray buf = tp->param.lbuf.buf;
+    uint32_t buffer_offset = (uint32_t)tp->param.lbuf.bufOfst;
+    temp_data = data + first_page_offset;
+
+    // Write all the data from the packet.
+    if (first_page == last_page) {
+      (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_length, (jbyte *) temp_data);
+      temp_data += write_length;
+      last_page_length = first_page_offset + write_length;
+    } else {
+      write_page_length = page_size - first_page_offset;
       (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
       buffer_offset += write_page_length;
       temp_data += write_page_length;
+      for (i = 1; i < last_page-first_page; i++) {
+        write_page_length = page_size;
+        (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
+        buffer_offset += write_page_length;
+        temp_data += write_page_length;
+      }
+      write_page_length = (block_offset + write_length - 1) % page_size + 1;
+      (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
+      temp_data += write_page_length;
+      last_page_length = write_page_length;
     }
-    write_page_length = (block_offset + write_length - 1) % page_size + 1;
-    (*env)->GetByteArrayRegion (env, buf, (jint) buffer_offset, (jint) write_page_length, (jbyte *) temp_data);
-    temp_data += write_page_length;
-    last_page_length = write_page_length;
+
+    // get user timestamp
+    userTimestamp = tp->param.lbuf.user_timestamp;
+  } else { // write to remote memory
+    // set up position markers
+    last_page_length = (block_offset + length) % filesystem->page_size; // could be zero!!!
+    uint32_t new_pages_length = last_page - first_page + 1; // number of new pages.
+
+    // setup page array
+    void **paddrlist = (void**)malloc(new_pages_length*sizeof(void*));//page list for rdma transfer
+    for(i=0;i<new_pages_length;i++)
+      paddrlist[i] = (void*)(data + page_size*i);
+
+    // do write by rdma read...
+    // - get ipkey
+    int ipSize = (int)(*env)->GetArrayLength(env,tp->param.rdma.client_ip);
+    jbyte ipStr[16];
+    (*env)->GetByteArrayRegion(env,tp->param.rdma.client_ip, 0, ipSize, ipStr);
+    ipStr[ipSize] = 0;
+    uint32_t ipkey = inet_addr((const char*)ipStr);
+
+    // - get remote address, remote address is start of the block
+    const uint64_t address = tp->param.rdma.vaddr + first_page*page_size;
+    // - rdma read by big chunk 
+    // int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void**)&paddr, 1, new_pages_length*page_size);
+    // or by pages.
+    int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void**)paddrlist, new_pages_length, page_size);
+    free(paddrlist);
+    if(rc != 0){
+      fprintf(stderr, "writeBlockInternal: rdmaRead failed with error code = %d.\n", rc);
+      return -2;
+    }
+
+    // update temp_data to the last character in position.
+    temp_data = data + first_page_offset + length;
+
+    // get user timestamp
+    {
+      //// create direct byte buffer
+      jobject bbObj = (*env)->NewDirectByteBuffer(env, (void*)data, (last_page-first_page)*page_size );
+      if(bbObj == NULL){
+        fprintf(stderr, "writeBlockInternal: cannot create java DirectByteBuffer using NewDirectByteBuffer(env=%p,data=%p,capacity=%ld)\n",env,data,(last_page-first_page)*page_size);
+        return -3;
+      }
+      //// set position and limit
+      jclass bbClz = (*env)->GetObjectClass(env,bbObj);
+      if(bbClz == NULL){
+        fprintf(stderr, "writeBlockInternal: cannot get DirectByteBuffer class!\n");
+        return -4;
+      }
+      jmethodID position_id = (*env)->GetMethodID(env, bbClz, "position", "(I)Ljava/nio/Buffer;");
+      jmethodID limit_id = (*env)->GetMethodID(env, bbClz, "limit", "(I)Ljava/nio/Buffer;");
+      (*env)->CallObjectMethod(env,bbObj,position_id,first_page_offset);
+      (*env)->CallObjectMethod(env,bbObj,limit_id,first_page_offset + length);
+
+      //// call record paerser
+      jobject rpObj = tp->param.rdma.record_parser;
+      if(rpObj == NULL){
+        fprintf(stderr, "writeBlockInternal: record_parser is NULL!\n");
+        return -4;
+      }
+      jclass rpClz = (*env)->GetObjectClass(env,rpObj);
+      if(rpClz == NULL){
+        fprintf(stderr, "writeBlockInternal: cannot get record_parser class!\n");
+        return -5;
+      }
+      jmethodID parse_record_id = (*env)->GetMethodID(env, rpClz, "ParseRecord", "(Ljava/nio/ByteBuffer;)I");
+      jmethodID get_user_timestamp_id = (*env)->GetMethodID(env, rpClz, "getUserTimestamp", "()J");
+      (*env)->CallIntMethod(env,rpObj,parse_record_id,bbObj);
+      if((*env)->ExceptionCheck(env) == JNI_TRUE){
+        fprintf(stderr, "writeBlockInternal: record_parser cannot parse data!\n");
+        return -6;
+      }
+      userTimestamp = (uint64_t)(*env)->CallLongMethod(env,rpObj,get_user_timestamp_id);
+    } // end get user timestamp
   }
-  block_length = last_page * filesystem->page_size + last_page_length;
-  if (block_length < block->length) {
+
+  //fill the first written page, if required.
+  if (first_page_offset > 0) {
+    memcpy(data, PAGE_NR_TO_PTR(filesystem,block->pages[first_page]), first_page_offset);
+  }
+
+  //fill the last written page, if required.
+  end_of_write = last_page * page_size + last_page_length;
+  if (end_of_write < block->length) {
     write_page_length = last_page*(page_size+1) <= block->length ? page_size - last_page_length
-                                                                 : block_length%page_size - last_page_length;
+                                                                 : block->length%page_size - last_page_length;
     memcpy(temp_data, PAGE_NR_TO_PTR(filesystem,block->pages[last_page]) + last_page_length, write_page_length);
-    block_length = block->length;
+  } else { // update the block length
+    block->length = end_of_write;
   }
 
   // Create the corresponding log entry. 
@@ -1567,7 +1852,7 @@ DEBUG_PRINT("beging writeBlock.\n");
   check_and_increase_log_cap(block);
   log_entry = (log_t*)block->log + log_index;
   log_entry->op = WRITE;
-  log_entry->block_length = block_length;
+  log_entry->block_length = block->length;
   log_entry->start_page = first_page;
   log_entry->nr_pages = last_page-first_page+1;
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
@@ -1575,16 +1860,15 @@ DEBUG_PRINT("beging writeBlock.\n");
   log_entry->u = userTimestamp;
   log_entry->first_pn = PAGE_PTR_TO_NR(filesystem,data);
   block->log_length += 1;
-  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length;
   BLOG_UNLOCK(block);
 
   // notify the persistent thread
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length;
   PERS_ENQ(filesystem,evt);
 
   // Fill block with the appropriate information.
-  block->length = block_length;
   if (block->pages_cap == 0)
     pages_cap = 1;
   else
@@ -1603,6 +1887,48 @@ DEBUG_PRINT("end writeBlock.\n");
 
 /*
  * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    writeBlock
+ * Signature: (Ledu/cornell/cs/sa/VectorClock;JIII[B)I
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlock
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jlong userTimestamp, jlong blockId, jint blkOfst,
+  jint bufOfst, jint length, jbyteArray buf){
+
+  //setup transport parameters
+  transport_parameters_t tp;
+  tp.mode = TP_LOCAL_BUFFER;
+  tp.param.lbuf.buf = buf;
+  tp.param.lbuf.bufOfst = bufOfst;
+  tp.param.lbuf.user_timestamp = userTimestamp;
+  
+  return (jint)writeBlockInternal(env, thisObj, mhlc, blockId, blkOfst, length, &tp);
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    getNumberOfBytes
+ * Signature: (JJZ)I
+ * Method:    writeBlock
+ * Signature: (Ledu/cornell/cs/sa/HybridLogicalClock;Ledu/cornell/cs/blog/IRecordParser;JII[BIJ)I 
+ */
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_writeBlockRDMA
+  (JNIEnv *env, jobject thisObj, jobject mhlc, jobject rp, jlong blockId, jint blkOfst,
+  jint length, jbyteArray clientIp, jint rpid, jlong bufaddr){
+
+  //setup transport parameters
+  transport_parameters_t tp;
+  tp.mode = TP_RDMA;
+  tp.param.rdma.client_ip = clientIp;
+  tp.param.rdma.remote_pid = rpid;
+  tp.param.rdma.vaddr = bufaddr;
+  tp.param.rdma.record_parser = rp;// only for write.
+  
+  return (jint)writeBlockInternal(env, thisObj, mhlc, blockId, blkOfst, length, &tp);
+}
+
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
  * Method:    readLocalRTC
  * Signature: ()J
  */
@@ -1610,6 +1936,12 @@ JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_readLocalRTC
   (JNIEnv *env, jclass thisCls)
 {
   return read_local_rtc();
+}
+
+JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getPid
+  (JNIEnv *env, jclass thisCls)
+{
+  return getpid();
 }
 
 JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
@@ -1649,9 +1981,14 @@ DEBUG_PRINT("beging destroy.\n");
     MAP_UNLOCK(block,fs->block_map,block_id);
   }
 
+  // destroy RDMAContext
+  if(fs->rdmaCtxt != NULL){
+    destroyContext(fs->rdmaCtxt);
+  }
+
   // close files
   if(fs->page_shm_fd!=-1){
-    munmap(fs->page_base,CONF_PAGEFILE_MAXSIZE);
+    munmap(fs->page_base,fs->pool_size);
     close(fs->page_shm_fd);
     fs->page_shm_fd=-1;
   }
@@ -1662,7 +1999,6 @@ DEBUG_PRINT("beging destroy.\n");
   if(remove(fullname)!=0){
     fprintf(stderr,"WARNING: Fail to remove page cache file %s, error:%s.\n",fullname,strerror(errno));
   }
-
 DEBUG_PRINT("end destroy.\n");
 }
 
@@ -1705,14 +2041,162 @@ DEBUG_PRINT("begin setGenStamp.\n");
   log_entry->u = (block->log + block->log_length - 1)->u; // we reuse the last userTimestamp
   log_entry->first_pn = genStamp;
   block->log_length += 1;
-  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length;
   BLOG_UNLOCK(block);
 
   // notify the persistent thread
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length;
   PERS_ENQ(filesystem,evt);
 
 DEBUG_PRINT("end setGenStamp.\n");
   return 0;
 }
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpInitialize
+ * Signature: (JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize
+  (JNIEnv *env, jclass thisCls, jint psz, jint align, jstring dev, jint port){
+  RDMACtxt *ctxt = (RDMACtxt*)malloc(sizeof(RDMACtxt));
+  const char * devname = (*env)->GetStringUTFChars(env,dev,NULL); // get the RDMA device name.
+  if(initializeContext(ctxt,NULL,(const uint32_t)psz,(const uint32_t)align,devname,(const uint16_t)port,1)){ // this is for client
+    free(ctxt);
+    fprintf(stderr, "Cannot initialize rdma context.\n");
+    if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
+    return (jlong)0;
+  }
+  if(devname)(*env)->ReleaseStringUTFChars(env, dev, devname);
+  return (jlong)ctxt;
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpDestroy
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
+  destroyContext((RDMACtxt*)hRDMABufferPool);
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpAllocateBlockBuffer
+ * Signature: (J)Ledu/cornell/cs/blog/JNIBlog$RBPBuffer;
+ */
+JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffer
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool){
+  // STEP 1: create an object
+  jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog$RBPBuffer");
+  if(bufCls==NULL){
+    fprintf(stderr,"Cannot find the buffers.");
+    return NULL;
+  }
+  jmethodID bufConstructorId = (*env)->GetMethodID(env, bufCls, "<init>", "()V");
+  if(bufConstructorId==NULL){
+    fprintf(stderr,"Cannot find buffer constructor method.\n");
+    return NULL;
+  }
+  jobject bufObj = (*env)->NewObject(env,bufCls,bufConstructorId);
+  if(bufObj == NULL){
+    fprintf(stderr,"Cannot create buffer object.");
+    return NULL;
+  }
+  jfieldID addressId = (*env)->GetFieldID(env, bufCls, "address", "J");
+  jfieldID bufferId = (*env)->GetFieldID(env, bufCls, "buffer", "Ljava/nio/ByteBuffer;");
+  if(addressId == NULL || bufferId == NULL){
+    fprintf(stderr,"Cannot get some field of buffer class");
+    return NULL;
+  }
+  // STEP 2: allocate buffer
+  RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
+  void *buf;
+  if(allocateBuffer(ctxt, &buf)){
+    fprintf(stderr, "Cannot allocate buffer.\n");
+    return NULL;
+  }
+  jobject bbObj = (*env)->NewDirectByteBuffer(env,buf,(jlong)1l<<ctxt->align);
+  //STEP 3: fill buffer object
+  (*env)->SetLongField(env, bufObj, addressId, (jlong)buf);
+  (*env)->SetObjectField(env, bufObj, bufferId, bbObj);
+
+  DEBUG_PRINT("buffer[%p] is allocated from pool[%p]\n",buf,(void*)hRDMABufferPool);
+
+  return bufObj;
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpReleaseBuffer
+ * Signature: (JLedu/cornell/cs/blog/JNIBlog$RBPBuffer;)V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jobject rbpBuffer){
+  RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
+  void* bufAddr;
+  // STEP 1: get rbpbuffer class
+  jclass bufCls = (*env)->FindClass(env, "edu/cornell/cs/blog/JNIBlog$RBPBuffer");
+  if(bufCls==NULL){
+    fprintf(stderr,"Cannot find the buffers.");
+    return;
+  }
+  jfieldID addressId = (*env)->GetFieldID(env, bufCls, "address", "J");
+  // STEP 2: get fields
+  bufAddr = (void*)(*env)->GetLongField(env, rbpBuffer, addressId);
+  // STEP 3: release buffer
+  if(releaseBuffer(ctxt,bufAddr))
+    fprintf(stderr,"Cannot release buffer@%p\n",bufAddr);
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpConnect
+ * Signature: (JII)V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
+  (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jbyteArray hostIp){
+  RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
+  int ipSize = (int)(*env)->GetArrayLength(env,hostIp);
+  jbyte ipStr[16];
+  (*env)->GetByteArrayRegion(env, hostIp, 0, ipSize, ipStr);
+  ipStr[ipSize] = 0;
+  uint32_t ipkey = inet_addr((const char*)ipStr);
+  int rc = rdmaConnect(ctxt, (const uint32_t)ipkey);
+  if(rc == 0 || rc == -1){
+    // do nothing, -1 means duplicated connection.
+  }else
+    fprintf(stderr,"Setting up RDMA connection to %s failed with error %d.\n", (char*)ipStr, rc);
+}
+
+/*
+ * Class:     edu_cornell_cs_blog_JNIBlog
+ * Method:    rbpRDMAWrite
+ * Signature: (IJJ[J)V
+ */
+JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
+  (JNIEnv *env, jobject thisObj, jbyteArray clientIp, jlong address, jlongArray pageList){
+  // get filesystem
+  filesystem_t *fs = get_filesystem(env,thisObj);
+  // get ipkey
+  int ipSize = (int)(*env)->GetArrayLength(env,clientIp);
+  jbyte ipStr[16];
+  (*env)->GetByteArrayRegion(env, clientIp, 0, ipSize, ipStr);
+  ipStr[ipSize] = 0;
+  uint32_t ipkey = inet_addr((const char*)ipStr);
+  // get pagelist
+  int npage = (*env)->GetArrayLength(env,pageList);
+  long *plist = (long*)malloc(sizeof(long)*npage);
+  void **paddrlist = (void**)malloc(sizeof(void*)*npage);
+  (*env)->GetLongArrayRegion(env, pageList, 0, npage, plist);
+  int i;
+  for(i=0; i<npage; i++)
+    paddrlist[i] = (void*)plist[i];
+  // rdma write...
+  int rc = rdmaWrite(fs->rdmaCtxt, (const uint32_t)ipkey, fs->rdmaCtxt->port, (const uint64_t)address, (const void **)paddrlist,npage,0);
+  if(rc !=0 )
+    fprintf(stderr, "rdmaWrite failed with error code=%d.\n", rc);
+}
+

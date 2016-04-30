@@ -1228,4 +1228,113 @@ class DataXceiver extends Receiver implements Runnable {
       long length, boolean sendChecksum, CachingStrategy cachingStrategy) throws IOException {
     readBlock(blk,blockToken,clientName,blockOffset,length,sendChecksum,cachingStrategy,-1L,false);
   }
+
+  @Override
+  /*
+   * bUserTimestamp == -1 means read from the latest version.
+   */
+  public void readBlockRDMA(
+    ExtendedBlock blk, 
+    Token<BlockTokenIdentifier> blockToken, 
+    String clientName,
+    int rpid, long blockOffset,
+    long length,
+    long vaddr,
+    long timestamp,
+    boolean bUserTimestamp) throws IOException {
+
+    previousOpClientName = clientName;
+    OutputStream baseStream = getOutputStream();
+    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
+        baseStream, HdfsConstants.SMALL_BUFFER_SIZE));
+    checkAccess(out, true, blk, blockToken,
+        Op.READ_BLOCK, BlockTokenSecretManager.AccessMode.READ);
+
+    // STEP 1 - create RDMABlockSender
+    if(!datanode.isInMemoryStorage()){
+      BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()
+          .setStatus(ERROR_UNSUPPORTED);
+      resp.build().writeDelimitedTo(out);
+      out.flush();
+      return;
+    }
+    RDMABlockSender blockSender = new RDMABlockSender(
+        blk,blockOffset,length,datanode,
+        peer.getRemoteIPString(),rpid,vaddr,timestamp,bUserTimestamp);
+    // STEP 2 - do RDMA transfer
+    blockSender.doSend();
+    // STEP 3 - notify the reader
+    BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()
+        .setStatus(SUCCESS);
+    resp.build().writeDelimitedTo(out);
+    out.flush();
+    return;
+  }
+
+  @Override
+  public void readBlockRDMA(
+    ExtendedBlock blk, 
+    Token<BlockTokenIdentifier> blockToken, 
+    String clientName,
+    int rpid, long blockOffset,
+    long length,
+    long vaddr) throws IOException {
+
+    // invoke the full fledged version.
+    readBlockRDMA(blk,blockToken,clientName,rpid,blockOffset,length,vaddr,-1,false);
+  }
+
+  @Override
+  public void writeBlockRDMA(ExtendedBlock blk, 
+      Token<BlockTokenIdentifier> blockToken, 
+      String clientName,
+      DatanodeInfo[] targets,
+      int rpid,
+      long vaddr,
+      long bytesRcvd,
+      long latestGenerationStamp,
+      HybridLogicalClock mhlc,
+      String suffix) throws IOException {
+    previousOpClientName = clientName;
+    
+    OutputStream baseStream = getOutputStream();
+    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
+        baseStream, HdfsConstants.SMALL_BUFFER_SIZE));
+    checkAccess(out, true, blk, blockToken,
+        Op.WRITE_BLOCK, BlockTokenSecretManager.AccessMode.WRITE);
+    // STEP 1 - create RDMABlockReceiver
+    LOG.debug("[S] writeBlockRDMA received with: blk="+blk+
+        ",peer="+peer.getRemoteIPString()+
+        ",bytesRcvd="+bytesRcvd+
+        ",lastestGenerationStamp="+latestGenerationStamp+
+        ",clientName="+clientName+
+        ",datanode="+datanode+
+        ",vaddr="+vaddr+
+        ",mhlc="+mhlc);
+    IRecordParser rp = null;
+    try{
+      rp = RecordParserFactory.getRecordParser(suffix);
+      LOG.debug("writeBlock: suffix="+suffix+",rp = "+rp.getClass().getName());
+    }catch(Exception e){
+      LOG.warn("Cannot instantiate RecordParser by suffix:"+suffix+", falling back to default");
+      try{rp = RecordParserFactory.getRecordParser(null);}catch(Exception ex){
+        //do nothing
+      }
+    }
+    RDMABlockReceiver blockReceiver = new RDMABlockReceiver(blk,in,
+        peer.getRemoteIPString(),peer.getLocalAddressString(),rpid,
+        bytesRcvd,latestGenerationStamp,clientName,datanode,vaddr,mhlc,
+        rp);
+    
+    //STEP 2 - notify the writer we are prepared.
+    BlockOpResponseProto.Builder resp = BlockOpResponseProto.newBuilder()
+        .setStatus(SUCCESS);
+    resp.build().writeDelimitedTo(out);
+    out.flush();
+    //STEP 3 - write till end.
+    blockReceiver.receiveBlock(out);
+    out.flush();
+    IOUtils.closeStream(out);
+    IOUtils.closeStream(blockReceiver);
+  }
 }

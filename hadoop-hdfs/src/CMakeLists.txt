@@ -117,8 +117,15 @@ add_library(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer SHAR
 )
 output_directory(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer target/usr/local/lib)
 
+add_definitions(-D_GNU_SOURCE -D__STDC_FORMAT_MARCOS)
 add_library(edu_cornell_cs_blog_JNIBlog SHARED
     main/native/blog/JNIBlog.c
+    main/native/blog/InfiniBandRDMA.c
+)
+target_link_libraries(edu_cornell_cs_blog_JNIBlog
+    pthread
+    ibverbs
+    rdmacm
 )
 output_directory(edu_cornell_cs_blog_JNIBlog target/usr/local/lib)
 

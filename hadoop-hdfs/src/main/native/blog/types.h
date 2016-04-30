@@ -2,6 +2,7 @@
 #include <sys/queue.h>
 #include <semaphore.h>
 #include "map.h"
+#include "InfiniBandRDMA.h"
 
 #define BLOCK_MAP_SIZE 1024
 #define LOG_MAP_SIZE 64
@@ -14,10 +15,14 @@ typedef struct filesystem filesystem_t;
 typedef struct snapshot snapshot_t;
 typedef struct _pers_queue_entry pers_event_t;
 
-#ifdef DEBUG
-#define DEBUG_PRINT(arg,fmt...) {fprintf(stdout,arg, ##fmt );fflush(stdout);}
-#else
-#define DEBUG_PRINT(arg,fmt...)
+#ifndef DEBUG_PRINT
+
+  #ifdef DEBUG
+  #define DEBUG_PRINT(arg,fmt...) {fprintf(stdout,arg, ##fmt );fflush(stdout);}
+  #else
+  #define DEBUG_PRINT(arg,fmt...)
+  #endif
+
 #endif
 
 MAP_DECLARE(block, block_t);
@@ -139,6 +144,7 @@ struct filesystem {
 #define PAGE_PTR_TO_NR(fs,ptr) (((char*)(ptr) - (char*)(fs)->page_base)/(fs)->page_size)
 #define INVALID_PAGE_NO  (~0x0L)
   void *page_base;
+  uint64_t pool_size; // memory pool size
   uint64_t nr_pages;
   //The following members are for data persistent routine
   uint32_t page_shm_fd;
@@ -168,4 +174,6 @@ struct filesystem {
   struct _pers_queue pers_queue;
   pthread_spinlock_t queue_spinlock;
   sem_t pers_queue_sem;
+
+  RDMACtxt *rdmaCtxt; // RDMA Context
 };

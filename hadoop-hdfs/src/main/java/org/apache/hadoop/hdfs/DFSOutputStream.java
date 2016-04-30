@@ -126,8 +126,7 @@ import edu.cornell.cs.sa.HybridLogicalClock;
  * starts sending packets from the dataQueue.
 ****************************************************************/
 @InterfaceAudience.Private
-public class DFSOutputStream extends FSOutputSummer
-    implements Syncable, CanSetDropBehind {
+public class DFSOutputStream extends SeekableDFSOutputStream{
   protected final DFSClient dfsClient;
   protected static final int MAX_PACKETS = 80; // each packet 64K, total 5MB
   protected Socket s;
@@ -2254,7 +2253,8 @@ public class DFSOutputStream extends FSOutputSummer
    * Aborts this output stream and releases any system 
    * resources associated with this stream.
    */
-  synchronized void abort() throws IOException {
+  @Override
+  public synchronized void abort() throws IOException {
     if (closed) {
       return;
     }
@@ -2381,7 +2381,8 @@ public class DFSOutputStream extends FSOutputSummer
   /**
    * Returns the size of a file as it was when this stream was opened
    */
-  long getInitialLen() {
+  @Override
+  public long getInitialLen() {
     return initialFileSize;
   }
 
@@ -2405,7 +2406,8 @@ public class DFSOutputStream extends FSOutputSummer
   }
 
   @VisibleForTesting
-  ExtendedBlock getBlock() {
+  @Override
+  public ExtendedBlock getBlock() {
     return streamer.getBlock();
   }
 

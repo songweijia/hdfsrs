@@ -803,7 +803,18 @@ public class BlockReaderFactory implements ShortCircuitReplicaCreator {
           block, token, startOffset, length, conf.ioBufferSize,
           verifyChecksum, clientName, peer, datanode,
           clientContext.getPeerCache(), cachingStrategy);
-    } else {
+    } else if (conf.useRDMABlockReader) {
+      //TDEBUG
+//      long b,a;
+//      b = System.nanoTime();
+      BlockReader br =  RemoteBlockReaderRDMA.newBlockReader(
+          fileName, block, token, startOffset, length,
+          clientName, peer, datanode, clientContext.getPeerCache());
+//      a = System.nanoTime();
+//      System.out.println(b + " " + a + " " + length);
+      return br;
+    } else
+    {
       return RemoteBlockReader2.newBlockReader(
           fileName, block, token, startOffset, length,
           verifyChecksum, clientName, peer, datanode,

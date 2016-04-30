@@ -9,10 +9,17 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.*;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hdfs.HdfsConfiguration;
+import org.apache.hadoop.hdfs.RemoteBlockReaderRDMA;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager.MemBlockMeta;
@@ -22,6 +29,42 @@ public class JNIBlog
   static {
     System.loadLibrary("edu_cornell_cs_blog_JNIBlog");
   }
+  static final Log LOG = LogFactory.getLog(JNIBlog.class);
+  static long hRDMABufferPool = 0l;
+  static public long getRDMABufferPool(){
+    if(hRDMABufferPool == 0l)
+      initializeRDMABufferPool();
+    return hRDMABufferPool;
+  }
+  static private void initializeRDMABufferPool(){
+    Configuration conf = new HdfsConfiguration();
+    int psz = conf.getInt(DFSConfigKeys.DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_KEY, 
+        DFSConfigKeys.DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_DEFAULT);
+    long bs = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 
+        DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
+    int align = 0;
+    int port = conf.getInt(DFSConfigKeys.DFS_RDMA_CON_PORT_KEY, DFSConfigKeys.DFS_RDMA_CON_PORT_DEFAULT);
+    String dev = conf.getTrimmed(DFSConfigKeys.DFS_RDMA_DEVICE_KEY, DFSConfigKeys.DFS_RDMA_DEVICE_DEFAULT);
+    while(((bs>>align)&1) == 0)align++;
+    try{
+      hRDMABufferPool = JNIBlog.rbpInitialize(psz, align, dev, port);
+      if(hRDMABufferPool != 0L){
+        //add shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+          public void run(){
+            try{
+              JNIBlog.rbpDestroy(hRDMABufferPool);
+            }catch(IOException e){
+              LOG.error("JNIBlog.rbpDestroy("+hRDMABufferPool+") failed with exception:"+e);
+            }
+          }
+        });
+      }
+    }catch(Exception e){
+      LOG.fatal("Fail to initialize the rdma buffer with exception:"+e);
+      System.exit(-1);
+    }
+  }
 
   static public long CURRENT_SNAPSHOT_ID = -1l;
   private HybridLogicalClock hlc;
@@ -29,21 +72,32 @@ public class JNIBlog
   private String persPath;
   private String bpid; // initialize it!!!
   private MemDatasetManager dsmgr;
-  final String BLOCKMAP_FILE = "bmap._dat";
 
   /**
    * Initialize both the block log and the block map.
+   * @param dsmgr
+   * @param bpid
+   * @param poolSize
    * @param blockSize
    * @param pageSize
    * @param persPath
+   * @param useRDMA - use RDMA or not?
+   * @param dev - the device name for the RDMA device. 'mlx5_0' for example. if null, it chooses the first device found.
+   * @param port - the port number for RDMA based Blog
    */
-  public void initialize(MemDatasetManager dsmgr, String bpid, int blockSize, int pageSize, String persPath){
+  public void initialize(MemDatasetManager dsmgr, String bpid, long poolSize, int blockSize, int pageSize, String persPath, boolean useRDMA, String dev, int port){
     this.dsmgr = dsmgr;
     this.bpid = bpid;
     this.persPath = persPath;
     this.blockMaps = new HashMap<Long, MemBlockMeta>();
+
     // initialize blog
-    initialize((int)blockSize, pageSize, persPath);
+    if(useRDMA)
+      initializeRDMA(poolSize, (int)blockSize, pageSize, persPath, dev, port);
+    else
+      initialize(poolSize, (int)blockSize, pageSize, persPath);
+
+    // add shutdown hook, this will destroy the blog.
     Runtime.getRuntime().addShutdownHook(new Thread(){
       @Override
       public void run(){
@@ -117,13 +171,26 @@ public class JNIBlog
   }
 */  
   /**
-   * initialization
+   * initialization with RDMA
+   * @param blockSize - block size for each block
+   * @param poolSize - memory pool size
+   * @param pageSize - page size
+   * @param persPath - initialize it
+   * @param dev - the device name for the RDMA device. 'mlx5_0' for example. if null, it chooses the first device found.
+   * @param port - server port for the RDMA datanode.
+   * @return error code, 0 for success.
+   */
+  private native int initializeRDMA(long poolSize, int blockSize, int pageSize, String persPath, String dev, int port);
+
+  /**
+   * initialization without RDMA
+   * @param poolSize - memory pool size
    * @param blockSize - block size for each block
    * @param pageSize - page size
    * @param persPath - initialize it
    * @return error code, 0 for success.
    */
-  private native int initialize(int blockSize, int pageSize, String persPath);
+  private native int initialize(long poolSize, int blockSize, int pageSize, String persPath);
   
   /**
    * Replay block log on startup. This will materialize blockMaps. This
@@ -185,27 +252,43 @@ public class JNIBlog
   public native int deleteBlock(HybridLogicalClock mhlc, long blockId);
   
   /**
-   * @param blockId
-   * @param blkOfst - block offset
-   * @param bufOfst - buffer offset
-   * @param length - how many bytes to read
-   * @param buf[OUTPUT] - for read data
+   * Read the latest status, using TCP/IP
    * @return error code, number of bytes read for success.
    */
   public native int readBlock(long blockId, int blkOfst, int bufOfst, int length, byte buf[]);
   
   /**
-   * @param blockId
+   * Read the latest status, using RDMA
+   * @param clientIp
+   * @param rpid - the pid of the client
+   * @param vaddr
+   * @return error code, 0 for success, otherwise error code.
+   */
+  public native int readBlockRDMA(long blockId, int blkOfst, int length,
+    byte clientIp[], int rpid, long vaddr);
+  
+  /**
+   * Read block status specified by time t, using TCP/IP
+   * get number of bytes we have in the block
    * @param t - time to read from
-   * @param blkOfst - block offset
-   * @param bufOfst - buffer offset
-   * @param length - how many bytes to read
-   * @param buf[OUTPUT] - for read data
    * @param byUserTimestamp
    * @return error code, number of bytes read for success.
    */
-  public native int readBlock(long blockId, long t, int blkOfst, int bufOfst, int length, byte buf[], boolean byUserTimestamp);
+  public native int readBlock(long blockId, long t, int blkOfst, int bufOfst, int length, byte buf[], 
+    boolean byUserTimestamp);
   
+  /**
+   * Read block status specified by time t, using RDMA
+   * @param t - time to read from
+   * @param byUserTimestamp
+   * @param clientIp
+   * @param rpid - the pid of the client
+   * @param vaddr
+   * @return error code, 0 for success, otherwise error code.
+   */
+  public native int readBlockRDMA(long blockId, long t, int blkOfst, int length,
+     byte clientIp[], int rpid, long vaddr, boolean byUserTimestamp);
+
   /**
    * for compatibility:
    * @param blockId
@@ -238,11 +321,22 @@ public class JNIBlog
   
   /**
    * @param mhlc
+   * @param rp record parser
    * @param blockId
    * @param blkOfst
-   * @param bufOfst
    * @param length
-   * @param buf
+   * @param clientIp - ip address of the remote.
+   * @param rpid - the pid of the client
+   * @param vaddr - virtual address.
+   * @return
+   */
+  public native int writeBlockRDMA(HybridLogicalClock mhlc, IRecordParser rp, long blockId, int blkOfst, int length,
+      byte clientIp[], int rpid, long vaddr);
+  
+  /**
+   * write to block, using TCP/IP
+   * @param mhlc - message block
+   * @param userTimestamp - the user timestamp
    * @return
    */
   public native int writeBlock(HybridLogicalClock mhlc, long userTimestamp, long blockId, int blkOfst, int bufOfst, int length, byte buf[]);
@@ -254,12 +348,70 @@ public class JNIBlog
    */
   public static native long readLocalRTC();
   
+  /**
+   * @return pid of my process.
+   */
+  public static native int getPid();
+  
   
   //////////////////////////////////////////////////////////////////////
   // Move Pool Data to JNIBlog.
   public HashMap<Long,MemBlockMeta> blockMaps;
   //////////////////////////////////////////////////////////////////////
   
+  //////////////////////////////////////////////////////////////////////
+  // The interface for RDMA access library
+  public static class RBPBuffer{
+    public long address; // address of this buffer.
+    public ByteBuffer buffer; // the buffer  
+  }
+  /**
+   * function: initialize an RDMA Buffer Pool.
+   * @param psz - size of the buffer pool = 1l<<psz.
+   * @param align - alignment for the buffer/page allocation = 1l<<align
+   * @param dev - the device name for the RDMA device. 'mlx5_0' for example. if null, it chooses the first device found.
+   * @param port - port for the blog server to listen for. ZERO FOR CLIENT.
+   * @return handle of the RDMA Block Pool
+   * @throws Exception
+   */
+  static public native long rbpInitialize(int psz, int align, String dev, int port) throws IOException;
+  /**
+   * function: destroy the RDMA buffer Pool.
+   * @param size - size of the buffer tool
+   * @throws Exception
+   */
+  static public native void rbpDestroy(long hRDMABufferPool) throws IOException;
+  /**
+   * function: allocate a block buffer.
+   * @return allocated Block Buffer
+   * @throws Exception
+   */
+  static public native RBPBuffer rbpAllocateBlockBuffer(long hRDMABufferPool) throws IOException;
+  /**
+   * function: release a buffer.
+   * @param buf
+   * @throws Exception
+   */
+  static public native void rbpReleaseBuffer(long hRDMABufferPool, RBPBuffer buf) throws IOException;
+  /**
+   * function: connect to RDMA datanode
+   * @rbpBuffer handle of the RDMA buffer pool
+   * @param hostIp
+   * @throws Exception
+   */
+  static public native void rbpConnect(long hRDMABufferPool, byte hostIp[]) throws IOException;
+  
+  /**
+   * function: do RDMA Write, this is called by the DataNode.
+   * @param clientIp like "192.168.100.1".toByteArra()
+   * @param address
+   * @param length
+   * @param pageList
+   * @throws Exception
+   */
+  public native void rbpRDMAWrite(byte clientIp[], long address, long []pageList) throws IOException;
+  
+  //////////////////////////////////////////////////////////////////////
   // Tests.
   public void testBlockCreation(HybridLogicalClock mhlc)
   {
@@ -392,9 +544,13 @@ public class JNIBlog
     HybridLogicalClock mhlc = new HybridLogicalClock();
     long rtc;
     
-    writeLine("Initialize.");
-    bl.initialize(1024*1024, 1024, ".");
+//    writeLine("Initialize.");
+//    bl.initialize(1024*1024, 1024, ".");
     writeLine("Create Blocks.");
+    writeLine("Begin Initialize.");
+    bl.initialize(null,null,1l<<30,1024*1024, 1024, "testbpid", false, null, 0);
+/*
+    writeLine(bl.hlc.toString());
     bl.testBlockCreation(mhlc);
     writeLine("Delete Blocks.");
     bl.testBlockDeletion(mhlc);
@@ -405,5 +561,6 @@ public class JNIBlog
     bl.testRead();
     writeLine("Read Snapshot Blocks.");
     bl.testSnapshot(rtc);
+*/
   }
 }

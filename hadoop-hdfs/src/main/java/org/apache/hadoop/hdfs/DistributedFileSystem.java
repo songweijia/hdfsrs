@@ -378,7 +378,7 @@ public class DistributedFileSystem extends FileSystem {
       @Override
       public HdfsDataOutputStream doCall(final Path p)
           throws IOException, UnresolvedLinkException {
-        final DFSOutputStream out = dfs.create(getPathName(f), permission,
+        final SeekableDFSOutputStream out = dfs.create(getPathName(f), permission,
             overwrite ? EnumSet.of(CreateFlag.CREATE, CreateFlag.OVERWRITE)
                 : EnumSet.of(CreateFlag.CREATE),
             true, replication, blockSize, progress, bufferSize, null,

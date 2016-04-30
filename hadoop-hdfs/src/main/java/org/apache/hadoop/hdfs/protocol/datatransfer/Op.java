@@ -38,7 +38,9 @@ public enum Op {
   REQUEST_SHORT_CIRCUIT_FDS((byte)87),
   RELEASE_SHORT_CIRCUIT_FDS((byte)88),
   REQUEST_SHORT_CIRCUIT_SHM((byte)89),
-  REQUEST_SNAPSHOT((byte)90);
+  REQUEST_SNAPSHOT((byte)90),
+  READ_BLOCK_RDMA((byte)91),
+  WRITE_BLOCK_RDMA((byte)92);
 
   /** The code for this operation. */
   public final byte code;

@@ -2,10 +2,19 @@ package org.apache.hadoop.hdfs.server.datanode.fsdataset.impl;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT;
 
+
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_BLOCK_SIZE_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_MEMBLOCK_PAGESIZE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DEFAULT_DFS_MEMBLOCK_PAGESIZE;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_CON_PORT_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_CON_PORT_DEFAULT;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_DEVICE_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_RDMA_DEVICE_DEFAULT;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_CLIENT_USE_RDMA_BLOCKREADER;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_CLIENT_USE_RDMA_BLOCKREADER_DEFAULT;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_CLIENT_USE_RDMA_BLOCKWRITER;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_CLIENT_USE_RDMA_BLOCKWRITER_DEFAULT;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +36,7 @@ import org.apache.hadoop.hdfs.server.datanode.Replica;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.HLCOutputStream;
 
 import edu.cornell.cs.blog.JNIBlog;
+import edu.cornell.cs.blog.IRecordParser;
 import edu.cornell.cs.sa.*;
 
 public class MemDatasetManager {
@@ -46,12 +56,15 @@ public class MemDatasetManager {
   private final long blocksize; 
   private final int pagesize;
   private final String perspath; // the path for persistent files
+  private final int rdmaport; // port...
+  private final String rdmadev; // the rdmadev name
+  private final boolean useRDMA; // are we using RDMA ?
 
   
   public class MemBlockMeta extends Block implements Replica {
     boolean isDeleted;
     JNIBlog blog;
-    private ReplicaState state;
+    ReplicaState state;
     long accBytes;
     
     public MemBlockMeta(String bpid, long genStamp, long blockId, ReplicaState state) {
@@ -68,6 +81,7 @@ public class MemDatasetManager {
       this.blockId = blockId;
       this.state = state;
       this.isDeleted = false;
+      this.accBytes = 0l;
     }
     
     public MemBlockMeta(JNIBlog blog, long genStamp, long blockId, ReplicaState state) {
@@ -102,7 +116,6 @@ public class MemDatasetManager {
       super.setGenerationStamp(genStamp);
     }
 
-
     @Override
     public long getBytesOnDisk() {
     	return getNumBytes();
@@ -133,9 +146,9 @@ public class MemDatasetManager {
     }
 
     @Override
-  	public long getBlockId() {
-  		return this.blockId;
-  	}
+    public long getBlockId() {
+        return this.blockId;
+    }
 
   	@Override
   	public long getNumBytes() {
@@ -143,25 +156,65 @@ public class MemDatasetManager {
   	}
   	
   	public long getNumBytes(long timestamp, boolean bUserTimestamp){
-  		long nb = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,timestamp,bUserTimestamp);
-      if(nb == -1L)nb = 0L; // -1 means block does not exists.
-      return nb;
+          long nb = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,timestamp,bUserTimestamp);
+          if(nb == -1L)nb = 0L; // -1 means block does not exists.
+          return nb;
   	}
   	
   	public BlogOutputStream getOutputStream(){
   		return getOutputStream((int)getNumBytes());
   	}
+
   	public BlogOutputStream getOutputStream(int offset){
   		if(offset < 0)
   			return getOutputStream();
   		else
   		  return new BlogOutputStream(blog,blockId,offset,this);
   	}
+
   	public BlogInputStream getInputStream(int offset){
   		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID, false);
   	}
+
   	public BlogInputStream getInputStream(int offset, long timestamp, boolean bUserTimestamp){
   		return new BlogInputStream(blog,blockId,offset,timestamp,bUserTimestamp);
+  	}
+
+        // if timestamp == -1, we read from the current state.
+  	public void readByRDMA(int startOffset, int length,
+  	    String clientIp, int rpid, long vaddr, long timestamp, boolean bUserTimestamp)throws IOException{
+  	  long blen = (timestamp == -1)?getNumBytes():getNumBytes(timestamp,bUserTimestamp);
+  	  if(startOffset + length > blen)
+  	    throw new IOException("readByRDMA failed: sid="+sid+",start="+
+  	      startOffset+",len="+length+",blen="+blen);
+  	  int rc = 0;
+
+          // rdma read
+          if(timestamp == -1){ // read from latest version
+            rc=blog.readBlockRDMA(blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr);
+          } else { // read from the specified point of time
+            rc=blog.readBlockRDMA(blockId, timestamp, startOffset, length, clientIp.getBytes(), rpid, vaddr, bUserTimestamp);
+          }
+
+  	  if(rc!=0){
+  	    throw new IOException("readByRDMA failed: JNIBlog.readBlockRDMA returns: " + rc);
+          }
+  	}
+
+  	public void writeByRDMA(int startOffset, int length, String clientIp, 
+  	    int rpid, long vaddr, HybridLogicalClock mhlc, IRecordParser rp)throws IOException{
+  	  long blen = getNumBytes();
+  	  if(startOffset > blen)
+  	    throw new IOException("writeByRDMA failed:blen="+blen+",start="+startOffset+
+  	        ",len="+length+",client="+clientIp+",vaddr="+vaddr+",mhlc="+mhlc);
+  	  int rc = 0;
+  	  if((rc=blog.writeBlockRDMA(mhlc, rp, blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr))!=0){
+            throw new IOException("writeByRDMA failed: JNIBlog.writeBlockRDMA returns: " + rc);
+  	  }
+  	  //update length
+  	  if(this.getNumBytes() < this.getBytesOnDisk())
+  	    this.setNumBytes(this.getBytesOnDisk());
+  	  this.accBytes += length;
   	}
   }
   
@@ -214,19 +267,22 @@ public class MemDatasetManager {
      * @see java.io.InputStream#read(byte[], int, int)
      */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
-        int endOfBlock = ((this.timestamp==JNIBlog.CURRENT_SNAPSHOT_ID)?
-            blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp));
-    	if(offset < endOfBlock){
-    		int ret = ((this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)? 
-                    blog.readBlock(blockId, offset, off, len, bytes):
-                    blog.readBlock(blockId, timestamp, offset, off, len, bytes, bUserTimestamp));
-    		if(ret > 0){
-    			this.offset+=ret;
-    			return ret;
-    		}else throw new IOException("error in JNIBlog.read("+
-    			blockId+","+timestamp+","+bUserTimestamp+","+offset+","+off+","+len+",b):"+ret);
-    	}else
-    		throw new IOException("no more data available");
+      int endOfBlock = ((this.timestamp==JNIBlog.CURRENT_SNAPSHOT_ID)?
+      blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp));
+      if(offset < endOfBlock){
+        int ret = ((this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)? 
+          blog.readBlock(blockId, offset, off, len, bytes):
+          blog.readBlock(blockId, timestamp, offset, off, len, bytes, bUserTimestamp));
+    	if(ret > 0){
+          this.offset+=ret;
+          return ret;
+    	} else { 
+          throw new IOException("error in JNIBlog.read("+
+            blockId+","+timestamp+","+bUserTimestamp+","+offset+","+off+","+len+",b):"+ret);
+        }
+      } else {
+        throw new IOException("no more data available");
+      }
     }
   }
   
@@ -276,6 +332,9 @@ public class MemDatasetManager {
   MemDatasetManager(Configuration conf){
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
+    this.rdmaport = conf.getInt(DFS_RDMA_CON_PORT_KEY, DFS_RDMA_CON_PORT_DEFAULT);
+    this.rdmadev = conf.getTrimmed(DFS_RDMA_DEVICE_KEY, DFS_RDMA_DEVICE_DEFAULT);
+    this.useRDMA = ( conf.getBoolean(DFS_CLIENT_USE_RDMA_BLOCKREADER,DFS_CLIENT_USE_RDMA_BLOCKREADER_DEFAULT) || conf.getBoolean(DFS_CLIENT_USE_RDMA_BLOCKWRITER,DFS_CLIENT_USE_RDMA_BLOCKWRITER_DEFAULT) );
     this.capacity = conf.getLong("dfs.memory.capacity", 1024 * 1024 * 1024 * 2l);
     this.blogMap = new HashMap<String, JNIBlog>();
     String[] dataDirs = conf.getTrimmedStrings(DFS_DATANODE_DATA_DIR_KEY);
@@ -311,12 +370,14 @@ public class MemDatasetManager {
     JNIBlog rBlog = new JNIBlog();
     // If path does not exists, create it firs.
     File fPers = new File(this.perspath+System.getProperty("file.separator")+"pers-"+bpid);
+    LOG.info("pers-"+bpid);
     if(fPers.exists()&&fPers.isFile())fPers.delete();
     if(!fPers.exists()){
       if(fPers.mkdir()==false)
         LOG.error("Initialize Blog: cannot create path:" + fPers.getAbsolutePath());
     }
-    rBlog.initialize(this, bpid, (int)blocksize, pagesize, fPers.getAbsolutePath());
+
+    rBlog.initialize(this, bpid, capacity, (int)blocksize, pagesize, fPers.getAbsolutePath(), useRDMA, rdmadev, rdmaport);
     return rBlog;
   }
   

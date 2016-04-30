@@ -3,6 +3,8 @@
  */
 package edu.cornell.cs.blog;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author weijia
  * A RecordParser finds the boundary of each record in a stream and
@@ -24,6 +26,14 @@ public interface IRecordParser {
    * @throws RecordParserException: parse failed. 
    */
   public int ParseRecord(byte[] buf, int offset, int len)throws RecordParserException;
+
+  /**
+   * ParseRecord for a 
+   * @param bb
+   * @return beginning of the next record. -1L for incomplete record.
+   * @throws RecordParserException: parse failed. 
+   */
+  public int ParseRecord(ByteBuffer bb)throws RecordParserException;
   
   @SuppressWarnings("serial")
   public class RecordParserException extends Exception{

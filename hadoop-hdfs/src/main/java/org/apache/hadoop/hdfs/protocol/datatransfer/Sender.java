@@ -24,6 +24,7 @@ import static org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil
 
 
 
+
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -38,12 +39,14 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ClientOperationH
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpBlockChecksumProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpCopyBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReadBlockRDMAProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpReplaceBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestSnapshotProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpTransferBlockProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpRequestShortCircuitAccessProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpWriteBlockProto;
+import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.OpWriteBlockRDMAProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ReleaseShortCircuitAccessRequestProto;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.ShortCircuitShmRequestProto;
 import org.apache.hadoop.hdfs.protocolPB.PBHelper;
@@ -132,6 +135,47 @@ public class Sender implements DataTransferProtocol {
     send(out, Op.READ_BLOCK, proto);
   }
   
+  @Override
+  public void readBlockRDMA(ExtendedBlock blk, 
+      final Token<BlockTokenIdentifier> blockToken, 
+      final String clientName,
+      final int rpid,
+      final long blockOffset, 
+      final long length, 
+      final long vaddr) throws IOException {
+    OpReadBlockRDMAProto proto = OpReadBlockRDMAProto.newBuilder()
+        .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName, blockToken))
+        .setRpid(rpid)
+        .setOffset(blockOffset)
+        .setLen(length)
+        .setVaddr(vaddr)
+        .build();
+
+    send(out, Op.READ_BLOCK_RDMA, proto);
+  }
+
+  @Override
+  public void readBlockRDMA(ExtendedBlock blk, 
+      final Token<BlockTokenIdentifier> blockToken, 
+      final String clientName,
+      final int rpid,
+      final long blockOffset, 
+      final long length, 
+      final long vaddr,
+      final long timestamp,
+      final boolean bUserTimestamp) throws IOException {
+    OpReadBlockRDMAProto proto = OpReadBlockRDMAProto.newBuilder()
+        .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName, blockToken))
+        .setRpid(rpid)
+        .setOffset(blockOffset)
+        .setLen(length)
+        .setVaddr(vaddr)
+        .setTimestamp(timestamp)
+        .setBUserTimestamp(bUserTimestamp)
+        .build();
+
+    send(out, Op.READ_BLOCK_RDMA, proto);
+  }
 
   @Override
   public void writeBlock(final ExtendedBlock blk,
@@ -187,6 +231,33 @@ public class Sender implements DataTransferProtocol {
     send(out, Op.WRITE_BLOCK, proto.build());
   }
 
+  @Override
+  public void writeBlockRDMA(final ExtendedBlock blk,
+      final Token<BlockTokenIdentifier> blockToken,
+      final String clientName,
+      final DatanodeInfo[] targets,
+      final int rpid,
+      final long vaddr,
+      final long bytesRcvd,
+      final long lastestGenerationStamp,
+      final HybridLogicalClock mhlc,
+      final String suffix) throws IOException{
+    ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
+        blk, clientName, blockToken);
+    OpWriteBlockRDMAProto.Builder proto = OpWriteBlockRDMAProto.newBuilder()
+        .setHeader(header)
+        .addAllTargets(PBHelper.convert(targets, 1))
+        .setRpid(rpid)
+        .setBytesRcvd(bytesRcvd)
+        .setVaddr(vaddr)
+        .setLatestGenerationStamp(lastestGenerationStamp)
+        .setMhlc(PBHelper.convert(mhlc));
+    if(suffix != null)
+      proto.setSuffix(suffix);
+    send(out, Op.WRITE_BLOCK_RDMA, proto.build());
+  }
+  
+  
   @Override
   public void transferBlock(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,

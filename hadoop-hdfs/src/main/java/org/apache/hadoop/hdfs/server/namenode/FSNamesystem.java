@@ -2469,7 +2469,6 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
 
     leaseManager.addLease(cons.getFileUnderConstructionFeature()
         .getClientName(), src);
-    
     LocatedBlock ret = blockManager.convertLastBlockToUnderConstruction(cons);
     if (writeToEditLog) {
       getEditLog().logOpenFile(src, cons, logRetryCache);
@@ -7207,7 +7206,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    * Create a snapshot
    * @param snapshotRoot The directory path where the snapshot is taken
    * @param snapshotName The name of the snapshot
-   */
+   *///@obsolete : we do not create snapshot anymore 
   String createBlockSnapshot(String snapshotRoot, String snapshotName)
       throws SafeModeException, IOException {
     checkOperation(OperationCategory.WRITE);
@@ -7225,18 +7224,20 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
         checkOwner(pc, snapshotRoot);
       }
 
-      if (snapshotName == null || snapshotName.isEmpty()) {
-        snapshotName = ""+timestamp;
-      }
-      if(snapshotName != null){
-        if (!DFSUtil.isValidNameForComponent(snapshotName)) {
-            throw new InvalidPathException("Invalid snapshot name: "
-                + snapshotName);
-        }
-      }
-      dir.verifySnapshotName(snapshotName, snapshotRoot);
       dir.writeLock();
       try {
+        NameNode.hlc.mockTick(NameNode.hlc.r+1);//do a mockTick to make sure the logical component is 0
+        timestamp = NameNode.hlc.r;
+        if (snapshotName == null || snapshotName.isEmpty()) {
+          snapshotName = ""+timestamp;
+        }
+        if(snapshotName != null){
+          if (!DFSUtil.isValidNameForComponent(snapshotName)) {
+              throw new InvalidPathException("Invalid snapshot name: "
+                  + snapshotName);
+          }
+        }
+        dir.verifySnapshotName(snapshotName, snapshotRoot);
         snapshotPath = snapshotManager.createSnapshot(snapshotRoot, snapshotName, timestamp);
       } finally {
         dir.writeUnlock();

@@ -64,6 +64,7 @@ public interface DataTransferProtocol {
    * @param sendChecksum if false, the DN should skip reading and sending
    *        checksums
    * @param cachingStrategy  The caching strategy to use.
+   * @throws IOException
    */
   public void readBlock(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,
@@ -72,6 +73,26 @@ public interface DataTransferProtocol {
       final long length,
       final boolean sendChecksum,
       final CachingStrategy cachingStrategy) throws IOException;
+  
+  /**
+   * Read a block using RDMA.
+   * 
+   * @param blk the block being read.
+   * @param blockToken security token for accessing the block.
+   * @param clientName client's name.
+   * @param peer pid.
+   * @param blockOffset offset of the block.
+   * @param length maximum number of bytes for this read.
+   * @param vaddr local address for RDMA.
+   * @throws IOException
+   */
+  public void readBlockRDMA(final ExtendedBlock blk,
+      final Token<BlockTokenIdentifier> blockToken,
+      final String clientName,
+      final int rpid,
+      final long blockOffset,
+      final long length,
+      final long vaddr) throws IOException;
 
   /** 
    * Read a block.
@@ -86,6 +107,7 @@ public interface DataTransferProtocol {
    * @param cachingStrategy  The caching strategy to use.
    * @param timestamp
    * @param bUserTimestamp
+   * @throws IOException
    */
   public void readBlock(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> blockToken,
@@ -97,6 +119,30 @@ public interface DataTransferProtocol {
       final long timestamp,
       final boolean bUserTimestamp) throws IOException;
   
+  /**
+   * Read a block using RDMA.
+   * 
+   * @param blk the block being read.
+   * @param blockToken security token for accessing the block.
+   * @param clientName client's name.
+   * @param peer pid.
+   * @param blockOffset offset of the block.
+   * @param length maximum number of bytes for this read.
+   * @param vaddr local address for RDMA.
+   * @param timestamp
+   * @param bUserTimestamp
+   * @throws IOException
+   */
+  public void readBlockRDMA(final ExtendedBlock blk,
+      final Token<BlockTokenIdentifier> blockToken,
+      final String clientName,
+      final int rpid,
+      final long blockOffset,
+      final long length,
+      final long vaddr,
+      final long timestamp,
+      final boolean bUserTimestamp) throws IOException;
+
   
   /**
    * Write a block to a datanode pipeline.
@@ -133,6 +179,30 @@ public interface DataTransferProtocol {
       final String suffix
       ) throws IOException;
 
+  /**
+   * write a block to a datanode using RDMA
+   * 
+   * @param blk the block being written.
+   * @param blockToken security token for accessing the block. 
+   * @param clientName client's name
+   * @param targets target datanodes in the pipeline(we have only one)
+   * @param rpid peer's pid
+   * @param bytesRcvd - number of bytes available
+   * @param latestGenerationStamp the latest generation stamp of the block.
+   * @param mhlc - timestamp
+   * @throws IOException
+   */
+  public void writeBlockRDMA(final ExtendedBlock blk,
+      final Token<BlockTokenIdentifier> blockToken,
+      final String clientName,
+      final DatanodeInfo[] targets,
+      final int rpid,
+      final long vaddr,
+      final long bytesRcvd,
+      final long lastestGenerationStamp,
+      final HybridLogicalClock mhlc,
+      final String suffix) throws IOException;
+  
   /**
    * Transfer a block to another datanode.
    * The block stage must be

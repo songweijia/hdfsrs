@@ -637,6 +637,22 @@ public class DFSConfigKeys extends CommonConfigurationKeys {
   //HDFSRS_HLC: VCPID (vector clock pid) works to construct the rank for datanode or namenode
   public static final String DFS_MEMBLOCK_PAGESIZE = "dfs.memblock.pagesize";
   public static final int DEFAULT_DFS_MEMBLOCK_PAGESIZE = 4096;
-  
   //HDFSRS_HLC
+  
+  //HDFSRS_RDMA
+  public static final String DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_KEY = "dfs.rdma.client.mem.region.size.exp";
+  public static final int DFS_RDMA_CLIENT_MEM_REGION_SIZE_EXPONENT_DEFAULT = 30;
+  public static final String  DFS_CLIENT_USE_RDMA_BLOCKREADER = "dfs.client.use.rdma.blockreader";
+  public static final boolean DFS_CLIENT_USE_RDMA_BLOCKREADER_DEFAULT = false;
+  public static final String  DFS_CLIENT_USE_RDMA_BLOCKWRITER = "dfs.client.use.rdma.blockwriter";
+  public static final boolean DFS_CLIENT_USE_RDMA_BLOCKWRITER_DEFAULT = false;
+  public static final String DFS_CLIENT_RDMA_WRITER_FLUSH_SIZE_KEY = "dfs.client.rdma.writer.flushsize";
+  public static final int DFS_CLIENT_RDMA_WRITER_FLUSH_SIZE_DEFAULT = 64*1024;
+//  public static final String DFS_RDMA_PAGE_SIZE_EXPONENT_KEY = "dfs.rdma.page.size.exp";
+//  public static final int DFS_RDMA_PAGE_SIZE_EXPONENT_DEFAULT = 12;
+  public static final String DFS_RDMA_CON_PORT_KEY = "dfs.rdma.con.port";
+  public static final int DFS_RDMA_CON_PORT_DEFAULT = 7362;
+  public static final String DFS_RDMA_DEVICE_KEY = "dfs.rdma.device";
+  public static final String DFS_RDMA_DEVICE_DEFAULT = null;
+  //HDFSRS_RDMA
 }

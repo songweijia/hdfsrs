@@ -51,8 +51,8 @@ import org.apache.hadoop.util.DiskChecker.DiskOutOfSpaceException;
 import edu.cornell.cs.blog.JNIBlog;
 import edu.cornell.cs.sa.HybridLogicalClock;
 
-@InterfaceAudience.Private
-class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
+//@InterfaceAudience.Private
+public class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   static final Log LOG = LogFactory.getLog(MemDatasetImpl.class);
 
   @Override // FsDatasetSpi
@@ -515,7 +515,6 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       }
       v.incDfsUsed(bpid, replicaInfo.accBytes);
       replicaInfo.accBytes = 0l;
-//      LOG.info("SONIC-incDfsUsed:+replicaInfo.getNumBytes()="+replicaInfo.getNumBytes());
     }
     replicaInfo.setState(ReplicaState.FINALIZED);
     return replicaInfo;
@@ -1150,5 +1149,9 @@ class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
       }
       throw new IOException(b.toString());
     }
- }
+  }
+  
+  public MemDatasetManager getManager(){
+    return this.memManager;
+  }
 }

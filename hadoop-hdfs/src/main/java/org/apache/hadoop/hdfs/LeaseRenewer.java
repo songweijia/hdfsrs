@@ -281,7 +281,7 @@ class LeaseRenewer {
         && Time.now() - emptyTime > gracePeriod;
   }
 
-  synchronized void put(final String src, final DFSOutputStream out,
+  synchronized void put(final String src, final SeekableDFSOutputStream out,
       final DFSClient dfsc) {
     if (dfsc.isClientRunning()) {
       if (!isRunning() || isRenewerExpired()) {

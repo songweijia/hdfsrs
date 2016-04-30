@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <inttypes.h>
 
 #define MAP_DECLARE(NAME,TYPE)                                                                  \
                                                                                                 \
@@ -19,7 +20,7 @@ typedef struct NAME##_map_t {                                                   
  * Initialize and allocate all the appropriate structures.                                       
  * Return 0 for success and -1 otherwise.
  */                                                                                             \
-BLOG_MAP_TYPE(NAME) *NAME##_map_initialize();                                                        \
+BLOG_MAP_TYPE(NAME) *NAME##_map_initialize();                                                   \
                                                                                                 \
 /**
  * Release all memory occupied by the map.
@@ -38,7 +39,7 @@ int NAME##_map_create(NAME##_map_t *map, uint64_t id);                          
  * Return 0 for success.
  * Return -1 if entry already exists.
  */                                                                                             \
-int NAME##_map_create_and_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE* value);                 \
+int NAME##_map_create_and_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE* value);            \
                                                                                                 \
 /**
  * Delete a map entry.
@@ -64,7 +65,7 @@ int NAME##_map_read(NAME##_map_t *map, uint64_t id, TYPE **value);              
 /**
  * Get map length.
  */                                                                                             \
-uint64_t NAME##_map_length(BLOG_MAP_TYPE(NAME) *map);                                                \
+uint64_t NAME##_map_length(BLOG_MAP_TYPE(NAME) *map);                                           \
                                                                                                 \
 /**
  * Get all the keys in the dictionary.
@@ -84,13 +85,13 @@ int NAME##_map_unlock(NAME##_map_t *map, uint64_t id);
 #define ENTRY_TYPE(NAME)                                                                        \
 NAME##_entry_t
 
-#define BLOG_MAP_TYPE(NAME)                                                                          \
+#define BLOG_MAP_TYPE(NAME)                                                                         \
 NAME##_map_t
 
 #define MAP_DEFINE(NAME,TYPE,SIZE)                                                                  \
                                                                                                     \
-BLOG_MAP_TYPE(NAME) *NAME##_map_initialize() {                                                           \
-  BLOG_MAP_TYPE(NAME) *map = (BLOG_MAP_TYPE(NAME) *) malloc(SIZE*sizeof(BLOG_MAP_TYPE(NAME)));                     \
+BLOG_MAP_TYPE(NAME) *NAME##_map_initialize() {                                                      \
+  BLOG_MAP_TYPE(NAME) *map = (BLOG_MAP_TYPE(NAME) *) malloc(SIZE*sizeof(BLOG_MAP_TYPE(NAME)));      \
   uint64_t i;                                                                                       \
                                                                                                     \
   for (i = 0; i < SIZE; i++) {                                                                      \
@@ -104,7 +105,7 @@ BLOG_MAP_TYPE(NAME) *NAME##_map_initialize() {                                  
   return map;                                                                                       \
 }                                                                                                   \
                                                                                                     \
-void NAME##_map_destroy(BLOG_MAP_TYPE(NAME) *map) {                                                      \
+void NAME##_map_destroy(BLOG_MAP_TYPE(NAME) *map) {                                                 \
   uint64_t i;                                                                                       \
                                                                                                     \
   for (i = 0; i < SIZE; i++) {                                                                      \
@@ -115,11 +116,11 @@ void NAME##_map_destroy(BLOG_MAP_TYPE(NAME) *map) {                             
   free(map);                                                                                        \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_create(BLOG_MAP_TYPE(NAME) *map, uint64_t id) {                                           \
+int NAME##_map_create(BLOG_MAP_TYPE(NAME) *map, uint64_t id) {                                      \
   return NAME##_map_create_and_write(map, id, NULL);                                                \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_create_and_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE* value) {                    \
+int NAME##_map_create_and_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE* value) {               \
   uint64_t hash = id % SIZE;                                                                        \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
   ENTRY_TYPE(NAME) *last_entry = NULL;                                                              \
@@ -143,7 +144,7 @@ int NAME##_map_create_and_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE* val
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_delete(BLOG_MAP_TYPE(NAME) *map, uint64_t id) {                                           \
+int NAME##_map_delete(BLOG_MAP_TYPE(NAME) *map, uint64_t id) {                                      \
   uint64_t hash = id % SIZE;                                                                        \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
   ENTRY_TYPE(NAME) *last_entry = NULL;                                                              \
@@ -153,7 +154,7 @@ int NAME##_map_delete(BLOG_MAP_TYPE(NAME) *map, uint64_t id) {                  
     entry = entry->next;                                                                            \
   }                                                                                                 \
   if (entry == NULL) {                                                                              \
-    fprintf(stderr, "Map Delete: Entry ID %" PRIu64 " does not exist in map.\n", id);                       \
+    fprintf(stderr, "Map Delete: Entry ID %" PRIu64 " does not exist in map.\n", id);               \
     return -1;                                                                                      \
   }                                                                                                 \
   if (last_entry == NULL)                                                                           \
@@ -164,31 +165,35 @@ int NAME##_map_delete(BLOG_MAP_TYPE(NAME) *map, uint64_t id) {                  
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE *value) {                               \
+int NAME##_map_write(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE *value) {                          \
   uint64_t hash = id % SIZE;                                                                        \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
                                                                                                     \
   while ((entry != NULL) && (entry->id != id))                                                      \
     entry = entry->next;                                                                            \
-  if (entry == NULL)                                                                                \
+  if (entry == NULL) {                                                                              \
+    fprintf(stderr, "Map Write: Entry ID %ld does not exist in map.\n", id);                        \
     return -1;                                                                                      \
+  }                                                                                                 \
   entry->value = value;                                                                             \
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-int NAME##_map_read(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE **value) {                               \
+int NAME##_map_read(BLOG_MAP_TYPE(NAME) *map, uint64_t id, TYPE **value) {                          \
   uint64_t hash = id % SIZE;                                                                        \
   ENTRY_TYPE(NAME) *entry = map[hash].entry;                                                        \
                                                                                                     \
   while ((entry != NULL) && (entry->id != id))                                                      \
     entry = entry->next;                                                                            \
-  if (entry == NULL)                                                                                \
+  if (entry == NULL) {                                                                              \
+    DEBUG_PRINT("Map Read: Entry ID %ld does not exist in map.\n", id);                             \
     return -1;                                                                                      \
+  }                                                                                                 \
   *value = entry->value;                                                                            \
   return 0;                                                                                         \
 }                                                                                                   \
                                                                                                     \
-uint64_t NAME##_map_length(BLOG_MAP_TYPE(NAME) *map) {                                                   \
+uint64_t NAME##_map_length(BLOG_MAP_TYPE(NAME) *map) {                                              \
   ENTRY_TYPE(NAME) *entry;                                                                          \
   uint64_t length, i;                                                                               \
                                                                                                     \
@@ -203,7 +208,7 @@ uint64_t NAME##_map_length(BLOG_MAP_TYPE(NAME) *map) {                          
   return length;                                                                                    \
 }                                                                                                   \
                                                                                                     \
-uint64_t *NAME##_map_get_ids(BLOG_MAP_TYPE(NAME) *map, uint64_t length) {                                \
+uint64_t *NAME##_map_get_ids(BLOG_MAP_TYPE(NAME) *map, uint64_t length) {                           \
   ENTRY_TYPE(NAME) *entry;                                                                          \
   uint64_t *ids = (uint64_t *) malloc(length*sizeof(uint64_t));                                     \
   uint64_t index = 0;                                                                               \

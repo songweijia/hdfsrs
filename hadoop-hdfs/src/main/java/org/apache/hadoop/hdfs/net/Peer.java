@@ -82,6 +82,12 @@ public interface Peer extends Closeable {
   public String getRemoteAddressString();
 
   /**
+   * @return               A string representing the remote ip, like
+   *                       "192.168.10.10"
+   */
+  public String getRemoteIPString();
+
+  /**
    * @return               A string representing the local end of our 
    *                       connection to the peer.
    */

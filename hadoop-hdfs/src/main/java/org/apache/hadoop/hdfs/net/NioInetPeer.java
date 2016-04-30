@@ -100,6 +100,11 @@ class NioInetPeer implements Peer {
   }
 
   @Override
+  public String getRemoteIPString() {
+    return socket.getInetAddress().getHostAddress();
+  }
+
+  @Override
   public String getLocalAddressString() {
     return socket.getLocalSocketAddress().toString();
   }

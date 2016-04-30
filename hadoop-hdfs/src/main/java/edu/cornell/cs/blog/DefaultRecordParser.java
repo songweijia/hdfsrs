@@ -2,6 +2,7 @@
  * 
  */
 package edu.cornell.cs.blog;
+import java.nio.ByteBuffer;
 
 /**
  * @author weijia
@@ -18,13 +19,22 @@ public class DefaultRecordParser implements IRecordParser {
     return -1L;
   }
 
+  @Override
+  public int ParseRecord(ByteBuffer bb) throws RecordParserException{
+    if(bb==null || bb.remaining() == 0){
+      throw new RecordParserException("Cannot ParseRecord");
+    }else{
+      return bb.limit();
+    }
+  }
+
   /* (non-Javadoc)
    * @see edu.cornell.cs.blog.IRecordParser#ParseRecord(byte[], int, int)
    */
   @Override
   public int ParseRecord(byte[] buf, int offset, int len) throws RecordParserException {
-    if(offset >= 0 && offset+len<buf.length) 
-      return (len==0)?-1:offset+len;
+    if(offset >= 0 && offset+len<buf.length)
+      return ParseRecord(ByteBuffer.wrap(buf,offset,len));
     else
       throw new RecordParserException("Cannot ParseRecord");
   }
