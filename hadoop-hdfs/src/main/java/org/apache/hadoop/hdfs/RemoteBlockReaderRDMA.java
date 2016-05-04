@@ -58,6 +58,8 @@ public class RemoteBlockReaderRDMA implements BlockReader {
   private long startOffset;
   private long bytesToRead;
   final private String filename;
+  private long timestamp;
+  private boolean bUserTimestamp;
   
   /**
    * @param file
@@ -71,12 +73,15 @@ public class RemoteBlockReaderRDMA implements BlockReader {
    */
   protected RemoteBlockReaderRDMA(String file, String bpid, long blockId,
       long startOffset, long bytesToRead, 
-      Peer peer, DatanodeID datanodeID, PeerCache peerCache){
+      Peer peer, DatanodeID datanodeID, PeerCache peerCache, long timestamp,
+      boolean bUserTimestamp){
     this.isLocal = DFSClient.isLocalAddress(NetUtils.
         createSocketAddr(datanodeID.getXferAddr()));
     this.peer = peer;
     this.peerCache = peerCache;
     this.datanodeID = datanodeID;
+    this.timestamp = timestamp;
+    this.bUserTimestamp = bUserTimestamp;
     try{
       //connect to server.
       JNIBlog.rbpConnect(hRDMABufferPool, peer.getRemoteIPString().getBytes());
@@ -115,15 +120,17 @@ public class RemoteBlockReaderRDMA implements BlockReader {
       long len,
       String clientName,
       Peer peer, DatanodeID datanodeID,
-      PeerCache peerCache) throws IOException{
+      PeerCache peerCache, long timestamp,
+      boolean bUserTimestamp) throws IOException{
     RemoteBlockReaderRDMA blockReader = new RemoteBlockReaderRDMA(file,
         block.getBlockPoolId(), block.getBlockId(), startOffset, len, peer,
-        datanodeID, peerCache);
+        datanodeID, peerCache, timestamp, bUserTimestamp);
     final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
         peer.getOutputStream()));
     // send request
     new Sender(out).readBlockRDMA(block, blockToken, clientName, 
-        JNIBlog.getPid(), startOffset, len, blockReader.rbpBuffer.address);
+        JNIBlog.getPid(), startOffset, len, blockReader.rbpBuffer.address,
+        timestamp,bUserTimestamp);
     // get response
     DataInputStream in = new DataInputStream(peer.getInputStream());
     BlockOpResponseProto status = BlockOpResponseProto.parseFrom(

@@ -1105,7 +1105,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initializeRDMA
   ret = initializeInternal(env, thisObj, poolSize, blockSize, pageSize, pp, 1, devname, (const uint16_t )port);
 
   (*env)->ReleaseStringUTFChars(env, persPath, pp);
-  (*env)->ReleaseStringUTFChars(env, dev, pp);
+  (*env)->ReleaseStringUTFChars(env, dev, devname);
 
   return ret;
 }
@@ -1389,10 +1389,8 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
     uint32_t ipkey = inet_addr((const char*)ipStr);
 
     // get remote address
-    uint64_t vaddr = tp->param.rdma.vaddr;
-    const uint64_t address = vaddr - (vaddr % filesystem->page_size);
-    DEBUG_PRINT("readBlockRDMA:ip=%s,npage=%d,address=%p\n",
-      (char*)ipStr,npage,(const void *)address);
+    uint64_t vaddr = tp->param.rdma.vaddr; // vaddr is start of a block.
+    const uint64_t address = vaddr + block_offset - (block_offset % filesystem->page_size);
 
     // rdma write...
     int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void **)paddrlist,npage,0);
@@ -1536,10 +1534,8 @@ DEBUG_PRINT("begin readBlockInternalByTime.\n");
     uint32_t ipkey = inet_addr((const char*)ipStr);
 
     // get remote address
-    uint64_t vaddr = tp->param.rdma.vaddr;
-    const uint64_t address = vaddr - (vaddr % filesystem->page_size);
-    DEBUG_PRINT("readBlockRDMA:ip=%s,npage=%d,address=%p\n",
-      (char*)ipStr,npage,(const void *)address);
+    uint64_t vaddr = tp->param.rdma.vaddr; // vaddr is the start of the block.
+    const uint64_t address = vaddr + block_offset - (block_offset % filesystem->page_size);
 
     // rdma write...
     int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void **)paddrlist,npage,0);
@@ -1753,9 +1749,10 @@ DEBUG_PRINT("beging writeBlock.\n");
 
     // get user timestamp
     userTimestamp = tp->param.lbuf.user_timestamp;
-  } else { // write to remote memory
+  } else { // read from remote memory
     // set up position markers
-    last_page_length = (block_offset + length) % filesystem->page_size; // could be zero!!!
+    last_page_length = (block_offset + length) % page_size; // could be zero!!!
+    if(last_page_length == 0)last_page_length = page_size; // fix it.
     uint32_t new_pages_length = last_page - first_page + 1; // number of new pages.
 
     // setup page array
@@ -1771,6 +1768,7 @@ DEBUG_PRINT("beging writeBlock.\n");
     ipStr[ipSize] = 0;
     uint32_t ipkey = inet_addr((const char*)ipStr);
 
+
     // - get remote address, remote address is start of the block
     const uint64_t address = tp->param.rdma.vaddr + first_page*page_size;
     // - rdma read by big chunk 
@@ -1780,25 +1778,24 @@ DEBUG_PRINT("beging writeBlock.\n");
     free(paddrlist);
     if(rc != 0){
       fprintf(stderr, "writeBlockInternal: rdmaRead failed with error code = %d.\n", rc);
-      return -2;
+      return -3;
     }
-
     // update temp_data to the last character in position.
     temp_data = data + first_page_offset + length;
 
     // get user timestamp
     {
       //// create direct byte buffer
-      jobject bbObj = (*env)->NewDirectByteBuffer(env, (void*)data, (last_page-first_page)*page_size );
+      jobject bbObj = (*env)->NewDirectByteBuffer(env, (void*)data, new_pages_length*page_size );
       if(bbObj == NULL){
         fprintf(stderr, "writeBlockInternal: cannot create java DirectByteBuffer using NewDirectByteBuffer(env=%p,data=%p,capacity=%ld)\n",env,data,(last_page-first_page)*page_size);
-        return -3;
+        return -4;
       }
       //// set position and limit
       jclass bbClz = (*env)->GetObjectClass(env,bbObj);
       if(bbClz == NULL){
         fprintf(stderr, "writeBlockInternal: cannot get DirectByteBuffer class!\n");
-        return -4;
+        return -5;
       }
       jmethodID position_id = (*env)->GetMethodID(env, bbClz, "position", "(I)Ljava/nio/Buffer;");
       jmethodID limit_id = (*env)->GetMethodID(env, bbClz, "limit", "(I)Ljava/nio/Buffer;");
@@ -1809,19 +1806,19 @@ DEBUG_PRINT("beging writeBlock.\n");
       jobject rpObj = tp->param.rdma.record_parser;
       if(rpObj == NULL){
         fprintf(stderr, "writeBlockInternal: record_parser is NULL!\n");
-        return -4;
+        return -6;
       }
       jclass rpClz = (*env)->GetObjectClass(env,rpObj);
       if(rpClz == NULL){
         fprintf(stderr, "writeBlockInternal: cannot get record_parser class!\n");
-        return -5;
+        return -7;
       }
       jmethodID parse_record_id = (*env)->GetMethodID(env, rpClz, "ParseRecord", "(Ljava/nio/ByteBuffer;)I");
       jmethodID get_user_timestamp_id = (*env)->GetMethodID(env, rpClz, "getUserTimestamp", "()J");
       (*env)->CallIntMethod(env,rpObj,parse_record_id,bbObj);
       if((*env)->ExceptionCheck(env) == JNI_TRUE){
         fprintf(stderr, "writeBlockInternal: record_parser cannot parse data!\n");
-        return -6;
+        return -8;
       }
       userTimestamp = (uint64_t)(*env)->CallLongMethod(env,rpObj,get_user_timestamp_id);
     } // end get user timestamp
@@ -1842,12 +1839,15 @@ DEBUG_PRINT("beging writeBlock.\n");
     block->length = end_of_write;
   }
 
+
   // Create the corresponding log entry. 
   if(BLOG_WRLOCK(block)!=0){
     fprintf(stderr, "ERROR: Cannot acquire write lock on block:%ld, Error:%s\n",
       block_id, strerror(errno));
-    return -2;
+    return -9;
   }
+
+
   log_index = block->log_length;
   check_and_increase_log_cap(block);
   log_entry = (log_t*)block->log + log_index;
@@ -1861,6 +1861,7 @@ DEBUG_PRINT("beging writeBlock.\n");
   log_entry->first_pn = PAGE_PTR_TO_NR(filesystem,data);
   block->log_length += 1;
   BLOG_UNLOCK(block);
+
 
   // notify the persistent thread
   pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
@@ -2122,8 +2123,6 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffe
   //STEP 3: fill buffer object
   (*env)->SetLongField(env, bufObj, addressId, (jlong)buf);
   (*env)->SetObjectField(env, bufObj, bufferId, bbObj);
-
-  DEBUG_PRINT("buffer[%p] is allocated from pool[%p]\n",buf,(void*)hRDMABufferPool);
 
   return bufObj;
 }

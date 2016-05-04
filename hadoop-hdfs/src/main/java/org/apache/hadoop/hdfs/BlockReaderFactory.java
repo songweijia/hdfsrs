@@ -809,7 +809,8 @@ public class BlockReaderFactory implements ShortCircuitReplicaCreator {
 //      b = System.nanoTime();
       BlockReader br =  RemoteBlockReaderRDMA.newBlockReader(
           fileName, block, token, startOffset, length,
-          clientName, peer, datanode, clientContext.getPeerCache());
+          clientName, peer, datanode, clientContext.getPeerCache(),
+          timestamp, bUserTimestamp);
 //      a = System.nanoTime();
 //      System.out.println(b + " " + a + " " + length);
       return br;

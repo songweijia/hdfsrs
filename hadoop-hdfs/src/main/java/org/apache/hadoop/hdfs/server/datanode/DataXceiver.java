@@ -1268,6 +1268,9 @@ class DataXceiver extends Receiver implements Runnable {
         .setStatus(SUCCESS);
     resp.build().writeDelimitedTo(out);
     out.flush();
+    // STEP 4 - close stream.
+    IOUtils.closeStream(out);
+    IOUtils.closeStream(blockSender);
     return;
   }
 
@@ -1281,7 +1284,7 @@ class DataXceiver extends Receiver implements Runnable {
     long vaddr) throws IOException {
 
     // invoke the full fledged version.
-    readBlockRDMA(blk,blockToken,clientName,rpid,blockOffset,length,vaddr,-1,false);
+    readBlockRDMA(blk,blockToken,clientName,rpid,blockOffset,length,vaddr,-1l,false);
   }
 
   @Override

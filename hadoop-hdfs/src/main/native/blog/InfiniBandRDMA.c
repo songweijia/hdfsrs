@@ -727,7 +727,8 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
 #define TIMESPAN(t1,t2) ((t2.tv_sec-t1.tv_sec)*1000000+(t2.tv_usec-t1.tv_usec))
 
 int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
-DEBUG_PRINT("rdmaTransfer:r_vaddr=%p,npage=%d,iswrite=%d,pagesize=%d\n",(void *)r_vaddr,npage,iswrite,pagesize);
+  if(pagesize == 0)
+    pagesize = RDMA_CTXT_PAGE_SIZE(ctxt);
   struct timeval tv1,tv2,tv3,tv4,tv5,tvs,tve;
   DEBUG_TIMESTAMP(tvs);
   const uint64_t cipkey = (const uint64_t)MAKE_CON_KEY(hostip,pid);
@@ -739,7 +740,7 @@ DEBUG_PRINT("rdmaTransfer:r_vaddr=%p,npage=%d,iswrite=%d,pagesize=%d\n",(void *)
     return -1;
   }
   // STEP 2: finish transfer and return
-  struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*ctxt->dev_attr.max_sge);
+  struct ibv_sge *sge_list = malloc(sizeof(struct ibv_sge)*MIN(ctxt->dev_attr.max_sge,MAX_SGE));
   struct ibv_send_wr wr;
   wr.wr.rdma.remote_addr = r_vaddr;
   wr.wr.rdma.rkey = rdmaConn->r_rkey;
@@ -752,37 +753,44 @@ DEBUG_PRINT("rdmaTransfer:r_vaddr=%p,npage=%d,iswrite=%d,pagesize=%d\n",(void *)
 
   TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
 
-  int opCnt=0;//number of transfer
+  int nr_wr = 0;//number of work requests posted to send requests
+  int nr_wc = 0;//number of work completion to be waiting for
   int npageToProcess=npage;
   DEBUG_TIMESTAMP(tv1);
   while(npageToProcess > 0){
     int i;
-    int batchSize = (npageToProcess > ctxt->dev_attr.max_sge)?ctxt->dev_attr.max_sge:npageToProcess;
+    int batchSize = MIN(ctxt->dev_attr.max_sge,MAX_SGE);
+
+    if(npageToProcess < batchSize)
+      batchSize = npageToProcess;
     // prepare the sge_list
     for(i=0;i<batchSize;i++){
       (sge_list+i)->addr = (uintptr_t)pagelist[npage-npageToProcess+i];
-      (sge_list+i)->addr = (uintptr_t)pagelist[i]; // CAUTION: only for test!!!
-      (sge_list+i)->length = (pagesize==0)?RDMA_CTXT_PAGE_SIZE(ctxt):pagesize;
+      (sge_list+i)->length = pagesize;
       (sge_list+i)->lkey = rdmaConn->l_rkey;
     }
     wr.num_sge = batchSize;
     npageToProcess-=batchSize;
-    opCnt ++;
-    if(opCnt % CQM == 0 || npageToProcess == 0)
+    nr_wr ++;
+    if(nr_wr % CQM == 0 || npageToProcess == 0){
       wr.send_flags |= IBV_SEND_SIGNALED;
+      nr_wc ++;
+    }
     else
       wr.send_flags &= ~IBV_SEND_SIGNALED;
 
     int rSend = ibv_post_send(rdmaConn->qp,&wr,&bad_wr);
     if(rSend!=0){
-      fprintf(stderr,"ibv_post_send failed with error code:%d\n",rSend);
+      fprintf(stderr,"ibv_post_send failed with error code:%d,reason=%s\n",rSend, strerror(errno));
       return -1; // write failed.
     }
 
     wr.wr.rdma.remote_addr += pagesize*batchSize;
   }
   DEBUG_TIMESTAMP(tv3);
-  struct ibv_wc *wc = (struct ibv_wc*)malloc(opCnt*sizeof(struct ibv_wc));
+  struct ibv_wc *wc = (struct ibv_wc*)malloc(nr_wc*sizeof(struct ibv_wc));
+
+
   // wait on completion queue
   void *cq_ctxt;
   int ne=0;
@@ -794,7 +802,7 @@ DEBUG_PRINT("rdmaTransfer:r_vaddr=%p,npage=%d,iswrite=%d,pagesize=%d\n",(void *)
     // get completion event.
     int i,npe = 0; // polled entry;
     do{
-      npe = ibv_poll_cq(rdmaConn->scq,opCnt,wc);
+      npe = ibv_poll_cq(rdmaConn->scq,nr_wc,wc);
     }while(npe==0);
     if(npe<0){
       fprintf(stderr, "%s: poll CQ failed %d\n", __func__, ne);
@@ -810,14 +818,13 @@ DEBUG_PRINT("rdmaTransfer:r_vaddr=%p,npage=%d,iswrite=%d,pagesize=%d\n",(void *)
     TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
     DEBUG_TIMESTAMP(tv5);
     DEBUG_PRINT("loop:[%d] %ld\n",npe,TIMESPAN(tv4,tv5));
-  }while(ne<opCnt);
+  }while(ne<nr_wc);
 
   DEBUG_TIMESTAMP(tv2);
   free(sge_list);
   free(wc);
   MAP_UNLOCK(con, ctxt->con_map, cipkey);
   DEBUG_TIMESTAMP(tve);
-  DEBUG_PRINT("rdmatransfer %d*%dB %ld %ld %ld us\n", npage, pagesize, TIMESPAN(tvs,tve),TIMESPAN(tv1,tv2), TIMESPAN(tv3,tv2));
   return 0;
 }
 

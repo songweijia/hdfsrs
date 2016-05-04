@@ -185,7 +185,7 @@ public class MemDatasetManager {
   	    String clientIp, int rpid, long vaddr, long timestamp, boolean bUserTimestamp)throws IOException{
   	  long blen = (timestamp == -1)?getNumBytes():getNumBytes(timestamp,bUserTimestamp);
   	  if(startOffset + length > blen)
-  	    throw new IOException("readByRDMA failed: sid="+sid+",start="+
+  	    throw new IOException("readByRDMA failed: timestamp="+timestamp+",start="+
   	      startOffset+",len="+length+",blen="+blen);
   	  int rc = 0;
 
@@ -196,7 +196,7 @@ public class MemDatasetManager {
             rc=blog.readBlockRDMA(blockId, timestamp, startOffset, length, clientIp.getBytes(), rpid, vaddr, bUserTimestamp);
           }
 
-  	  if(rc!=0){
+  	  if(rc!=length){
   	    throw new IOException("readByRDMA failed: JNIBlog.readBlockRDMA returns: " + rc);
           }
   	}

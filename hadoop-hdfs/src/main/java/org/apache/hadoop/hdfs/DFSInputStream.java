@@ -453,7 +453,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     // update current position
     if (updatePosition) {
       pos = offset;
-      blockEnd = blk.getStartOffset() + blk.getBlockSize() - 1;
+      blockEnd = blk.getStartOffset() + blk.getBlockSize();
       // because the last block may appears shorter at given "timetamp".
       if(blockEnd>this.fileLength)
         blockEnd = this.fileLength; 
@@ -584,7 +584,6 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
       assert (target==pos) : "Wrong postion " + pos + " expect " + target;
       long offsetIntoBlock = target - targetBlock.getStartOffset();
       long visibleBlockLength = blockEnd - targetBlock.getStartOffset();
-      
 
       DNAddrPair retval = chooseDataNode(targetBlock, null);
       chosenNode = retval.info;

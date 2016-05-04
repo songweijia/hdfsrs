@@ -1,6 +1,7 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import java.io.IOException;
+import java.io.Closeable;
 
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager.MemBlockMeta;
@@ -9,13 +10,13 @@ import org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetManager.M
  * @author weijia
  * Send block message using RDMA.
  */
-public class RDMABlockSender {
+public class RDMABlockSender implements Closeable{
 
   /** the block to read from */
   protected final ExtendedBlock block;
   /** Position of first byte to read from block file */
   protected final long startOffset;
-  /** Position of last byte to read from block file */
+  /** length of data to read */
   protected final long length;
   /** DateNode */
   protected DataNode datanode;
@@ -44,7 +45,7 @@ public class RDMABlockSender {
     DataNode datanode, String clientIp, int rpid, long vaddr, long timestamp, boolean bUserTimestamp){
     this.block = block;
     this.startOffset = startOffset;
-    this.length = Math.min(startOffset + length, this.block.getNumBytes()) - startOffset;
+    this.length = Math.min(length, this.block.getNumBytes()) - startOffset;
     this.clientIp = clientIp;
     this.rpid = rpid;
     this.vaddr = vaddr;
@@ -61,5 +62,10 @@ public class RDMABlockSender {
     //send data.
     replica.readByRDMA((int)startOffset, (int)length, clientIp, rpid, vaddr,
         timestamp, bUserTimestamp);
+  }
+
+  @Override
+  public void close() throws IOException{
+    // do nothing...
   }
 }
