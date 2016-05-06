@@ -66,8 +66,7 @@ struct rdma_conn {
   uint32_t                l_mtu,r_mtu;
   uint32_t                l_qp_rd_atom,r_qp_rd_atom;
 };
-#define RDMA_WRID	(3)
-#define RDMA_RDID	(4)
+
 /*ib connection config for exchange*/
 #pragma pack(push,1)
 struct ibcon_exchange{
@@ -111,6 +110,7 @@ extern int initializeContext(
   const char * dev,
   const uint16_t port,
   const uint16_t isClient);
+
 /* destroyContext():Destroy an initialized RDMA context.
  * PARAMTERS
  * ctxt:   the pointer pointing to an initialized RDMA context
@@ -154,6 +154,7 @@ extern int allocateBuffer(RDMACtxt *ctxt, void **buf);
  * -4  bug:could not find buffer
  */
 extern int releaseBuffer(RDMACtxt *ctxt, const void *buf);
+
 /* rdmaConnect(): connect the client context to a blog context.
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized client context
@@ -168,6 +169,7 @@ extern int releaseBuffer(RDMACtxt *ctxt, const void *buf);
  * -6  cannot fill rdma connection to map
  */
 extern int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip);
+
 /*
  * rdmaDisconnect(): disconnect the client context from a blog context.
  * PARAMETERS
@@ -178,6 +180,7 @@ extern int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip);
  * others for failure
  */
 extern int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip);
+
 /* rdmaTransfer(): transfer a list of pages using RDMA.
  * PARAMETERS
  * ctxt:    the pointer pointing to an initialized blog context.
@@ -197,14 +200,17 @@ extern int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pi
   rdmaTransfer( ctxt, hostip, pid, r_vaddr, pagelist, npage, 1, pagesize)
 #define rdmaRead( ctxt, hostip, pid, r_vaddr, pagelist, npage, pagesize ) \
   rdmaTransfer( ctxt, hostip, pid, r_vaddr, pagelist, npage, 0, pagesize)
+
   ////////////////////////////////////////////////
  // Definition of internal tools               //
 ////////////////////////////////////////////////
 inline int isBlogCtxt(const RDMACtxt * ctxt);
+
 /*
  * get int ip from string.
  */
 inline const uint32_t getip(const char* ipstr);
+
 #ifdef DEBUG
 #define DEBUG_PRINT(arg,fmt...) fprintf(stderr,arg, ##fmt )
 #else

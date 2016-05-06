@@ -35,7 +35,7 @@ static int die(const char *reason){
 MAP_DEFINE(con,RDMAConnection,10);
 
 #define MAX_RD_ATOM (0x10) // maximum outstanding read/atomic requests
-#define MAX_QP_WR (0x400) // maximum requests allow in the queue pair. MAX_QP_WR * MAX_SGE * PAGE_SIZE = 128M - this is the maximum amount of data we can read/write once by rdmaTransfer/rdmaRead/rdmaWrite
+#define MAX_QP_WR (0x200) // maximum requests allow in the queue pair.
 #define MAX_SGE (0x10) // maximum scatter gather should not more than 16.
 #define CQM (64) // completion queue moderation number.
 
@@ -729,8 +729,7 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
 int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
   if(pagesize == 0)
     pagesize = RDMA_CTXT_PAGE_SIZE(ctxt);
-  struct timeval tv1,tv2,tv3,tv4,tv5,tvs,tve;
-  DEBUG_TIMESTAMP(tvs);
+  //struct timeval tv1,tv2,tv3,tv4,tv5,tvs,tve;
   const uint64_t cipkey = (const uint64_t)MAKE_CON_KEY(hostip,pid);
   RDMAConnection *rdmaConn = NULL;
   // STEP 1: get the connection
@@ -744,7 +743,6 @@ int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, cons
   struct ibv_send_wr wr;
   wr.wr.rdma.remote_addr = r_vaddr;
   wr.wr.rdma.rkey = rdmaConn->r_rkey;
-  wr.wr_id = iswrite?RDMA_WRID:RDMA_RDID;
   wr.sg_list = sge_list;
   wr.opcode = iswrite?IBV_WR_RDMA_WRITE:IBV_WR_RDMA_READ;
   wr.send_flags = 0; // we only set IBV_SEND_SIGNALED every CQM(cq moderation);
@@ -753,78 +751,89 @@ int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, cons
 
   TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
 
-  int nr_wr = 0;//number of work requests posted to send requests
-  int nr_wc = 0;//number of work completion to be waiting for
-  int npageToProcess=npage;
-  DEBUG_TIMESTAMP(tv1);
-  while(npageToProcess > 0){
-    int i;
-    int batchSize = MIN(ctxt->dev_attr.max_sge,MAX_SGE);
+  int nr_wr_post = 0;//number of work requests posted to send requests
+  int nr_wr_pipe = 0;//number of work requests in pipe
+  int nr_wc_pred = 0;//number of work completion to be waiting for
+  int pipe_cap = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);//pipe capacity
+  int nr_page_to_transfer = npage;
 
-    if(npageToProcess < batchSize)
-      batchSize = npageToProcess;
-    // prepare the sge_list
-    for(i=0;i<batchSize;i++){
-      (sge_list+i)->addr = (uintptr_t)pagelist[npage-npageToProcess+i];
-      (sge_list+i)->length = pagesize;
-      (sge_list+i)->lkey = rdmaConn->l_rkey;
+  while( nr_page_to_transfer > 0 || nr_wc_pred > 0 ){
+
+    // fill the pipeline
+    while(nr_wr_pipe < pipe_cap && nr_page_to_transfer > 0){
+      int i;
+      int batch_size = MIN(ctxt->dev_attr.max_sge,MAX_SGE);
+
+      if(nr_page_to_transfer < batch_size)
+        batch_size = nr_page_to_transfer;
+      // prepare the sge_list
+      for(i=0;i<batch_size;i++){
+        (sge_list+i)->addr = (uintptr_t)pagelist[npage-nr_page_to_transfer+i];
+        (sge_list+i)->length = pagesize;
+        (sge_list+i)->lkey = rdmaConn->l_rkey;
+      }
+      wr.num_sge = batch_size;
+      wr.wr_id = nr_wr_post + 1; // wr_id is the index of the  work request, begins from 1
+      if(wr.wr_id % CQM == 0 || nr_page_to_transfer == batch_size || (nr_wr_pipe+1) == pipe_cap){
+        wr.send_flags |= IBV_SEND_SIGNALED;
+      } else {
+        wr.send_flags &= ~IBV_SEND_SIGNALED;
+      }
+
+      int rSend = ibv_post_send(rdmaConn->qp,&wr,&bad_wr);
+      if(rSend!=0){
+        fprintf(stderr,"ibv_post_send failed with error code:%d,reason=%s\n",rSend, strerror(errno));
+        fprintf(stderr,"bad_wr.wr_id=%ld\n",bad_wr->wr_id);
+        return -1; // write failed.
+      } else {
+        nr_page_to_transfer -= batch_size;
+        nr_wr_pipe ++;
+        nr_wr_post ++;
+        if(wr.send_flags&IBV_SEND_SIGNALED)
+          nr_wc_pred ++;
+      }
+
+      wr.wr.rdma.remote_addr += pagesize*batch_size;
     }
-    wr.num_sge = batchSize;
-    npageToProcess-=batchSize;
-    nr_wr ++;
-    if(nr_wr % CQM == 0 || npageToProcess == 0){
-      wr.send_flags |= IBV_SEND_SIGNALED;
-      nr_wc ++;
-    }
-    else
-      wr.send_flags &= ~IBV_SEND_SIGNALED;
 
-    int rSend = ibv_post_send(rdmaConn->qp,&wr,&bad_wr);
-    if(rSend!=0){
-      fprintf(stderr,"ibv_post_send failed with error code:%d,reason=%s\n",rSend, strerror(errno));
-      return -1; // write failed.
-    }
+    struct ibv_wc *wc = (struct ibv_wc*)malloc(nr_wc_pred*sizeof(struct ibv_wc));
 
-    wr.wr.rdma.remote_addr += pagesize*batchSize;
-  }
-  DEBUG_TIMESTAMP(tv3);
-  struct ibv_wc *wc = (struct ibv_wc*)malloc(nr_wc*sizeof(struct ibv_wc));
+    // wait on completion queue
+    void *cq_ctxt;
+    int nr_wc_recv=0; // the number of work completion received.
 
-
-  // wait on completion queue
-  void *cq_ctxt;
-  int ne=0;
-
-  do{
-    DEBUG_TIMESTAMP(tv4);
     TEST_NZ(ibv_get_cq_event(rdmaConn->ch, &rdmaConn->scq, &cq_ctxt), "ibv_get_cq_event failed!");
     ibv_ack_cq_events(rdmaConn->scq,1);
-    // get completion event.
-    int i,npe = 0; // polled entry;
+
+    // get completion events
+    int i = 0; // polled entry;
     do{
-      npe = ibv_poll_cq(rdmaConn->scq,nr_wc,wc);
-    }while(npe==0);
-    if(npe<0){
-      fprintf(stderr, "%s: poll CQ failed %d\n", __func__, ne);
+      nr_wc_recv = ibv_poll_cq(rdmaConn->scq,nr_wc_pred,wc);
+    }while(nr_wc_recv==0);
+    if(nr_wc_recv<0){
+      fprintf(stderr, "%s poll CQ failed with error:%s\n", __func__, strerror(errno));
       return -2;
     }
-    for(i=0;i<npe;i++){
+
+    // check completion events
+    for(i=0;i<nr_wc_recv;i++){
       if((wc+i)->status != IBV_WC_SUCCESS) {
         fprintf(stderr, "%s: rdma transfer failed,wc[%d]->status=%d.\n",__func__,i,(wc+i)->status);
         return -3;
       }
     }
-    ne += npe;
-    TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
-    DEBUG_TIMESTAMP(tv5);
-    DEBUG_PRINT("loop:[%d] %ld\n",npe,TIMESPAN(tv4,tv5));
-  }while(ne<nr_wc);
 
-  DEBUG_TIMESTAMP(tv2);
+    //update nr_wr_pipe and nr_wc_pred
+    nr_wr_pipe = nr_wr_post - (wc+nr_wc_recv-1)->wr_id;
+    nr_wc_pred -= nr_wc_recv;
+    free(wc);
+
+    // be prepared for the next work completion event.
+    TEST_NZ(ibv_req_notify_cq(rdmaConn->scq,0),"Could not request notification from sending completion queue, ibv_req_notify_cq()");
+  }
+
   free(sge_list);
-  free(wc);
   MAP_UNLOCK(con, ctxt->con_map, cipkey);
-  DEBUG_TIMESTAMP(tve);
   return 0;
 }
 
