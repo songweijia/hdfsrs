@@ -75,11 +75,11 @@
  </property>
  <property>
   <name>dfs.client.use.rdma.blockreader</name>
-  <value>true</value>
+  <value>false</value>
  </property>
  <property>
   <name>dfs.client.use.rdma.blockwriter</name>
-  <value>true</value>
+  <value>false</value>
  </property>
  <property>
   <name>dfs.client.rdma.writer.flushsize</name>

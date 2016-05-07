@@ -25,6 +25,18 @@ typedef struct _pers_queue_entry pers_event_t;
 
 #endif
 
+#ifndef DEBUG_TIMESTAMP
+
+  #ifdef DEBUG
+  #define DEBUG_TIMESTAMP(t) gettimeofday(&t,NULL)
+  #else
+  #define DEBUG_TIMESTAMP(t)
+  #endif
+
+  #define TIMESPAN(t1,t2) ((t2.tv_sec-t1.tv_sec)*1000000+(t2.tv_usec-t1.tv_usec))
+
+#endif
+
 MAP_DECLARE(block, block_t);
 MAP_DECLARE(log, uint64_t);
 MAP_DECLARE(snapshot, snapshot_t);
@@ -177,3 +189,4 @@ struct filesystem {
 
   RDMACtxt *rdmaCtxt; // RDMA Context
 };
+

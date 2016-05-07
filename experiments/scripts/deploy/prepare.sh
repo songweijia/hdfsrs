@@ -46,6 +46,6 @@ runMaster start-dfs.sh
 runMaster start-yarn.sh
 hdfs dfsadmin -allowSnapshot /
 
-#STEP 6 sleep 30 seconds.
-sleep 30
+#STEP 6 sleep 10 seconds.
+sleep 10
 echo done...

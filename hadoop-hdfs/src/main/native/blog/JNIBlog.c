@@ -1288,7 +1288,9 @@ DEBUG_PRINT("begin deleteBlock.\n");
 // readBlockInternal: read the latest state of a block
 int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint length, const transport_parameters_t *tp)
 {
-  DEBUG_PRINT("begin readBlock__JIII_3B.\n");
+  DEBUG_PRINT("begin readBlockInternal.\n");
+  struct timeval tv1,tv2;
+  DEBUG_TIMESTAMP(tv1);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   block_t *block;
@@ -1400,7 +1402,10 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
       return -2;
     }
   }
-  DEBUG_PRINT("end readBlock__JIII_3B.\n");
+  DEBUG_TIMESTAMP(tv2);
+  
+  DEBUG_PRINT("end readBlockInternal. %dbytes %ldus %.3fMB/s\n",
+    length,TIMESPAN(tv1,tv2),(double)length/TIMESPAN(tv1,tv2));
   return read_length;
 }
 
