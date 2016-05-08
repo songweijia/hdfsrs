@@ -633,32 +633,43 @@ static void * blog_pers_routine(void * param)
  * 3) return a negative integer on error.
  */
 static int createShmFile(const char *fn, uint64_t size){
-  #define SHM_DEV "/run/shm"
+  const char * tmpfs_dirs[] = {"/run/shm","/dev/shm",NULL};
+  const char ** p_tmpfs_dir = tmpfs_dirs;
+
+  while(access(*p_tmpfs_dir,R_OK|W_OK) < 0 || *p_tmpfs_dir != NULL) {
+    p_tmpfs_dir++;
+  }
+
+  if(p_tmpfs_dir == NULL){
+    fprintf(stderr, "Cannot find a tmpfs system.\n");
+    return -1;
+  }
+
   char fullname[64];
-  sprintf(fullname,"%s/%s",SHM_DEV,fn);
+  sprintf(fullname,"%s/%s",*p_tmpfs_dir,fn);
   // check if we have enough space
   struct statvfs stat;
 
-  if(statvfs(SHM_DEV, &stat)==-1){
-    fprintf(stderr,"Cannot open tmpfs VFS:%s,error=%s\n",SHM_DEV,strerror(errno));
-    return -1;
+  if(statvfs(*p_tmpfs_dir, &stat)==-1){
+    fprintf(stderr,"Cannot open tmpfs VFS:%s,error=%s\n",*p_tmpfs_dir,strerror(errno));
+    return -2;
   }
   if(size > stat.f_bsize*stat.f_bavail){
     fprintf(stderr,"Cannot create file %s because we have only 0x%lx bytes free, but asked 0x%lx bytes.\n", fullname, stat.f_bsize*stat.f_bavail, size);
-    return -2;
+    return -3;
   }
   // create file
   int fd = open(fullname, O_RDWR|O_CREAT,S_IWUSR|S_IRUSR|S_IRGRP|S_IWGRP|S_IROTH);
   if(fd<0){
     fprintf(stderr,"Cannot open/create file %s. Error: %s\n",fullname,strerror(errno));
-    return -3;
+    return -4;
   }
 
   // truncate it to given size
   if(ftruncate(fd,size)<0){
     fprintf(stderr,"Cannot truncate file %s to size 0x%lx, Error: %s\n",fullname,size,strerror(errno));
     close(fd);
-    return -4;
+    return -5;
   }
   return fd;
 }
