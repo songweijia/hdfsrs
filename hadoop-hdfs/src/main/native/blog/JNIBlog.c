@@ -636,7 +636,7 @@ static int createShmFile(const char *fn, uint64_t size){
   const char * tmpfs_dirs[] = {"/run/shm","/dev/shm",NULL};
   const char ** p_tmpfs_dir = tmpfs_dirs;
 
-  while(access(*p_tmpfs_dir,R_OK|W_OK) < 0 || *p_tmpfs_dir != NULL) {
+  while(access(*p_tmpfs_dir,R_OK|W_OK) < 0 && *p_tmpfs_dir != NULL) {
     p_tmpfs_dir++;
   }
 
