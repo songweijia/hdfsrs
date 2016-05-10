@@ -591,38 +591,44 @@ static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
  * PARAM param: the blog writer context
  * RETURN: pointer to the param
  */
-static void * blog_pers_routine(void * param)
+static void *blog_pers_routine(void * param)
 {
 
   filesystem_t *fs = (filesystem_t*) param;
-  pers_event_t * evt;
+  pers_event_t *evt;
+
+DEBUG_PRINT("Persistent Thread Started\n");
 
   while(1){
 
     // get event
     PERS_DEQ(fs,&evt);
-
+    
     // End of Queue
     if(IS_EOQ(evt)){
+DEBUG_PRINT("Flush: Null Event\n");
       free(evt);
+      /*
       do{
         PERS_DEQ(fs,&evt);
         if(evt!=NULL)free(evt);
       }while(evt!=NULL);
+      */
       break;
     }
 
     // flush blog
+DEBUG_PRINT("Flush: Block %" PRIu64 " Operation %" PRIu32 "\n", evt->block->id,  evt->block->log[evt->log_length-1].op);
     if(flushBlog(fs, evt) != 0){
       fprintf(stderr, "Faile to flush blog: id=%ld,log_length=%ld\n",
         evt->block->id,evt->log_length);
       exit(1);
     }
 
-    // release event
+    // free event
     free(evt);
   }
-
+DEBUG_PRINT("Persistent Thread Out.\n");
   return param;
 }
 
@@ -834,7 +840,6 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
       case CREATE_BLOCK:
         block->status = ACTIVE;
         block->length = 0;
-        MAP_LOCK(block, fs->block_map, block->id, 'w');
         if (MAP_CREATE_AND_WRITE(block, fs->block_map, block->id, block) != 0) {
           fprintf(stderr, "replayBlog:Faile to create block:%ld.\n",block->id);
           exit(1);
@@ -860,12 +865,6 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
 
         //UPDATE fs->nr_pages
         fs->nr_pages = MAX(fs->nr_pages,log->first_pn+log->nr_pages);
-
-        //TRUNCATE PAGE file
-        if(lseek(block->page_fd,0,SEEK_END)>fsize){
-          ftruncate(block->page_fd,fsize);
-          lseek(block->page_fd,0,SEEK_END);
-        }
         break;
 
       case DELETE_BLOCK:
@@ -883,6 +882,11 @@ static void replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block_t *
     }
     // replay log on java metadata.
     (*env)->CallObjectMethod(env,thisObj,rl_mid,block->id,log->op,log->first_pn);
+  }
+
+  if(lseek(block->page_fd,0,SEEK_END)>fsize){
+    ftruncate(block->page_fd,fsize);
+    lseek(block->page_fd,0,SEEK_END);
   }
 }
 
@@ -1135,11 +1139,13 @@ DEBUG_PRINT("begin createBlock\n");
   uint64_t block_id = (uint64_t) blockId;
   block_t *block;
   log_t *log_entry;
+  char fullname[256];
   
   // If the block already exists return an error.
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) == 0) {
     fprintf(stderr, "WARNING: Block with ID %" PRIu64 " already exists.\n", block_id);
+    MAP_UNLOCK(block, filesystem->block_map, block_id);
     return -1;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
@@ -1147,11 +1153,39 @@ DEBUG_PRINT("begin createBlock\n");
   // Create the block structure.
   block = (block_t *) malloc(sizeof(block_t));
   block->id = block_id;
-
-  // Create the log.
-  block->log_length = 2;
   block->log_cap = 2;
+  block->status = ACTIVE;
+  block->length = 0;
+  block->pages_cap = 0;
+  block->pages = NULL;
   block->log = (log_t*) malloc(2*sizeof(log_t));
+  block->log_map_hlc = MAP_INITIALIZE(log);
+  block->log_map_ut = MAP_INITIALIZE(log);
+  block->snapshot_map = MAP_INITIALIZE(snapshot);
+  
+  // Open Files.
+  sprintf(fullname,"%s/%ld."BLOGFILE_SUFFIX,filesystem->pers_path,block_id);
+  if((block->blog_fd = open(fullname,O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH))<0){
+    fprintf(stderr, "ERROR: cannot open blog file for write, block id=%ld, Error: %s\n",block_id,strerror(errno));
+    exit(-2);
+  }
+  sprintf(fullname,"%s/%ld."PAGEFILE_SUFFIX,filesystem->pers_path,block_id);
+  if((block->page_fd = open(fullname,O_DIRECT|O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH))<0){
+    fprintf(stderr, "ERROR: cannot open page file for write, block id=%ld, Error: %s\n",block_id,strerror(errno));
+    exit(-3);
+  }
+  block->log_length_pers = 0;
+  
+  // Initialize lock.
+  if(pthread_rwlock_init(&block->blog_rwlock,NULL)!=0){
+    fprintf(stderr, "ERROR: cannot initialize rw lock for block:%ld\n", block->id);
+    exit(-1);
+  }
+  
+  // Notify the persistent thread.
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length;
   
   // add the first two entries.
   log_entry = (log_t*)block->log;
@@ -1168,46 +1202,13 @@ DEBUG_PRINT("begin createBlock\n");
   log_entry->block_length = 0;
   log_entry->start_page = 0;
   log_entry->nr_pages = 0;
+  log_entry->u = 0;
+  pthread_spin_lock(&(filesystem->clock_spinlock));
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env,mhlc,log_entry);
-  log_entry->u = 0;
-  
-  // Update current state.
-  block->status = ACTIVE;
-  block->length = 0;
-  block->pages_cap = 0;
-  block->pages = NULL;
-  
-  // Create snapshot structures.
-  block->log_map_hlc = MAP_INITIALIZE(log);
-  block->log_map_ut = MAP_INITIALIZE(log);
-  block->snapshot_map = MAP_INITIALIZE(snapshot);
-  
-  // initialize rwlock.
-  if(pthread_rwlock_init(&block->blog_rwlock,NULL)!=0){
-    fprintf(stderr, "ERROR: cannot initialize rw lock for block:%ld\n", block->id);
-    exit(-1);
-  }
-
-  // open files
-  char fullname[256];
-  sprintf(fullname,"%s/%ld."BLOGFILE_SUFFIX,filesystem->pers_path,block_id);
-  if((block->blog_fd = open(fullname,O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH))<0){
-    fprintf(stderr, "ERROR: cannot open blog file for write, block id=%ld, Error: %s\n",block_id,strerror(errno));
-    exit(-2);
-  }
-  sprintf(fullname,"%s/%ld."PAGEFILE_SUFFIX,filesystem->pers_path,block_id);
-  if((block->page_fd = open(fullname,O_DIRECT|O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH))<0){
-    fprintf(stderr, "ERROR: cannot open page file for write, block id=%ld, Error: %s\n",block_id,strerror(errno));
-    exit(-3);
-  }
-  block->log_length_pers = 0;
-
-  // notify the persistent thread
-  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length;
+  block->log_length = 2;
   PERS_ENQ(filesystem,evt);
+  pthread_spin_unlock(&(filesystem->clock_spinlock));
 
   // Put block to block map.
   MAP_LOCK(block, filesystem->block_map, block_id, 'w');
@@ -1260,6 +1261,11 @@ DEBUG_PRINT("begin deleteBlock.\n");
     return -1;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
+
+  // Notify the persistent thread.
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length+1;
   
   // Create the corresponding log entry.
   if(BLOG_WRLOCK(block)!=0){
@@ -1273,18 +1279,15 @@ DEBUG_PRINT("begin deleteBlock.\n");
   log_entry->block_length = 0;
   log_entry->start_page = 0;
   log_entry->nr_pages = 0;
-  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
-  update_log_clock(env, mhlc, log_entry);
   log_entry->u = estimate_user_timestamp(block,log_entry->r);
   log_entry->first_pn = 0;
+  pthread_spin_lock(&(filesystem->clock_spinlock));
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  update_log_clock(env, mhlc, log_entry);
   block->log_length += 1;
-  BLOG_UNLOCK(block);
-
-  // notify the persistent thread
-  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length;
   PERS_ENQ(filesystem,evt);
+  pthread_spin_unlock(&(filesystem->clock_spinlock));
+  BLOG_UNLOCK(block);
   
   // Release the current state of the block.
   block->status = NON_ACTIVE;
@@ -1316,6 +1319,7 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) != 0 || block->status != ACTIVE) {
     fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
+    MAP_UNLOCK(block, filesystem->block_map, block_id);
     return -1;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
@@ -1619,9 +1623,9 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) != 0  || block->status != ACTIVE) {
     fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
+    MAP_UNLOCK(block, filesystem->block_map, block_id);
     return -1;
   }
-
   MAP_UNLOCK(block, filesystem->block_map, block_id);
   
   // Find the last entry.
@@ -1654,10 +1658,11 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ
   uint64_t block_id = (uint64_t) blockId;
   uint64_t snapshot_time = (uint64_t) t;
   
-    // Find the block.
+  // Find the block.
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) != 0) {
     fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
+    MAP_UNLOCK(block, filesystem->block_map, block_id);
     return -1;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
@@ -1855,6 +1860,10 @@ DEBUG_PRINT("beging writeBlock.\n");
     block->length = end_of_write;
   }
 
+  // Fill the event for persistent thread.
+  pers_event_t *event = (pers_event_t *) malloc(sizeof(pers_event_t));
+  event->block = block;
+  event->log_length = block->log_length+1;
 
   // Create the corresponding log entry. 
   if(BLOG_WRLOCK(block)!=0){
@@ -1862,8 +1871,6 @@ DEBUG_PRINT("beging writeBlock.\n");
       block_id, strerror(errno));
     return -9;
   }
-
-
   log_index = block->log_length;
   check_and_increase_log_cap(block);
   log_entry = (log_t*)block->log + log_index;
@@ -1871,19 +1878,15 @@ DEBUG_PRINT("beging writeBlock.\n");
   log_entry->block_length = block->length;
   log_entry->start_page = first_page;
   log_entry->nr_pages = last_page-first_page+1;
-  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
-  update_log_clock(env, mhlc, log_entry);
   log_entry->u = userTimestamp;
   log_entry->first_pn = PAGE_PTR_TO_NR(filesystem,data);
-  block->log_length += 1;
+  pthread_spin_lock(&(filesystem->clock_spinlock));
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  update_log_clock(env, mhlc, log_entry);
+  block->log_length++;
+  PERS_ENQ(filesystem,event);
+  pthread_spin_unlock(&(filesystem->clock_spinlock));
   BLOG_UNLOCK(block);
-
-
-  // notify the persistent thread
-  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length;
-  PERS_ENQ(filesystem,evt);
 
   // Fill block with the appropriate information.
   if (block->pages_cap == 0)
@@ -1964,30 +1967,37 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getPid
 JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy
   (JNIEnv *env, jobject thisObj)
 {
-DEBUG_PRINT("beging destroy.\n");
-  filesystem_t *fs;
-  fs = get_filesystem(env,thisObj);
+DEBUG_PRINT("beginning destroy.\n");
+  filesystem_t *fs = get_filesystem(env,thisObj);
   void * ret;
+  uint64_t nr_blog,block_id;
+  uint64_t *ids;
+  block_t *block;
+  char fullname[256];
 
   // kill blog writer
   pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
   evt->block = NULL;
   PERS_ENQ(fs,evt);
-  if(pthread_join(fs->pers_thrd, &ret))
+DEBUG_PRINT("Waiting for persistent thread to join\n");
+  if(pthread_join(fs->pers_thrd, &ret) != 0)
     fprintf(stderr,"waiting for blogWriter thread error...we may lose some data.\n");
+DEBUG_PRINT("Joined\n");
 
   // fs destroy the spin locks and sempahores
   pthread_spin_destroy(&fs->pages_spinlock);
   sem_destroy(&fs->pers_queue_sem);
   pthread_spin_destroy(&fs->queue_spinlock);
+DEBUG_PRINT("Destroyed Spinlocks\n");
 
   // fs destroy the blog locks
-  uint64_t nr_blog = MAP_LENGTH(block,fs->block_map);
-  uint64_t *ids = MAP_GET_IDS(block,fs->block_map,nr_blog);
+  nr_blog = MAP_LENGTH(block,fs->block_map);
+  ids = MAP_GET_IDS(block,fs->block_map,nr_blog);
   while(nr_blog --){
-    uint64_t block_id = ids[nr_blog];
-    block_t *block;
+    block_id = ids[nr_blog];
+DEBUG_PRINT("Block ID: %" PRIu64 " Remaining: %" PRIu64 "\n", block_id, nr_blog);
     MAP_LOCK(block,fs->block_map,block_id,'w');
+DEBUG_PRINT("Block ID: %" PRIu64 " Remaining: %" PRIu64 "\n", block_id, nr_blog);
     if(MAP_READ(block,fs->block_map, block_id, &block) == -1) {
       fprintf(stderr, "Warning: cannot read block from map, id=%ld.\n",block_id);
       continue;
@@ -1997,11 +2007,12 @@ DEBUG_PRINT("beging destroy.\n");
     close(block->page_fd);
     MAP_UNLOCK(block,fs->block_map,block_id);
   }
-
+DEBUG_PRINT("Destroy Locks\n");
+  
   // destroy RDMAContext
-  if(fs->rdmaCtxt != NULL){
+  if(fs->rdmaCtxt != NULL)
     destroyContext(fs->rdmaCtxt);
-  }
+DEBUG_PRINT("Destroy RDMA Context\n");
 
   // close files
   if(fs->page_shm_fd!=-1){
@@ -2009,14 +2020,13 @@ DEBUG_PRINT("beging destroy.\n");
     close(fs->page_shm_fd);
     fs->page_shm_fd=-1;
   }
+DEBUG_PRINT("Close files\n");
   
   // remove shm file.
-  char fullname[256];
-  sprintf(fullname,"%s/"SHM_FN,fs->pers_path);
-  if(remove(fullname)!=0){
+  sprintf(fullname,"/dev/shm/"SHM_FN);
+  if(remove(fullname)!=0)
     fprintf(stderr,"WARNING: Fail to remove page cache file %s, error:%s.\n",fullname,strerror(errno));
-  }
-DEBUG_PRINT("end destroy.\n");
+  DEBUG_PRINT("end destroy.\n");
 }
 
 /**
@@ -2041,6 +2051,11 @@ DEBUG_PRINT("begin setGenStamp.\n");
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
 
+  // Notify the persistent thread.
+  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
+  evt->block = block;
+  evt->log_length = block->log_length+1;
+
   //STEP 2: append log
   if(BLOG_WRLOCK(block)!=0){
     fprintf(stderr, "ERROR: Cannot acquire write lock on block:%ld, Error:%s\n",
@@ -2053,18 +2068,15 @@ DEBUG_PRINT("begin setGenStamp.\n");
   log_entry->block_length = block->length;
   log_entry->start_page = 0;
   log_entry->nr_pages = 0;
-  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
-  update_log_clock(env, mhlc, log_entry);
   log_entry->u = (block->log + block->log_length - 1)->u; // we reuse the last userTimestamp
   log_entry->first_pn = genStamp;
+  pthread_spin_lock(&(filesystem->clock_spinlock));
+  tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
+  update_log_clock(env, mhlc, log_entry);
   block->log_length += 1;
-  BLOG_UNLOCK(block);
-
-  // notify the persistent thread
-  pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length;
   PERS_ENQ(filesystem,evt);
+  pthread_spin_unlock(&(filesystem->clock_spinlock));
+  BLOG_UNLOCK(block);
 
 DEBUG_PRINT("end setGenStamp.\n");
   return 0;
