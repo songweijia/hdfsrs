@@ -6,6 +6,7 @@ tester_jar=FileTester.jar
 result_folder=seq_read_write
 current_folder=`pwd`
 deploy_folder=../deploy/
+number_loop=5
 
 
 # STEP 0 checks
@@ -27,39 +28,49 @@ mkdir  $result_folder
 function seq_read_write_exp
 {
   exp=$1
-  result_folder=$2
+  cfg=$2
+  r_folder=$3
 
-  for block_size in 64M
+  for block_size in 64M # block size
   do
-    for packet_size in 131072
+    for page_size in 4096 # page size
     do
-      for page_size in 4096
+
+      for((i=0;i<$number_loop;i++))
       do
-      cd $deploy_folder
-      ./prepare.sh $exp $block_size $packet_size $page_size
-      cd $current_folder
+        # write throughput
+        for packet_size in 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576 2097152 4194304
+        do
+        cd $deploy_folder
+        ./prepare.sh $exp $cfg $block_size $packet_size $page_size
+        cd $current_folder
 
-      dd if=/dev/zero of=rawfile bs=$packet_size count=1
-      hdfs dfs -copyFromLocal rawfile /rawfile
+        dd if=/dev/zero of=rawfile bs=$packet_size count=1
+        hdfs dfs -copyFromLocal rawfile /rawfile
+        rm -rf rawfile
 
-      # write throughput
-      hadoop jar FileTester.jar timeappend /rawfile $packet_size 10 >> $result_folder/wthp_$packet_size
+        hadoop jar FileTester.jar timeappend /rawfile $packet_size 10 >> $r_folder/wthp_$packet_size
 
-      # wait for the block to be reported to the namenode: very important
-      sleep 5
+        # read throughput
+        hadoop jar FileTester.jar zeroCopyRead /rawfile $packet_size 2 >> $r_folder/rthp_$packet_size
+      done
 
-      # read throughput
-      hadoop jar FileTester.jar standardRead /rawfile $packet_size 2 >> $result_folder/rthp_$packet_size
-
-      rm -rf rawfile
       done
     done
   done
 }
 
 # STEP 3 run exp
-for exp in master
-do
-  mkdir -p $result_folder/$exp
-  seq_read_write_exp $exp $result_folder/$exp
-done
+
+# - FFFS TCP
+# mkdir -p $result_folder/fffs.tcp
+# seq_read_write_exp fffs tcp $result_folder/fffs.tcp
+
+# - FFFS RDMA
+# mkdir -p $result_folder/fffs.rdma
+# seq_read_write_exp fffs rdma $result_folder/fffs.rdma
+
+# - HDFS ORG
+mkdir -p $result_folder/hdfs.org
+seq_read_write_exp hdfs org $result_folder/hdfs.org
+

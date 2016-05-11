@@ -1300,7 +1300,9 @@ DEBUG_PRINT("begin deleteBlock.\n");
 int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint length, const transport_parameters_t *tp)
 {
   DEBUG_PRINT("begin readBlockInternal.\n");
+#ifdef DEBUG
   struct timeval tv1,tv2;
+#endif
   DEBUG_TIMESTAMP(tv1);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
@@ -2012,7 +2014,10 @@ DEBUG_PRINT("beging destroy.\n");
   
   // remove shm file.
   char fullname[256];
-  sprintf(fullname,"%s/"SHM_FN,fs->pers_path);
+  sprintf(fullname,"/run/shm/"SHM_FN);
+  if(access(fullname,R_OK|W_OK)!=0){
+    sprintf(fullname,"/dev/shm"SHM_FN);
+  }
   if(remove(fullname)!=0){
     fprintf(stderr,"WARNING: Fail to remove page cache file %s, error:%s.\n",fullname,strerror(errno));
   }
