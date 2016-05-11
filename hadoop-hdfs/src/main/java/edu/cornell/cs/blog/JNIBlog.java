@@ -92,10 +92,14 @@ public class JNIBlog
     this.blockMaps = new HashMap<Long, MemBlockMeta>();
 
     // initialize blog
-    if(useRDMA)
+    writeLine("Initialize called.");
+    if(useRDMA) {
+      writeLine("Initialize for RDMA.");
       initializeRDMA(poolSize, (int)blockSize, pageSize, persPath, dev, port);
-    else
+    } else {
+      writeLine("Initialize without RDMA.");
       initialize(poolSize, (int)blockSize, pageSize, persPath);
+    }
 
     // add shutdown hook, this will destroy the blog.
     Runtime.getRuntime().addShutdownHook(new Thread(){
@@ -542,25 +546,27 @@ public class JNIBlog
   {
     JNIBlog bl = new JNIBlog();
     HybridLogicalClock mhlc = new HybridLogicalClock();
-    long rtc;
+    long rtc = 0;
+    Configuration conf = new Configuration();
+    MemDatasetManager mdm = new MemDatasetManager(conf);
     
-//    writeLine("Initialize.");
-//    bl.initialize(1024*1024, 1024, ".");
-    writeLine("Create Blocks.");
     writeLine("Begin Initialize.");
-    bl.initialize(null,null,1l<<30,1024*1024, 1024, "testbpid", false, null, 0);
-/*
+    bl.initialize(mdm, "testpbid", 1l<<30, 1024*1024, 1024, "testbpid", false, null, 0);
     writeLine(bl.hlc.toString());
-    bl.testBlockCreation(mhlc);
-    writeLine("Delete Blocks.");
-    bl.testBlockDeletion(mhlc);
-    writeLine("Write Blocks.");
-    rtc = bl.testWrite(mhlc);
-    Thread.sleep(2);
+    if (!args[0].equals("pers")) {
+      writeLine("Create Blocks.");
+      bl.testBlockCreation(mhlc);
+      writeLine("Delete Blocks.");
+      bl.testBlockDeletion(mhlc);
+      writeLine("Write Blocks.");
+      rtc = bl.testWrite(mhlc);
+      Thread.sleep(2);
+    }
     writeLine("Read Blocks.");
     bl.testRead();
-    writeLine("Read Snapshot Blocks.");
-    bl.testSnapshot(rtc);
-*/
+    if (!args[0].equals("pers")) {
+      writeLine("Read Snapshot Blocks.");
+      bl.testSnapshot(rtc);
+    }
   }
 }

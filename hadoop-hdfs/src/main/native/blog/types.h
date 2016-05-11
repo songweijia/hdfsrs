@@ -13,7 +13,7 @@ typedef struct log log_t;
 typedef struct block block_t;
 typedef struct filesystem filesystem_t;
 typedef struct snapshot snapshot_t;
-typedef struct _pers_queue_entry pers_event_t;
+typedef struct pers_queue_entry pers_event_t;
 
 #ifndef DEBUG_PRINT
 
@@ -124,11 +124,11 @@ struct snapshot {
   uint64_t *pages;
 };
 
-TAILQ_HEAD(_pers_queue, _pers_queue_entry);
-struct _pers_queue_entry {
+TAILQ_HEAD(_pers_queue, pers_queue_entry);
+struct pers_queue_entry {
   block_t *block;   // block pointer; NULL for End-OF-Queue
   uint64_t log_length; // The latest log updated to this length
-  TAILQ_ENTRY(_pers_queue_entry) lnk; // link pointers
+  TAILQ_ENTRY(pers_queue_entry) lnk; // link pointers
 }; 
 #define IS_EOQ(e) (e->block == NULL)
 
@@ -152,6 +152,7 @@ struct filesystem {
   size_t page_size;
   BLOG_MAP_TYPE(block) *block_map;
   pthread_spinlock_t pages_spinlock;
+  pthread_spinlock_t clock_spinlock;
 #define PAGE_NR_TO_PTR(fs,nr) ((void*)((char *)(fs)->page_base+((fs)->page_size*(nr))))
 #define PAGE_PTR_TO_NR(fs,ptr) (((char*)(ptr) - (char*)(fs)->page_base)/(fs)->page_size)
 #define INVALID_PAGE_NO  (~0x0L)
@@ -163,6 +164,10 @@ struct filesystem {
   pthread_t pers_thrd;
   char pers_path[256];
 #define PERS_ENQ(fs,e) do{ \
+    if (e->block != NULL) \
+        DEBUG_PRINT("Enqueue: Block %" PRIu64 " Operation %" PRIu32 "\n", e->block->id,  e->block->log[e->log_length-1].op); \
+    else \
+        DEBUG_PRINT("Enqueue: Null Event\n"); \
     pthread_spin_lock(&(fs)->queue_spinlock); \
     TAILQ_INSERT_TAIL(&(fs)->pers_queue,e,lnk); \
     pthread_spin_unlock(&(fs)->queue_spinlock); \
