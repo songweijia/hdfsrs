@@ -185,6 +185,38 @@ public class FileTester extends Configured implements Tool {
     fsis.close();
   }
 
+  void syncMultiWrite(FileSystem fs, String path, long beginTime,
+    long fsize, int writeSize) throws IOException{
+    long start_ts,end_ts,len=0;
+
+    // open file
+    FSDataOutputStream fsos = fs.create(new Path(path));
+    byte [] buf = new byte[writeSize];
+    for(int i=0;i<writeSize;i++)buf[i]=(byte)'a';
+
+    // wait for time to write
+    while(System.currentTimeMillis() < beginTime){
+      try{
+        Thread.sleep(100);
+      }catch(InterruptedException ie){
+        //do nothing
+      }
+    };
+
+    // write 
+    long bytesWritten = 0L;
+    start_ts = System.nanoTime();
+    while(bytesWritten < fsize){
+      fsos.write(buf,0,writeSize);
+      bytesWritten += writeSize;
+    }
+    fsos.hflush();
+    fsos.close();
+    end_ts = System.nanoTime();
+
+    System.out.println( (end_ts-start_ts) + " ns" );
+  }
+
   void addTimestamp(long ts,byte[] buf){
     StringBuffer sb = new StringBuffer();
     sb.append(ts);
@@ -387,7 +419,8 @@ public class FileTester extends Configured implements Tool {
         "\tanalyzesnap <path>\n"+
         "\treadto <srcpath> <destpath> <timestamp> <bUserTimestamp>\n"+
         "\twrite.ts64 <filepath> <ncount>\n" +
-        "\tr113");
+        "\tsyncmultiwrite <filepath> <beginTime(sec since 1970-01-01)> <filesize> <writesize>\n" +
+        "\tr114");
       return -1;
     }
     if("append".equals(args[0]))
@@ -416,6 +449,9 @@ public class FileTester extends Configured implements Tool {
       this.readto(fs,args[1],args[2],Long.parseLong(args[3]),Boolean.parseBoolean(args[4]));
     else if("write.ts64".equals(args[0]))
       this.write_ts64(fs,args[1],Integer.parseInt(args[2]));
+    else if("syncmultiwrite".equals(args[0]))
+      this.syncMultiWrite(fs,args[1],Long.parseLong(args[2])*1000,
+        Long.parseLong(args[3]),Integer.parseInt(args[4]));
     else
       throw new Exception("invalid command:"+args[0]);
     return 0;
