@@ -329,7 +329,7 @@ public class MemDatasetManager {
   
 //  MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
 //    this.dataset = dataset;
-  MemDatasetManager(Configuration conf){
+  public MemDatasetManager(Configuration conf){
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
     this.rdmaport = conf.getInt(DFS_RDMA_CON_PORT_KEY, DFS_RDMA_CON_PORT_DEFAULT);

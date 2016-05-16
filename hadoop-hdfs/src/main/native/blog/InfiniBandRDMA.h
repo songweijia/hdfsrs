@@ -212,7 +212,7 @@ inline int isBlogCtxt(const RDMACtxt * ctxt);
 inline const uint32_t getip(const char* ipstr);
 
 #ifdef DEBUG
-#define DEBUG_PRINT(arg,fmt...) fprintf(stderr,arg, ##fmt )
+#define DEBUG_PRINT(arg,fmt...) {fprintf(stderr,arg, ##fmt );fflush(stderr);}
 #else
 #define DEBUG_PRINT(arg,fmt...)
 #endif

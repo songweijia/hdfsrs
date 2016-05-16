@@ -164,10 +164,11 @@ struct filesystem {
   pthread_t pers_thrd;
   char pers_path[256];
 #define PERS_ENQ(fs,e) do{ \
-    if (e->block != NULL) \
+    if (e->block != NULL) { \
         DEBUG_PRINT("Enqueue: Block %" PRIu64 " Operation %" PRIu32 "\n", e->block->id,  e->block->log[e->log_length-1].op); \
-    else \
+    } else { \
         DEBUG_PRINT("Enqueue: Null Event\n"); \
+    } \
     pthread_spin_lock(&(fs)->queue_spinlock); \
     TAILQ_INSERT_TAIL(&(fs)->pers_queue,e,lnk); \
     pthread_spin_unlock(&(fs)->queue_spinlock); \

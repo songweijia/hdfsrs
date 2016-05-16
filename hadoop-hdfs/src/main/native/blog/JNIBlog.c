@@ -1049,9 +1049,14 @@ int initializeInternal(JNIEnv *env, jobject thisObj, uint64_t poolSize,
     fprintf(stderr,"Fail to load blogs.\n");
   }
 
-  // STEP 4: initialize page spin lock
+  // STEP 4: initialize page spin lock & clock spin lock
   if(pthread_spin_init(&fs->pages_spinlock,PTHREAD_PROCESS_PRIVATE)!=0){
     fprintf(stderr,"Fail to initialize page spin lock, error: %s\n",strerror(errno));
+    exit(1);
+  }
+  
+  if(pthread_spin_init(&fs->clock_spinlock,PTHREAD_PROCESS_PRIVATE)!=0){
+    fprintf(stderr,"Fail to initialize clock spin lock, error: %s\n",strerror(errno));
     exit(1);
   }
   
@@ -1162,7 +1167,7 @@ DEBUG_PRINT("begin createBlock\n");
   block->log_map_hlc = MAP_INITIALIZE(log);
   block->log_map_ut = MAP_INITIALIZE(log);
   block->snapshot_map = MAP_INITIALIZE(snapshot);
-  
+
   // Open Files.
   sprintf(fullname,"%s/%ld."BLOGFILE_SUFFIX,filesystem->pers_path,block_id);
   if((block->blog_fd = open(fullname,O_RDWR|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH))<0){
@@ -1184,8 +1189,6 @@ DEBUG_PRINT("begin createBlock\n");
   
   // Notify the persistent thread.
   pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length;
   
   // add the first two entries.
   log_entry = (log_t*)block->log;
@@ -1207,6 +1210,8 @@ DEBUG_PRINT("begin createBlock\n");
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env,mhlc,log_entry);
   block->log_length = 2;
+  evt->block = block;
+  evt->log_length = block->log_length;
   PERS_ENQ(filesystem,evt);
   pthread_spin_unlock(&(filesystem->clock_spinlock));
 
@@ -1264,8 +1269,6 @@ DEBUG_PRINT("begin deleteBlock.\n");
 
   // Notify the persistent thread.
   pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length+1;
   
   // Create the corresponding log entry.
   if(BLOG_WRLOCK(block)!=0){
@@ -1285,6 +1288,8 @@ DEBUG_PRINT("begin deleteBlock.\n");
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, log_entry);
   block->log_length += 1;
+  evt->block = block;
+  evt->log_length = block->log_length;
   PERS_ENQ(filesystem,evt);
   pthread_spin_unlock(&(filesystem->clock_spinlock));
   BLOG_UNLOCK(block);
@@ -1988,6 +1993,7 @@ DEBUG_PRINT("Joined\n");
 
   // fs destroy the spin locks and sempahores
   pthread_spin_destroy(&fs->pages_spinlock);
+  pthread_spin_destroy(&fs->clock_spinlock);
   sem_destroy(&fs->pers_queue_sem);
   pthread_spin_destroy(&fs->queue_spinlock);
 DEBUG_PRINT("Destroyed Spinlocks\n");
@@ -2059,8 +2065,6 @@ DEBUG_PRINT("begin setGenStamp.\n");
 
   // Notify the persistent thread.
   pers_event_t *evt = (pers_event_t*)malloc(sizeof(pers_event_t));
-  evt->block = block;
-  evt->log_length = block->log_length+1;
 
   //STEP 2: append log
   if(BLOG_WRLOCK(block)!=0){
@@ -2080,6 +2084,8 @@ DEBUG_PRINT("begin setGenStamp.\n");
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, log_entry);
   block->log_length += 1;
+  evt->block = block;
+  evt->log_length = block->log_length;
   PERS_ENQ(filesystem,evt);
   pthread_spin_unlock(&(filesystem->clock_spinlock));
   BLOG_UNLOCK(block);
