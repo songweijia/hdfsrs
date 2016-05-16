@@ -4,8 +4,13 @@ export MAVEN_HOME=/opt/maven
 export PATH=$PATH:$JAVA_HOME/bin
 export CFG=./cfg
 
-nodes=`cat $CFG/masters cfg/slaves cfg/clients`
+nodes=`cat $CFG/masters $CFG/slaves $CFG/clients`
 master=`cat $CFG/masters`
+clients=`cat $CFG/clients`
+slaves=`cat $CFG/slaves`
+num_clients=`wc -w <<< "$clients"`
+num_nodes=`wc -w <<< "$nodes"`
+num_slaves=`wc -w <<< "$slaves"`
 hdfsrs_pkg="hadoop-2.4.1-src/hadoop-dist/target/hadoop-2.4.1.tar.gz"
 workspace=/home/weijia/opt/
 TESTFILE=timefile
@@ -21,8 +26,22 @@ function runAll(){
   done
 }
 
+function runClients(){
+  for n in ${clients}
+  do
+    ssh $n "source /etc/profile;$@"
+  done
+}
+
 function uploadAll(){
   for n in ${nodes};
+  do
+    scp $1 $n:$2
+  done
+}
+
+function uploadClients(){
+  for n in ${clients}
   do
     scp $1 $n:$2
   done

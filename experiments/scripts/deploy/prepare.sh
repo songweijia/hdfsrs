@@ -34,12 +34,17 @@ cat $CFG/hdfs-site.xml.$EXP.$ECFG | \
   sed "s/\[PAGESIZE\]/$PGS/g" > \
   hdfssitecfg
 
+cat $CFG/core-site.xml | \
+  sed "s/\[MASTER\]/$master/g" > \
+  core-site.xml
+
 #STEP 4 upload configuration
 for host in ${nodes}
 do
-  scp $CFG/hdfssitecfg ${host}:${workspace}hadoop/etc/hadoop/hdfs-site.xml
+  scp hdfssitecfg ${host}:${workspace}hadoop/etc/hadoop/hdfs-site.xml
   scp $CFG/slaves ${host}:${workspace}hadoop/etc/hadoop/slaves
   scp $CFG/masters ${host}:${workspace}hadoop/etc/hadoop/masters
+  scp core-site.xml ${host}:${workspace}hadoop/etc/hadoop/core-site.xml
 done
 
 #STEP 5 star up new service
@@ -53,4 +58,4 @@ sleep 10
 echo done...
 
 #STEP 7 cleanup
-rm -rf hdfssitecfg
+# rm -rf hdfssitecfg core-site.xml

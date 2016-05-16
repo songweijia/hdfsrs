@@ -185,36 +185,140 @@ public class FileTester extends Configured implements Tool {
     fsis.close();
   }
 
-  void syncMultiWrite(FileSystem fs, String path, long beginTime,
-    long fsize, int writeSize) throws IOException{
-    long start_ts,end_ts,len=0;
+  void syncMultiRead(final FileSystem fs, final String path, final long beginTime,
+    final int readSize, final int nThread, final boolean bZeroCopy) throws IOException{
 
-    // open file
-    FSDataOutputStream fsos = fs.create(new Path(path));
-    byte [] buf = new byte[writeSize];
-    for(int i=0;i<writeSize;i++)buf[i]=(byte)'a';
+    Thread thrds[] = new Thread[nThread];
+    int thd;
 
-    // wait for time to write
-    while(System.currentTimeMillis() < beginTime){
-      try{
-        Thread.sleep(100);
-      }catch(InterruptedException ie){
-        //do nothing
-      }
-    };
+    // create threads
+    for(thd=0;thd<nThread;thd++){
+      final int cno = thd;
+      thrds[thd] = new Thread(new Runnable(){
+        @Override
+        public void run(){
+          long start_ts,end_ts,len=0;
 
-    // write 
-    long bytesWritten = 0L;
-    start_ts = System.nanoTime();
-    while(bytesWritten < fsize){
-      fsos.write(buf,0,writeSize);
-      bytesWritten += writeSize;
+          try{
+
+            // open file
+            FSDataInputStream fsis = fs.open(new Path(path+"."+cno));
+            byte [] buf = new byte[readSize];
+
+            // wait for time to read
+            while(System.currentTimeMillis() < beginTime){
+              try{
+                Thread.sleep(100);
+              }catch(InterruptedException ie){
+                //do nothing
+              }
+            };
+
+            // write 
+            long bytesRead = 0L;
+            HdfsDataInputStream hdis = (HdfsDataInputStream)fsis;
+            start_ts = System.nanoTime();
+            while(true){
+              if(bZeroCopy){
+                ByteBuffer bb = hdis.rdmaRead(readSize);
+                if(bb==null)
+                  break;
+              }
+              else{
+                int nRead = fsis.read(buf,0,readSize);
+                if(nRead==-1)
+                  break;
+                else
+                  bytesRead += nRead;
+              }
+            }
+            fsis.close();
+
+            // print
+            end_ts = System.nanoTime();
+            System.out.println( (end_ts-start_ts) + " ns" );
+          } catch (IOException ioe) {
+            System.out.println("Exception:"+ioe);
+            ioe.printStackTrace();
+          }
+
+        }
+      });
+      thrds[thd].start();
     }
-    fsos.hflush();
-    fsos.close();
-    end_ts = System.nanoTime();
 
-    System.out.println( (end_ts-start_ts) + " ns" );
+    // waiting for threads
+    for(thd=0;thd<nThread;thd++){
+      try{
+        thrds[thd].join();
+      }catch(InterruptedException ie){
+        System.err.println("syncMultiRead() fail to join thread-"+thd);
+      }
+    }
+  }
+
+
+  void syncMultiWrite(final FileSystem fs, final String path, final long beginTime,
+    final long fsize, final int writeSize, final int nThread) throws IOException{
+
+    Thread thrds[] = new Thread[nThread];
+    int thd;
+
+    // create threads
+    for(thd=0;thd<nThread;thd++){
+      final int cno = thd;
+      thrds[thd] = new Thread(new Runnable(){
+        @Override
+        public void run(){
+          long start_ts,end_ts,len=0;
+
+          try{
+
+            // open file
+            FSDataOutputStream fsos = fs.create(new Path(path+"."+cno));
+            byte [] buf = new byte[writeSize];
+            for(int i=0;i<writeSize;i++)buf[i]=(byte)'a';
+
+            // wait for time to write
+            while(System.currentTimeMillis() < beginTime){
+              try{
+                Thread.sleep(100);
+              }catch(InterruptedException ie){
+                //do nothing
+              }
+            };
+
+            // write 
+            long bytesWritten = 0L;
+            start_ts = System.nanoTime();
+            while(bytesWritten < fsize){
+              fsos.write(buf,0,writeSize);
+              bytesWritten += writeSize;
+            }
+            fsos.hflush();
+            fsos.close();
+
+            // print
+            end_ts = System.nanoTime();
+            System.out.println( (end_ts-start_ts) + " ns" );
+          } catch (IOException ioe) {
+            System.out.println("Exception:"+ioe);
+            ioe.printStackTrace();
+          }
+
+        }
+      });
+      thrds[thd].start();
+    }
+
+    // waiting for threads
+    for(thd=0;thd<nThread;thd++){
+      try{
+        thrds[thd].join();
+      }catch(InterruptedException ie){
+        System.err.println("syncMultiWrite() fail to join thread-"+thd);
+      }
+    }
   }
 
   void addTimestamp(long ts,byte[] buf){
@@ -419,8 +523,10 @@ public class FileTester extends Configured implements Tool {
         "\tanalyzesnap <path>\n"+
         "\treadto <srcpath> <destpath> <timestamp> <bUserTimestamp>\n"+
         "\twrite.ts64 <filepath> <ncount>\n" +
-        "\tsyncmultiwrite <filepath> <beginTime(sec since 1970-01-01)> <filesize> <writesize>\n" +
-        "\tr114");
+        "\tsyncmultiwrite <filepath> <begintime(sec since 1970-01-01)> <filesize> <writesize> <numthread>\n" +
+        "\tsyncmultiread <filepath> <begintime(sec since 1970-01-01)> <readsize> <numthread>\n" +
+        "\tsyncmultizerocopyread <filepath> <begintime(sec since 1970-01-01)> <readsize> <numthread>\n" +
+        "\tr117");
       return -1;
     }
     if("append".equals(args[0]))
@@ -451,7 +557,13 @@ public class FileTester extends Configured implements Tool {
       this.write_ts64(fs,args[1],Integer.parseInt(args[2]));
     else if("syncmultiwrite".equals(args[0]))
       this.syncMultiWrite(fs,args[1],Long.parseLong(args[2])*1000,
-        Long.parseLong(args[3]),Integer.parseInt(args[4]));
+        Long.parseLong(args[3]),Integer.parseInt(args[4]),Integer.parseInt(args[5]));
+    else if("syncmultiread".equals(args[0]))
+      this.syncMultiRead(fs,args[1],Long.parseLong(args[2])*1000,
+        Integer.parseInt(args[3]),Integer.parseInt(args[4]),false/*standard copy*/);
+    else if("syncmultizerocopyread".equals(args[0]))
+      this.syncMultiRead(fs,args[1],Long.parseLong(args[2])*1000,
+        Integer.parseInt(args[3]),Integer.parseInt(args[4]),true/*zero copy*/);
     else
       throw new Exception("invalid command:"+args[0]);
     return 0;
