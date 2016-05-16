@@ -232,10 +232,10 @@ public class FileTester extends Configured implements Tool {
                   bytesRead += nRead;
               }
             }
+            end_ts = System.nanoTime();
             fsis.close();
 
             // print
-            end_ts = System.nanoTime();
             System.out.println( (end_ts-start_ts) + " ns" );
           } catch (IOException ioe) {
             System.out.println("Exception:"+ioe);

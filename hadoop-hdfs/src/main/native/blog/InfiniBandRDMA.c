@@ -588,12 +588,13 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   // STEP 0: if connection exists?
   const uint64_t cipkey = (const uint64_t)MAKE_CON_KEY(hostip,ctxt->port);
   int bDup;
-  MAP_LOCK(con, ctxt->con_map, cipkey, 'r' );
+  MAP_LOCK(con, ctxt->con_map, cipkey, 'w' );
   RDMAConnection *rdmaConn = NULL, *readConn = NULL;
   bDup = (MAP_READ(con,ctxt->con_map,cipkey,&readConn)==0);
-  MAP_UNLOCK(con, ctxt->con_map, cipkey);
+  // MAP_UNLOCK(con, ctxt->con_map, cipkey);
   if(bDup){
     //fprintf(stderr,"Cannot connect because the connection is established already.");
+    MAP_UNLOCK(con, ctxt->con_map, cipkey);
     return -1; // the connection exists already.
   }
   // STEP 1: connect to server
@@ -608,6 +609,7 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
     retry --;
     if(connect(connfd,(const struct sockaddr *)&svraddr,sizeof(svraddr))<0){
       if(!retry){
+        MAP_UNLOCK(con, ctxt->con_map, cipkey);
         fprintf(stderr,"cannot connect to server:%x:%d, errno=%d\n",hostip,ctxt->port,errno);
         return -2;
       }
@@ -655,11 +657,13 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   //// client --> server | connection string
   setibcfg(&l_exm,rdmaConn);
   if(write(connfd, &l_exm, sizeof l_exm)!=sizeof l_exm){
+    MAP_UNLOCK(con, ctxt->con_map, cipkey);
     perror("Could not send ibcfg to peer");
     return -3;
   }
   //// server --> client | connection string | put connection to map
   if(read(connfd, &r_exm, sizeof r_exm)!=sizeof r_exm){
+    MAP_UNLOCK(con, ctxt->con_map, cipkey);
     perror("Could not receive ibcfg from peer.");
     return -4;
   }
@@ -670,7 +674,6 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   /// change pair to RTR
   qp_change_state_rtr(rdmaConn->qp,rdmaConn);
   // STEP 4: setup the RDMA map
-  MAP_LOCK(con, ctxt->con_map, cipkey, 'w');
   if(MAP_CREATE_AND_WRITE(con, ctxt->con_map, cipkey, rdmaConn)!=0){
     MAP_UNLOCK(con, ctxt->con_map, cipkey);
     close(connfd);
