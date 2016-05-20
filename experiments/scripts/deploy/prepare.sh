@@ -25,6 +25,7 @@ runAll "rm -rf ${workspace}hadoop"
 runAll "rm -rf /dev/shm/fffs.pg"
 runAll "ln -s ${workspace}hadoop-$EXP ${workspace}hadoop"
 runAll "rm -rf ${workspace}hadoop/data/dn/* ${workspace}hadoop/data/nn/* ${workspace}hadoop/logs/*"
+runAll "for jpid in \`ps -A | grep java | awk '{print \$0}'\`; do kill -9 \${jpid}; done"
 
 #STEP 3 prepare configuration
 cat $CFG/hdfs-site.xml.$EXP.$ECFG | \

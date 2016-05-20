@@ -59,7 +59,7 @@
  </property>
  <property>
   <name>dfs.memory.capacity</name>
-  <value>34359738368</value><!--32GB-->
+  <value>34359738368</value><!--32GB -->
  </property>
  <property>
   <name>dfs.memory.regionsize</name>

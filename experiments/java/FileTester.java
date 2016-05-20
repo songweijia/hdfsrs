@@ -84,15 +84,28 @@ public class FileTester extends Configured implements Tool {
     fsos.close();
   }
 
-  void write1g(FileSystem fs, String path, int bfsz)
+  void write(FileSystem fs, String path,int filesizeMB, int bfsz)
   throws IOException{
     FSDataOutputStream fsos = fs.create(new Path(path));
     byte [] buf = new byte[bfsz];
     int i;
     for(i=0;i<bfsz;i++)buf[i]=(byte)'a';
-    for(i=0;i<((1<<30)/bfsz);i++)
+    int nloop = (int)((filesizeMB*(1l<<20))/bfsz);
+    int logMod = (1<<26)/bfsz;
+    long []tsarr = new long[nloop/logMod + 1];
+    int pos=0;
+    for(i=0;i<nloop;i++){
+      if(i%logMod == 0)
+        tsarr[pos++] = System.currentTimeMillis();
       fsos.write(buf,0,bfsz);
+    }
     fsos.close();
+
+    //print throughput
+    for(i=1;i<pos;i++){
+      System.out.println((tsarr[i]+tsarr[i-1])/2 + "\t" + 
+        ((double)(1L<<26))/(tsarr[i]-tsarr[i-1])/1000 + "\t" + "MB/s");
+    }
   }
 
   // Note: please set the block size to 1MB
@@ -282,7 +295,7 @@ public class FileTester extends Configured implements Tool {
             // wait for time to write
             while(System.currentTimeMillis() < beginTime){
               try{
-                Thread.sleep(100);
+                Thread.sleep(1);
               }catch(InterruptedException ie){
                 //do nothing
               }
@@ -296,6 +309,7 @@ public class FileTester extends Configured implements Tool {
               bytesWritten += writeSize;
             }
             fsos.hflush();
+            fsos.hsync();
             fsos.close();
 
             // print
@@ -503,6 +517,54 @@ public class FileTester extends Configured implements Tool {
     os.close();
   }
 
+  void snapwrite(FileSystem fs, String path, //filename
+        int fsizemb,//filesize(MB)
+        int wsize,//writesize(Byte)
+        int icount,//interval count
+        int imillis,//interval millis
+        int scount//snap count
+        ) throws Exception{
+    byte [] wbuf = new byte[wsize];
+    int i,j,k;
+    final int filesize = fsizemb<<20;
+    Random rand = new Random(System.nanoTime());
+
+    // STEP 0 write wsize with random numbers.
+    rand.nextBytes(wbuf);
+
+    // STEP 1 create file.
+    FSDataOutputStream fsos = fs.create(new Path(path));
+
+    // STEP 2 write initial data.
+    for(i=filesize;i>0;i-=wsize){
+      fsos.write(wbuf);
+    }
+    fsos.hflush();
+
+    // STEP 3 begin random write
+    for(i=0; i<scount; i++){
+      // STEP 3.1 write a time stamp
+      long ts = System.currentTimeMillis();
+      System.out.println(ts);
+      // STEP 3.2 do random write
+      for(j=0; j<icount; j++){
+        int pos = rand.nextInt(filesize - wsize);
+        System.out.println("seek to:"+pos);
+        fsos.seek(pos);
+        fsos.write(wbuf);
+      }
+      // STEP 3.3 do wait...
+      while((System.currentTimeMillis()-ts) < imillis){
+        try{
+          Thread.sleep(1);
+        } catch (InterruptedException ie){
+          //do nothing
+        }
+      }
+    }
+    fsos.close();
+  }
+
   @Override
   public int run(String[] args) throws Exception{
     Configuration conf = this.getConf();
@@ -513,7 +575,7 @@ public class FileTester extends Configured implements Tool {
         "\tappend <file> <data>\n"+
         "\ttimeappend <file> <ws> <dur>\n"+
         "\toverwrite <file> <pos> <data>\n"+
-        "\twrite1g <file> <bfsz>\n"+ //set buffersize
+        "\twrite <file> <size(MB)> <bfsz(B)>\n"+ //set buffersize
         "\trandomwrite <file>\n"+ 
         "\tsnapshot <path> <interval_ms> <number>\n"+
         "\ttimewrite <path> <bfsz> <duration>\n"+
@@ -526,7 +588,8 @@ public class FileTester extends Configured implements Tool {
         "\tsyncmultiwrite <filepath> <begintime(sec since 1970-01-01)> <filesize> <writesize> <numthread>\n" +
         "\tsyncmultiread <filepath> <begintime(sec since 1970-01-01)> <readsize> <numthread>\n" +
         "\tsyncmultizerocopyread <filepath> <begintime(sec since 1970-01-01)> <readsize> <numthread>\n" +
-        "\tr117");
+        "\tsnapwrite <filename> <filesize(MB)> <writesize(Byte)> <interval(cnt)> <interval(ms)> <snapcount>\n" +
+        "\tr118");
       return -1;
     }
     if("append".equals(args[0]))
@@ -535,8 +598,8 @@ public class FileTester extends Configured implements Tool {
       this.timeAppend(fs,args[1],args[2],args[3]);
     else if("overwrite".equals(args[0]))
       this.overwriteFile(fs,args[1],args[2],args[3]);
-    else if("write1g".equals(args[0]))
-      this.write1g(fs,args[1],Integer.parseInt(args[2]));
+    else if("write".equals(args[0]))
+      this.write(fs,args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]));
     else if("randomwrite".equals(args[0]))
       this.randomWrite(fs,args[1]);
     else if("snapshot".equals(args[0]))
@@ -564,6 +627,14 @@ public class FileTester extends Configured implements Tool {
     else if("syncmultizerocopyread".equals(args[0]))
       this.syncMultiRead(fs,args[1],Long.parseLong(args[2])*1000,
         Integer.parseInt(args[3]),Integer.parseInt(args[4]),true/*zero copy*/);
+    else if("snapwrite".equals(args[0]))
+      this.snapwrite(fs,args[1],  //filename
+        Integer.parseInt(args[2]),//filesize(MB)
+        Integer.parseInt(args[3]),//writesize(Byte)
+        Integer.parseInt(args[4]),//interval count
+        Integer.parseInt(args[5]),//interval millis
+        Integer.parseInt(args[6])//snap count
+        );
     else
       throw new Exception("invalid command:"+args[0]);
     return 0;

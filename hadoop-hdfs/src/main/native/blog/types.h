@@ -163,7 +163,7 @@ struct filesystem {
   uint32_t page_shm_fd;
   pthread_t pers_thrd;
   char pers_path[256];
-#define PERS_ENQ(fs,e) do{ \
+  #define PERS_ENQ(fs,e) do{ \
     if (e->block != NULL) { \
         DEBUG_PRINT("Enqueue: Block %" PRIu64 " Operation %" PRIu32 "\n", e->block->id,  e->block->log[e->log_length-1].op); \
     } else { \
@@ -177,7 +177,7 @@ struct filesystem {
       exit(1); \
     } \
   }while(0)
-#define PERS_DEQ(fs,pe) do{ \
+  #define PERS_DEQ(fs,pe) do{ \
     if(sem_wait(&fs->pers_queue_sem) != 0){ \
       fprintf(stderr,"Error: failed waiting on semphore, Error: %s\n", strerror(errno)); \
       exit(1); \

@@ -561,27 +561,37 @@ static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
 
     // flush pages NOTE: page_fd was opened with O_DIRECT.
     if(copy_size>0L){
+#ifdef NO_PERSISTENCE
+    pages = pages;
+#else
       if( write(block->page_fd, pages, copy_size) != copy_size ){
         fprintf(stderr, "Flush, cannot write to page file %ld.page, Error:%s\n",block->id,strerror(errno));
         return -1;
       }
+#endif
     }
 
     // write log
     BLOG_RDLOCK(evt->block);
     log_entry = (log_t*)block->log + block->log_length_pers;
+#ifdef NO_PERSISTENCE
+#else
     if( write(block->blog_fd,log_entry,sizeof(log_t)) != sizeof(log_t) ){
       fprintf(stderr,"Flush, cannot write to blog file %ld."BLOGFILE_SUFFIX", Error:%s\n",block->id,strerror(errno));
       return -2;
     }
+#endif
     BLOG_UNLOCK(evt->block);
   }
 
+#ifdef NO_PERSISTENCE
+#else
   // flush to disk
   if(fsync(block->blog_fd) != 0){
     fprintf(stderr,"Flush, cannot fsync blog file, block id:%ld, Error:%s\n",block->id,strerror(errno));
     return -3;
   }
+#endif
 
   return 0;
 }
@@ -593,7 +603,6 @@ static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
  */
 static void *blog_pers_routine(void * param)
 {
-
   filesystem_t *fs = (filesystem_t*) param;
   pers_event_t *evt;
 
@@ -619,6 +628,7 @@ DEBUG_PRINT("Flush: Null Event\n");
 
     // flush blog
 DEBUG_PRINT("Flush: Block %" PRIu64 " Operation %" PRIu32 "\n", evt->block->id,  evt->block->log[evt->log_length-1].op);
+
     if(flushBlog(fs, evt) != 0){
       fprintf(stderr, "Faile to flush blog: id=%ld,log_length=%ld\n",
         evt->block->id,evt->log_length);

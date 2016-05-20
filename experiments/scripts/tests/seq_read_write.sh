@@ -52,7 +52,11 @@ function seq_read_write_exp
         hadoop jar FileTester.jar timeappend /rawfile $packet_size 10 >> $r_folder/wthp_$packet_size
 
         # read throughput
-        hadoop jar FileTester.jar zeroCopyRead /rawfile $packet_size 2 >> $r_folder/rthp_$packet_size
+        if [[ $cfg == 'rdma' ]]; then
+          hadoop jar FileTester.jar zeroCopyRead /rawfile $packet_size 2 >> $r_folder/rthp_$packet_size
+        else
+          hadoop jar FileTester.jar standardRead /rawfile $packet_size 2 >> $r_folder/rthp_$packet_size
+        fi
       done
 
       done
@@ -63,14 +67,17 @@ function seq_read_write_exp
 # STEP 3 run exp
 
 # - FFFS TCP
-# mkdir -p $result_folder/fffs.tcp
-# seq_read_write_exp fffs tcp $result_folder/fffs.tcp
+mkdir -p $result_folder/fffs.tcp
+seq_read_write_exp fffs tcp $result_folder/fffs.tcp
 
 # - FFFS RDMA
 # mkdir -p $result_folder/fffs.rdma
 # seq_read_write_exp fffs rdma $result_folder/fffs.rdma
 
 # - HDFS ORG
-mkdir -p $result_folder/hdfs.org
-seq_read_write_exp hdfs org $result_folder/hdfs.org
+# mkdir -p $result_folder/hdfs.org
+# seq_read_write_exp hdfs org $result_folder/hdfs.org
+#mkdir -p $result_folder/hdfs.nocache
+#seq_read_write_exp hdfs nocache $result_folder/hdfs.nocache
+
 

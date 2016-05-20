@@ -73,10 +73,14 @@
   <name>dfs.datanode.readahead.bytes</name>
   <value>0</value>
  </property>
- <property>
+ <!-- property>
   <name>dfs.datanode.drop.cache.behind.writes</name>
   <value>true</value>
- </property>
+ </property -->
+ <!-- property>
+  <name>dfs.datanode.sync.behind.writes</name>
+  <value>true</value>
+ </property -->
  <!--property>
   <name>dfs.datanode.fsdataset.factory</name>
   <value>org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.MemDatasetFactory</value>

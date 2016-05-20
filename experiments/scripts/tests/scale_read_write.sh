@@ -5,13 +5,14 @@ tester_jar=FileTester.jar
 result_folder=scale_read_write
 current_folder=`pwd`
 deploy_folder=../deploy/
-number_loop=1
+number_loop=5
 # how long we wait before we start run the client
 wait_secs=30
-#data_file_size=1073741824
-data_file_size=67108864
+data_file_size=1073741824
+#data_file_size=2147483648
+#data_file_size=67108864
 transfer_size=131072
-number_threads=4
+number_threads=3
 estimated_secs=10
 
 # STEP 0 checks
@@ -46,7 +47,8 @@ function scale_write_exp
   do
     for page_size in 4096 # page size
     do
-      for((i=0;i<$number_loop;i++))
+#      for((i=0;i<$number_loop;i++))
+      for((i=0;i<1;i++))
       do
         for packet_size in 131072
         do
@@ -59,8 +61,8 @@ function scale_write_exp
           start_time=`expr \`date +%s\` \+ ${wait_secs}`
 
           ## write test.
-          echo -e "Header\tnum_client_hosts\tnum_clients_per_host\tfile_size write_size" >> ${r_folder}/wthp$i
-          echo -e "${num_clients}\t${num_threads}\t${file_size}\t${write_size}" >> ${r_folder}/wthp$i
+#          echo -e "Header\tnum_client_hosts\tnum_clients_per_host\tfile_size write_size" >> ${r_folder}/wthp$i
+#          echo -e "${num_clients}\t${num_threads}\t${file_size}\t${write_size}" >> ${r_folder}/wthp$i
           for cl in ${clients}
           do
             ssh ${cl} "nohup hadoop jar ${tester_jar} syncmultiwrite /${cl} ${start_time} ${file_size} ${write_size} ${num_threads} > ${tester_jar}.out 2>${tester_jar}.err < /dev/null &"
@@ -98,7 +100,7 @@ function scale_write_exp
             expr ${num_threads} \* ${num_clients}
           done
 
-          cat ${tmpfile} >> ${r_folder}/wthp$i
+          cat ${tmpfile} >> ${r_folder}/wthp_${num_slaves}_$i
           rm -rf ${tmpfile}
 
           ## clean up client
@@ -126,7 +128,8 @@ function scale_read_exp
   do
     for page_size in 4096 # page size
     do
-      for((i=0;i<$number_loop;i++))
+#      for((i=0;i<$number_loop;i++))
+      for((i=0;i<1;i++))
       do
         for packet_size in 131072
         do
@@ -175,7 +178,7 @@ function scale_read_exp
             expr ${num_threads} \* ${num_clients}
           done
 
-          cat ${tmpfile} >> ${r_folder}/rthp$i
+          cat ${tmpfile} >> ${r_folder}/rthp_${num_slaves}_$i
           rm -rf ${tmpfile}
 
           ## clean up client
@@ -192,17 +195,45 @@ function scale_read_exp
 
 # STEP 4 run experiment
 # - FFFS TCP
+mkdir -p ${result_folder}/fffs.tcp
+for((itr=1;itr<6;itr++))
+do
+  scale_write_exp fffs tcp ${result_folder}/fffs.tcp ${data_file_size} ${transfer_size} ${number_threads}
+  mv ${result_folder}/fffs.tcp/wthp_${num_slaves}_0 ${result_folder}/fffs.tcp/wthp_${num_slaves}_${itr}
+  scale_read_exp fffs tcp ${result_folder}/fffs.tcp ${transfer_size} ${number_threads}
+  mv ${result_folder}/fffs.tcp/rthp_${num_slaves}_0 ${result_folder}/fffs.tcp/rthp_${num_slaves}_${itr}
+done
+mv ${result_folder}/fffs.tcp/wthp_${num_slaves}_5 ${result_folder}/fffs.tcp/wthp_${num_slaves}_0
+mv ${result_folder}/fffs.tcp/rthp_${num_slaves}_5 ${result_folder}/fffs.tcp/rthp_${num_slaves}_0
 # mkdir -p ${result_folder}/fffs.tcp
 # scale_write_exp fffs tcp ${result_folder}/fffs.tcp ${data_file_size} ${transfer_size} ${number_threads}
 # scale_read_exp fffs tcp ${result_folder}/fffs.tcp ${transfer_size} ${number_threads}
 # - FFFS RDMA
-mkdir -p ${result_folder}/fffs.rdma
-scale_write_exp fffs rdma ${result_folder}/fffs.rdma ${data_file_size} ${transfer_size} ${number_threads}
+# mkdir -p ${result_folder}/fffs.rdma
+# scale_write_exp fffs rdma ${result_folder}/fffs.rdma ${data_file_size} ${transfer_size} ${number_threads}
 # scale_read_exp fffs rdma ${result_folder}/fffs.rdma ${transfer_size} ${number_threads}
 # - HDFS ORG
-#mkdir -p ${result_folder}/hdfs.org
-#scale_write_exp hdfs org ${result_folder}/hdfs.org ${data_file_size} ${transfer_size} ${number_threads}
-#scale_read_exp hdfs org ${result_folder}/hdfs.org ${transfer_size} ${number_threads}
+mkdir -p ${result_folder}/hdfs.nocache
+for((itr=1;itr<6;itr++))
+do
+  scale_write_exp hdfs nocache ${result_folder}/hdfs.nocache ${data_file_size} ${transfer_size} ${number_threads}
+  mv ${result_folder}/hdfs.nocache/wthp_${num_slaves}_0 ${result_folder}/hdfs.nocache/wthp_${num_slaves}_${itr}
+  scale_read_exp hdfs nocache ${result_folder}/hdfs.nocache ${transfer_size} ${number_threads}
+  mv ${result_folder}/hdfs.nocache/rthp_${num_slaves}_0 ${result_folder}/hdfs.nocache/rthp_${num_slaves}_${itr}
+done
+mv ${result_folder}/hdfs.nocache/wthp_${num_slaves}_5 ${result_folder}/hdfs.nocache/wthp_${num_slaves}_0
+mv ${result_folder}/hdfs.nocache/rthp_${num_slaves}_5 ${result_folder}/hdfs.nocache/rthp_${num_slaves}_0
+
+mkdir -p ${result_folder}/hdfs.org
+for((itr=1;itr<6;itr++))
+do
+  scale_write_exp hdfs org ${result_folder}/hdfs.org ${data_file_size} ${transfer_size} ${number_threads}
+  mv ${result_folder}/hdfs.org/wthp_${num_slaves}_0 ${result_folder}/hdfs.org/wthp_${num_slaves}_${itr}
+  scale_read_exp hdfs org ${result_folder}/hdfs.org ${transfer_size} ${number_threads}
+  mv ${result_folder}/hdfs.org/rthp_${num_slaves}_0 ${result_folder}/hdfs.org/rthp_${num_slaves}_${itr}
+done
+mv ${result_folder}/hdfs.org/wthp_${num_slaves}_5 ${result_folder}/hdfs.org/wthp_${num_slaves}_0
+mv ${result_folder}/hdfs.org/rthp_${num_slaves}_5 ${result_folder}/hdfs.org/rthp_${num_slaves}_0
 
 # STEP 5 remove the garbage
 runClients rm $tester_jar
