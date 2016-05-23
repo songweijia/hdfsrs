@@ -1,6 +1,8 @@
 import java.io.PrintStream;
 import java.io.IOException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.BufferedReader;
 import java.util.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -534,14 +536,17 @@ public class FileTester extends Configured implements Tool {
 
     // STEP 1 create file.
     FSDataOutputStream fsos = fs.create(new Path(path));
+    System.out.println(path);
 
     // STEP 2 write initial data.
     for(i=filesize;i>0;i-=wsize){
       fsos.write(wbuf);
     }
     fsos.hflush();
+    fsos.close();
 
     // STEP 3 begin random write
+    fsos = fs.append(new Path(path));
     for(i=0; i<scount; i++){
       // STEP 3.1 write a time stamp
       long ts = System.currentTimeMillis();
@@ -549,7 +554,6 @@ public class FileTester extends Configured implements Tool {
       // STEP 3.2 do random write
       for(j=0; j<icount; j++){
         int pos = rand.nextInt(filesize - wsize);
-        System.out.println("seek to:"+pos);
         fsos.seek(pos);
         fsos.write(wbuf);
       }
@@ -563,6 +567,53 @@ public class FileTester extends Configured implements Tool {
       }
     }
     fsos.close();
+  }
+
+  static class SnapLog{
+    String path;
+    Vector<Long> snapshots;
+    static SnapLog load(String snapfile)throws IOException{
+      SnapLog sl = new SnapLog();
+      // STEP 1: open file
+      FileReader fr = new FileReader(snapfile);
+      BufferedReader br = new BufferedReader(fr);
+      sl.path = br.readLine();
+      sl.snapshots = new Vector<Long>();
+      while(true){
+        String l = br.readLine();
+        if(l==null)
+          break;
+        sl.snapshots.add(Long.parseLong(l));
+      }
+      fr.close();
+      return sl;
+    }
+  }
+
+  void snapread(FileSystem fs, String path, boolean bReverse)
+  throws Exception{
+    // STEP 1: parse snaplog file:
+    SnapLog sl = SnapLog.load(path);
+    // Line 1: full path to the file
+    int nr_snap = sl.snapshots.size();
+    // Rest lines: snapshot time
+    for(int i=(bReverse?nr_snap-1:0);
+        bReverse?(i>=0):(i<nr_snap);
+        i+=(bReverse?-1:1)){
+
+      FSDataInputStream fin = fs.open(new Path(sl.path),131072,sl.snapshots.get(i),false);
+      byte buf[] = new byte[131072];
+      long ts = System.nanoTime();
+      do{
+        int nRead;
+        nRead = fin.read(buf);
+        if(nRead < 0)break;
+      }while(true);
+      long te = System.nanoTime();
+
+      fin.close();
+      System.out.println(i+"\t"+(te-ts)/1000+"."+(te-ts)%1000+" us");
+    }
   }
 
   @Override
@@ -589,7 +640,8 @@ public class FileTester extends Configured implements Tool {
         "\tsyncmultiread <filepath> <begintime(sec since 1970-01-01)> <readsize> <numthread>\n" +
         "\tsyncmultizerocopyread <filepath> <begintime(sec since 1970-01-01)> <readsize> <numthread>\n" +
         "\tsnapwrite <filename> <filesize(MB)> <writesize(Byte)> <interval(cnt)> <interval(ms)> <snapcount>\n" +
-        "\tr118");
+        "\tsnapread <snaplog> <reverse:True|False>\n" +
+        "\tr120");
       return -1;
     }
     if("append".equals(args[0]))
@@ -635,6 +687,10 @@ public class FileTester extends Configured implements Tool {
         Integer.parseInt(args[5]),//interval millis
         Integer.parseInt(args[6])//snap count
         );
+    else if("snapread".equals(args[0]))
+      this.snapread(fs,args[1], //logfile
+        Boolean.parseBoolean(args[2])                //reverse or not
+      );
     else
       throw new Exception("invalid command:"+args[0]);
     return 0;

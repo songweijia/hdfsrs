@@ -1,0 +1,7 @@
+# approach 1:
+
+#!/bin/bash
+sudo iotop --delay=1 -b -k -t | grep Total\ DISK\ WRITE: | grep Total\ DISK\ READ: | awk '{print $1" "$11" "$12}'
+
+# approach 2:
+iostat -x 1 -t

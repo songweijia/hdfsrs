@@ -1,13 +1,11 @@
 #!/bin/bash
 # test sequential read/write performance
 
-
 tester_jar=FileTester.jar
 result_folder=seq_read_write
 current_folder=`pwd`
 deploy_folder=../deploy/
 number_loop=5
-
 
 # STEP 0 checks
 if [[ ! -e $tester_jar ]]; then
@@ -40,6 +38,7 @@ function seq_read_write_exp
       do
         # write throughput
         for packet_size in 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576 2097152 4194304
+        #for packet_size in 262144
         do
         cd $deploy_folder
         ./prepare.sh $exp $cfg $block_size $packet_size $page_size
@@ -50,6 +49,13 @@ function seq_read_write_exp
         rm -rf rawfile
 
         hadoop jar FileTester.jar timeappend /rawfile $packet_size 10 >> $r_folder/wthp_$packet_size
+
+#        stop-dfs.sh
+#        for h in $slaves
+#        do
+#          ssh $h ./evictcache.sh
+#        done
+#        start-dfs.sh
 
         # read throughput
         if [[ $cfg == 'rdma' ]]; then
