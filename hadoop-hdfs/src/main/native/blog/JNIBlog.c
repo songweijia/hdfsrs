@@ -1870,7 +1870,7 @@ DEBUG_PRINT("beging writeBlock.\n");
   //fill the last written page, if required.
   end_of_write = last_page * page_size + last_page_length;
   if (end_of_write < block->length) {
-    write_page_length = last_page*(page_size+1) <= block->length ? page_size - last_page_length
+    write_page_length = (last_page+1)*page_size <= block->length ? page_size - last_page_length
                                                                  : block->length%page_size - last_page_length;
     memcpy(temp_data, PAGE_NR_TO_PTR(filesystem,block->pages[last_page]) + last_page_length, write_page_length);
   } else { // update the block length
