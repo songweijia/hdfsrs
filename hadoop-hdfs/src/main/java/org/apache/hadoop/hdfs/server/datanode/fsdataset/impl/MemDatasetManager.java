@@ -29,10 +29,11 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import  org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.server.common.HdfsServerConstants.ReplicaState;
 import org.apache.hadoop.hdfs.server.datanode.Replica;
+import org.apache.hadoop.hdfs.server.datanode.ReplicaInfo;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.HLCOutputStream;
 
 import edu.cornell.cs.blog.JNIBlog;
@@ -61,7 +62,8 @@ public class MemDatasetManager {
   private final boolean useRDMA; // are we using RDMA ?
 
   
-  public class MemBlockMeta extends Block implements Replica {
+//  public class MemBlockMeta extends Block implements Replica {
+  public class MemBlockMeta extends ReplicaInfo {
     boolean isDeleted;
     JNIBlog blog;
     ReplicaState state;

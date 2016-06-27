@@ -105,6 +105,13 @@ abstract public class ReplicaInfo extends Block implements Replica {
   ReplicaInfo(ReplicaInfo from) {
     this(from, from.getVolume(), from.getDir());
   }
+
+  /**
+   * Constructor for memblock
+   */
+  public ReplicaInfo(long blockId, int sid, long len, long genStamp){
+    super(blockId, sid, len, genStamp);
+  }
   
   /**
    * Get the full path of this replica's data file

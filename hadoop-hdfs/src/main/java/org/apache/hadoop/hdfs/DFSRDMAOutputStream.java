@@ -347,18 +347,51 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     public void doCreate(){
       DFSClient.LOG.debug("[S] begins doCreate.");
       //STEP 1: get LocatedBlock,
-      HybridLogicalClock mhlc = DFSClient.tickAndCopy();
-      ExtendedBlock oldBlock = block;
       LocatedBlock lb = null;
-      try {
-        lb = dfsClient.namenode.addBlock(src, 
-            dfsClient.clientName, oldBlock, null, fFileId, null, mhlc);
-      } catch (Exception e) {
-        DFSClient.LOG.error("doCreate() throw exceptions:" + e);
-        this.lastException = e;
-        stat = DSS.ERROR;
-        return;
-      }
+      int retries = dfsClient.getConf().nBlockWriteLocateFollowingRetry;
+      long sleeptime = 400;
+
+     while(true){
+       long localstart = Time.new();
+       HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+       ExtendedBlock oldBlock = block;
+
+       try {
+         lb = dfsClient.namenode.addBlock(src,
+             dfsClient.clientName, oldBlock, null, fFileId, null, mhlc);
+       } catch (RemoteException e) {
+         IOException ue = 
+           e.unwrapRemoteException(FileNotFoundException.class,
+                                   AccessControlException.class,
+                                   NSQuotaExceededException.class,
+                                   DSQuotaExceededException.class,
+                                   UnresolvedPathException.class);
+
+         if (ue == e && NotReplicatedYetException.class.getName().equals(e.getClassName()) && retries > 0){
+           --retries;
+           DFSClient.LOG.info("Exception while adding a block", e);
+           if (Time.now() - localstart > 5000) {
+             DFSClient.LOG.info("Waiting for replication for " +
+               (Time.now() = localstart) / 1000 +
+               "seconds");
+           }
+           try{
+             DFSClient.LOG.warn("NotReplicatedYetException sleeping " + src +
+                + " retries left " + retries);
+             Thread.sleep(sleeptime);
+             sleeptime *=2;
+           } catch (InterruptedException ie) {
+           }
+           continue;
+         }
+
+         DFSClient.LOG.error("doCreate() throw exceptions:" + e);
+         this.lastException = e;
+         stat = DSS.ERROR;
+         return;
+       }
+     }
+
       //STEP 2: setup pipeline,
       //STEP 2.1: get block information
       block = lb.getBlock();
