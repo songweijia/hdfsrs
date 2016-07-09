@@ -2,11 +2,13 @@
 #include <sys/queue.h>
 #include <semaphore.h>
 #include "map.h"
+#include "bitmap.h"
 #include "InfiniBandRDMA.h"
 
 #define BLOCK_MAP_SIZE 1024
 #define LOG_MAP_SIZE 64
 #define SNAPSHOT_MAP_SIZE 64
+#define BLOG_MAX_INMEM_ENTRIES 16384
 
 typedef char* page_t;
 typedef struct log log_t;
@@ -81,7 +83,8 @@ struct log {
 /**
  * Block Entry structure.
  * id           :   block id
- * log_length   :   number of the log entries
+ * log_head     :   head of the log(start with 0)
+ * log_tail     :   tail of the log(number of the log entries)
  * log_cap      :   log capacity
  * status       :   status of the block
  * length       :   length of the block in bytes
@@ -92,29 +95,38 @@ struct log {
  * log_map_hlc  :   map from hlc to log entry
  * log_map_ut   :   map from ut to log entry
  * snapshot_map :   map from log entry to snapshot
- * blog_fd      :   blog file descriptor
- * page_fd      :   page file descriptor
+ * log_pers     :   the next log entry to flush
+ * blog_rwlock  :   the read/write lock protecting the blog
+ * log_sem      :   semaphore for log slots in the ring buffer.
+ * blog_wfd     :   blog file descriptor for writer
  */
 struct block {
   uint64_t id;
-  uint64_t log_length;
+  uint64_t log_head;
+  uint64_t log_tail;
   uint64_t log_cap;
   uint32_t status : 4;
   uint32_t length : 28;
   uint32_t pages_cap;
   uint64_t *pages;
   volatile log_t *log;
+#define BLOG_NEXT_ENTRY(b) ((log_t*)(b)->log+((b)->log_tail%BLOG_MAX_INMEM_ENTRIES))
+#define BLOG_LAST_ENTRY(b) ((log_t*)(b)->log+((b)->log_tail+(BLOG_MAX_INMEM_ENTRIES-1)%BLOG_MAX_INMEM_ENTRIES))
+#define BLOG_ENTRY(b,i) ((log_t*)(b)->log+(i)%BLOG_MAX_INMEM_ENTRIES)
+#define BLOG_IS_FULL(b) (((b)->log_tail - (b)->log_head - (b)->log_cap) == 0)
   BLOG_MAP_TYPE(log) *log_map_hlc; // by hlc
   BLOG_MAP_TYPE(log) *log_map_ut; // by user timestamp
   BLOG_MAP_TYPE(snapshot) *snapshot_map;
   //The following members are for data persistent routine
-  uint64_t log_length_pers;
+#define BLOG_NEXT_PERS_ENTRY(b) ((log_t*)(b)->log+((b)->log_pers%BLOG_MAX_INMEM_ENTRIES))
+  uint64_t log_pers;
 #define BLOG_RDLOCK(b) pthread_rwlock_rdlock(&(b)->blog_rwlock)
 #define BLOG_WRLOCK(b) pthread_rwlock_wrlock(&(b)->blog_rwlock)
 #define BLOG_UNLOCK(b) pthread_rwlock_unlock(&(b)->blog_rwlock)
   pthread_rwlock_t blog_rwlock; // protect blog of a block.
-  int blog_fd;
-  int page_fd;
+  sem_t log_sem;
+  int blog_wfd;
+  int blog_rfd;
 };
 
 struct snapshot {
@@ -138,8 +150,19 @@ struct pers_queue_entry {
  * page_size    :   pagesize in bytes.
  * block_map    :   hash map that contains all the blocks in the current state
  *                  (key: block id).
- * page_base    :   base address for the page
- * nr_pages     :   number of pages in the filesystem
+ * page_base_ring_buffer    :   base address for the ring buffer
+ * page_base_mapped_file    :   base address for the memory mapped file
+ * ring_buffer_size         :   size of the ring buffer
+ * nr_page_head :   head of the page pool ring buffer
+ * nr_page_tail :   tail of the page pool ring buffer
+ * nr_page_pers :   next page to be flushed into memory
+ * pers_bitmap  :   bitmap indicating corresponding page is flushed or not
+ * head_rwlock  :   read/write lock on the head of the page ring buffer
+ * tail_mutex   :   mutex lock on the tail of the page ring buffer
+ * freepages_sem:   the number of free pages
+ * clock_spinlock:  clock spin lock guarantee that the log entries are persistent in the order of its hlc clock.
+ * page_wfd     :   page fd for write
+ * page_rfd     :   page fd for read
  * page_shm_fd  :   ramdisk(tmpfs) page file descriptor
  * nr_pages_pers:   number of pages in persistent state.
  * pers_thrd    :   thread responsible for pushing the blog to the disk for
@@ -150,15 +173,28 @@ struct pers_queue_entry {
 struct filesystem {
   size_t block_size;
   size_t page_size;
+#define PAGE_PER_BLOCK(fs) ((fs)->block_size/(fs)->page_size)
   BLOG_MAP_TYPE(block) *block_map;
-  pthread_spinlock_t pages_spinlock;
+#define PAGE_FRAME_NR(fs) ((fs)->ring_buffer_size/(fs)->page_size)
+#define PAGE_NR_TO_PTR_RB(fs,nr) ((void*)((char *)(fs)->page_base_ring_buffer+((fs)->page_size*(nr%PAGE_FRAME_NR(fs)))))
+#define PAGE_NR_TO_PTR_MF(fs,nr) ((void*)((char *)(fs)->page_base_mapped_file+nr))
+#define INVALID_PAGE_NO  (~0x0UL)
+  void *page_base_ring_buffer;
+  void *page_base_mapped_file;
+  uint64_t ring_buffer_size;
+  uint64_t nr_page_head;
+  uint64_t nr_page_tail;
+#define PAGE_FRAME_FREE_NR(fs) ( \
+  PAGE_FRAME_NR(fs) + (fs)->nr_page_head-(fs)->nr_page_tail \
+)
+  uint64_t nr_page_pers;
+  BlogBitmap pers_bitmap; // indicating corresponding page is persistent or not.
+  pthread_rwlock_t   head_rwlock;
+  pthread_spinlock_t tail_spinlock;
+  sem_t              freepages_sem;
   pthread_spinlock_t clock_spinlock;
-#define PAGE_NR_TO_PTR(fs,nr) ((void*)((char *)(fs)->page_base+((fs)->page_size*(nr))))
-#define PAGE_PTR_TO_NR(fs,ptr) (((char*)(ptr) - (char*)(fs)->page_base)/(fs)->page_size)
-#define INVALID_PAGE_NO  (~0x0L)
-  void *page_base;
-  uint64_t pool_size; // memory pool size
-  uint64_t nr_pages;
+  int page_wfd;
+  int page_rfd;
   //The following members are for data persistent routine
   uint32_t page_shm_fd;
   pthread_t pers_thrd;

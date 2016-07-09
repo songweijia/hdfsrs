@@ -63,7 +63,7 @@ static int qp_change_state_rtr(struct ibv_qp *qp, RDMAConnection * conn){
   attr->path_mtu = MIN(conn->l_mtu, conn->r_mtu);
   attr->dest_qp_num = conn->r_qpn;
   attr->rq_psn = conn->r_psn;
-  attr->max_dest_rd_atomic = conn->r_qp_rd_atom,MAX_RD_ATOM;
+  attr->max_dest_rd_atomic = MIN(conn->r_qp_rd_atom,MAX_RD_ATOM);
   attr->min_rnr_timer = 12;
   attr->ah_attr.grh.dgid = conn->r_gid;
   attr->ah_attr.grh.flow_label = 0;
@@ -100,7 +100,7 @@ static int qp_change_state_rts(struct ibv_qp *qp, RDMAConnection * conn){
   attr->retry_cnt = 6;
   attr->rnr_retry = 6;
   attr->sq_psn = conn->l_psn;
-  attr->max_rd_atomic = conn->l_qp_rd_atom,MAX_RD_ATOM;
+  attr->max_rd_atomic = MIN(conn->l_qp_rd_atom,MAX_RD_ATOM);
 
   TEST_NZ(ibv_modify_qp(qp, attr,
     IBV_QP_STATE |
@@ -840,10 +840,3 @@ int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, cons
   return 0;
 }
 
-inline int isBlogCtxt(const RDMACtxt * ctxt){
-  return (ctxt->bitmap==NULL);
-}
-
-inline const uint32_t getip(const char* ipstr){
-  return (const uint32_t)inet_addr(ipstr);
-}

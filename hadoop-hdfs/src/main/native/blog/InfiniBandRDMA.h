@@ -11,6 +11,9 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <infiniband/verbs.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "map.h"
 
   ////////////////////////////////////////////////
@@ -204,12 +207,16 @@ extern int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pi
   ////////////////////////////////////////////////
  // Definition of internal tools               //
 ////////////////////////////////////////////////
-inline int isBlogCtxt(const RDMACtxt * ctxt);
+inline int isBlogCtxt(const RDMACtxt * ctxt){
+  return (ctxt->bitmap==NULL);
+}
 
 /*
  * get int ip from string.
  */
-inline const uint32_t getip(const char* ipstr);
+inline const uint32_t getip(const char* ipstr){
+  return (const uint32_t)inet_addr(ipstr);
+}
 
 #ifdef DEBUG
 #define DEBUG_PRINT(arg,fmt...) {fprintf(stderr,arg, ##fmt );fflush(stderr);}
