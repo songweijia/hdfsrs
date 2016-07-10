@@ -41,6 +41,7 @@ import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status;
 import org.apache.hadoop.hdfs.protocolPB.PBHelper;
 import org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier;
 import org.apache.hadoop.hdfs.server.namenode.SafeModeException;
+import org.apache.hadoop.hdfs.server.namenode.NotReplicatedYetException;
 import org.apache.hadoop.io.EnumSetWritable;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.net.NetUtils;
@@ -351,46 +352,50 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       int retries = dfsClient.getConf().nBlockWriteLocateFollowingRetry;
       long sleeptime = 400;
 
-     while(true){
-       long localstart = Time.new();
-       HybridLogicalClock mhlc = DFSClient.tickAndCopy();
-       ExtendedBlock oldBlock = block;
+      while(true){
+        long localstart = Time.now();
+        HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+        ExtendedBlock oldBlock = block;
 
-       try {
-         lb = dfsClient.namenode.addBlock(src,
-             dfsClient.clientName, oldBlock, null, fFileId, null, mhlc);
-       } catch (RemoteException e) {
-         IOException ue = 
-           e.unwrapRemoteException(FileNotFoundException.class,
-                                   AccessControlException.class,
-                                   NSQuotaExceededException.class,
-                                   DSQuotaExceededException.class,
-                                   UnresolvedPathException.class);
+        try {
+          lb = dfsClient.namenode.addBlock(src,
+              dfsClient.clientName, oldBlock, null, fFileId, null, mhlc);
+          break;
+        } catch (RemoteException e) {
+          IOException ue = 
+            e.unwrapRemoteException(FileNotFoundException.class,
+                                    AccessControlException.class,
+                                    NSQuotaExceededException.class,
+                                    DSQuotaExceededException.class,
+                                    UnresolvedPathException.class);
 
-         if (ue == e && NotReplicatedYetException.class.getName().equals(e.getClassName()) && retries > 0){
-           --retries;
-           DFSClient.LOG.info("Exception while adding a block", e);
-           if (Time.now() - localstart > 5000) {
-             DFSClient.LOG.info("Waiting for replication for " +
-               (Time.now() = localstart) / 1000 +
-               "seconds");
-           }
-           try{
-             DFSClient.LOG.warn("NotReplicatedYetException sleeping " + src +
-                + " retries left " + retries);
-             Thread.sleep(sleeptime);
-             sleeptime *=2;
-           } catch (InterruptedException ie) {
-           }
-           continue;
-         }
+            if (ue == e && NotReplicatedYetException.class.getName().equals(e.getClassName()) && retries > 0){
+              --retries;
+              DFSClient.LOG.info("Exception while adding a block", e);
+              if (Time.now() - localstart > 5000) {
+                DFSClient.LOG.info("Waiting for replication for " +
+                (Time.now() - localstart) / 1000 + "seconds");
+              }
+              try{
+                DFSClient.LOG.warn("NotReplicatedYetException sleeping " + src +
+                  " retries left " + retries);
+                Thread.sleep(sleeptime);
+                sleeptime *=2;
+              } catch (InterruptedException ie) {
+            }
+            continue;
+          }
 
-         DFSClient.LOG.error("doCreate() throw exceptions:" + e);
-         this.lastException = e;
-         stat = DSS.ERROR;
-         return;
-       }
-     }
+          DFSClient.LOG.error("doCreate() throw exceptions:" + e);
+          this.lastException = e;
+          stat = DSS.ERROR;
+          return;
+        } catch(Exception oe) {
+          DFSClient.LOG.error("doCreate() throw exceptions:" + oe);
+          this.lastException = oe;
+          stat = DSS.ERROR;
+        }
+      }
 
       //STEP 2: setup pipeline,
       //STEP 2.1: get block information
