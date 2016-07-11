@@ -1257,7 +1257,7 @@ int initializeInternal(JNIEnv *env, jobject thisObj, uint64_t poolSize,
   fs->block_size = blockSize;
   fs->ring_buffer_size = poolSize;
   fs->page_size = pageSize;
-  if(blog_bitmap_init(&(fs->pers_bitmap),(uint32_t)poolSize/pageSize)!=0) {
+  if(blog_bitmap_init(&(fs->pers_bitmap),(uint32_t)(poolSize/pageSize))!=0) {
     fprintf(stderr, "ERROR: Cannot initialize fs->pers_bitmap. errcode=%d, reason=%s\n",errno,strerror(errno));
     exit(-1);
   }
@@ -1338,7 +1338,7 @@ int initializeInternal(JNIEnv *env, jobject thisObj, uint64_t poolSize,
     exit(-1);
   }
 
-  DEBUG_PRINT("initializeInternal is done\n");
+  DEBUG_PRINT("initializeInternal() is done\n");
   return 0;
 }
 #pragma GCC diagnostic pop

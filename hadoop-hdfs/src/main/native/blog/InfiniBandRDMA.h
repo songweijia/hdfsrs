@@ -207,7 +207,7 @@ extern int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pi
   ////////////////////////////////////////////////
  // Definition of internal tools               //
 ////////////////////////////////////////////////
-inline int isBlogCtxt(const RDMACtxt * ctxt){
+static inline int isBlogCtxt(const RDMACtxt * ctxt){
   return (ctxt->bitmap==NULL);
 }
 
@@ -219,8 +219,12 @@ inline const uint32_t getip(const char* ipstr){
 }
 
 #ifdef DEBUG
+#ifndef DEBUG_PRINT
 #define DEBUG_PRINT(arg,fmt...) {fprintf(stderr,arg, ##fmt );fflush(stderr);}
+#endif//DEBIG_PRINT
 #else
+#ifndef DEBUG_PRINT
 #define DEBUG_PRINT(arg,fmt...)
+#endif//DEBIG_PRINT
 #endif
 #endif//__INFINIBANDRDMA_H__

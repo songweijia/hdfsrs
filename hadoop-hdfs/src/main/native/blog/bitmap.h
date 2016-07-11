@@ -19,7 +19,7 @@ typedef struct _blog_bitmap{
  * 0 - success
  * other - errors
  */
-inline int blog_bitmap_init(BlogBitmap *bmap, uint32_t nbits) {
+static inline int blog_bitmap_init(BlogBitmap *bmap, uint32_t nbits) {
   bmap->nbits = nbits;
   uint32_t i = ((nbits+63)>>6);
   bmap->bitmap = (uint64_t*)malloc(sizeof(uint64_t)*i);
@@ -32,14 +32,14 @@ inline int blog_bitmap_init(BlogBitmap *bmap, uint32_t nbits) {
  * destroy a bitmap
  * x - pointer to a BlogBitmap structure
  */
-inline int blog_bitmap_destroy(BlogBitmap *bmap) {
+static inline int blog_bitmap_destroy(BlogBitmap *bmap) {
   free(bmap->bitmap);
   return pthread_spin_destroy(&(bmap->lck));
 }
 /**
  * test a bit
  */
-inline int blog_bitmap_testbit(BlogBitmap *bmap,uint32_t pos){
+static inline int blog_bitmap_testbit(BlogBitmap *bmap,uint32_t pos){
   uint64_t x;
   pthread_spin_lock(&(bmap->lck));
   x = bmap->bitmap[pos>>6]&(1UL<<(pos%64));
@@ -49,7 +49,7 @@ inline int blog_bitmap_testbit(BlogBitmap *bmap,uint32_t pos){
 /**
  * test 64bits
  */
-inline uint64_t blog_bitmap_get64bit(BlogBitmap *bmap,uint32_t pos){
+static inline uint64_t blog_bitmap_get64bit(BlogBitmap *bmap,uint32_t pos){
   uint64_t x;
   pthread_spin_lock(&(bmap->lck));
   x = bmap->bitmap[pos>>6];
@@ -60,7 +60,7 @@ inline uint64_t blog_bitmap_get64bit(BlogBitmap *bmap,uint32_t pos){
  * set/clear a bit
  * val - 0/1
  */
-inline void blog_bitmap_togglebit(BlogBitmap *bmap,uint32_t pos,int val){
+static inline void blog_bitmap_togglebit(BlogBitmap *bmap,uint32_t pos,int val){
   pthread_spin_lock(&(bmap->lck));
   if(val)
     bmap->bitmap[pos>>6]|=(1UL<<(pos%64));
@@ -72,7 +72,7 @@ inline void blog_bitmap_togglebit(BlogBitmap *bmap,uint32_t pos,int val){
  * set/clear bits
  * val - 0/1
  */
-inline void blog_bitmap_togglebits(BlogBitmap *bmap,uint32_t pos,uint32_t nbits,int val){
+static inline void blog_bitmap_togglebits(BlogBitmap *bmap,uint32_t pos,uint32_t nbits,int val){
   pthread_spin_lock(&(bmap->lck));
   uint32_t spos=(pos>>6),epos=((pos+nbits-1)>>6),i;
   for(i=spos;i<=epos;i++){

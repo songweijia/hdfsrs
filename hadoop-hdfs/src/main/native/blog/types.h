@@ -20,7 +20,7 @@ typedef struct pers_queue_entry pers_event_t;
 #ifndef DEBUG_PRINT
 
   #ifdef DEBUG
-  #define DEBUG_PRINT(arg,fmt...) {fprintf(stdout,arg, ##fmt );fflush(stdout);}
+  #define DEBUG_PRINT(arg,fmt...) {fprintf(stderr,arg, ##fmt );fflush(stderr);}
   #else
   #define DEBUG_PRINT(arg,fmt...)
   #endif
