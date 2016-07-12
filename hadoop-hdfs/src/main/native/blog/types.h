@@ -8,7 +8,7 @@
 #define BLOCK_MAP_SIZE 1024
 #define LOG_MAP_SIZE 64
 #define SNAPSHOT_MAP_SIZE 64
-#define BLOG_MAX_INMEM_ENTRIES 16384
+#define MAX_INMEM_BLOG_ENTRIES 16384
 
 typedef char* page_t;
 typedef struct log log_t;
@@ -110,15 +110,15 @@ struct block {
   uint32_t pages_cap;
   uint64_t *pages;
   volatile log_t *log;
-#define BLOG_NEXT_ENTRY(b) ((log_t*)(b)->log+((b)->log_tail%BLOG_MAX_INMEM_ENTRIES))
-#define BLOG_LAST_ENTRY(b) ((log_t*)(b)->log+((b)->log_tail+(BLOG_MAX_INMEM_ENTRIES-1)%BLOG_MAX_INMEM_ENTRIES))
-#define BLOG_ENTRY(b,i) ((log_t*)(b)->log+(i)%BLOG_MAX_INMEM_ENTRIES)
+#define BLOG_NEXT_ENTRY(b) ((log_t*)(b)->log+((b)->log_tail%MAX_INMEM_BLOG_ENTRIES))
+#define BLOG_LAST_ENTRY(b) ((log_t*)(b)->log+(((b)->log_tail+MAX_INMEM_BLOG_ENTRIES-1)%MAX_INMEM_BLOG_ENTRIES))
+#define BLOG_ENTRY(b,i) ((log_t*)(b)->log+(i)%MAX_INMEM_BLOG_ENTRIES)
 #define BLOG_IS_FULL(b) (((b)->log_tail - (b)->log_head - (b)->log_cap) == 0)
   BLOG_MAP_TYPE(log) *log_map_hlc; // by hlc
   BLOG_MAP_TYPE(log) *log_map_ut; // by user timestamp
   BLOG_MAP_TYPE(snapshot) *snapshot_map;
   //The following members are for data persistent routine
-#define BLOG_NEXT_PERS_ENTRY(b) ((log_t*)(b)->log+((b)->log_pers%BLOG_MAX_INMEM_ENTRIES))
+#define BLOG_NEXT_PERS_ENTRY(b) ((log_t*)(b)->log+((b)->log_pers%MAX_INMEM_BLOG_ENTRIES))
   uint64_t log_pers;
 #define BLOG_RDLOCK(b) pthread_rwlock_rdlock(&(b)->blog_rwlock)
 #define BLOG_WRLOCK(b) pthread_rwlock_wrlock(&(b)->blog_rwlock)

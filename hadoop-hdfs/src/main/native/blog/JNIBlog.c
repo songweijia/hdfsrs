@@ -73,6 +73,7 @@ typedef struct transport_parameters {
 // some internal tools
 #define LOG2(x) calc_log2(x)
 inline int calc_log2(uint64_t val){
+
   int i=0;
   while(((val>>i)&0x1)==0 && (i<64) )i++;
   return i;
@@ -462,7 +463,7 @@ void find_last_entry_by_ut(block_t *block, uint64_t ut, uint64_t *last_entry){
 int check_and_increase_log_cap(block_t *block)
 {
   if (BLOG_IS_FULL(block)) {
-    if(block->log_cap <= BLOG_MAX_INMEM_ENTRIES){ // grow
+    if(block->log_cap < MAX_INMEM_BLOG_ENTRIES){ // grow
       BLOG_WRLOCK(block);
       block->log = (log_t *) realloc((void *)block->log, 2*block->log_cap*sizeof(log_t));
       block->log_cap *= 2;
@@ -645,13 +646,14 @@ static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
 
     // get pages
     BLOG_RDLOCK(evt->block);
-    log_entry = (log_t*)block->log + block->log_pers;
+    log_entry = (log_t*)block->log + (block->log_pers%MAX_INMEM_BLOG_ENTRIES);
     if(log_entry->op == WRITE){
       first_pn = log_entry->first_pn;
       nr_pages = log_entry->nr_pages;
     } else
       nr_pages = 0UL;
     BLOG_UNLOCK(evt->block);
+
 
     // flush pages NOTE: page_fd was opened with O_DIRECT&O_SYNC.
     if(nr_pages>0UL){
@@ -695,6 +697,7 @@ static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
 
     // post log semaphore
     sem_post(&block->log_sem);
+DEBUG_PRINT("flushBlog:done.\n");
   }
 
 #ifdef NO_PERSISTENCE
@@ -758,12 +761,15 @@ DEBUG_PRINT("Flush: Block %" PRIu64 " Operation %" PRIu32 "\n", evt->block->id, 
       exit(1);
     }
 
+DEBUG_PRINT("Flush: Block %" PRIu64 " done.\n", evt->block->id);
+
     // free event
     free(evt);
 
     // eviction
     pthread_spin_lock(&fs->tail_spinlock);
     evicTrigger = (PAGE_FRAME_FREE_NR(fs) < PAGE_PER_BLOCK(fs));
+DEBUG_PRINT("Flush: Eviction triggered? %d.\n", evicTrigger);
     if(evicTrigger){
       // We only evict space enough for two blocks or all the possible space for eviction, which ever is smaller. Let's design a smarter eviction policy here.
       nr_page_evic = MIN(fs->nr_page_pers-fs->nr_page_head,2*PAGE_PER_BLOCK(fs));
@@ -1151,11 +1157,11 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
 
     block->log_pers = exp_fsize / sizeof(log_t);
     block->log_tail = block->log_pers;
-    block->log_head = (block->log_tail>BLOG_MAX_INMEM_ENTRIES)?
-      (block->log_tail-BLOG_MAX_INMEM_ENTRIES):0;
+    block->log_head = (block->log_tail>MAX_INMEM_BLOG_ENTRIES)?
+      (block->log_tail-MAX_INMEM_BLOG_ENTRIES):0;
 
-    if(block->log_pers>=BLOG_MAX_INMEM_ENTRIES)
-      block->log_cap = BLOG_MAX_INMEM_ENTRIES;
+    if(block->log_pers>=MAX_INMEM_BLOG_ENTRIES)
+      block->log_cap = MAX_INMEM_BLOG_ENTRIES;
     else{
       block->log_cap = 16;
       while(block->log_cap < block->log_pers)
@@ -1182,7 +1188,7 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
     uint64_t i;
     lseek(blog_rfd,block->log_head*sizeof(log_t),SEEK_SET);
     for(i=block->log_head;i<block->log_tail;i++){
-      if(read(blog_rfd,(void*)(block->log+(i%BLOG_MAX_INMEM_ENTRIES)),sizeof(log_t))!=sizeof(log_t)){
+      if(read(blog_rfd,(void*)(block->log+(i%MAX_INMEM_BLOG_ENTRIES)),sizeof(log_t))!=sizeof(log_t)){
         fprintf(stderr, "WARNING: Cannot read log entry from %s, error:%s\n", blog_filename, strerror(errno));
         close(blog_rfd);
         close(blog_wfd);
