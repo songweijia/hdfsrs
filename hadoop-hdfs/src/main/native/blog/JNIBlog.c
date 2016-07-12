@@ -72,7 +72,7 @@ typedef struct transport_parameters {
 
 // some internal tools
 #define LOG2(x) calc_log2(x)
-inline int calc_log2(uint64_t val){
+static inline int calc_log2(uint64_t val){
 
   int i=0;
   while(((val>>i)&0x1)==0 && (i<64) )i++;
@@ -354,7 +354,7 @@ int compare(uint64_t r1, uint64_t c1, uint64_t r2, uint64_t c2)
 // - le: log_entry buffer, it is used if data retrieved from disk
 // RETURN VALUE:
 // NULL for error, or pointer to the log entry.
-inline log_t* get_log_entry(block_t *block, uint64_t idx, int rfd, log_t *le){
+static inline log_t* get_log_entry(block_t *block, uint64_t idx, int rfd, log_t *le){
   log_t *rle;
   if(idx >= block->log_tail)
     rle = NULL;
@@ -1997,7 +1997,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ
  * return the number of first page. use PAGE_NR_TO_PTR_RB(fs,nr) to convert
  * page number to pointer
  */
-inline uint64_t blog_allocate_pages(filesystem_t *fs,int npage){
+static inline uint64_t blog_allocate_pages(filesystem_t *fs,int npage){
   int i;
 
   uint64_t fpn;
