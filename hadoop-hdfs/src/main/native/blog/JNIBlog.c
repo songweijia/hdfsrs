@@ -83,7 +83,7 @@ static inline int calc_log2(uint64_t val){
 char *log_to_string(filesystem_t *fs,log_t *log, size_t page_size)
 {
   char *res = (char *) malloc(1024 * 1024 * sizeof(char));
-  char buf[1025];
+  char buf[1025+18];
   uint32_t length, i;
   
   switch (log->op) {
@@ -111,7 +111,7 @@ char *log_to_string(filesystem_t *fs,log_t *log, size_t page_size)
     for (i = 0; i < log->nr_pages-1; i++) {
       sprintf(buf, "Page %" PRIu32 ":\n", log->start_page + i);
       strcat(res, buf);
-      snprintf(buf, page_size+1, "%s", (char *)((char*)fs->page_base_ring_buffer + (log->first_pn + i)*page_size));
+      snprintf(buf, page_size+1, "[%p]%s", (char*)fs->page_base_ring_buffer+(log->first_pn+i)%MAX_PERS_PAGE_SIZE*page_size,(char *)((char*)fs->page_base_ring_buffer + (log->first_pn + i)%MAX_PERS_PAGE_SIZE*page_size));
       strcat(res, buf);
       strcat(res, "\n");
     }
@@ -121,7 +121,7 @@ char *log_to_string(filesystem_t *fs,log_t *log, size_t page_size)
       length = log->block_length - (log->nr_pages-1)*page_size;
     sprintf(buf, "Page %" PRIu32 ":\n", log->start_page + log->nr_pages-1);
     strcat(res, buf);
-    snprintf(buf, length+1, "%s", (char *)((char*)fs->page_base_ring_buffer + (log->first_pn + log->nr_pages-1)*page_size));
+    snprintf(buf, length+1, "[%p]%s", (char*)fs->page_base_ring_buffer+(log->first_pn+log->nr_pages-1)%MAX_PERS_PAGE_SIZE*page_size, (char *)((char*)fs->page_base_ring_buffer + (log->first_pn + log->nr_pages-1)%MAX_PERS_PAGE_SIZE*page_size));
     strcat(res, buf);
     strcat(res, "\n");
     sprintf(buf, "HLC Value: (%" PRIu64 ",%" PRIu64 ")\n", log->r, log->l);
@@ -992,7 +992,7 @@ static uint64_t replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block
   uint32_t j;
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jmethodID rl_mid = (*env)->GetMethodID(env, thisCls, "replayLogOnMetadata", "(JIJ)V");
-  uint64_t nr_blog_entries,max_nr_page_seen=0UL;
+  uint64_t nr_blog_entries,guess_next_free_nr_page=0UL;
   off_t blog_file_size;
   log_t log_entry;
 
@@ -1018,28 +1018,31 @@ static uint64_t replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block
       fprintf(stderr,"WARN: Cannot load log entry %" PRIu64 "(block id=%" PRIu64 "). errcode:%d, reason:%s\n", i, block->id, errno, strerror(errno));
       return 0UL;
     }
+DEBUG_PRINT("goback:[%"PRIu64"]block_id=%"PRIu64",op=%d\n",i,block->id,log_entry.op);
     if(log_entry.op == CREATE_BLOCK)
       break;
   }
 
   // STEP 3 - replay block from "CREATE"
-  for(;i<nr_blog_entries;i++){
+  block->status = ACTIVE;
+  block->length = 0;
+  if (MAP_CREATE_AND_WRITE(block, fs->block_map, block->id, block) != 0) {
+    fprintf(stderr, "replayBlog:Faile to create block:%ld.\n",block->id);
+    exit(1);
+  }
+  (*env)->CallObjectMethod(env,thisObj,rl_mid,block->id,log_entry.op,log_entry.first_pn);
+  for(i++;i<nr_blog_entries;i++){
     if(read(rfd,&log_entry,sizeof(log_t))<0){
       fprintf(stderr,"WARN: Cannot load log entry %" PRIu64 "(block id=%" PRIu64 "). errcode:%d, reason:%s\n", i, block->id, errno, strerror(errno));
       return 0UL;
     }
 
+DEBUG_PRINT("[%"PRIu64"]replay:block_id=%"PRIu64",op=%d\n, first_pn=%"PRIu64", nr_pages=%"PRIu32"",i,block->id,log_entry.op,log_entry.first_pn,log_entry.nr_pages);
+
     switch(log_entry.op){
       case BOL:
       case SET_GENSTAMP:
-        break;
       case CREATE_BLOCK:
-        block->status = ACTIVE;
-        block->length = 0;
-        if (MAP_CREATE_AND_WRITE(block, fs->block_map, block->id, block) != 0) {
-          fprintf(stderr, "replayBlog:Faile to create block:%ld.\n",block->id);
-          exit(1);
-        }
         break;
 
       case WRITE:
@@ -1052,8 +1055,8 @@ static uint64_t replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block
         for(j=0;j<log_entry.nr_pages;j++)
           block->pages[j]=(log_entry.first_pn+j);
 
-        //UPDATE max_nr_page_seen
-        max_nr_page_seen = MAX(max_nr_page_seen, log_entry.first_pn+log_entry.nr_pages-1);
+        //UPDATE guess_next_free_nr_page
+        guess_next_free_nr_page  = MAX(guess_next_free_nr_page, log_entry.first_pn+log_entry.nr_pages);
         break;
 
       case DELETE_BLOCK:
@@ -1070,26 +1073,31 @@ static uint64_t replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block
           log_entry.op,i,block->id);
         exit(1);
     }
+
+DEBUG_PRINT("[%"PRIu64"]replay:java\n",i);
     // replay log on java metadata.
     (*env)->CallObjectMethod(env,thisObj,rl_mid,block->id,log_entry.op,log_entry.first_pn);
+DEBUG_PRINT("[%"PRIu64"]replay:next,nr_blog_entries=%"PRIu64"\n",i,nr_blog_entries);
   }
-
-  return max_nr_page_seen;
+DEBUG_PRINT("reply return.\n");
+  return guess_next_free_nr_page;
 }
 
 /*
  * loadBlogs()
- *   we assume that the following members have been initialized already:
+ *   we assume that the following members of "filesystem structure" have been initialized already:
  *   - block_size
  *   - page_size
  *   - page_base_ring_buffer
  *   - page_base_mapped_file
  *   on success, the following members should have been initialized:
  *   - block_map
+ *   - nr_page_head
+ *   - nr_page_pers
+ *   - nr_page_tail
  * PARAM 
  *   fs: file system structure
  *   pp: path to the persistent data.
- *   max_pers_pn: the maximum persistent page number ever seen.
  * RETURN VALUES: 
  *    0 for succeed. and writer_thrd will be initialized.
  *   -1 for "log file is corrupted", 
@@ -1097,11 +1105,11 @@ static uint64_t replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block
  *   -3 for "block operation".
  *   -4 for "unknown errors"
  */
-static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char *pp, uint64_t * max_pers_pn){
+static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char *pp){
   // STEP 1 find all <id>.blog files
   DIR *d;
   struct dirent *dir;
-  uint64_t block_id;
+  uint64_t block_id,next_nr_page=0ul;
   d = opendir(pp);
   if(d==NULL){
     fprintf(stderr,"Cannot open directory:%s, Error:%s\n", pp, strerror(errno));
@@ -1199,10 +1207,17 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
     }
 
     /// 2.6 replay log entries: reconstruct the block status
-    replayBlog(env,thisObj,fs,block,blog_rfd);
+    uint64_t guess_next_nr_page = replayBlog(env,thisObj,fs,block,blog_rfd);
+    next_nr_page = MAX(guess_next_nr_page,next_nr_page);
     DEBUG_PRINT("done.\n");
   }
   closedir(d);
+
+  // 3 - update nr_page_head/pers/tail
+  fs->nr_page_head = next_nr_page;
+  fs->nr_page_pers = next_nr_page;
+  fs->nr_page_tail = next_nr_page;
+
   return 0;
 }
 
@@ -1246,7 +1261,6 @@ int initializeInternal(JNIEnv *env, jobject thisObj, uint64_t poolSize,
 
   DEBUG_PRINT("initializeInternal is called\n");
 
-  uint64_t max_pers_pn=0;
   jclass thisCls = (*env)->GetObjectClass(env, thisObj);
   jfieldID long_id = (*env)->GetFieldID(env, thisCls, "jniData", "J");
   jfieldID hlc_id = (*env)->GetFieldID(env, thisCls, "hlc", "Ledu/cornell/cs/sa/HybridLogicalClock;");
@@ -1295,13 +1309,10 @@ int initializeInternal(JNIEnv *env, jobject thisObj, uint64_t poolSize,
   openPageFile(fs,persPath);
 
   // STEP 3: load blogs.
-  if(loadBlogs(env,thisObj,fs,persPath,&max_pers_pn)!=0){
+  if(loadBlogs(env,thisObj,fs,persPath)!=0){
     fprintf(stderr,"Fail to load blogs.\n");
     exit(1);
   }
-  fs->nr_page_head = max_pers_pn+1;
-  fs->nr_page_tail = max_pers_pn+1;
-  fs->nr_page_pers = max_pers_pn+1;
 
   // STEP 4: initialize locks & semaphores
   if(pthread_rwlock_init(&fs->head_rwlock,NULL)!=0){
@@ -1570,7 +1581,7 @@ DEBUG_PRINT("begin deleteBlock.\n");
 // readBlockInternal: read the latest state of a block
 int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint length, const transport_parameters_t *tp)
 {
-  DEBUG_PRINT("begin readBlockInternal.\n");
+  DEBUG_PRINT("begin readBlockInternal:blockId=%"PRIu64",blkOfst=%d,length=%d\n",blockId,blkOfst,length);
 #ifdef DEBUG
   struct timeval tv1,tv2;
 #endif
@@ -1592,6 +1603,8 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
     return -1;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
+
+DEBUG_PRINT("[readBlockInternal]A-Find the block...done\n");
   
   // Find/create a snapshot.
   if(BLOG_RDLOCK(block)!=0){
@@ -1611,6 +1624,8 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
   }
   MAP_UNLOCK(snapshot, block->snapshot_map, log_index);
   BLOG_UNLOCK(block);
+
+DEBUG_PRINT("[readBlockInternal]A-Find/create the snapshot...done\n");
   
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
@@ -1644,10 +1659,13 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
       PAGE_NR_TO_PTR_MF(filesystem,snapshot->pages[page_id]);
     page_data += page_offset;
     cur_length = filesystem->page_size - page_offset;
+DEBUG_PRINT("page_offset=%d,page_base_ring_buffer=%p,page_base_mapped_file=%p\n",page_offset,filesystem->page_base_ring_buffer,filesystem->page_base_mapped_file);
     if (cur_length >= read_length) {
       (*env)->SetByteArrayRegion(env, buf, buffer_offset, read_length, (jbyte*) page_data);
+DEBUG_PRINT("[readBlockInternal]:[%p:%d]\n",page_data,read_length);
     } else {
       (*env)->SetByteArrayRegion(env, buf, buffer_offset, cur_length, (jbyte*) page_data);
+DEBUG_PRINT("[readBlockInternal]:[%p:%d]\n",page_data,cur_length);
       page_id++;
       while (1) {
         page_data = (snapshot->pages[page_id]>=filesystem->nr_page_head)?
@@ -1655,9 +1673,11 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
           PAGE_NR_TO_PTR_MF(filesystem,snapshot->pages[page_id]);
         if (cur_length + filesystem->page_size >= read_length) {
           (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, read_length - cur_length, (jbyte*) page_data);
+DEBUG_PRINT("[readBlockInternal]:[%p:%d]\n",page_data,read_length-cur_length);
           break;
         }
         (*env)->SetByteArrayRegion(env, buf, buffer_offset + cur_length, filesystem->page_size, (jbyte*) page_data);
+DEBUG_PRINT("[readBlockInternal]:[%p:%ld]\n",page_data,filesystem->page_size);
         cur_length += filesystem->page_size;
         page_id++;
       }
@@ -2016,13 +2036,15 @@ static inline uint64_t blog_allocate_pages(filesystem_t *fs,int npage){
   // STEP 4 - unlock tail
   pthread_spin_unlock(&fs->tail_spinlock);
 
+DEBUG_PRINT("blog_allocate_pages:allocate:%"PRIu64":L%d\n",fpn,npage);
+
   return fpn;
 }
 
 // writeBlockInternal: write block
 int writeBlockInternal (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst, jint length, const transport_parameters_t * tp)
 {
-DEBUG_PRINT("beging writeBlock.\n");
+DEBUG_PRINT("begin writeBlock:blockId=%ld,blkOfst=%d,length=%d\n",blockId,blkOfst,length);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
   uint64_t first_pn,last_pn;
@@ -2058,11 +2080,14 @@ DEBUG_PRINT("beging writeBlock.\n");
   first_page_offset = block_offset % page_size;
   first_pn = blog_allocate_pages(filesystem,last_page - first_page + 1);
   last_pn = first_pn + last_page - first_page;
+DEBUG_PRINT("[writeBlockInternal-1]first_page=%d,last_page=%d,first_page_offset=%d,first_pn=%"PRIu64",last_pn=%"PRIu64"\n",
+  first_page,last_page,first_page_offset,first_pn,last_pn);
  
   if(tp->mode == TP_LOCAL_BUFFER){// write to local buffer
     jbyteArray buf = tp->param.lbuf.buf;
     uint32_t buffer_offset = (uint32_t)tp->param.lbuf.bufOfst;
     temp_data = PAGE_NR_TO_PTR_RB(filesystem, first_pn) + first_page_offset;
+DEBUG_PRINT("[writeBlockInternal-1.1]temp_data=%p\n",temp_data);
 
     // Write all the data from the packet.
     if (first_page == last_page) {
@@ -2167,9 +2192,10 @@ DEBUG_PRINT("beging writeBlock.\n");
   //fill the first written page, if required.
   pthread_rwlock_rdlock(&filesystem->head_rwlock);
   if (first_page_offset > 0) {
-    void * page_ptr = filesystem->nr_page_head >= block->pages[first_page]?
+    void * page_ptr = filesystem->nr_page_head <= block->pages[first_page]?
       PAGE_NR_TO_PTR_RB(filesystem,block->pages[first_page]):
       PAGE_NR_TO_PTR_MF(filesystem,block->pages[first_page]);
+DEBUG_PRINT("[writeBlockInternal-1.5]first_page_in_block=%d,first_pn_in_page_pool=%"PRIu64",first_page_offset=%d\n",first_page,first_pn,first_page_offset);
     memcpy(PAGE_NR_TO_PTR_RB(filesystem,first_pn), page_ptr, first_page_offset);
   }
 
@@ -2178,9 +2204,10 @@ DEBUG_PRINT("beging writeBlock.\n");
   if (end_of_write < block->length) {
     write_page_length = (last_page+1)*page_size <= block->length ? page_size - last_page_length
                                                                  : block->length%page_size - last_page_length;
-    void * page_ptr = filesystem->nr_page_head >= block->pages[last_page]?
+    void * page_ptr = filesystem->nr_page_head <= block->pages[last_page]?
       PAGE_NR_TO_PTR_RB(filesystem,block->pages[last_page]):
       PAGE_NR_TO_PTR_MF(filesystem,block->pages[last_page]);
+DEBUG_PRINT("[writeBlockInternal-1.6]first_page_in_block=%d,first_pn_in_page_pool=%"PRIu64",first_page_offset=%d\n",first_page,first_pn,first_page_offset);
     memcpy(temp_data, page_ptr + last_page_length, write_page_length);
   } else { // update the block length
     block->length = end_of_write;
@@ -2212,6 +2239,7 @@ DEBUG_PRINT("beging writeBlock.\n");
   block->log_tail++;
   PERS_ENQ(filesystem,event);
   pthread_spin_unlock(&(filesystem->clock_spinlock));
+DEBUG_PRINT("[writeBlockInternal-2]write log:%s,first_pn=%"PRIu64"\n",log_to_string(filesystem,log_entry,filesystem->page_size),first_pn);
   BLOG_UNLOCK(block);
 
   // Fill block with the appropriate information.
