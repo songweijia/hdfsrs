@@ -631,6 +631,7 @@ static void update_pers_bitmap(filesystem_t *fs, uint64_t first_pn, uint64_t nr_
  */
 static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
   block_t *block = evt->block;
+DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length=%"PRIu64".\n",block->id,block->log_pers,evt->log_length);
 
   // no new log to be flushed
   if(block->log_pers == evt->log_length)
@@ -662,7 +663,7 @@ static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
 #else
       pages = PAGE_NR_TO_PTR_RB(fs,first_pn);
 
-      if((first_pn%PAGE_FRAME_NR(fs)) != ((first_pn+nr_pages-1)%PAGE_FRAME_NR(fs))){
+      if((first_pn/PAGE_FRAME_NR(fs)) != ((first_pn+nr_pages-1)/PAGE_FRAME_NR(fs))){
         //   |-------------------------|
         //      ^last                ^first
         nWrite = write(fs->page_wfd, pages, (PAGE_FRAME_NR(fs)-(first_pn%PAGE_FRAME_NR(fs)))*fs->page_size);
@@ -732,8 +733,6 @@ static void *blog_pers_routine(void * param)
   int evicTrigger = 0,i;
   uint64_t nr_page_evic = 0UL;
 
-DEBUG_PRINT("Persistent Thread Started\n");
-
   while(1){
 
     // get event
@@ -741,27 +740,16 @@ DEBUG_PRINT("Persistent Thread Started\n");
     
     // End of Queue
     if(IS_EOQ(evt)){
-DEBUG_PRINT("Flush: Null Event\n");
       free(evt);
-      /*
-      do{
-        PERS_DEQ(fs,&evt);
-        if(evt!=NULL)free(evt);
-      }while(evt!=NULL);
-      */
       break;
     }
 
     // flush blog and touch the bitmaps...
-DEBUG_PRINT("Flush: Block %" PRIu64 " Operation %" PRIu32 "\n", evt->block->id,  evt->block->log[evt->log_length-1].op);
-
     if(flushBlog(fs, evt) != 0){
       fprintf(stderr, "Faile to flush blog: id=%ld,log_length=%ld\n",
         evt->block->id,evt->log_length);
       exit(1);
     }
-
-DEBUG_PRINT("Flush: Block %" PRIu64 " done.\n", evt->block->id);
 
     // free event
     free(evt);
@@ -788,7 +776,6 @@ DEBUG_PRINT("Flush: Eviction triggered? %d.\n", evicTrigger);
       pthread_rwlock_unlock(&fs->head_rwlock);
     }
   }
-DEBUG_PRINT("Persistent Thread Out.\n");
   return param;
 }
 
