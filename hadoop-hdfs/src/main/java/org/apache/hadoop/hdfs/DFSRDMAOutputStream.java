@@ -53,6 +53,7 @@ import edu.cornell.cs.blog.JNIBlog;
 import edu.cornell.cs.blog.JNIBlog.RBPBuffer;
 import edu.cornell.cs.sa.HybridLogicalClock;
 import static org.apache.hadoop.hdfs.protocolPB.PBHelper.vintPrefixed;
+import org.apache.hadoop.hdfs.server.namenode.NotReplicatedYetException;
 
 /**
  * @author weijia
@@ -352,13 +353,14 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       long sleeptime = 400;
 
      while(true){
-       long localstart = Time.new();
+       long localstart = Time.now();
        HybridLogicalClock mhlc = DFSClient.tickAndCopy();
        ExtendedBlock oldBlock = block;
 
        try {
          lb = dfsClient.namenode.addBlock(src,
              dfsClient.clientName, oldBlock, null, fFileId, null, mhlc);
+         break;
        } catch (RemoteException e) {
          IOException ue = 
            e.unwrapRemoteException(FileNotFoundException.class,
@@ -372,12 +374,12 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
            DFSClient.LOG.info("Exception while adding a block", e);
            if (Time.now() - localstart > 5000) {
              DFSClient.LOG.info("Waiting for replication for " +
-               (Time.now() = localstart) / 1000 +
+               ((Time.now() - localstart) / 1000) +
                "seconds");
            }
            try{
              DFSClient.LOG.warn("NotReplicatedYetException sleeping " + src +
-                + " retries left " + retries);
+                " retries left " + retries);
              Thread.sleep(sleeptime);
              sleeptime *=2;
            } catch (InterruptedException ie) {
@@ -389,6 +391,10 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
          this.lastException = e;
          stat = DSS.ERROR;
          return;
+       } catch (Exception oe){
+          DFSClient.LOG.error("doCreate() throw exceptions:" + oe);
+          this.lastException = oe;
+          stat = DSS.ERROR;
        }
      }
 
