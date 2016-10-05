@@ -619,7 +619,9 @@ public class FileTester extends Configured implements Tool {
   @Override
   public int run(String[] args) throws Exception{
     Configuration conf = this.getConf();
+    conf.set("fs.defaultFS", "hdfs://128.84.105.178:50090");
     FileSystem fs = FileSystem.get(conf);
+    System.out.println(fs.getUri().toString());
 
     if(args.length < 1){
       System.out.println("args: <cmd:=append|overwrite>\n"+
