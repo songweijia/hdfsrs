@@ -639,7 +639,7 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
 
   // flush to file
   for(;block->log_pers < evt->log_length; block->log_pers++){
-    
+
     log_t *log_entry;
     void *pages;
     ssize_t nWrite;
@@ -654,7 +654,6 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
     } else
       nr_pages = 0UL;
     BLOG_UNLOCK(evt->block);
-
 
     // flush pages NOTE: page_fd was opened with O_DIRECT&O_SYNC.
     if(nr_pages>0UL){
@@ -1420,6 +1419,12 @@ DEBUG_PRINT("begin createBlock\n");
   // Create the block structure.
   block = (block_t *) malloc(sizeof(block_t));
   block->id = block_id;
+  block->log_head = 0;
+  block->log_tail = 0;
+  if(sem_init(&block->log_sem,0,block->log_tail - block->log_head)!=0){
+    fprintf(stderr, "ERROR: cannot initialize semaphore for block:%"PRIu64"\n", block->id);
+    exit(-1);
+  }
   block->log_cap = 2;
   block->status = ACTIVE;
   block->length = 0;
