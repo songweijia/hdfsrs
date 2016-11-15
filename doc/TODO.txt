@@ -1,4 +1,7 @@
 1. Test/debug page eviction feature [2016-11-14]
+ - report disk space instead of the memory space.
+ - test with more than the memory space.
+ - improve the disk write throughput.
 2. Implement Metadata Log in the NameNode
 3. Data Replication
 4. Advanced point-in-time query API

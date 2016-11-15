@@ -25,6 +25,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.StorageType;
+import org.apache.hadoop.fs.DF;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeSpi;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeStorage;
 
@@ -43,14 +44,16 @@ class MemVolumeImpl implements FsVolumeSpi {
   private final long reserved;
   private HashMap<String, Long> bpSlices;
   
-  MemVolumeImpl(MemDatasetImpl dataset, String storageID, Configuration conf, 
+  MemVolumeImpl(MemDatasetImpl dataset, String storageID, File currentDir, Configuration conf, 
       StorageType storageType) throws IOException {
     this.dataset = dataset;
     this.storageID = storageID;
     this.reserved = conf.getLong(
         DFSConfigKeys.DFS_DATANODE_DU_RESERVED_KEY,
         DFSConfigKeys.DFS_DATANODE_DU_RESERVED_DEFAULT);
-    this.usage = dataset.memManager.getCapacity();
+    // this.usage = dataset.memManager.getCapacity();
+    File parent = currentDir.getParentFile();
+    this.usage = (new DF(parent, conf)).getCapacity();
     this.storageType = storageType;
     this.bpSlices = new HashMap<String, Long>();
   }
