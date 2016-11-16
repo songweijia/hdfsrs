@@ -721,14 +721,6 @@ int rdmaDisconnect(RDMACtxt *ctxt, const uint32_t hostip){
   return 0;
 }
 
-#ifdef DEBUG
-  #define DEBUG_TIMESTAMP(x) gettimeofday(&(x),NULL)
-#else
-  #define DEBUG_TIMESTAMP(x)
-#endif
-
-#define TIMESPAN(t1,t2) ((t2.tv_sec-t1.tv_sec)*1000000+(t2.tv_usec-t1.tv_usec))
-
 int rdmaTransfer(RDMACtxt *ctxt, const uint32_t hostip, const uint32_t pid, const uint64_t r_vaddr, const void **pagelist, int npage,int iswrite, int pagesize){
   if(pagesize == 0)
     pagesize = RDMA_CTXT_PAGE_SIZE(ctxt);

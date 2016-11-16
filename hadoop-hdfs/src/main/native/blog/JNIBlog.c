@@ -111,7 +111,10 @@ char *log_to_string(filesystem_t *fs,log_t *log, size_t page_size)
     for (i = 0; i < log->nr_pages-1; i++) {
       sprintf(buf, "Page %" PRIu32 ":\n", log->start_page + i);
       strcat(res, buf);
-      snprintf(buf, page_size+1, "[%p]%s", (char*)fs->page_base_ring_buffer+(log->first_pn+i)%MAX_PERS_PAGE_SIZE*page_size,(char *)((char*)fs->page_base_ring_buffer + (log->first_pn + i)%MAX_PERS_PAGE_SIZE*page_size));
+      snprintf(buf, 1025, "[%p]%s", 
+        (char*)PAGE_NR_TO_PTR_RB(fs, log->first_pn + i),
+        (char*)PAGE_NR_TO_PTR_RB(fs, log->first_pn + i));
+      buf[1024]='\0';
       strcat(res, buf);
       strcat(res, "\n");
     }
@@ -121,7 +124,11 @@ char *log_to_string(filesystem_t *fs,log_t *log, size_t page_size)
       length = log->block_length - (log->nr_pages-1)*page_size;
     sprintf(buf, "Page %" PRIu32 ":\n", log->start_page + log->nr_pages-1);
     strcat(res, buf);
-    snprintf(buf, length+1, "[%p]%s", (char*)fs->page_base_ring_buffer+(log->first_pn+log->nr_pages-1)%MAX_PERS_PAGE_SIZE*page_size, (char *)((char*)fs->page_base_ring_buffer + (log->first_pn + log->nr_pages-1)%MAX_PERS_PAGE_SIZE*page_size));
+    length = MAX(length,1024);
+    snprintf(buf, length+1, "[%p]%s", 
+        (char*)PAGE_NR_TO_PTR_RB(fs, log->first_pn + log->nr_pages - 1),
+        (char*)PAGE_NR_TO_PTR_RB(fs, log->first_pn + log->nr_pages - 1));
+    buf[1024]='\0';
     strcat(res, buf);
     strcat(res, "\n");
     sprintf(buf, "HLC Value: (%" PRIu64 ",%" PRIu64 ")\n", log->r, log->l);
@@ -616,7 +623,7 @@ int find_or_create_snapshot(block_t *block, uint64_t snapshot_time, size_t page_
 }
 
 static void update_pers_bitmap(filesystem_t *fs, uint64_t first_pn, uint64_t nr_pages, int bSet){
-  if(first_pn/PAGE_FRAME_NR(fs) == (first_pn+nr_pages+1)/PAGE_FRAME_NR(fs)){
+  if(first_pn/PAGE_FRAME_NR(fs) == (first_pn+nr_pages-1)/PAGE_FRAME_NR(fs)){
     blog_bitmap_togglebits(&fs->pers_bitmap,first_pn%PAGE_FRAME_NR(fs),nr_pages,bSet);
   }else{
     blog_bitmap_togglebits(&fs->pers_bitmap,first_pn%PAGE_FRAME_NR(fs),(PAGE_FRAME_NR(fs)-first_pn%PAGE_FRAME_NR(fs)),bSet);
@@ -758,7 +765,7 @@ static void *blog_pers_routine(void * param)
     evicTrigger = (PAGE_FRAME_FREE_NR(fs) < PAGE_PER_BLOCK(fs));
 DEBUG_PRINT("Flush: Eviction triggered? %d.\n", evicTrigger);
     if(evicTrigger){
-      // We only evict space enough for two blocks or all the possible space for eviction, which ever is smaller. Let's design a smarter eviction policy here.
+      // We only evict space enough for two blocks or all the possible space for eviction, whichever is smaller. Let's design a smarter eviction policy here.
       nr_page_evic = MIN(fs->nr_page_pers-fs->nr_page_head,2*PAGE_PER_BLOCK(fs));
     }
     pthread_spin_unlock(&fs->tail_spinlock);
@@ -1933,7 +1940,7 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
   uint64_t log_index;
   uint64_t block_id = (uint64_t) blockId;
   jint ret;
-  
+
   // Find the block.
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) != 0  || block->status != ACTIVE) {
@@ -1942,7 +1949,7 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
     return -1;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
-  
+ 
   // Find the last entry.
   if(BLOG_RDLOCK(block)!=0){
     fprintf(stderr, "ERROR: Cannot acquire read lock on block:%ld, Error:%s\n",
@@ -2231,7 +2238,6 @@ DEBUG_PRINT("[writeBlockInternal-1.6]first_page_in_block=%d,first_pn_in_page_poo
   block->log_tail++;
   PERS_ENQ(filesystem,event);
   pthread_spin_unlock(&(filesystem->clock_spinlock));
-DEBUG_PRINT("[writeBlockInternal-2]write log:%s,first_pn=%"PRIu64"\n",log_to_string(filesystem,log_entry,filesystem->page_size),first_pn);
   BLOG_UNLOCK(block);
 
   // Fill block with the appropriate information.

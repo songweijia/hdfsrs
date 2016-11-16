@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "debug.h"
 #include "map.h"
 
   ////////////////////////////////////////////////
@@ -218,13 +219,4 @@ inline const uint32_t getip(const char* ipstr){
   return (const uint32_t)inet_addr(ipstr);
 }
 
-#ifdef DEBUG
-#ifndef DEBUG_PRINT
-#define DEBUG_PRINT(arg,fmt...) {fprintf(stderr,arg, ##fmt );fflush(stderr);}
-#endif//DEBIG_PRINT
-#else
-#ifndef DEBUG_PRINT
-#define DEBUG_PRINT(arg,fmt...)
-#endif//DEBIG_PRINT
-#endif
 #endif//__INFINIBANDRDMA_H__

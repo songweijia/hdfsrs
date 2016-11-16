@@ -3,6 +3,7 @@
 #include <semaphore.h>
 #include "map.h"
 #include "bitmap.h"
+#include "debug.h"
 #include "InfiniBandRDMA.h"
 
 #define BLOCK_MAP_SIZE 1024
@@ -16,28 +17,6 @@ typedef struct block block_t;
 typedef struct filesystem filesystem_t;
 typedef struct snapshot snapshot_t;
 typedef struct pers_queue_entry pers_event_t;
-
-#ifndef DEBUG_PRINT
-
-  #ifdef DEBUG
-  #define DEBUG_PRINT(arg,fmt...) {fprintf(stderr,arg, ##fmt );fflush(stderr);}
-  #else
-  #define DEBUG_PRINT(arg,fmt...)
-  #endif
-
-#endif
-
-#ifndef DEBUG_TIMESTAMP
-
-  #ifdef DEBUG
-  #define DEBUG_TIMESTAMP(t) gettimeofday(&t,NULL)
-  #else
-  #define DEBUG_TIMESTAMP(t)
-  #endif
-
-  #define TIMESPAN(t1,t2) ((t2.tv_sec-t1.tv_sec)*1000000+(t2.tv_usec-t1.tv_usec))
-
-#endif
 
 MAP_DECLARE(block, block_t);
 MAP_DECLARE(log, uint64_t);

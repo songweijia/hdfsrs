@@ -1,5 +1,7 @@
 1. Test/debug page eviction feature [2016-11-14]
- - report disk space instead of the memory space.
+ - report disk space instead of the memory space.[OK]
+ - fix:crashed after written 6GB.[OK]
+ - fix:can't get block after reboot.
  - test with more than the memory space.
  - improve the disk write throughput.
 2. Implement Metadata Log in the NameNode
