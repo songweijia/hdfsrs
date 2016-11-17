@@ -1407,7 +1407,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_initializeRDMA
 JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock
   (JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jlong genStamp)
 {
-DEBUG_PRINT("begin createBlock\n");
+DEBUG_PRINT("begin createBlock:genStamp=%ld\n",genStamp);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
   block_t *block;
@@ -1478,6 +1478,7 @@ DEBUG_PRINT("begin createBlock\n");
   log_entry->start_page = 0;
   log_entry->nr_pages = 0;
   log_entry->u = 0;
+  log_entry->first_pn = (uint64_t)genStamp;
   pthread_spin_lock(&(filesystem->clock_spinlock));
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env,mhlc,log_entry);
@@ -2432,7 +2433,7 @@ DEBUG_PRINT("begin setGenStamp.\n");
   log_entry->start_page = 0;
   log_entry->nr_pages = 0;
   log_entry->u = BLOG_LAST_ENTRY(block)->u; // we reuse the last userTimestamp
-  log_entry->first_pn = genStamp;
+  log_entry->first_pn = (uint64_t)genStamp;
   pthread_spin_lock(&(filesystem->clock_spinlock));
   tick_hybrid_logical_clock(env, get_hybrid_logical_clock(env, thisObj), mhlc);
   update_log_clock(env, mhlc, log_entry);

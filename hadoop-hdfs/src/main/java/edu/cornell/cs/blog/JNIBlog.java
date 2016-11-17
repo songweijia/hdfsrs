@@ -216,7 +216,7 @@ public class JNIBlog
     }
     else if(mbm == null){
       //create block on an existing block.
-    }else if(op == 2) // WRITE_BLOCK
+    }else if(op == 2) // DELETE_BLOCK
       mbm.delete();
     else if(op==3){//WRITE_BLOCK
       // do nothing
