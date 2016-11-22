@@ -180,7 +180,7 @@ struct filesystem {
   char pers_path[256];
   #define PERS_ENQ(fs,e) do{ \
     if (e->block != NULL) { \
-        DEBUG_PRINT("Enqueue: Block %" PRIu64 " Operation %" PRIu32 "\n", e->block->id,  e->block->log[e->log_length-1].op); \
+        DEBUG_PRINT("Enqueue: Block %" PRIu64 " Operation %" PRIu32 "\n", e->block->id, BLOG_ENTRY(e->block,e->log_length-1)->op); \
     } else { \
         DEBUG_PRINT("Enqueue: Null Event\n"); \
     } \
