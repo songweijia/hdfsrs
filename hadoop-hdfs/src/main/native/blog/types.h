@@ -84,6 +84,7 @@ struct block {
   uint64_t log_head;
   uint64_t log_tail;
   uint64_t log_cap;
+#define BLOG_IS_FULL(b) (((b)->log_tail - (b)->log_head - (b)->log_cap) == 0)
   uint32_t status : 4;
   uint32_t length : 28;
   uint32_t pages_cap;
@@ -92,7 +93,6 @@ struct block {
 #define BLOG_NEXT_ENTRY(b) ((log_t*)(b)->log+((b)->log_tail%MAX_INMEM_BLOG_ENTRIES))
 #define BLOG_LAST_ENTRY(b) ((log_t*)(b)->log+(((b)->log_tail+MAX_INMEM_BLOG_ENTRIES-1)%MAX_INMEM_BLOG_ENTRIES))
 #define BLOG_ENTRY(b,i) ((log_t*)(b)->log+(i)%MAX_INMEM_BLOG_ENTRIES)
-#define BLOG_IS_FULL(b) (((b)->log_tail - (b)->log_head - (b)->log_cap) == 0)
   BLOG_MAP_TYPE(log) *log_map_hlc; // by hlc
   BLOG_MAP_TYPE(log) *log_map_ut; // by user timestamp
   BLOG_MAP_TYPE(snapshot) *snapshot_map;

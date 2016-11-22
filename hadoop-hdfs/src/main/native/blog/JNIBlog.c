@@ -1957,7 +1957,7 @@ DEBUG_PRINT("begin getNumberOfBytes__J.\n");
       block_id, strerror(errno));
     return -1;
   }
-  log_index = block->log_tail-1;
+  log_index = ((block->log_tail-1)%block->log_cap);
   ret = (jint) block->log[log_index].block_length;
   BLOG_UNLOCK(block);
 
