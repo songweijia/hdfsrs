@@ -647,20 +647,22 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
   // flush to file
   for(;block->log_pers < evt->log_length; block->log_pers++){
 
-    log_t *log_entry;
+    log_t log_entry_val;
     void *pages;
     ssize_t nWrite;
     uint64_t first_pn,nr_pages;
 
+    // get log entry (because blog->log may move to other address due to realloc())
+    BLOG_RDLOCK(block);
+    log_entry_val = *BLOG_NEXT_PERS_ENTRY(block);
+    BLOG_UNLOCK(block);
+
     // get pages
-    BLOG_RDLOCK(evt->block);
-    log_entry = (log_t*)block->log + (block->log_pers%MAX_INMEM_BLOG_ENTRIES);
-    if(log_entry->op == WRITE){
-      first_pn = log_entry->first_pn;
-      nr_pages = log_entry->nr_pages;
+    if(log_entry_val.op == WRITE){
+      first_pn = log_entry_val.first_pn;
+      nr_pages = log_entry_val.nr_pages;
     } else
       nr_pages = 0UL;
-    BLOG_UNLOCK(evt->block);
 
     // flush pages NOTE: page_fd was opened with O_DIRECT&O_SYNC.
     if(nr_pages>0UL){
@@ -691,16 +693,13 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
     }
 
     // write log
-    BLOG_RDLOCK(block);
-    log_entry = BLOG_NEXT_PERS_ENTRY(block);
 #ifdef NO_PERSISTENCE
 #else
-    if( write(block->blog_wfd,log_entry,sizeof(log_t)) != sizeof(log_t) ){
+    if( write(block->blog_wfd,&log_entry_val,sizeof(log_t)) != sizeof(log_t) ){
       fprintf(stderr,"Flush, cannot write to blog file %ld."BLOGFILE_SUFFIX", Error:%s\n",block->id,strerror(errno));
       return -2;
     }
 #endif
-    BLOG_UNLOCK(block);
 
     // post log semaphore
     sem_post(&block->log_sem);
