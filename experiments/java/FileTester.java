@@ -522,7 +522,7 @@ public class FileTester extends Configured implements Tool {
   void snapwrite(FileSystem fs, String path, //filename
         int fsizemb,//filesize(MB)
         int wsize,//writesize(Byte)
-        int icount,//interval count
+        int icount,//write count
         int imillis,//interval millis
         int scount//snap count
         ) throws Exception{

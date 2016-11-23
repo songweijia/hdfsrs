@@ -1,7 +1,7 @@
 #!/bin/bash
 testfile=/test
 snaplog=snaplog
-num_snapshot=200
+num_snapshot=5
 num_writepersnapshot=1000
 reverse=False
 output=snap_500_forward.dat
