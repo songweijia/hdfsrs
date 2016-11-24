@@ -651,6 +651,7 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
     void *pages;
     ssize_t nWrite;
     uint64_t first_pn,nr_pages;
+    off_t page_file_ofst;
 
     // get log entry (because blog->log may move to other address due to realloc())
     BLOG_RDLOCK(block);
@@ -670,10 +671,17 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
       pages = pages;
 #else
       pages = PAGE_NR_TO_PTR_RB(fs,first_pn);
-
+      // lseek to page location
+      page_file_ofst = (off_t)(first_pn*fs->page_size);
+      if(lseek(fs->page_wfd, page_file_ofst, SEEK_SET) == -1){
+        fprintf(stderr,"Flush, cannot lseek to location %ld in pagefile, Error:%s\n",page_file_ofst,strerror(errno));
+        return -1;
+      }
+      //write pages.
       if((first_pn/PAGE_FRAME_NR(fs)) != ((first_pn+nr_pages-1)/PAGE_FRAME_NR(fs))){
         //   |-------------------------|
         //      ^last                ^first
+
         nWrite = write(fs->page_wfd, pages, (PAGE_FRAME_NR(fs)-(first_pn%PAGE_FRAME_NR(fs)))*fs->page_size);
         if(nWrite>0)
           nWrite = write(fs->page_wfd, fs->page_base_ring_buffer, ((first_pn+nr_pages)%PAGE_FRAME_NR(fs))*fs->page_size);
