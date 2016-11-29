@@ -665,7 +665,7 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
     } else
       nr_pages = 0UL;
 
-    // flush pages NOTE: page_fd was opened with O_DIRECT&O_SYNC.
+    // flush pages NOTE: page_fd was opened with O_SYNC and O_DIRECT.
     if(nr_pages>0UL){
 #ifdef NO_PERSISTENCE
       pages = pages;
@@ -694,7 +694,6 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
         fprintf(stderr, "Flush, cannot write to persistent page file, Error:%s\n",strerror(errno));
         return -1;
       }
-
       // touch the bitmap
       update_pers_bitmap(fs,first_pn,nr_pages,1);
 #endif
@@ -727,7 +726,6 @@ DEBUG_PRINT("flushBlog:done.\n");
   pthread_spin_lock(&fs->tail_spinlock);
   while(fs->nr_page_pers<fs->nr_page_tail && blog_bitmap_testbit(&fs->pers_bitmap, fs->nr_page_pers%PAGE_FRAME_NR(fs))){
     fs->nr_page_pers++;
-    sem_post(&fs->freepages_sem);
   }
   pthread_spin_unlock(&fs->tail_spinlock);
 
@@ -780,8 +778,10 @@ DEBUG_PRINT("Flush: Eviction triggered? %d.\n", evicTrigger);
     if(evicTrigger){
 
       //clear bitmap
-      for(i=0;i<nr_page_evic;i++)
+      for(i=0;i<nr_page_evic;i++){
         blog_bitmap_togglebit(&fs->pers_bitmap,(uint32_t)((fs->nr_page_head+i)%PAGE_FRAME_NR(fs)),0);
+        sem_post(&fs->freepages_sem);
+      }
 
       //advance the head
       pthread_rwlock_wrlock(&fs->head_rwlock);
@@ -1231,7 +1231,7 @@ static void openPageFile(filesystem_t *fs,const char *persPath){
   char buf[256];
   sprintf(buf,"%s/%s",persPath,PERS_PAGE_FN);
   // 2 - open the file
-  fs->page_wfd = open(buf,O_WRONLY|O_CREAT|O_DIRECT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+  fs->page_wfd = open(buf,O_WRONLY|O_CREAT|O_SYNC|O_DIRECT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
   fs->page_rfd = open(buf,O_RDONLY);
   if( fs->page_wfd<0 || fs->page_rfd<0 ){
     fprintf(stderr, "ERROR: Cannot open persistent page file:%s, error:%d, reason:%s\n",buf,errno,strerror(errno));
@@ -2043,7 +2043,7 @@ static inline uint64_t blog_allocate_pages(filesystem_t *fs,int npage){
   // STEP 4 - unlock tail
   pthread_spin_unlock(&fs->tail_spinlock);
 
-DEBUG_PRINT("blog_allocate_pages:allocate:%"PRIu64":L%d\n",fpn,npage);
+  DEBUG_PRINT("blog_allocate_pages:allocate:%"PRIu64":L%d\n",fpn,npage);
 
   return fpn;
 }
