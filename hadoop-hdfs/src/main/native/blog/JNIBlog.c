@@ -631,6 +631,164 @@ static void update_pers_bitmap(filesystem_t *fs, uint64_t first_pn, uint64_t nr_
   }
 }
 
+#ifdef FLUSH_BATCHING
+/*
+ * flushBlogInBatch: flush the log entries specified by a batch of evt:
+ * evt->block:          the block;
+ * evt->log_length:     the log length;
+ */
+int flushBlogInBatch(filesystem_t *fs, struct _pers_queue * pbatch){
+  DEBUG_PRINT("flushBlogInBatch - begins.\n");
+
+  int log_entry_batch_cap = MAX_FLUSH_BATCH, nr_log_entry = 0;
+  int blog_wfd_batch_cap = MAX_FLUSH_BATCH, nr_blog_wfd = 0;
+  int i;
+  log_t * next_entry;
+  log_t * log_entry_batch = (log_t *)malloc(sizeof(log_t)*log_entry_batch_cap);
+  if(log_entry_batch == NULL){
+    fprintf(stderr, "flushBlogInBatch, cannot allocate memory for batched log entries. Error:%s\n\n",strerror(errno));
+    return -1;
+  }
+  int * blog_wfd_batch = (int *)malloc(sizeof(int)*2*blog_wfd_batch_cap);
+  if(blog_wfd_batch == NULL){
+    fprintf(stderr, "flushBlogInBatch, cannot allocate memory for batched blog file descriptors. Error:%s\n\n",strerror(errno));
+    free(log_entry_batch);
+    return -1;
+  }
+#define BLOG_BATCH_WFD(x) blog_wfd_batch[2*(x)]
+#define BLOG_BATCH_CNT(x) blog_wfd_batch[2*(x)+1]
+#define FLUSH_BATCH_FREE do { \
+  if(log_entry_batch)free(log_entry_batch); \
+  if(blog_wfd_batch)free(blog_wfd_batch); \
+} while(0)
+
+
+  // 1 - get all log_entries
+  DEBUG_PRINT("flushBlogInBatch(1): get all log entries.\n");
+  while(!TAILQ_EMPTY(pbatch)){
+    pers_event_t *evt = TAILQ_FIRST(pbatch);
+    TAILQ_REMOVE(pbatch,evt,lnk);
+
+    // prepare the blog_wfd_batch entry
+    if(nr_blog_wfd == 0 || BLOG_BATCH_WFD(nr_blog_wfd-1) != evt->block->blog_wfd){
+      if( nr_blog_wfd == blog_wfd_batch_cap ){//make sure we have enough space for blog_wfd entries
+        blog_wfd_batch_cap = (blog_wfd_batch_cap << 1);
+        blog_wfd_batch = (int *)realloc(log_entry_batch,sizeof(int)*2*blog_wfd_batch_cap);
+        if(blog_wfd_batch == NULL){
+          fprintf(stderr, "flushBlogInBatch, cannot reallocate memory for batched blog file descriptor. Error:%s\n", strerror(errno));
+          FLUSH_BATCH_FREE;
+          return -1;
+        }
+      }
+      BLOG_BATCH_WFD(nr_blog_wfd) = evt->block->blog_wfd;
+      BLOG_BATCH_CNT(nr_blog_wfd) = 0;
+      nr_blog_wfd ++;
+    }
+
+    // flush pages
+    for(;evt->block->log_pers < evt->log_length; evt->block->log_pers++){
+      if( nr_log_entry == log_entry_batch_cap ){//make sure we have enough space for log entries
+        log_entry_batch_cap = (log_entry_batch_cap << 1);
+        log_entry_batch = (log_t *)realloc(log_entry_batch,sizeof(log_t)*log_entry_batch_cap);
+        if( log_entry_batch == NULL ){
+          fprintf(stderr, "flushBlogInBatch, cannot reallocate memory for batched log entries/blog file descriptor. Error:%s\n\n",strerror(errno));
+          FLUSH_BATCH_FREE;
+          return -1;
+        }
+      }
+
+      // fill log entry in buffer.
+      BLOG_RDLOCK(evt->block);
+      log_entry_batch[nr_log_entry++] = *BLOG_NEXT_PERS_ENTRY(evt->block);
+      BLOG_UNLOCK(evt->block);
+     
+      // increment the entry counter
+      BLOG_BATCH_CNT(nr_blog_wfd-1)++;
+    }
+  }
+
+  // 2 - flush pages for all writes.
+  DEBUG_PRINT("flushBlogInBatch(2): flush pages.\n");
+  for(i=0;i<nr_log_entry;i++){
+    void *pages;
+    ssize_t nWrite;
+    uint64_t first_pn,nr_pages;
+    off_t page_file_ofst;
+
+    if(log_entry_batch[i].op == WRITE){
+      first_pn = log_entry_batch[i].first_pn;
+      nr_pages = log_entry_batch[i].nr_pages;
+    }else
+      continue;
+
+#ifdef NO_PERSISTENCE
+    pages = pages;
+#else
+    pages = PAGE_NR_TO_PTR_RB(fs,first_pn);
+    // lseek to page location
+    page_file_ofst = (off_t)(first_pn*fs->page_size);
+    if(lseek(fs->page_wfd, page_file_ofst, SEEK_SET) == -1){
+      fprintf(stderr,"blogFlushInBatch, cannot lseek to location %ld in pagefile, Error:%s\n",page_file_ofst,strerror(errno));
+      FLUSH_BATCH_FREE;
+      return -1;
+    }
+    //write pages.
+    if((first_pn/PAGE_FRAME_NR(fs)) != ((first_pn+nr_pages-1)/PAGE_FRAME_NR(fs))){
+      //   |-------------------------|
+      //      ^last                ^first
+
+      nWrite = write(fs->page_wfd, pages, (PAGE_FRAME_NR(fs)-(first_pn%PAGE_FRAME_NR(fs)))*fs->page_size);
+      if(nWrite>0)
+        nWrite = write(fs->page_wfd, fs->page_base_ring_buffer, ((first_pn+nr_pages)%PAGE_FRAME_NR(fs))*fs->page_size);
+    }else{
+      //   |-------------------------|
+      //      ^first ^last
+      nWrite = write(fs->page_wfd, pages, nr_pages*fs->page_size);
+    }
+    if(nWrite<0){
+      fprintf(stderr, "blogFlushInBatch, cannot write to persistent page file, Error:%s\n",strerror(errno));
+      FLUSH_BATCH_FREE;
+      return -1;
+    }
+    // touch the bitmap
+    update_pers_bitmap(fs,first_pn,nr_pages,1);
+#endif//NO_PERSISTENCE
+  }
+  if(fsync(fs->page_wfd)>0){
+    fprintf(stderr, "blogFlushInBatch, cannot write to persistent page file, Error:%s\n",strerror(errno));
+    FLUSH_BATCH_FREE;
+    return -1;
+  }
+
+  // 3 - flush log_entries
+#ifdef NO_PERSISTENCE
+#else
+  DEBUG_PRINT("flushBlogInBatch(3): flush log entries.\n");
+  next_entry = log_entry_batch;
+  for(i=0;i<nr_blog_wfd;i++){
+    if( write(BLOG_BATCH_WFD(i),next_entry,sizeof(log_t)*BLOG_BATCH_CNT(i)) != sizeof(log_t)*BLOG_BATCH_CNT(i)){
+      fprintf(stderr, "blogFlushInBatch, cannot write to blog file, Error:%s\n",strerror(errno));
+      FLUSH_BATCH_FREE;
+      return -2;
+    }
+    fsync(BLOG_BATCH_WFD(i));
+    next_entry += BLOG_BATCH_CNT(i);
+  }
+#endif//NO_PERISTENCE
+  FLUSH_BATCH_FREE; // free the resources.
+
+  // 4 - update fs->nr_page_pers
+  DEBUG_PRINT("flushBlogInBatch(4): update fs->nr_page_pers\n");
+  pthread_spin_lock(&fs->tail_spinlock);
+  while(fs->nr_page_pers<fs->nr_page_tail && blog_bitmap_testbit(&fs->pers_bitmap, fs->nr_page_pers%PAGE_FRAME_NR(fs))){
+    fs->nr_page_pers++;
+  }
+  pthread_spin_unlock(&fs->tail_spinlock);
+
+  DEBUG_PRINT("flushBlogInBatch - ends.\n");
+  return 0;
+}
+#else //FLUSH_BATCHING
 /*
  * flushBlog: flush the log entries specified by evt:
  * evt->block:          the block;
@@ -665,7 +823,7 @@ DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length
     } else
       nr_pages = 0UL;
 
-    // flush pages NOTE: page_fd was opened with O_SYNC and O_DIRECT.
+    // flush pages NOTE: page_fd was not opened with O_SYNC and O_DIRECT any more.
     if(nr_pages>0UL){
 #ifdef NO_PERSISTENCE
       pages = pages;
@@ -731,6 +889,8 @@ DEBUG_PRINT("flushBlog:done.\n");
 
   return 0;
 }
+#endif //FLUSH_BATCHING
+
 
 /*
  * blog_pers_routine()
@@ -743,9 +903,39 @@ static void *blog_pers_routine(void * param)
   pers_event_t *evt;
   int evicTrigger = 0,i;
   uint64_t nr_page_evic = 0UL;
+#ifdef FLUSH_BATCHING
+  int bStop = 0;
+#endif
 
   while(1){
-
+#ifdef FLUSH_BATCHING
+    int nr_evt = 0, qlen;
+    struct _pers_queue pers_batch;
+    TAILQ_INIT(&pers_batch);
+    //STEP 1: Get the Queue
+    do{
+      PERS_DEQ(fs,&evt);
+      TAILQ_INSERT_TAIL(&pers_batch,evt,lnk);
+      nr_evt ++;
+      PERS_QLEN(fs,qlen);
+    }while(qlen>0 && nr_evt < MAX_FLUSH_BATCH);
+    //STEP 2: flush blog in batch
+    if(flushBlogInBatch(fs, &pers_batch) != 0){
+      fprintf(stderr, "Failed to flush blog in batch.\n");
+      exit(1);
+    }
+    //STEP 3: free events
+    while(!TAILQ_EMPTY(&pers_batch)){
+      evt = TAILQ_FIRST(&pers_batch);
+      TAILQ_REMOVE(&pers_batch,evt,lnk);
+      // End of Queue
+      if(IS_EOQ(evt))
+        bStop = 1;
+      free(evt);
+    }
+    if(bStop)
+      break;
+#else //FLUSH_BATCHING
     // get event
     PERS_DEQ(fs,&evt);
     
@@ -757,13 +947,14 @@ static void *blog_pers_routine(void * param)
 
     // flush blog and touch the bitmaps...
     if(flushBlog(fs, evt) != 0){
-      fprintf(stderr, "Faile to flush blog: id=%ld,log_length=%ld\n",
+      fprintf(stderr, "Failed to flush blog: id=%ld,log_length=%ld\n",
         evt->block->id,evt->log_length);
       exit(1);
     }
 
     // free event
     free(evt);
+#endif // FLUSH_BATCHING
 
     // eviction
     pthread_spin_lock(&fs->tail_spinlock);
@@ -1231,7 +1422,8 @@ static void openPageFile(filesystem_t *fs,const char *persPath){
   char buf[256];
   sprintf(buf,"%s/%s",persPath,PERS_PAGE_FN);
   // 2 - open the file
-  fs->page_wfd = open(buf,O_WRONLY|O_CREAT|O_SYNC|O_DIRECT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+  //fs->page_wfd = open(buf,O_WRONLY|O_CREAT|O_SYNC|O_DIRECT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+  fs->page_wfd = open(buf,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
   fs->page_rfd = open(buf,O_RDONLY);
   if( fs->page_wfd<0 || fs->page_rfd<0 ){
     fprintf(stderr, "ERROR: Cannot open persistent page file:%s, error:%d, reason:%s\n",buf,errno,strerror(errno));

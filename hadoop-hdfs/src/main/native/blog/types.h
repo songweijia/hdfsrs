@@ -10,6 +10,7 @@
 #define LOG_MAP_SIZE 64
 #define SNAPSHOT_MAP_SIZE 64
 #define MAX_INMEM_BLOG_ENTRIES 16384
+#define MAX_FLUSH_BATCH 128
 
 typedef char* page_t;
 typedef struct log log_t;
@@ -188,13 +189,13 @@ struct filesystem {
     TAILQ_INSERT_TAIL(&(fs)->pers_queue,e,lnk); \
     pthread_spin_unlock(&(fs)->queue_spinlock); \
     if(sem_post(&fs->pers_queue_sem) !=0){ \
-      fprintf(stderr,"Error: failed post semphore, Error: %s\n", strerror(errno)); \
+      fprintf(stderr,"Error: failed post semaphore, Error: %s\n", strerror(errno)); \
       exit(1); \
     } \
   }while(0)
   #define PERS_DEQ(fs,pe) do{ \
     if(sem_wait(&fs->pers_queue_sem) != 0){ \
-      fprintf(stderr,"Error: failed waiting on semphore, Error: %s\n", strerror(errno)); \
+      fprintf(stderr,"Error: failed waiting on semaphore, Error: %s\n", strerror(errno)); \
       exit(1); \
     } \
     pthread_spin_lock(&(fs)->queue_spinlock); \
@@ -203,6 +204,12 @@ struct filesystem {
       TAILQ_REMOVE(&(fs)->pers_queue,*(pe),lnk); \
     } else *pe = NULL; \
     pthread_spin_unlock(&(fs)->queue_spinlock); \
+  }while(0)
+  #define PERS_QLEN(fs,ql) do{ \
+    if(sem_getvalue(&fs->pers_queue_sem,&ql)!=0){ \
+      fprintf(stderr, "Error: failed to get semaphore value, Error: %s\n", strerror(errno)); \
+      exit(1); \
+    } \
   }while(0)
   struct _pers_queue pers_queue;
   pthread_spinlock_t queue_spinlock;

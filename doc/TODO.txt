@@ -2,8 +2,9 @@
  - report disk space instead of the memory space.[OK]
  - fix:crashed after written 6GB.[OK]
  - fix:can't get block after reboot. [OK]
- - comprehensive test case with more than the memory space.
- - improve the disk write throughput.
+ - comprehensive test case with more than the memory space.[OK]
+ - improve the disk write throughput by batching.
+ - use a separate eviction thread, the current eviction thread may cause an unnecessary wait before evition.
 2. Implement Metadata Log in the NameNode
 3. Data Replication
 4. Advanced point-in-time query API
