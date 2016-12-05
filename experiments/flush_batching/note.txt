@@ -1,0 +1,12 @@
+page_size: 4KB
+package size: 128KB
+number of clients: 1 4 8 16
+batch size: 1 20 40 80 100 200 300 400 500 600 1000
+we need the following files:
+20G.1
+10G.1
+10G.2
+5G.1
+5G.2
+5G.3
+5G.4

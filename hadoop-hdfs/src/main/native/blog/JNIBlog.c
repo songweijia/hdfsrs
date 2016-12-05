@@ -708,7 +708,7 @@ int flushBlogInBatch(filesystem_t *fs, struct _pers_queue * pbatch){
   }
 
   // 2 - flush pages for all writes.
-  DEBUG_PRINT("flushBlogInBatch(2): flush pages.\n");
+  DEBUG_PRINT("flushBlogInBatch(2): flush pages. nr_log_entry=%d\n",nr_log_entry);
   for(i=0;i<nr_log_entry;i++){
     void *pages;
     ssize_t nWrite;
