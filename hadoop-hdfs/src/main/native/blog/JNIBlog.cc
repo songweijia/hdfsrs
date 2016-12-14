@@ -401,9 +401,10 @@ int find_last_entry(block_t *block, uint64_t r, uint64_t l, uint64_t *last_entry
   length = block->log_tail;
 
   if (compare(r,l,BLOG_LAST_ENTRY(block)->r,BLOG_LAST_ENTRY(block)->l) > 0) {
-    if (read_local_rtc() < r)
+    if (read_local_rtc() < r){
       close(rfd);
       return -1;
+    }
     log_index = length -1;
   } else if (compare(r,l,BLOG_LAST_ENTRY(block)->r,BLOG_LAST_ENTRY(block)->l) == 0) {
     log_index = length - 1;

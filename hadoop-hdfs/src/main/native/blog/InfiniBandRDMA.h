@@ -89,6 +89,10 @@ struct ibcon_exchange{
 };
 #pragma pack(pop)
 
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
+
   ////////////////////////////////////////////////
  // Definition of RDMA PRIMITIVES.             //
 ////////////////////////////////////////////////
@@ -218,5 +222,9 @@ static inline int isBlogCtxt(const RDMACtxt * ctxt){
 inline const uint32_t getip(const char* ipstr){
   return (const uint32_t)inet_addr(ipstr);
 }
+
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 
 #endif//__INFINIBANDRDMA_H__
