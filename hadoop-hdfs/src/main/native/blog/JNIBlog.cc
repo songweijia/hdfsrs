@@ -177,12 +177,13 @@ char *block_to_string(filesystem_t *fs, block_t *block, size_t page_size)
   char *res = (char *) malloc(1024 * 1024 * sizeof(char));
   char buf[1025];
   snapshot_t *snapshot;
-  uint64_t *snapshot_ids, *log_ptr;
+  uint64_t *snapshot_ids = nullptr;
+  uint64_t *log_ptr;
   uint32_t i;
   uint64_t j, log_index, map_length;
   log_t *log = (log_t*)block->log;
   
-  // Pring id.
+  // Print id.
   sprintf(buf, "ID: %" PRIu64 "\n", block->id);
   strcpy(res,buf);
   
@@ -257,7 +258,7 @@ char *filesystem_to_string(filesystem_t *filesystem)
   char *res = (char *) malloc((1024*filesystem->page_size) * sizeof(char));
   char buf[1025];
   block_t *block;
-  uint64_t *block_ids;
+  uint64_t *block_ids = nullptr;
   uint64_t length, i;
   
   // Print Filesystem.
@@ -369,11 +370,11 @@ static inline log_t* get_log_entry(block_t *block, uint64_t idx, int rfd, log_t 
 
     // read from file
     if(lseek(rfd,(off_t)idx*sizeof(log_t),SEEK_SET)<0){
-      fprintf(stderr, "Cannot lseek to the %"PRIu64"-th log. block:%"PRIu64",errcode:%d,reason:%s",idx,block->id,errno,strerror(errno));
+      fprintf(stderr, "Cannot lseek to the %" PRIu64 "-th log. block:%" PRIu64 ",errcode:%d,reason:%s",idx,block->id,errno,strerror(errno));
       rle = NULL;
     }else 
     if(read(rfd,(void*)le,sizeof(log_t))<0){
-      fprintf(stderr, "Cannot read the %"PRIu64"-th log. block:%"PRIu64",errcode:%d,reason:%s",idx,block->id,errno,strerror(errno));
+      fprintf(stderr, "Cannot read the %" PRIu64 "-th log. block:%" PRIu64 ",errcode:%d,reason:%s",idx,block->id,errno,strerror(errno));
       rle = NULL;
     }else
       rle = le;
@@ -796,7 +797,7 @@ int flushBlogInBatch(filesystem_t *fs, struct _pers_queue * pbatch){
  */
 static int flushBlog(filesystem_t *fs, pers_event_t *evt ){
   block_t *block = evt->block;
-DEBUG_PRINT("flushBlog:block=%"PRIu64",block->log_pers=%"PRIu64",evt->log_length=%"PRIu64".\n",block->id,block->log_pers,evt->log_length);
+DEBUG_PRINT("flushBlog:block=%" PRIu64 ",block->log_pers=%" PRIu64 ",evt->log_length=%" PRIu64 ".\n",block->id,block->log_pers,evt->log_length);
 
   // no new log to be flushed
   if(block->log_pers == evt->log_length)
@@ -1203,14 +1204,14 @@ static uint64_t replayBlog(JNIEnv *env, jobject thisObj, filesystem_t *fs, block
   // STEP 2 - go back to the lastest "CREATE"
   for(i=nr_blog_entries-1;i>=0;i--){
     if(lseek(rfd,i*sizeof(log_t),SEEK_SET)<0){
-      fprintf(stderr,"WARN: Cannot seek to %"PRIu64" (block id=%" PRIu64 "). errcode:%d, reason:%s\n", i*sizeof(log_t) , block->id, errno, strerror(errno));
+      fprintf(stderr,"WARN: Cannot seek to %" PRIu64 " (block id=%" PRIu64 "). errcode:%d, reason:%s\n", i*sizeof(log_t) , block->id, errno, strerror(errno));
       return 0UL;
     }
     if(read(rfd,&log_entry,sizeof(log_t))<0){
       fprintf(stderr,"WARN: Cannot load log entry %" PRIu64 "(block id=%" PRIu64 "). errcode:%d, reason:%s\n", i, block->id, errno, strerror(errno));
       return 0UL;
     }
-DEBUG_PRINT("goback:[%"PRIu64"]block_id=%"PRIu64",op=%d\n",i,block->id,log_entry.op);
+DEBUG_PRINT("goback:[%" PRIu64 "]block_id=%" PRIu64 ",op=%d\n",i,block->id,log_entry.op);
     if(log_entry.op == CREATE_BLOCK)
       break;
   }
@@ -1229,7 +1230,7 @@ DEBUG_PRINT("goback:[%"PRIu64"]block_id=%"PRIu64",op=%d\n",i,block->id,log_entry
       return 0UL;
     }
 
-DEBUG_PRINT("[%"PRIu64"]replay:block_id=%"PRIu64",op=%d\n, first_pn=%"PRIu64", nr_pages=%"PRIu32"",i,block->id,log_entry.op,log_entry.first_pn,log_entry.nr_pages);
+DEBUG_PRINT("[%" PRIu64 "]replay:block_id=%" PRIu64 ",op=%d\n, first_pn=%" PRIu64 ", nr_pages=%" PRIu32 "",i,block->id,log_entry.op,log_entry.first_pn,log_entry.nr_pages);
 
     switch(log_entry.op){
       case BOL:
@@ -1266,10 +1267,10 @@ DEBUG_PRINT("[%"PRIu64"]replay:block_id=%"PRIu64",op=%d\n, first_pn=%"PRIu64", n
         exit(1);
     }
 
-DEBUG_PRINT("[%"PRIu64"]replay:java\n",i);
+DEBUG_PRINT("[%" PRIu64 "]replay:java\n",i);
     // replay log on java metadata.
     env->CallObjectMethod(thisObj,rl_mid,block->id,log_entry.op,log_entry.first_pn);
-DEBUG_PRINT("[%"PRIu64"]replay:next,nr_blog_entries=%"PRIu64"\n",i,nr_blog_entries);
+DEBUG_PRINT("[%" PRIu64 "]replay:next,nr_blog_entries=%" PRIu64 "\n",i,nr_blog_entries);
   }
 DEBUG_PRINT("reply return.\n");
   return guess_next_free_nr_page;
@@ -1314,15 +1315,15 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
     char blog_filename[256],page_filename[256];
     if(strlen(dir->d_name) < strlen(BLOGFILE_SUFFIX) + 1 ||
        dir->d_type != DT_REG ||
-       strcmp(dir->d_name + strlen(dir->d_name) - strlen(BLOGFILE_SUFFIX) -1, "."BLOGFILE_SUFFIX)){
+       strcmp(dir->d_name + strlen(dir->d_name) - strlen(BLOGFILE_SUFFIX) -1, "." BLOGFILE_SUFFIX)){
       DEBUG_PRINT("skipped.\n");
       continue;
     }
-    sscanf(dir->d_name,"%ld."BLOGFILE_SUFFIX,&block_id);
+    sscanf(dir->d_name,"%ld." BLOGFILE_SUFFIX,&block_id);
     DEBUG_PRINT("Block id = %ld\n",block_id);
 
     /// 2.2 open file
-    sprintf(blog_filename,"%s/%ld."BLOGFILE_SUFFIX,pp,block_id);
+    sprintf(blog_filename,"%s/%ld." BLOGFILE_SUFFIX,pp,block_id);
     int blog_rfd = open(blog_filename,O_RDONLY);
     int blog_wfd = open(blog_filename,O_WRONLY);
     if(blog_rfd < 0 || blog_wfd < 0){
@@ -1336,7 +1337,7 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
     off_t exp_fsize = fsize - corrupted_bytes;
     if(corrupted_bytes > 0){//this is due to aborted log flush.
       if(ftruncate(blog_wfd,exp_fsize)<0){
-        fprintf(stderr,"WARNING: Cannot load blog: %ld."BLOGFILE_SUFFIX", because it cannot be truncated to expected size:%ld, Error%s\n", block_id, exp_fsize, strerror(errno));
+        fprintf(stderr,"WARNING: Cannot load blog: %ld." BLOGFILE_SUFFIX", because it cannot be truncated to expected size:%ld, Error%s\n", block_id, exp_fsize, strerror(errno));
         close(blog_rfd);
         close(blog_wfd);
         continue;
@@ -1378,7 +1379,7 @@ static int loadBlogs(JNIEnv *env, jobject thisObj, filesystem_t *fs, const char 
       exit(-1);
     }
     if(sem_init(&block->log_sem,0,block->log_tail - block->log_head)!=0){
-      fprintf(stderr, "ERROR: cannot initialize semaphore for block:%"PRIu64"\n", block->id);
+      fprintf(stderr, "ERROR: cannot initialize semaphore for block:%" PRIu64 "\n", block->id);
       exit(-1);
     }
     block->blog_wfd = blog_wfd;
@@ -1629,7 +1630,7 @@ DEBUG_PRINT("begin createBlock:genStamp=%ld\n",genStamp);
   block->log_head = 0;
   block->log_tail = 0;
   if(sem_init(&block->log_sem,0,block->log_tail - block->log_head)!=0){
-    fprintf(stderr, "ERROR: cannot initialize semaphore for block:%"PRIu64"\n", block->id);
+    fprintf(stderr, "ERROR: cannot initialize semaphore for block:%" PRIu64 "\n", block->id);
     exit(-1);
   }
   block->log_cap = 2;
@@ -1643,7 +1644,7 @@ DEBUG_PRINT("begin createBlock:genStamp=%ld\n",genStamp);
   block->snapshot_map = MAP_INITIALIZE(snapshot);
 
   // Open Files.
-  sprintf(fullname,"%s/%ld."BLOGFILE_SUFFIX,filesystem->pers_path,block_id);
+  sprintf(fullname,"%s/%ld." BLOGFILE_SUFFIX,filesystem->pers_path,block_id);
   block->blog_wfd = open(fullname,O_WRONLY|O_CREAT|O_SYNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
   block->blog_rfd = open(fullname,O_RDONLY);
 
@@ -1781,7 +1782,7 @@ DEBUG_PRINT("begin deleteBlock.\n");
 // readBlockInternal: read the latest state of a block
 int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint length, const transport_parameters_t *tp)
 {
-  DEBUG_PRINT("begin readBlockInternal:blockId=%"PRIu64",blkOfst=%d,length=%d\n",blockId,blkOfst,length);
+  DEBUG_PRINT("begin readBlockInternal:blockId=%" PRIu64 ",blkOfst=%d,length=%d\n",blockId,blkOfst,length);
 #ifdef DEBUG
   struct timeval tv1,tv2;
 #endif
@@ -2236,7 +2237,7 @@ static inline uint64_t blog_allocate_pages(filesystem_t *fs,int npage){
   // STEP 4 - unlock tail
   pthread_spin_unlock(&fs->tail_spinlock);
 
-  DEBUG_PRINT("blog_allocate_pages:allocate:%"PRIu64":L%d\n",fpn,npage);
+  DEBUG_PRINT("blog_allocate_pages:allocate:%" PRIu64 ":L%d\n",fpn,npage);
 
   return fpn;
 }
@@ -2280,7 +2281,7 @@ DEBUG_PRINT("begin writeBlock:blockId=%ld,blkOfst=%d,length=%d\n",blockId,blkOfs
   first_page_offset = block_offset % page_size;
   first_pn = blog_allocate_pages(filesystem,last_page - first_page + 1);
   last_pn = first_pn + last_page - first_page;
-DEBUG_PRINT("[writeBlockInternal-1]first_page=%d,last_page=%d,first_page_offset=%d,first_pn=%"PRIu64",last_pn=%"PRIu64"\n",
+DEBUG_PRINT("[writeBlockInternal-1]first_page=%d,last_page=%d,first_page_offset=%d,first_pn=%" PRIu64 ",last_pn=%" PRIu64 "\n",
   first_page,last_page,first_page_offset,first_pn,last_pn);
  
   if(tp->mode == TP_LOCAL_BUFFER){// write to local buffer
@@ -2395,7 +2396,7 @@ DEBUG_PRINT("[writeBlockInternal-1.1]temp_data=%p\n",temp_data);
     void * page_ptr = filesystem->nr_page_head <= block->pages[first_page]?
       PAGE_NR_TO_PTR_RB(filesystem,block->pages[first_page]):
       PAGE_NR_TO_PTR_MF(filesystem,block->pages[first_page]);
-DEBUG_PRINT("[writeBlockInternal-1.5]first_page_in_block=%d,first_pn_in_page_pool=%"PRIu64",first_page_offset=%d\n",first_page,first_pn,first_page_offset);
+DEBUG_PRINT("[writeBlockInternal-1.5]first_page_in_block=%d,first_pn_in_page_pool=%" PRIu64 ",first_page_offset=%d\n",first_page,first_pn,first_page_offset);
     memcpy(PAGE_NR_TO_PTR_RB(filesystem,first_pn), page_ptr, first_page_offset);
   }
 
@@ -2407,7 +2408,7 @@ DEBUG_PRINT("[writeBlockInternal-1.5]first_page_in_block=%d,first_pn_in_page_poo
     char * page_ptr = filesystem->nr_page_head <= block->pages[last_page]?
       PAGE_NR_TO_PTR_RB(filesystem,block->pages[last_page]):
       PAGE_NR_TO_PTR_MF(filesystem,block->pages[last_page]);
-DEBUG_PRINT("[writeBlockInternal-1.6]first_page_in_block=%d,first_pn_in_page_pool=%"PRIu64",first_page_offset=%d\n",first_page,first_pn,first_page_offset);
+DEBUG_PRINT("[writeBlockInternal-1.6]first_page_in_block=%d,first_pn_in_page_pool=%" PRIu64 ",first_page_offset=%d\n",first_page,first_pn,first_page_offset);
     memcpy(temp_data, page_ptr + last_page_length, write_page_length);
   } else { // update the block length
     block->length = end_of_write;
@@ -2584,9 +2585,9 @@ DEBUG_PRINT("Destroy RDMA Context\n");
 DEBUG_PRINT("Close files\n");
   
   // remove shm file.
-  sprintf(fullname,"/run/shm/"SHM_PAGE_FN);
+  sprintf(fullname,"/run/shm/" SHM_PAGE_FN);
   if(access(fullname,R_OK|W_OK)!=0){
-    sprintf(fullname,"/dev/shm"SHM_PAGE_FN);
+    sprintf(fullname,"/dev/shm" SHM_PAGE_FN);
   }
   if(remove(fullname)!=0){
     fprintf(stderr,"WARNING: Fail to remove page cache file %s, error:%s.\n",fullname,strerror(errno));
