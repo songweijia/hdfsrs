@@ -156,8 +156,8 @@ struct filesystem {
 #define PAGE_PER_BLOCK(fs) ((fs)->block_size/(fs)->page_size)
   BLOG_MAP_TYPE(block) *block_map;
 #define PAGE_FRAME_NR(fs) ((fs)->ring_buffer_size/(fs)->page_size)
-#define PAGE_NR_TO_PTR_RB(fs,nr) ((void*)((char *)(fs)->page_base_ring_buffer+((fs)->page_size*((nr)%PAGE_FRAME_NR(fs)))))
-#define PAGE_NR_TO_PTR_MF(fs,nr) ((void*)((char *)(fs)->page_base_mapped_file+(fs)->page_size*(nr)))
+#define PAGE_NR_TO_PTR_RB(fs,nr) ((char *)(fs)->page_base_ring_buffer+((fs)->page_size*((nr)%PAGE_FRAME_NR(fs))))
+#define PAGE_NR_TO_PTR_MF(fs,nr) ((char *)(fs)->page_base_mapped_file+(fs)->page_size*(nr))
 #define INVALID_PAGE_NO  (~0x0UL)
   void *page_base_ring_buffer;
   void *page_base_mapped_file;

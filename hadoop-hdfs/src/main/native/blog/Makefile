@@ -1,27 +1,23 @@
 LIB=libedu_cornell_cs_blog_JNIBlog.so
-SRCS=JNIBlog.c InfiniBandRDMA.c
+SRCS=JNIBlog.cc InfiniBandRDMA.cc
 HEADERS=JNIBlog.h map.h types.h InfiniBandRDMA.h bitmap.h
-#CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -D DEBUG
-#CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -D PERF_RDMA -DPERSISTENT
-#CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -D PERF_RDMA -D DEBUG
-#CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DDEBUG -DNO_PERSISTENCE
-CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -DDEBUG
-#CFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS 
+CC=g++ -O3
+CPPFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -DDEBUG
 LDFLAGS=-shared -fpic -pthread -libverbs -lrdmacm
-TESTLDFLAGS= -lrdmacm -libverbs -lpthread
-#TESTCFLAGS=-D DEBUG -D USE_GRH
-TESTCFLAGS=-D DEBUG -D_GNU_SOURCE
+TESTLDFLAGS=-libverbs -pthread -lrdmacm
+TESTCPPFLAGS=-I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -DDEBUG
+TESTSRC=InfiniBandRDMA.cc test.cc
 TESTPROG=test
-TESTSRC=InfiniBandRDMA.c test.c
-#LDFLAGS=-shared -fpic
 
-all: $(LIB) $(TESTPROG)
+all: $(LIB)
+
+tests: $(TESTPROG)
 
 $(LIB): $(SRCS) $(HEADERS)
-	$(CC) $(CFLAGS) -o $(LIB) $(SRCS) $(LDFLAGS) 
+	$(CC) $(CPPFLAGS) $(LDFLAGS) $(SRCS) -o $@
 
 $(TESTPROG): $(TESTSRC)
-	$(CC) $(TESTCFLAGS) -o $(TESTPROG) $(TESTSRC) $(TESTLDFLAGS)
-
+	$(CC) $(TESTCPPFLAGS) $(TESTLDFLAGS) $^ -o $@
+	
 clean:
 	rm -rf $(LIB) $(TESTPROG)
