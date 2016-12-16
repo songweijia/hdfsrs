@@ -123,15 +123,63 @@ add_library(posix_util
 #)
 #output_directory(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer target/usr/local/lib)
 
+#### This part if for derecho
+add_library(derecho SHARED 
+  main/native/derecho/managed_group.cpp
+  main/native/derecho/view.cpp
+  main/native/derecho/view_utils.cpp
+  main/native/derecho/derecho_row.cpp
+  main/native/derecho/logger.cpp
+  main/native/derecho/filewriter.cpp
+)
+output_directory(derecho target/usr/local/lib)
+target_link_libraries(derecho
+  rdmacm
+  ibverbs
+  rt
+  pthread
+  atomic
+  rdmc
+  sst
+)
+
+add_library(rdmc SHARED
+  main/native/derecho/rdmc/rdmc.cpp
+  main/native/derecho/rdmc/util.cpp
+  main/native/derecho/rdmc/group_send.cpp
+  main/native/derecho/rdmc/verbs_helper.cpp
+  main/native/derecho/rdmc/connection.cpp
+)
+output_directory(rdmc target/usr/local/lib)
+target_link_libraries(rdmc rdmacm ibverbs rt pthread)
+
+find_library(SLURM_FOUND slurm)
+if (SLURM_FOUND)
+  target_link_libraries(rdmc slurm)
+  add_definitions(-DUSE_SLURM)
+endif (SLURM_FOUND)
+
+add_library(sst SHARED
+  main/native/derecho/sst/tcp.cpp
+  main/native/derecho/sst/verbs.cpp
+)
+output_directory(sst target/usr/local/lib)
+target_link_libraries(sst rdmacm ibverbs pthread rt)
+### end derecho
+
 add_definitions(-D_GNU_SOURCE -D__STDC_FORMAT_MARCOS -DFLUSH_BATCHING)
 add_library(edu_cornell_cs_blog_JNIBlog SHARED
     main/native/blog/JNIBlog.cc
     main/native/blog/InfiniBandRDMA.cc
 )
+
 target_link_libraries(edu_cornell_cs_blog_JNIBlog
     pthread
     ibverbs
     rdmacm
+    derecho
+    rdmc
+    sst
 )
 output_directory(edu_cornell_cs_blog_JNIBlog target/usr/local/lib)
 
@@ -198,45 +246,3 @@ IF(REQUIRE_LIBWEBHDFS)
 ENDIF(REQUIRE_LIBWEBHDFS)
 add_subdirectory(main/native/fuse-dfs)
 
-#### This part if for derecho
-add_library(derecho SHARED 
-  main/native/derecho/managed_group.cpp
-  main/native/derecho/view.cpp
-  main/native/derecho/view_utils.cpp
-  main/native/derecho/derecho_row.cpp
-  main/native/derecho/logger.cpp
-  main/native/derecho/filewriter.cpp
-)
-output_directory(derecho target/usr/local/lib)
-target_link_libraries(derecho
-  rdmacm
-  ibverbs
-  rt
-  pthread
-  atomic
-  rdmc
-  sst
-)
-
-add_library(rdmc SHARED
-  main/native/derecho/rdmc/rdmc.cpp
-  main/native/derecho/rdmc/util.cpp
-  main/native/derecho/rdmc/group_send.cpp
-  main/native/derecho/rdmc/verbs_helper.cpp
-  main/native/derecho/rdmc/connection.cpp
-)
-output_directory(rdmc target/usr/local/lib)
-target_link_libraries(rdmc rdmacm ibverbs rt pthread)
-
-find_library(SLURM_FOUND slurm)
-if (SLURM_FOUND)
-  target_link_libraries(rdmc slurm)
-  add_definitions(-DUSE_SLURM)
-endif (SLURM_FOUND)
-
-add_library(sst SHARED
-  main/native/derecho/sst/tcp.cpp
-  main/native/derecho/sst/verbs.cpp
-)
-output_directory(sst target/usr/local/lib)
-target_link_libraries(sst rdmacm ibverbs pthread rt)
