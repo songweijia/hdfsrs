@@ -106,12 +106,15 @@ static void runClient(
   uint64_t i;
   // step 1: initialize client
   TEST_NZ(initializeContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,dev,port,1),"initializeContext");
-  for(i=0;i<(1l<<(pool_size_order-page_size_order));i++)
-    memset((void*)rdma_ctxt.pool+(i<<page_size_order),'A'+i,1l<<page_size_order);
+  for(i=0;i<(1lu<<(pool_size_order-page_size_order));i++)
+    memset((void*)((char*)rdma_ctxt.pool+(i<<page_size_order)),'A'+i,1l<<page_size_order);
 
   // step 2: connect
+  printf("before calling rdmaConnect\n");
+  fflush(stdout);
   TEST_NZ(rdmaConnect(&rdma_ctxt,inet_addr(host)),"rdmaConnect");
-
+  printf("after calling rdmaConnect\n");
+  fflush(stdout);
   // step 3: wait for RDMA test
   while(1){
     getchar();
@@ -129,20 +132,21 @@ static void runServer(
 
   RDMACtxt rdma_ctxt;
 
-  int i;
   // step 1: initialize server
   TEST_NZ(initializeContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,dev,port,0),"initializeContext");
 
     // step 2: test
   while(1){
-    int pns[4];
-    uint64_t len, *ids, rvaddr;
+    // int pns[4];
+    // uint64_t len, *ids;
+    uint64_t rvaddr;
     uint64_t cipkey;
-    int i,ret,nloop;
+    // int i;
+    int ret,nloop;
     uint64_t j;
     RDMAConnection *conn;
     printf("please give the client info(like:<ipkey>1c09a8c0000078e8 <vaddr>70fffffffff <loop>1024):\n");
-    scanf("%lx %lx %d",&cipkey,&rvaddr,&nloop);
+    ret = scanf("%lx %lx %d",&cipkey,&rvaddr,&nloop);
     printf("cipkey=0x%lx\n",cipkey);
     printf("vaddr=0x:%lx\n",rvaddr);
     printf("loop count=%d\n",nloop);

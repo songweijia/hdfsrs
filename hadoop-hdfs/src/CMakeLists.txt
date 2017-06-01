@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 # Default to release builds
 set(CMAKE_BUILD_TYPE, Release)
@@ -77,6 +77,12 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -O2")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_REENTRANT -D_GNU_SOURCE")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_REENTRANT -D_GNU_SOURCE")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64")
+
+set(CMAKE_CXX_STANDARD 14)
+
 include_directories(
     ${GENERATED_JAVAH}
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -112,20 +118,68 @@ add_library(posix_util
     main/native/util/posix_util.c
 )
 
-add_library(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer SHARED
-    main/native/mem-dfs/org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer.cc
-)
-output_directory(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer target/usr/local/lib)
+#add_library(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer SHARED
+#    main/native/mem-dfs/org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer.cc
+#)
+#output_directory(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer target/usr/local/lib)
 
-add_definitions(-D_GNU_SOURCE -D__STDC_FORMAT_MARCOS)
-add_library(edu_cornell_cs_blog_JNIBlog SHARED
-    main/native/blog/JNIBlog.c
-    main/native/blog/InfiniBandRDMA.c
+#### This part if for derecho
+add_library(derecho SHARED 
+  main/native/derecho/managed_group.cpp
+  main/native/derecho/view.cpp
+  main/native/derecho/view_utils.cpp
+  main/native/derecho/derecho_row.cpp
+  main/native/derecho/logger.cpp
+  main/native/derecho/filewriter.cpp
 )
+output_directory(derecho target/usr/local/lib)
+target_link_libraries(derecho
+  rdmacm
+  ibverbs
+  rt
+  pthread
+  atomic
+  rdmc
+  sst
+)
+
+add_library(rdmc SHARED
+  main/native/derecho/rdmc/rdmc.cpp
+  main/native/derecho/rdmc/util.cpp
+  main/native/derecho/rdmc/group_send.cpp
+  main/native/derecho/rdmc/verbs_helper.cpp
+  main/native/derecho/rdmc/connection.cpp
+)
+output_directory(rdmc target/usr/local/lib)
+target_link_libraries(rdmc rdmacm ibverbs rt pthread)
+
+find_library(SLURM_FOUND slurm)
+if (SLURM_FOUND)
+  target_link_libraries(rdmc slurm)
+  add_definitions(-DUSE_SLURM)
+endif (SLURM_FOUND)
+
+add_library(sst SHARED
+  main/native/derecho/sst/tcp.cpp
+  main/native/derecho/sst/verbs.cpp
+)
+output_directory(sst target/usr/local/lib)
+target_link_libraries(sst rdmacm ibverbs pthread rt)
+### end derecho
+
+add_definitions(-D_GNU_SOURCE -D__STDC_FORMAT_MARCOS -DFLUSH_BATCHING)
+add_library(edu_cornell_cs_blog_JNIBlog SHARED
+    main/native/blog/JNIBlog.cc
+    main/native/blog/InfiniBandRDMA.cc
+)
+
 target_link_libraries(edu_cornell_cs_blog_JNIBlog
     pthread
     ibverbs
     rdmacm
+    derecho
+    rdmc
+    sst
 )
 output_directory(edu_cornell_cs_blog_JNIBlog target/usr/local/lib)
 
@@ -191,3 +245,4 @@ IF(REQUIRE_LIBWEBHDFS)
     add_subdirectory(contrib/libwebhdfs)
 ENDIF(REQUIRE_LIBWEBHDFS)
 add_subdirectory(main/native/fuse-dfs)
+

@@ -7,6 +7,7 @@ LDFLAGS=-shared -fpic -pthread -libverbs -lrdmacm
 TESTLDFLAGS=-libverbs -pthread -lrdmacm
 TESTCPPFLAGS=-I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -DDEBUG
 TESTSRC=InfiniBandRDMA.cc test.cc
+#TESTSRC=InfiniBandRDMA.c test.c
 TESTPROG=test
 
 all: $(LIB)
@@ -17,7 +18,8 @@ $(LIB): $(SRCS) $(HEADERS)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) $(SRCS) -o $@
 
 $(TESTPROG): $(TESTSRC)
-	$(CC) $(TESTCPPFLAGS) $(TESTLDFLAGS) $^ -o $@
+	$(CC) $(TESTCPPFLAGS) $^ $(TESTLDFLAGS) -o $@
+#	gcc $(TESTCPPFLAGS) $^ $(TESTLDFLAGS) -o $@
 	
 clean:
 	rm -rf $(LIB) $(TESTPROG)

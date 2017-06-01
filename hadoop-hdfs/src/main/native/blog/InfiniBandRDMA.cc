@@ -181,18 +181,20 @@ static int serverConnectInternal(RDMACtxt *ctxt, int connfd, const IbConEx * r_e
     TEST_Z(rdmaConn->rcq=ibv_create_cq(ctxt->ctxt,1,NULL,NULL,0),"Could not create receive completion queue, ibv_create_cq");
     TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_QP_WR,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
 
-    ibv_qp_init_attr *qp_init_attr = (ibv_qp_init_attr *) malloc(sizeof(ibv_qp_init_attr));
+    struct ibv_qp_init_attr qp_init_attr;
 
-    qp_init_attr->send_cq = rdmaConn->scq;
-    qp_init_attr->recv_cq = rdmaConn->rcq;
-    qp_init_attr->qp_type = IBV_QPT_RC;
-    qp_init_attr->cap.max_send_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);
-    qp_init_attr->cap.max_recv_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);
-    qp_init_attr->cap.max_send_sge = MIN(ctxt->dev_attr.max_sge,MAX_SGE);
-    qp_init_attr->cap.max_recv_sge = MIN(ctxt->dev_attr.max_sge_rd,MAX_SGE);
-    qp_init_attr->cap.max_inline_data = 0;
-    TEST_Z(rdmaConn->qp=ibv_create_qp(ctxt->pd,qp_init_attr),"Could not create queue pair, ibv_create_qp");
-    free(qp_init_attr);
+    qp_init_attr.qp_context = NULL;
+    qp_init_attr.send_cq = rdmaConn->scq;
+    qp_init_attr.recv_cq = rdmaConn->rcq;
+    qp_init_attr.srq = NULL;
+    qp_init_attr.qp_type = IBV_QPT_RC;
+    qp_init_attr.cap.max_send_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);
+    qp_init_attr.cap.max_recv_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);
+    qp_init_attr.cap.max_send_sge = MIN(ctxt->dev_attr.max_sge,MAX_SGE);
+    qp_init_attr.cap.max_recv_sge = MIN(ctxt->dev_attr.max_sge_rd,MAX_SGE);
+    qp_init_attr.cap.max_inline_data = 0;
+    qp_init_attr.sq_sig_all = 0;
+    TEST_Z(rdmaConn->qp=ibv_create_qp(ctxt->pd,&qp_init_attr),"Could not create queue pair, ibv_create_qp");
     qp_change_state_init(rdmaConn->qp,rdmaConn->port);
     struct ibv_port_attr port_attr;
     TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could not get port attributes, ibv_query_port");
@@ -426,7 +428,7 @@ int destroyContext(RDMACtxt *ctxt){
   if(len > 0){
     uint64_t *keys = MAP_GET_IDS(con,ctxt->con_map,len);
     while(len--){
-      RDMAConnection *conn;
+      RDMAConnection *conn = NULL;
       MAP_READ(con,ctxt->con_map,keys[len],&conn);
       MAP_DELETE(con,ctxt->con_map,keys[len]);
       if(ctxt->isClient){
@@ -631,18 +633,21 @@ int rdmaConnect(RDMACtxt *ctxt, const uint32_t hostip){
   TEST_Z(rdmaConn->ch=ibv_create_comp_channel(ctxt->ctxt),"Could not create completion channel, ibv_create_comp_channel");
   TEST_Z(rdmaConn->rcq=ibv_create_cq(ctxt->ctxt,1,NULL,NULL,0),"Could not create receive completion queue, ibv_create_cq");
   TEST_Z(rdmaConn->scq=ibv_create_cq(ctxt->ctxt,MAX_QP_WR,rdmaConn,rdmaConn->ch,0),"Could not create send completion queue, ibv_create_cq");
-  ibv_qp_init_attr *qp_init_attr = (ibv_qp_init_attr *) malloc(sizeof(ibv_qp_init_attr));
+  struct ibv_qp_init_attr qp_init_attr;
 
-  qp_init_attr->send_cq = rdmaConn->scq;
-  qp_init_attr->recv_cq = rdmaConn->rcq;
-  qp_init_attr->qp_type = IBV_QPT_RC;
-  qp_init_attr->cap.max_send_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);
-  qp_init_attr->cap.max_recv_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);
-  qp_init_attr->cap.max_send_sge = MIN(ctxt->dev_attr.max_sge,MAX_SGE);
-  qp_init_attr->cap.max_recv_sge = MIN(ctxt->dev_attr.max_sge_rd,MAX_SGE);
-  qp_init_attr->cap.max_inline_data = 0;
-  TEST_Z(rdmaConn->qp=ibv_create_qp(ctxt->pd,qp_init_attr),"Could not create queue pair for read, ibv_create_qp");
-  free(qp_init_attr);
+  qp_init_attr.qp_context = NULL;
+  qp_init_attr.send_cq = rdmaConn->scq;
+  qp_init_attr.recv_cq = rdmaConn->rcq;
+  qp_init_attr.srq = NULL;
+  qp_init_attr.qp_type = IBV_QPT_RC;
+  qp_init_attr.cap.max_send_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);
+  qp_init_attr.cap.max_recv_wr = MIN(ctxt->dev_attr.max_qp_wr,MAX_QP_WR);
+  qp_init_attr.cap.max_send_sge = MIN(ctxt->dev_attr.max_sge,MAX_SGE);
+  qp_init_attr.cap.max_recv_sge = MIN(ctxt->dev_attr.max_sge_rd,MAX_SGE);
+  qp_init_attr.cap.max_inline_data = 0;
+  qp_init_attr.sq_sig_all = 0;
+  TEST_Z(rdmaConn->qp=ibv_create_qp(ctxt->pd,&qp_init_attr),"Could not create queue pair for read, ibv_create_qp");
+  //free(qp_init_attr);
   qp_change_state_init(rdmaConn->qp,rdmaConn->port);
   struct ibv_port_attr port_attr;
   TEST_NZ(ibv_query_port(ctxt->ctxt,rdmaConn->port,&port_attr),"Could get port attributes, ibv_query_port");
