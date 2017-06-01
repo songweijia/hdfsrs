@@ -15,7 +15,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "debug.h"
-#include "map.h"
 
   ////////////////////////////////////////////////
  // Definition of structures.                  //

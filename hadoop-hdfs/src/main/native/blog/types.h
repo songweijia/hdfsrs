@@ -126,8 +126,8 @@ struct pers_queue_entry {
 
 /**
  * Filesystem structure.
- * block_size   :   blocksize in bytes.
- * page_size    :   pagesize in bytes.
+ * block_size   :   block size in bytes.
+ * page_size    :   page size in bytes.
  * block_map    :   hash map that contains all the blocks in the current state
  *                  (key: block id).
  * page_base_ring_buffer    :   base address for the ring buffer

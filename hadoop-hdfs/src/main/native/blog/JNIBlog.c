@@ -1,10 +1,10 @@
-#include <inttypes.h>
+#include <cinttypes>
 #include <string.h>
 #include <sys/time.h>
 #include <limits.h>
 #include <jni.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
