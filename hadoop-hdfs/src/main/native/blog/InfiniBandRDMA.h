@@ -15,9 +15,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "debug.h"
+#include "map.h"
 
-  ////////////////////////////////////////////////
- // Definition of structures.                  //
+////////////////////////////////////////////////
+// Definition of structures.                  //
 ////////////////////////////////////////////////
 typedef struct rdma_ctxt   RDMACtxt;
 typedef struct rdma_conn   RDMAConnection;
