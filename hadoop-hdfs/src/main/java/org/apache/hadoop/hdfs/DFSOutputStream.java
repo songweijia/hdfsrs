@@ -2418,67 +2418,63 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   
   //HDFSRS_WSAPI{
   protected long pos = 0; // file cursor
+
   public long getPos(){
     return pos;
   }
-  public synchronized void seek(long pos) throws IOException{
-	  
-	  if(this.pos == pos) // do nothing for seek to current position
-		  return;
-	  
-	  // STEP 1: check status
-	  dfsClient.checkOpen();
-	  checkClosed();
-	  if(!this.streamer.isAlive())
-			  throw new IOException("[HDFSRS_RWAPI]Cannot seek:Streamer is not alive.");
-	  
-	  // STEP 2: check range
-	  if(pos > this.curFileSize)
-		  throw new IOException("[HDFSRS_RWAPI]Cannot seek to "+pos+" beyound the end of the file.");
-	  
-	  // STEP 3: flush
+
+  public synchronized void seek(long pos) throws IOException {
+    if (this.pos == pos) // do nothing for seek to current position
+      return;
+    
+    // STEP 1: check status
+    dfsClient.checkOpen();
+    checkClosed();
+    if (!this.streamer.isAlive())
+      throw new IOException("[HDFSRS_RWAPI]Cannot seek:Streamer is not alive.");
+    
+    // STEP 2: check range
+    if (pos > this.curFileSize)
+      throw new IOException("[HDFSRS_RWAPI]Cannot seek to " + pos + " beyound the end of the file.");
+    
+    // STEP 3: flush
     flushOrSync(true, EnumSet.noneOf(SyncFlag.class), true);
 
     // STEP 4: reset the chunkSize and write buffer
-	  this.bytesCurBlock = pos%this.blockSize;
-
-	  // calculate the amount of free space in the pre-existing 
-    // last crc chunk
-    int usedInCksum = (int)(this.bytesCurBlock % checksum.getBytesPerChecksum());
+    this.bytesCurBlock = pos % this.blockSize;
+    
+    // calculate the amount of free space in the pre-existing last crc chunk
+    int usedInCksum = (int) (this.bytesCurBlock % checksum.getBytesPerChecksum());
     int freeInCksum = checksum.getBytesPerChecksum() - usedInCksum;
-
-    int freeInBlock = (int)(blockSize - bytesCurBlock);
+    int freeInBlock = (int) (blockSize - bytesCurBlock);
 
     if (usedInCksum > 0 && freeInCksum > 0) {
-      // if there is space in the last partial chunk, then 
-      // setup in such a way that the next packet will have only 
-      // one chunk that fills up the partial chunk.
-      //
+      // if there is space in the last partial chunk, then setup in such a way that the next packet will have only one
+      // chunk that fills up the partial chunk
       computePacketChunkSize(0, freeInCksum);
       resetChecksumChunk(freeInCksum);
       appendChunk = true;
     } else {
-      // if the remaining space in the block is smaller than 
-      // that expected size of of a packet, then create 
-      // smaller size packet.
-      //
-      computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize, freeInBlock), 
-          checksum.getBytesPerChecksum());
-      // We still need to reset the checksum and buffere here. 
-      // since we didn't actually reset the buffer in flushOrSync(),
-      // which is just write the buffer to underlying packet layer but
-      // the buffer is still holding it. We simply flushed them here.
-      // TODO: revisit this part for real checksum.
+      // if the remaining space in the block is smaller than that expected size of of a packet, then create smaller size
+      // packet.
+      computePacketChunkSize(Math.min(dfsClient.getConf().writePacketSize,freeInBlock),checksum.getBytesPerChecksum());
+      // We still need to reset the checksum and buffer it here, since we didn't actually reset the buffer in
+      // flushOrSync(), which is just write the buffer to underlying packet layer but the buffer is still holding it. We
+      // simply flushed them here
+      // TODO: revisit this part for real checksum
       resetChecksumChunk(checksum.getBytesPerChecksum());
     }
+
     //STEP 5: Reset streamer
-	  this.streamer.seek(pos,this.curFileSize);
-	  this.pos = pos;
+    this.streamer.seek(pos,this.curFileSize);
+    this.pos = pos;
   }
-  
+
   private void updateFileSize(){
-    if(this.pos>this.curFileSize)this.curFileSize = this.pos;
+    if (this.pos > this.curFileSize)
+      this.curFileSize = this.pos;
   }
+
   // update file cursor
   @Override
   public synchronized void write(int b) throws IOException {

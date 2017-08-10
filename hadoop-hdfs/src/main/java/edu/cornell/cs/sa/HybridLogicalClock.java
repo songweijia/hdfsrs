@@ -51,20 +51,20 @@ public class HybridLogicalClock implements Comparable<HybridLogicalClock>
   }
   
   synchronized public void tickOnRecv(HybridLogicalClock mhlc) {
-    long previous_r = r;
+    long previous_r = this.r;
     long rtc = JNIBlog.readLocalRTC();
     
-    r = Math.max(previous_r, Math.max(mhlc.r, rtc));
-    if ((r == previous_r) && (r == mhlc.r))
-      c = Math.max(c, mhlc.c) + 1;
-    else if (r == previous_r)
-      c++;
-    else if (r == mhlc.r)
-      c = mhlc.c + 1;
+    this.r = Math.max(this.r, Math.max(mhlc.r, rtc));
+    if ((this.r == previous_r) && (this.r == mhlc.r))
+      this.c = Math.max(this.c, mhlc.c) + 1;
+    else if (this.r == previous_r)
+      this.c++;
+    else if (this.r == mhlc.r)
+      this.c = mhlc.c + 1;
     else
-      c = 0;
-    mhlc.r = r;
-    mhlc.c = c;
+      this.c = 0;
+    mhlc.r = this.r;
+    mhlc.c = this.c;
   }
   
   synchronized public HybridLogicalClock tickOnRecvCopy(HybridLogicalClock mhlc){
