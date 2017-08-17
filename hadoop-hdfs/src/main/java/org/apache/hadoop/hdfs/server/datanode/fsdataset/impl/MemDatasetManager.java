@@ -210,7 +210,7 @@ public class MemDatasetManager {
   	    throw new IOException("writeByRDMA failed:blen="+blen+",start="+startOffset+
   	        ",len="+length+",client="+clientIp+",vaddr="+vaddr+",mhlc="+mhlc);
   	  int rc = 0;
-  	  if((rc=blog.writeBlockRDMA(mhlc, rp, blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr))!=0){
+  	  if ((rc=blog.writeBlockRDMA(mhlc, rp, blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr))!=0) {
             throw new IOException("writeByRDMA failed: JNIBlog.writeBlockRDMA returns: " + rc);
   	  }
   	  //update length
@@ -317,20 +317,19 @@ public class MemDatasetManager {
     }
 
     @Override
-    public synchronized void write(HybridLogicalClock mhlc, long userTimestamp, byte[] b, int off, int len)
-    throws IOException {
-      int ret = blog.writeBlock(mhlc, userTimestamp, blockId, offset, off, len, b);
-      if(ret < 0)
-        throw new IOException("error in JNIBlog.write("+mhlc+","+
-          blockId+","+offset+","+off+","+len+",b):"+ret);
+    public synchronized void write(HybridLogicalClock mhlc, long userTimestamp, long blockOffset, byte[] buff,
+                                   int buffOffset, int len) throws IOException {
+      int ret = blog.writeBlock(mhlc, userTimestamp, blockId, (int) blockOffset, buffOffset, len, buff);
+      
+      if (ret < 0)
+        throw new IOException("error in JNIBlog.write(" + mhlc + "," + userTimestamp + "," + blockId + "," +
+                              blockOffset + "," + buffOffset + "," + len + ",b):" + ret);
       else
-        offset += len;
+        offset = (int) blockOffset + len;
       this.meta.accBytes += len;
-    } 
+    }
   }
   
-//  MemDatasetManager(MemDatasetImpl dataset, Configuration conf) {
-//    this.dataset = dataset;
   public MemDatasetManager(Configuration conf){
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);

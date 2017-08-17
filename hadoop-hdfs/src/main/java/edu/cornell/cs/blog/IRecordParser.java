@@ -25,7 +25,7 @@ public interface IRecordParser {
    * @return beginning of the next record. -1L for incomplete record.
    * @throws RecordParserException: parse failed. 
    */
-  public int ParseRecord(byte[] buf, int offset, int len)throws RecordParserException;
+  public int ParseRecord(byte[] buf, int offset, int len) throws RecordParserException;
 
   /**
    * ParseRecord for a 

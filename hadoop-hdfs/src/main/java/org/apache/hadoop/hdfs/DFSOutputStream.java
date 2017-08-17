@@ -155,9 +155,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   protected final AtomicBoolean persistBlocks = new AtomicBoolean(false);
   protected volatile boolean appendChunk = false;   // appending to existing partial block
   protected long initialFileSize = 0; // at time of file open
-  //HDFSRS_RWAPI{
+  // HDFSRS_RWAPI{
   protected long curFileSize = 0; // current file size.
-  //}
+  // }HDFSRS_RWAPI
   protected final Progressable progress;
   protected final short blockReplication; // replication factor of file
   protected boolean shouldSyncBlock = false; // force blocks to disk upon close
@@ -182,15 +182,13 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   }
   
   protected class Packet {
-    final long seqno;           // sequencenumber of buffer in block
-    final long offsetInBlock;   // offset in block
-    private boolean lastPacketInBlock;   // is this the last packet in block?
-    boolean syncBlock;          // this packet forces the current block to disk
-    int numChunks;              // number of chunks currently in packet
-    final int maxChunks;        // max chunks in packet
-
+    final long seqno;                   // sequencenumber of buffer in block
+    final long offsetInBlock;           // offset in block
+    private boolean lastPacketInBlock;  // is this the last packet in block?
+    boolean syncBlock;                  // this packet forces the current block to disk
+    int numChunks;                      // number of chunks currently in packet
+    final int maxChunks;                // max chunks in packet
     final byte[]  buf;
-
     /**
      * buf is pointed into like follows:
      *  (C is checksum data, D is payload data)
@@ -216,15 +214,13 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
      * Create a heartbeat packet.
      */
     Packet() {
+      this.seqno = HEART_BEAT_SEQNO;
+      this.offsetInBlock = 0;
       this.lastPacketInBlock = false;
       this.numChunks = 0;
-      this.offsetInBlock = 0;
-      this.seqno = HEART_BEAT_SEQNO;
-      
-      buf = new byte[PacketHeader.PKT_MAX_HEADER_LEN];
-      
-      checksumStart = checksumPos = dataPos = dataStart = PacketHeader.PKT_MAX_HEADER_LEN;
-      maxChunks = 0;
+      this.maxChunks = 0;
+      this.buf = new byte[PacketHeader.PKT_MAX_HEADER_LEN];
+      this.checksumStart = this.checksumPos = this.dataStart = this.dataPos = PacketHeader.PKT_MAX_HEADER_LEN;
     }
     
     /**
@@ -235,33 +231,29 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
      * @param offsetInBlock offset in bytes into the HDFS block.
      */
     Packet(int pktSize, int chunksPerPkt, long offsetInBlock) {
+      this.seqno = currentSeqno;
+      this.offsetInBlock = offsetInBlock;
       this.lastPacketInBlock = false;
       this.numChunks = 0;
-      this.offsetInBlock = offsetInBlock;
-      this.seqno = currentSeqno;
+      this.maxChunks = chunksPerPkt;
+      this.buf = new byte[PacketHeader.PKT_MAX_HEADER_LEN + pktSize];
+      this.checksumStart = PacketHeader.PKT_MAX_HEADER_LEN;
+      this.checksumPos = this.checksumStart;
+      this.dataStart = this.checksumStart + (chunksPerPkt * checksum.getChecksumSize());
+      this.dataPos = this.dataStart;
       currentSeqno++;
-      
-      buf = new byte[PacketHeader.PKT_MAX_HEADER_LEN + pktSize];
-      
-      checksumStart = PacketHeader.PKT_MAX_HEADER_LEN;
-      checksumPos = checksumStart;
-      dataStart = checksumStart + (chunksPerPkt * checksum.getChecksumSize());
-      dataPos = dataStart;
-      maxChunks = chunksPerPkt;
     }
 
     void writeData(byte[] inarray, int off, int len) {
-      if (dataPos + len > buf.length) {
+      if (dataPos + len > buf.length)
         throw new BufferOverflowException();
-      }
       System.arraycopy(inarray, off, buf, dataPos, len);
       dataPos += len;
     }
 
     void writeChecksum(byte[] inarray, int off, int len) {
-      if (checksumPos + len > dataStart) {
+      if (checksumPos + len > dataStart)
         throw new BufferOverflowException();
-      }
       System.arraycopy(inarray, off, buf, checksumPos, len);
       checksumPos += len;
     }
@@ -275,14 +267,12 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
       final int pktLen = HdfsConstants.BYTES_IN_INTEGER + dataLen + checksumLen;
 
       // send packet using vector clock
-      PacketHeader header = new PacketHeader(
-        pktLen, offsetInBlock, seqno, lastPacketInBlock, dataLen, syncBlock, DFSClient.tickAndCopy());
-      
+      PacketHeader header = new PacketHeader(pktLen, offsetInBlock, seqno, lastPacketInBlock, dataLen, syncBlock,
+                                             DFSClient.tickAndCopy());
+
       if (checksumPos != dataStart) {
-        // Move the checksum to cover the gap. This can happen for the last
-        // packet or during an hflush/hsync call.
-        System.arraycopy(buf, checksumStart, buf, 
-                         dataStart - checksumLen , checksumLen); 
+        // Move the checksum to cover the gap. This can happen for the last packet or during an hflush/hsync call.
+        System.arraycopy(buf, checksumStart, buf, dataStart - checksumLen , checksumLen);
         checksumPos = dataStart;
         checksumStart = checksumPos - checksumLen;
       }
@@ -293,15 +283,12 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
       assert headerStart >= 0;
       assert headerStart + header.getSerializedSize() == checksumStart;
       
-      // Copy the header data into the buffer immediately preceding the checksum
-      // data.
-      System.arraycopy(header.getBytes(), 0, buf, headerStart,
-          header.getSerializedSize());
+      // Copy the header data into the buffer immediately preceding the checksum data.
+      System.arraycopy(header.getBytes(), 0, buf, headerStart, header.getSerializedSize());
       
-      // corrupt the data for testing.
-      if (DFSClientFaultInjector.get().corruptPacket()) {
-        buf[headerStart+header.getSerializedSize() + checksumLen + dataLen-1] ^= 0xff;
-      }
+      // Corrupt the data for testing.
+      if (DFSClientFaultInjector.get().corruptPacket())
+        buf[headerStart + header.getSerializedSize() + checksumLen + dataLen-1] ^= 0xff;
 
       // Write the now contiguous full packet to the output stream.
       stm.write(buf, headerStart, header.getSerializedSize() + checksumLen + dataLen);
@@ -345,14 +332,15 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   class DataStreamer extends Daemon {
     private volatile boolean streamerClosed = false;
     private ExtendedBlock block; // its length is number of bytes acked
-    //HDFSRS_RWAPI{
+    // HDFSRS_RWAPI{
     // if blockWriteOffset == -1, the datanode will choose the
     // default offset(at the end of a block), Otherwise
     // the streamer will use blockWriteOffset.
     private long blockWriteOffset = -1; // write offset into the block.
-    private long blockNumber = -1; // the number of the block being written, start from zero
-    private long fileSizeAtSeek = -1; // the current file size when seek() is invoked
-    //}
+    private long blockNumber = -1;      // the number of the block being written, start from zero
+    private long oldBlockNumber = -1;   // the number of the previous block being written
+    private long fileSizeAtSeek = -1;   // the current file size when seek() is invoked
+    // }HDFSRS_RWAPI
     private Token<BlockTokenIdentifier> accessToken;
     private DataOutputStream blockStream;
     private DataInputStream blockReplyStream;
@@ -399,13 +387,12 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     /**
      * Default construction for file create
      */
-    protected DataStreamer(
-        long blockNumber/*HDFSRS_RWAPI: specifying the block Number*/) {
+    protected DataStreamer(long blockNumber/*HDFSRS_RWAPI: specifying the block Number*/) {
       isAppend = false;
       stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
-      //HDFSRS_RWAPI{
+      // HDFSRS_RWAPI{
       this.blockNumber = blockNumber;
-      //}
+      // }HDFSRS_RWAPI
     }
     
     /**
@@ -415,15 +402,15 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
      * @param bytesPerChecksum number of bytes per checksum
      * @throws IOException if error occurs
      */
-    protected DataStreamer(LocatedBlock lastBlock, HdfsFileStatus stat,
-        int bytesPerChecksum,long blockNumber/*HDFSRS_RWAPI: specifying the block Number*/) throws IOException {
+    protected DataStreamer(LocatedBlock lastBlock, HdfsFileStatus stat, int bytesPerChecksum,
+                           long blockNumber/*HDFSRS_RWAPI: specifying the block Number*/) throws IOException {
       isAppend = true;
       stage = BlockConstructionStage.PIPELINE_SETUP_APPEND;
       block = lastBlock.getBlock();
-      //HDFSRS_RWAPI{
+      // HDFSRS_RWAPI{
       this.blockNumber = blockNumber;
       this.blockWriteOffset = block.getNumBytes();
-      //}
+      // }HDFSRS_RWAPI
       bytesSent = block.getNumBytes();
       accessToken = lastBlock.getBlockToken();
       long usedInLastBlock = stat.getLen() % blockSize;
@@ -472,6 +459,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     private void setPipeline(LocatedBlock lb) {
       setPipeline(lb.getLocations(), lb.getStorageIDs());
     }
+
     private void setPipeline(DatanodeInfo[] nodes, String[] storageIDs) {
       this.nodes = nodes;
       this.storageIDs = storageIDs;
@@ -485,13 +473,12 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
      * Initialize for data streaming
      */
     private void initDataStreaming() {
-      this.setName("DataStreamer for file " + src +
-          " block " + block);
+      this.setName("DataStreamer for file " + src + " block " + block);
       response = new ResponseProcessor(nodes);
       response.start();
       stage = BlockConstructionStage.DATA_STREAMING;
     }
-    //HDFSRS_RWAPI{
+    // HDFSRS_RWAPI{
     private void endBlock() throws IOException{
       endBlock(-1);
     }
@@ -503,48 +490,37 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
      * @throws IOException
      */
     private void endBlock(long newPos) throws IOException {
-      if(DFSClient.LOG.isDebugEnabled()) {
+      if (stage == BlockConstructionStage.PIPELINE_SETUP_SEEK && newPos < 0)
+        throw new IOException("[HDFSRS_RWAPI]newPos(" + newPos + ") should be non-negative");
+      if (DFSClient.LOG.isDebugEnabled())
         DFSClient.LOG.debug("Closing old block " + block);
-      }
       this.setName("DataStreamer for file " + src);
       closeResponder();
       closeStream();
       setPipeline(null, null);
-      //HDFSRS_RWAPI{
-      LocatedBlock lb = null;
-      //TODO
-      if(newPos>=0){// go to new position
-        if(newPos > fileSizeAtSeek)
-          throw new IOException("[HDFSRS_RWAPI]newPos("+newPos+") exceeds currentFileSize("+fileSizeAtSeek+")");
-        else if(newPos == fileSizeAtSeek && newPos%blockSize == 0){
+      if (newPos >= 0) { // go to new position
+        if (newPos > fileSizeAtSeek) {
+          throw new IOException("[HDFSRS_RWAPI]newPos(" + newPos + ") exceeds currentFileSize(" + fileSizeAtSeek + ")");
+        } else if (newPos == fileSizeAtSeek && newPos % blockSize == 0) {
           stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
           blockWriteOffset = -1;
-        }else{
+        } else {
           stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
-          blockNumber = newPos / blockSize;
-          blockWriteOffset = newPos % blockSize;
         }
-      }else{
-        //HDFSRS_RWAPI{ 
-        // In DFSOutputStream.seek(), after flushing existing data, the DataStreamer may
-        // still keep the pipeline. If the DataStreamer.seek() is invoked before the 
-        // pipeline being destructed by endblock(), we should keep the blockNumber and 
-        // blockWriteOffset settings here.
-        if(stage==BlockConstructionStage.PIPELINE_SETUP_SEEK)
-          return;
-        //}HDFSRS_RWAPI
-        if((blockNumber+1)*blockSize >= fileSizeAtSeek){
+      } else {
+        if ((blockNumber+1)*blockSize >= fileSizeAtSeek) {
           stage = BlockConstructionStage.PIPELINE_SETUP_CREATE;
           blockWriteOffset = -1;
-        }else{
+        } else {
           stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
           blockWriteOffset = 0;
         }
-        blockNumber ++;
-//      LocatedBlocks lbs = dfsClient.namenode.getBlockLocationsNoCreate(src,(blockNumber+1)*blockSize,1);
+        blockNumber++;
       }
     }
-    //HDFSRS_RWAPI{
+    // }HDFSRS_RWAPI
+
+    // HDFSRS_RWAPI{
     /**
      * Seek to a new block specified by newblock
      * @param offset in the new block
@@ -553,14 +529,15 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     //we just set the block, blockNumber, blockWriteOffset
     //then let the streamer thread handle the BlockConstructionStage.PIPELINE_SETUP_SEEK
     //status by itself.
-    private void seek(long offset,long curFileSize)
-    throws IOException {
-      blockNumber = offset / blockSize;
-      blockWriteOffset = offset % blockSize;
-      stage = BlockConstructionStage.PIPELINE_SETUP_SEEK;
+    private void seek(long oldPos, long newPos, long curFileSize) throws IOException {
+      oldBlockNumber = oldPos / blockSize;
+      blockNumber = newPos / blockSize;
+      blockWriteOffset = newPos % blockSize;
       fileSizeAtSeek = curFileSize;
+      stage = BlockConstructionStage.PIPELINE_SETUP_SEEK;
     }
-    //}
+    // }HDFSRS_RWAPI
+
     /*
      * streamer thread is the only thread that opens streams to datanode, 
      * and closes them. Any error recovery is also done by this thread.
@@ -569,7 +546,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     public void run() {
       long lastPacket = Time.now();
       while (!streamerClosed && dfsClient.clientRunning) {
-
         // if the Responder encountered an error, shutdown Responder
         if (hasError && response != null) {
           try {
@@ -619,15 +595,19 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
           }
           assert one != null;
 
-          //HDFSRS_RWAPI{
-          if(stage==BlockConstructionStage.PIPELINE_SETUP_SEEK)
+          // HDFSRS_RWAPI{
+          if (stage == BlockConstructionStage.PIPELINE_SETUP_SEEK && oldBlockNumber != blockNumber) {
             endBlock(blockNumber*blockSize+blockWriteOffset); // <-- stop current block and move to new position
+          } else if (stage == BlockConstructionStage.PIPELINE_SETUP_SEEK) {
+            stage = BlockConstructionStage.PIPELINE_SETUP_OVERWRITE;
+          }
+           
           // get new block from namenode.
           if (stage == BlockConstructionStage.PIPELINE_SETUP_CREATE) {
             // HDFSRS_RWAPI
             // When we open a file for appending, whose length just fall on the boundary,
             // The initial state of the streamer is "PIPELINE_SETUP_CREATE". If we seek at
-            // this point, the flush operation will send a packet with "lastPAcketInBlock"
+            // this point, the flush operation will send a packet with "lastPacketInBlock"
             // tag to try finalize pending data. However, we don't have pending data at this
             // point. The effect is, the streamer will create an empty block by the following
             // call on nextBlockOutputStream(), and close it at the end of this loop. This
@@ -647,20 +627,19 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
               }
               continue;
             }
-            //}HDFSRS_RWAPI
-            if(DFSClient.LOG.isDebugEnabled()) {
+            if (DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("CQDEBUG: Allocating new block");
             }
             setPipeline(nextBlockOutputStream());
             initDataStreaming();
-          }else if(stage == BlockConstructionStage.PIPELINE_SETUP_APPEND){
-            if(DFSClient.LOG.isDebugEnabled()) {
+          } else if (stage == BlockConstructionStage.PIPELINE_SETUP_APPEND) {
+            if (DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("Append to block:" + block);
             }
             setupPipelineForAppendOrRecovery(); // <-- this will handle overwrite too.
             initDataStreaming();
-          }else if (stage == BlockConstructionStage.PIPELINE_SETUP_OVERWRITE){
-            if(DFSClient.LOG.isDebugEnabled()) {
+          } else if (stage == BlockConstructionStage.PIPELINE_SETUP_OVERWRITE) {
+            if (DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("Overwrite to block: blockNumber=" + blockNumber
                   + "fileId=" + fileId 
                   + "src=" + src
@@ -671,18 +650,23 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
             //state in NameNode. The overwriteBlock method will complete that block
             //and open convert the new block specified by blockNumber in to "Under construction"
             //state.
-            HybridLogicalClock mhlc = DFSClient.tickAndCopy();
-            LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, block, (int)blockNumber, fileId, dfsClient.clientName, mhlc);
-            DFSClient.tickOnRecv(mhlc); //HDFSRS_VC
-            if(lb==null)throw new IOException("[HDFSRS_RWAPI]overwriteBlock() returns null:blockNumber="+blockNumber);
-            accessToken = lb.getBlockToken();
-            block = lb.getBlock();
-            bytesSent = block.getNumBytes();
-            setPipeline(lb);
-            setupPipelineForAppendOrRecovery(); // <-- this will handle overwrite too.
-            initDataStreaming();
+            if (oldBlockNumber != blockNumber) {
+              HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+              LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, block, (int) blockNumber, fileId, dfsClient.clientName, mhlc);
+              DFSClient.tickOnRecv(mhlc); //HDFSRS_VC
+              if (lb==null)
+                throw new IOException("[HDFSRS_RWAPI]overwriteBlock() returns null:blockNumber="+blockNumber);
+              accessToken = lb.getBlockToken();
+              block = lb.getBlock();
+              bytesSent = block.getNumBytes();
+              setPipeline(lb);
+              setupPipelineForAppendOrRecovery(); // <-- this will handle overwrite too.
+              initDataStreaming();
+            } else {
+              stage = BlockConstructionStage.DATA_STREAMING;
+            }
           }
-          //}
+          // }HDFSRS_RWAPI
 
           long lastByteOffsetInBlock = one.getLastByteOffsetBlock();
           if (lastByteOffsetInBlock > blockSize) {
@@ -701,8 +685,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
                 try {
                   // wait for acks to arrive from datanodes
                   dataQueue.wait(1000);
-                } catch (InterruptedException  e) {
-                }
+                } catch (InterruptedException  e) {}
               }
             }
             if (streamerClosed || hasError || !dfsClient.clientRunning) {
@@ -722,8 +705,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
           }
 
           if (DFSClient.LOG.isDebugEnabled()) {
-            DFSClient.LOG.debug("DataStreamer block " + block +
-                " sending packet " + one);
+            DFSClient.LOG.debug("DataStreamer block " + block + " sending packet " + one);
           }
 
           if(PerformanceTraceSwitch.getPacketTimestamp())
@@ -733,7 +715,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
           // write out data to remote datanode
           try {
             one.writeTo(blockStream);
-            blockStream.flush();   
+            blockStream.flush();
           } catch (IOException e) {
             // HDFS-3398 treat primary DN is down since client is unable to 
             // write to primary DN. If a failed or restarting node has already
@@ -768,7 +750,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
             if (streamerClosed || hasError || !dfsClient.clientRunning) {
               continue;
             }
-
             endBlock();
             if(DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("CQDEBUG: Finishing a block");
@@ -1039,8 +1020,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
                 dataQueue.notifyAll();
               }
               if (restartingNodeIndex == -1) {
-                DFSClient.LOG.warn("DFSOutputStream ResponseProcessor exception "
-                     + " for block " + block, e);
+                DFSClient.LOG.warn("DFSOutputStream ResponseProcessor exception for block " + block, e);
               }
               responderClosed = true;
             }
@@ -1064,6 +1044,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
         " waiting for responder to exit. ");
         return true;
       }
+      // System.out.println("Close stream from DatanodeError");
       closeStream();
 
       // move packets from ack queue to front of the data queue
@@ -1219,8 +1200,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
           unbufOut = encryptedStreams.out;
           unbufIn = encryptedStreams.in;
         }
-        out = new DataOutputStream(new BufferedOutputStream(unbufOut,
-            HdfsConstants.SMALL_BUFFER_SIZE));
+        out = new DataOutputStream(new BufferedOutputStream(unbufOut, HdfsConstants.SMALL_BUFFER_SIZE));
         in = new DataInputStream(unbufIn);
 
         //send the TRANSFER_BLOCK request
@@ -1250,8 +1230,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     private boolean setupPipelineForAppendOrRecovery() throws IOException {
       // check number of datanodes
       if (nodes == null || nodes.length == 0) {
-        String msg = "Could not get block locations. " + "Source file \""
-            + src + "\" - Aborting...";
+        String msg = "Could not get block locations. " + "Source file \"" + src + "\" - Aborting...";
         DFSClient.LOG.warn(msg);
         setLastException(new IOException(msg));
         streamerClosed = true;
@@ -1268,8 +1247,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
           // 4 seconds or the configured deadline period, whichever is shorter.
           // This is the retry interval and recovery will be retried in this
           // interval until timeout or success.
-          long delay = Math.min(dfsClient.getConf().datanodeRestartTimeout,
-              4000L);
+          long delay = Math.min(dfsClient.getConf().datanodeRestartTimeout, 4000L);
+
           try {
             Thread.sleep(delay);
           } catch (InterruptedException ie) {
@@ -1498,8 +1477,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
             unbufOut = encryptedStreams.out;
             unbufIn = encryptedStreams.in;
           }
-          out = new DataOutputStream(new BufferedOutputStream(unbufOut,
-              HdfsConstants.SMALL_BUFFER_SIZE));
+          out = new DataOutputStream(new BufferedOutputStream(unbufOut, HdfsConstants.SMALL_BUFFER_SIZE));
           blockReplyStream = new DataInputStream(unbufIn);
   
           //
@@ -1514,8 +1492,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
               DFSClient.tickAndCopy(), suffix);
   
           // receive ack for connect
-          BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(
-              PBHelper.vintPrefixed(blockReplyStream));
+          BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(blockReplyStream));
           pipelineStatus = resp.getStatus();
           firstBadLink = resp.getFirstBadLink();
           
@@ -1761,10 +1738,10 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
 
     computePacketChunkSize(dfsClient.getConf().writePacketSize,
         checksum.getBytesPerChecksum());
-    //HDFSRS_RWAPI{
-    //streamer = new DataStreamer();
+    // HDFSRS_RWAPI{
+    // streamer = new DataStreamer();
     streamer = new DataStreamer(0l);
-    //}
+    // }HDFSRS_RWAPI
     if (favoredNodes != null && favoredNodes.length != 0) {
       streamer.setFavoredNodes(favoredNodes);
     }
@@ -1813,26 +1790,26 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
       DataChecksum checksum) throws IOException {
     this(dfsClient, src, progress, stat, checksum);
     initialFileSize = stat.getLen(); // length of file when opened
-    //HDFSRS_RWAPI{
+    // HDFSRS_RWAPI{
     curFileSize = initialFileSize;
     pos = initialFileSize;
-    //}
+    // }HDFSRS_RWAPI
 
     // The last partial block of the file has to be filled.
     if (lastBlock != null) {
       // indicate that we are appending to an existing block
       bytesCurBlock = lastBlock.getBlockSize();
-      //HDFSRS_RWAPI{
-      //streamer = new DataStreamer(lastBlock, stat, checksum.getBytesPerChecksum());
+      // HDFSRS_RWAPI{
+      // streamer = new DataStreamer(lastBlock, stat, checksum.getBytesPerChecksum());
       streamer = new DataStreamer(lastBlock, stat, checksum.getBytesPerChecksum(), initialFileSize/stat.getBlockSize());
-      //}
+      // }HDFSRS_RWAPI
     } else {
       computePacketChunkSize(dfsClient.getConf().writePacketSize,
           checksum.getBytesPerChecksum());
-      //HDFSRS_RWAPI{
-      //streamer = new DataStreamer();
+      // HDFSRS_RWAPI{
+      // streamer = new DataStreamer();
       streamer = new DataStreamer(initialFileSize/stat.getBlockSize());
-      //}
+      // }HDFSRS_RWAPI
     }
   }
 
@@ -1878,8 +1855,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   private void waitAndQueueCurrentPacket() throws IOException {
     synchronized (dataQueue) {
       try {
-      // If queue is full, then wait till we have enough space
-      while (!closed && dataQueue.size() + ackQueue.size()  > MAX_PACKETS) {
+        // If queue is full, then wait till we have enough space
+        while (!closed && dataQueue.size() + ackQueue.size()  > MAX_PACKETS) {
         try {
           dataQueue.wait();
         } catch (InterruptedException e) {
@@ -1922,8 +1899,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     }
 
     if (currentPacket == null) {
-      currentPacket = new Packet(packetSize, chunksPerPacket, 
-          bytesCurBlock);
+      currentPacket = new Packet(packetSize, chunksPerPacket, bytesCurBlock);
       if (DFSClient.LOG.isDebugEnabled()) {
         DFSClient.LOG.debug("DFSClient writeChunk allocating new packet seqno=" + 
             currentPacket.seqno +
@@ -1941,8 +1917,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
 
     // If packet is full, enqueue it for transmission
     //
-    if (currentPacket.numChunks == currentPacket.maxChunks ||
-        bytesCurBlock == blockSize) {
+    if (currentPacket.numChunks == currentPacket.maxChunks || bytesCurBlock == blockSize) {
       if (DFSClient.LOG.isDebugEnabled()) {
         DFSClient.LOG.debug("DFSClient writeChunk packet full seqno=" +
             currentPacket.seqno +
@@ -2036,8 +2011,12 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
    *          the NameNode
    * @throws IOException
    */
+  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, boolean syncFinalize) throws IOException {
+    flushOrSync(isSync, syncFlags, syncFinalize, false);
+  }
+  
   private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, 
-      boolean bFinalize/*HDFSRS_RWAPI: for seek flush*/)
+      boolean syncFinalize, boolean blockFinalize/*HDFSRS_RWAPI: for seek flush*/)
       throws IOException {
     dfsClient.checkOpen();
     checkClosed();
@@ -2083,16 +2062,14 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
           // (or the beginning of the file). Hence, we should not have any
           // packet queued prior to this call, since the last flush set
           // currentPacket = null.
-          assert oldCurrentPacket == null :
-            "Empty flush should not occur with a currentPacket";
+          assert oldCurrentPacket == null : "Empty flush should not occur with a currentPacket";
 
           if (isSync && bytesCurBlock > 0) {
             // Nothing to send right now,
             // and the block was partially written,
             // and sync was requested.
             // So send an empty sync packet.
-            currentPacket = new Packet(packetSize, chunksPerPacket,
-                bytesCurBlock);
+            currentPacket = new Packet(packetSize, chunksPerPacket, bytesCurBlock);
           } else {
             // just discard the current packet since it is already been sent.
             currentPacket = null;
@@ -2100,16 +2077,17 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
         }
         if (currentPacket != null) {
           currentPacket.syncBlock = isSync;
-          waitAndQueueCurrentPacket();          
+          waitAndQueueCurrentPacket();
         }
-//HDFSRS_RWAPI{        
-        if(bFinalize){
+        // HDFSRS_RWAPI{
+        if (syncFinalize) {
           currentPacket = new Packet(0, 0, bytesCurBlock);
-          currentPacket.lastPacketInBlock = true;
+          currentPacket.lastPacketInBlock = blockFinalize;
           currentPacket.syncBlock = shouldSyncBlock;
           waitAndQueueCurrentPacket();
         }
-//}HDFSRS_RWAPI
+        // }HDFSRS_RWAPI
+
         // Restore state of stream. Record the last flush offset 
         // of the last full chunk that was flushed.
         //
@@ -2121,7 +2099,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
 
       // update the block length first time irrespective of flag
       if (updateLength || persistBlocks.get()) {
-        //HDFSRS_RWAPI{
+        // HDFSRS_RWAPI{
     	/*
         synchronized (this) {
           if (streamer != null && streamer.block != null) {
@@ -2130,7 +2108,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
         }
         */
     	lastBlockLength = this.curFileSize % this.blockSize;
-        //}
+        // }HDFSRS_RWAPI
       }
       // If 1) any new blocks were allocated since the last flush, or 2) to
       // update length in NN is required, then persist block locations on
@@ -2438,7 +2416,10 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
       throw new IOException("[HDFSRS_RWAPI]Cannot seek to " + pos + " beyound the end of the file.");
     
     // STEP 3: flush
-    flushOrSync(true, EnumSet.noneOf(SyncFlag.class), true);
+    if (this.pos / this.blockSize != pos / this.blockSize)
+      flushOrSync(true, EnumSet.noneOf(SyncFlag.class), true, true);
+    else
+      flushOrSync(true, EnumSet.noneOf(SyncFlag.class), true, false);
 
     // STEP 4: reset the chunkSize and write buffer
     this.bytesCurBlock = pos % this.blockSize;
@@ -2466,7 +2447,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     }
 
     //STEP 5: Reset streamer
-    this.streamer.seek(pos,this.curFileSize);
+    this.streamer.seek(this.pos, pos, this.curFileSize);
     this.pos = pos;
   }
 

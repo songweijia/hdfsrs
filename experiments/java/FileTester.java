@@ -13,27 +13,26 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-//import edu.cornell.cs.blog.JNIBlog;
+// import edu.cornell.cs.blog.JNIBlog;
 import java.nio.ByteBuffer;
 import org.apache.hadoop.hdfs.client.HdfsDataInputStream;
 
 public class FileTester extends Configured implements Tool {
-  public static void main(String[] args){
+  public static void main(String[] args) {
     int res;
-    try{
+
+    try {
       res = ToolRunner.run(new Configuration(), new FileTester(), args);
       System.exit(res);
-    }catch(Exception e){
+    } catch(Exception e) {
       System.out.println(e);
       e.printStackTrace();
     }
   }
   
-  void overwriteFile(FileSystem fs, String path, String... args)
-  throws Exception{
-    if(args.length != 2){
+  void overwriteFile(FileSystem fs, String path, String... args) throws Exception {
+    if (args.length != 2)
       throw new IOException("Please specify the pos and data");
-    }
     FSDataOutputStream fsos = fs.append(new Path(path));
     fsos.seek(Long.parseLong(args[0]));
     System.out.println("seek done");
@@ -43,6 +42,101 @@ public class FileTester extends Configured implements Tool {
     ps.close();
     fsos.close();
     System.out.println("close done");
+  }
+
+  void seekPerformance(FileSystem fs, String path, String... args) throws IOException {
+    FSDataOutputStream fsos;
+    int nrLoops = Integer.parseInt(args[0]);
+    int blockSize = Integer.parseInt(args[1]);
+    int buffSize = Integer.parseInt(args[2]);
+    byte []buff = new byte[buffSize];
+    long []times = new long[2*nrLoops];
+    double avgLatency, avgThroughput;
+    int blockNo, len, lenRead;
+
+    // Initialize buffer with character 'a'.
+    for (int i = 0; i < buffSize; i++)
+      buff[i] = 'a';
+
+    // Create the file and write two blocks.
+    System.out.println("Create file " + path);
+    fsos = fs.create(new Path(path));
+    for (int i = 0; i < 2*blockSize/buffSize; i++) {
+      fsos.write(buff,0,buffSize);
+    }
+    fsos.close();
+    System.out.println("Initialization completed.");
+
+    // Initialize buffer with character 's'.
+    for (int i = 0; i < buffSize; i++)
+      buff[i] = 's';
+
+    // Seek in the same position and test the performance.
+    avgLatency = 0.0;
+    fsos = fs.append(new Path(path));
+    fsos.seek(0);
+    for (int i = 0; i < nrLoops; i++) {
+      times[2*i] = System.currentTimeMillis();
+      fsos.seek(0);
+      times[2*i+1] = System.currentTimeMillis();
+      avgLatency += times[2*i+1]-times[2*i]; 
+    }
+    fsos.close();
+
+    // Report latencies.
+    avgLatency /= nrLoops*1000.0;
+    avgThroughput = 1.0/avgLatency;
+    System.out.println("Seek at Current Position");
+    System.out.println(".....................");
+    System.out.println("Average Latency:     " + avgLatency);
+    System.out.println("Average Throughput:  " + avgThroughput);
+    System.out.println();
+
+    // Seek inside the same block and test the performance.
+    avgLatency = 0.0;
+    fsos = fs.append(new Path(path));
+    fsos.seek(0);
+    for (int i = 0; i < nrLoops; i++) {
+      times[2*i] = System.currentTimeMillis();
+      fsos.seek(buffSize);
+      times[2*i+1] = System.currentTimeMillis();
+      fsos.write(buff,0,buffSize);
+      avgLatency += times[2*i+1]-times[2*i];
+    }
+    fsos.close();
+
+    // Report latencies.
+    avgLatency /= nrLoops*1000.0;
+    avgThroughput = 1.0/avgLatency;
+    System.out.println("Seek at Current Block");
+    System.out.println(".....................");
+    System.out.println("Average Latency:     " + avgLatency);
+    System.out.println("Average Throughput:  " + avgThroughput);
+    System.out.println();
+
+    // Seek outside the block and test the performance.
+    avgLatency = 0.0;
+    blockNo = 1;
+    fsos = fs.append(new Path(path));
+    fsos.seek(0);
+    for (int i = 0; i < nrLoops; i++) {
+      times[2*i] = System.currentTimeMillis();
+      fsos.seek(blockNo*blockSize+buffSize);
+      times[2*i+1] = System.currentTimeMillis();
+      fsos.write(buff,0,buffSize);
+      avgLatency += times[2*i+1]-times[2*i];
+      blockNo = (blockNo + 1) % 2;
+    }
+    fsos.close();
+
+    // Report latencies.
+    avgLatency /= nrLoops*1000.0;
+    avgThroughput = 1.0/avgLatency;
+    System.out.println("Seek at Different Block");
+    System.out.println(".....................");
+    System.out.println("Average Latency:     " + avgLatency);
+    System.out.println("Average Throughput:  " + avgThroughput);
+    System.out.println();
   }
 
   void appendFile(FileSystem fs, String path, String... args)
@@ -192,6 +286,7 @@ public class FileTester extends Configured implements Tool {
         nRead=fsis.read(bb);
         if(nRead <= 0)break;
         len+=nRead;
+        System.out.println(new String(bb.array()));
         bb.clear();
       };
       end_ts = System.nanoTime();
@@ -626,6 +721,7 @@ public class FileTester extends Configured implements Tool {
         "\tappend <file> <data>\n"+
         "\ttimeappend <file> <ws> <dur>\n"+
         "\toverwrite <file> <pos> <data>\n"+
+        "\tseekPerformance <file> <nr loops> <block size> <buffer size>\n"+
         "\twrite <file> <size(MB)> <bfsz(B)>\n"+ //set buffersize
         "\trandomwrite <file>\n"+ 
         "\tsnapshot <path> <interval_ms> <number>\n"+
@@ -650,6 +746,8 @@ public class FileTester extends Configured implements Tool {
       this.timeAppend(fs,args[1],args[2],args[3]);
     else if("overwrite".equals(args[0]))
       this.overwriteFile(fs,args[1],args[2],args[3]);
+    else if("seekPerformance".equals(args[0]))
+      this.seekPerformance(fs,args[1],args[2],args[3],args[4]);
     else if("write".equals(args[0]))
       this.write(fs,args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]));
     else if("randomwrite".equals(args[0]))

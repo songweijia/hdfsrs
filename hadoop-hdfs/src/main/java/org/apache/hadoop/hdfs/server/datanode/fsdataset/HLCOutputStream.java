@@ -16,23 +16,25 @@ abstract public class HLCOutputStream extends OutputStream {
 
 	/**
 	 * @param mhlc HybridLogicalClock, Input/Output argument
-	 * @param b buffer
-	 * @param off offset
+     * @param blockOffset Offset for current block.
+	 * @param buff buffer
+	 * @param buffOffset Offset for buffer
 	 * @param len length
 	 * @throws IOException
 	 */
-	final public void write(HybridLogicalClock mhlc, byte[] b, int off, int len)
+	final public void write(HybridLogicalClock mhlc, long blockOffset, byte[] buff, int buffOffset, int len)
 	    throws IOException{
-	  this.write(mhlc,mhlc.r,b,off,len);
+	  this.write(mhlc, mhlc.r, blockOffset, buff, buffOffset, len);
 	}
 	
 	/**
 	 * @param mhlc
 	 * @param userTimestamp
-	 * @param b
-	 * @param off
+     * @param blockOffset
+	 * @param buff
+	 * @param buffOffset
 	 * @param len
 	 * @throws IOException
 	 */
-	public abstract void write(HybridLogicalClock mhlc, long userTimestamp, byte[] b, int off, int len) throws IOException;
+	public abstract void write(HybridLogicalClock mhlc, long userTimestamp, long blockOffset, byte[] buff, int buffOffset, int len) throws IOException;
 }
