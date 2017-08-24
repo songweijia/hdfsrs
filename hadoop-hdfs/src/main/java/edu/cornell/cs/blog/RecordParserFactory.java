@@ -3,14 +3,15 @@ package edu.cornell.cs.blog;
 import java.util.Map;
 import java.util.HashMap;
 
-public class RecordParserFactory{
-
+public class RecordParserFactory {
+  
   private final static Map<String,String> rpMap;
 
   static{
     rpMap = new HashMap<String,String>();
     rpMap.put(null,DefaultRecordParser.class.getName());
     rpMap.put("ts64",ts64RecordParser.class.getName());
+    rpMap.put("pmu",PMURecordParser.class.getName());
   }
 
   /*

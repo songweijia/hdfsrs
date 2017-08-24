@@ -1024,17 +1024,19 @@ class MemBlockReceiver extends BlockReceiver {
           try {
             if (curBufIdx == 0 || curBufIdx == 1) {
               sanityCheck();
-              // we assume that 
+              // We assume that
               // 1) each buffer has one or multiple records.
               // 2) records are not splitted across buffer boundary.
               int sRec = 0;
-              int eRec; // start and end of Record
+              int eRec;     // start and end of Record
+
               while (sRec != len) {
                 eRec = rp.ParseRecord(bufs[curBufIdx].array(), sRec, len);
+                // LOG.info("Record Time: " + rp.getUserTimestamp().toString());
                 hlcout.write(hlc, rp.getUserTimestamp(), offsetInBlock, bufs[curBufIdx].array(), sRec, eRec);
                 sRec = eRec;
               }
-              if(replica.getNumBytes() < replica.getBytesOnDisk())
+              if (replica.getNumBytes() < replica.getBytesOnDisk())
                 replica.setNumBytes(replica.getBytesOnDisk());
               curBufIdx = -1;
               bufs.notify();
@@ -1042,7 +1044,7 @@ class MemBlockReceiver extends BlockReceiver {
               bufs.wait();
             }
           } catch(InterruptedException ie) {
-            //do nothing
+            // do nothing
           } catch(IOException ioe) {
             LOG.error("BlockWriter Error:" + ioe);
           } catch(RecordParserException rpe) {
