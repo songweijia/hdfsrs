@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 public class PMURecordParser implements IRecordParser {
   private long ts;
-  
+
   @Override
   public long getUserTimestamp() {
     return ts;
@@ -12,16 +12,28 @@ public class PMURecordParser implements IRecordParser {
 
   @Override
   public int ParseRecord(ByteBuffer bb) throws RecordParserException {
-    byte[] seconds = new byte[4];
-    byte[] fracsec = new byte[3];
+    byte[] data = new byte[14];
+    int rem_size = bb.remaining();
+    int rec_size;
+    long s, ms;
 
-    bb.get(seconds, 6, 4);
-    bb.get(fracsec, 12, 3);
-    ts = 1000*(((long) seconds[0])*256 + ((long) seconds[1]));
-    ts += fracsec[0]*256*256 + fracsec[1]*256 + fracsec[2];
-    return -1;
+    if (rem_size == 0)
+      return -1;
+    assert rem_size >= 16;
+
+    // Get header.
+    bb.get(data, 0, 14);
+    rec_size = ((int) data[2])*256 + ((int) data[3]);
+    s = ((long) data[6])*256*256*256 + ((long) data[7])*256*256 + ((long) data[8])*256 + ((long) data[9]);
+    ms = ((long) data[11])*256*256 + ((long) data[12])*256 + ((long) data[13]);
+    assert rem_size >= rec_size;
+    // Assume that packet holds one or more full records. Records are not partially written.
+
+    // Calculate timestamp and return size.
+    ts = 1000*s + ms;
+    return rec_size;
   }
-  
+ 
   @Override
   public int ParseRecord(byte[] buf, int offset, int len) throws RecordParserException {
     return ParseRecord(ByteBuffer.wrap(buf,offset,len));

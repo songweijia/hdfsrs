@@ -13,7 +13,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-// import edu.cornell.cs.blog.JNIBlog;
 import java.nio.ByteBuffer;
 import org.apache.hadoop.hdfs.client.HdfsDataInputStream;
 
@@ -137,6 +136,80 @@ public class FileTester extends Configured implements Tool {
     System.out.println("Average Latency:     " + avgLatency);
     System.out.println("Average Throughput:  " + avgThroughput);
     System.out.println();
+  }
+
+  void PMUWrite(FileSystem fs, String path, String... args) throws IOException {
+    FSDataOutputStream fsos;
+    int buffSize = 16;
+    byte[] buff = new byte[buffSize];
+
+    // Initialize buffer with character 'a'.
+    for (int i = 0; i < buffSize; i++)
+      buff[i] = 'a';
+    buff[2] = 0;
+    buff[3] = (byte) buffSize;
+    buff[6] = 0;
+    buff[7] = 0;
+    buff[8] = 0;
+    buff[9] = 1;
+    buff[11] = 0;
+    buff[12] = 0;
+    buff[13] = 0; 
+
+    // Create file.
+    System.out.println("Create file " + path);
+    fsos = fs.create(new Path(path));
+
+    // Write packet 1.
+    fsos.write(buff,0,buffSize);
+
+    // Change timestamp and data.
+    for (int i = 0; i < buffSize; i++)
+      buff[i] = 'b';
+    buff[2] = 0;
+    buff[3] = (byte) buffSize;
+    buff[6] = 0;
+    buff[7] = 0;
+    buff[8] = 0;
+    buff[9] = 3;
+    buff[11] = 0;
+    buff[12] = 0;
+    buff[13] = 0;
+
+    // Write packet 2.
+    fsos.seek(0);
+    fsos.write(buff,0,buffSize);
+    fsos.close();
+    System.out.println("Write has been completed.");
+  }
+
+  void PMURead(FileSystem fs, String path, String... args) throws Exception {
+    FSDataInputStream fsis;
+    int buffsize = 16;
+    int nread;
+    byte[] buff = new byte[buffsize];
+
+    fsis = fs.open(new Path(path), 4096, 999L, true);
+    nread = fsis.read(buff);
+    fsis.close();
+    if (nread != -1)
+      throw new Exception("Should have read -1. Instead got " + nread + " bytes.");
+
+    fsis = fs.open(new Path(path), 4096, 2000L, true);
+    nread = fsis.read(buff);
+    fsis.close();
+    if (nread != buffsize)
+      throw new Exception("Should have read 16 bytes. Instead got " + nread + " bytes.");
+    if (buff[0] != 'a')
+      throw new Exception("Should have read 'a'. Instead got '" + buff[0] + "'.");
+
+    fsis = fs.open(new Path(path), 4096, 4000L, true);
+    nread = fsis.read(buff);
+    fsis.close();
+    if (nread != buffsize)
+      throw new Exception("Should have read 0 bytes. Instead got " + nread + " bytes.");
+    if (buff[0] != 'b')
+      throw new Exception("Should have read 'b'. Instead got '" + buff[0] + "'.");
   }
 
   void appendFile(FileSystem fs, String path, String... args)
@@ -722,6 +795,8 @@ public class FileTester extends Configured implements Tool {
         "\ttimeappend <file> <ws> <dur>\n"+
         "\toverwrite <file> <pos> <data>\n"+
         "\tseekPerformance <file> <nr loops> <block size> <buffer size>\n"+
+        "\tPMUWrite <file>\n" +
+        "\tPMURead <file>\n" +
         "\twrite <file> <size(MB)> <bfsz(B)>\n"+ //set buffersize
         "\trandomwrite <file>\n"+ 
         "\tsnapshot <path> <interval_ms> <number>\n"+
@@ -748,6 +823,10 @@ public class FileTester extends Configured implements Tool {
       this.overwriteFile(fs,args[1],args[2],args[3]);
     else if("seekPerformance".equals(args[0]))
       this.seekPerformance(fs,args[1],args[2],args[3],args[4]);
+    else if("PMUWrite".equals(args[0]))
+      this.PMUWrite(fs,args[1]);
+    else if("PMURead".equals(args[0]))
+      this.PMURead(fs,args[1]);
     else if("write".equals(args[0]))
       this.write(fs,args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]));
     else if("randomwrite".equals(args[0]))

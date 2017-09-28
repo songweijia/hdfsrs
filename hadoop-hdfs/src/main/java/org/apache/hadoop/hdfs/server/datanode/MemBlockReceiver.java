@@ -66,7 +66,7 @@ class MemBlockReceiver extends BlockReceiver {
   private static final int MAX_BUFFER_SIZE = new Configuration().getInt(
       DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_KEY, DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_DEFAULT) + 4096;
   
-  /** the replica to write */
+  /** Replica to write */
   private MemDatasetManager.MemBlockMeta replicaInfo;
   private IRecordParser rp;
   
@@ -1032,7 +1032,6 @@ class MemBlockReceiver extends BlockReceiver {
 
               while (sRec != len) {
                 eRec = rp.ParseRecord(bufs[curBufIdx].array(), sRec, len);
-                // LOG.info("Record Time: " + rp.getUserTimestamp().toString());
                 hlcout.write(hlc, rp.getUserTimestamp(), offsetInBlock, bufs[curBufIdx].array(), sRec, eRec);
                 sRec = eRec;
               }
