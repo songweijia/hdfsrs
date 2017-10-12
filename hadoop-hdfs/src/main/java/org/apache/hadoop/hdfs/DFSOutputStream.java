@@ -126,7 +126,7 @@ import edu.cornell.cs.sa.HybridLogicalClock;
  * starts sending packets from the dataQueue.
 ****************************************************************/
 @InterfaceAudience.Private
-public class DFSOutputStream extends SeekableDFSOutputStream{
+public class DFSOutputStream extends SeekableDFSOutputStream {
   protected final DFSClient dfsClient;
   protected static final int MAX_PACKETS = 80; // each packet 64K, total 5MB
   protected Socket s;
@@ -157,6 +157,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   protected long initialFileSize = 0; // at time of file open
   // HDFSRS_RWAPI{
   protected long curFileSize = 0; // current file size.
+  protected long lastFlushSeqno = 0;
   // }HDFSRS_RWAPI
   protected final Progressable progress;
   protected final short blockReplication; // replication factor of file
@@ -1838,10 +1839,10 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     synchronized (dataQueue) {
       if (currentPacket == null) return;
       dataQueue.addLast(currentPacket);
-      if(PerformanceTraceSwitch.getPacketTimestamp()){
+      if (PerformanceTraceSwitch.getPacketTimestamp()) {
         System.out.println(currentPacket.seqno + " " +
-          (currentPacket.numChunks * this.checksum.getBytesPerChecksum()) +
-          " enq " + System.nanoTime());
+                           (currentPacket.numChunks * this.checksum.getBytesPerChecksum()) + " enq " +
+                           System.nanoTime());
       }
       lastQueuedSeqno = currentPacket.seqno;
       if (DFSClient.LOG.isDebugEnabled()) {
@@ -1897,7 +1898,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
                             this.checksum.getChecksumSize() + 
                             " but found to be " + checksum.length);
     }
-
     if (currentPacket == null) {
       currentPacket = new Packet(packetSize, chunksPerPacket, bytesCurBlock);
       if (DFSClient.LOG.isDebugEnabled()) {
@@ -1909,14 +1909,12 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
             ", bytesCurBlock=" + bytesCurBlock);
       }
     }
-
     currentPacket.writeChecksum(checksum, 0, cklen);
     currentPacket.writeData(b, offset, len);
     currentPacket.numChunks++;
     bytesCurBlock += len;
 
     // If packet is full, enqueue it for transmission
-    //
     if (currentPacket.numChunks == currentPacket.maxChunks || bytesCurBlock == blockSize) {
       if (DFSClient.LOG.isDebugEnabled()) {
         DFSClient.LOG.debug("DFSClient writeChunk packet full seqno=" +
@@ -1946,7 +1944,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
         currentPacket.syncBlock = shouldSyncBlock;
         waitAndQueueCurrentPacket();
         bytesCurBlock = 0;
-        lastFlushOffset = 0;
+        // HDFSRS_RWAPI{
+        // lastFlushOffset = 0;
+        // }HDFSRS_RWAPI
       }
       
       if (!appendChunk) {
@@ -2015,8 +2015,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     flushOrSync(isSync, syncFlags, syncFinalize, false);
   }
   
-  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, 
-      boolean syncFinalize, boolean blockFinalize/*HDFSRS_RWAPI: for seek flush*/)
+  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, boolean syncFinalize,
+                           boolean blockFinalize/*HDFSRS_RWAPI: for seek flush*/)
       throws IOException {
     dfsClient.checkOpen();
     checkClosed();
@@ -2030,22 +2030,19 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
          * After the flush, reset the bytesCurBlock back to its previous value,
          * any partial checksum chunk will be sent now and in next packet.
          */
-//        long saveOffset = bytesCurBlock;
+        // long saveOffset = bytesCurBlock;
         Packet oldCurrentPacket = currentPacket;
         // flush checksum buffer, but keep checksum buffer intact
-//        flushBuffer(true);
-// flush the buffer ...
+        // flushBuffer(true);
         flushBuffer(false);
         // bytesCurBlock potentially incremented if there was buffered data
 
-        if (DFSClient.LOG.isDebugEnabled()) {
-          DFSClient.LOG.debug(
-            "DFSClient flush() : saveOffset " + //saveOffset +  
-            " bytesCurBlock " + bytesCurBlock +
-            " lastFlushOffset " + lastFlushOffset);
-        }
+        // HDFSRS_RWAPI {
+        if (DFSClient.LOG.isDebugEnabled())
+          DFSClient.LOG.debug("DFSClient flush() : bytesCurBlock " + bytesCurBlock + " lastFlushSeqno " +
+                              lastFlushSeqno);
         // Flush only if we haven't already flushed till this offset.
-        if (lastFlushOffset != bytesCurBlock) {
+        /* if (lastFlushOffset != bytesCurBlock) {
           assert bytesCurBlock > lastFlushOffset;
           // record the valid offset of this flush
           lastFlushOffset = bytesCurBlock;
@@ -2053,16 +2050,30 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
             // Nothing to send right now,
             // but sync was requested.
             // Send an empty packet
-            currentPacket = new Packet(packetSize, chunksPerPacket,
-                bytesCurBlock);
+            currentPacket = new Packet(packetSize, chunksPerPacket, bytesCurBlock);
           }
-        } else {
+        } */
+        if (lastFlushSeqno != currentSeqno) {
+          if (lastFlushSeqno > currentSeqno)
+            throw new IOException("DFSClient flush: lastFlushSeqno " + lastFlushSeqno +
+                                  " is greater than currentSeqno " + currentSeqno);
+          if (isSync && currentPacket == null) {
+            // Nothing to send right now,
+            // and the block was partially written,
+            // and sync was requested.
+            // So send an empty sync packet.
+            currentPacket = new Packet(packetSize, chunksPerPacket, bytesCurBlock);
+          }
+        }  else {
           // We already flushed up to this offset.
           // This means that we haven't written anything since the last flush
           // (or the beginning of the file). Hence, we should not have any
           // packet queued prior to this call, since the last flush set
           // currentPacket = null.
           assert oldCurrentPacket == null : "Empty flush should not occur with a currentPacket";
+
+          if (currentPacket != null)
+            DFSClient.LOG.warn("Current Packet Dropped: " + currentPacket);
 
           if (isSync && bytesCurBlock > 0) {
             // Nothing to send right now,
@@ -2075,11 +2086,12 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
             currentPacket = null;
           }
         }
+
         if (currentPacket != null) {
           currentPacket.syncBlock = isSync;
           waitAndQueueCurrentPacket();
         }
-        // HDFSRS_RWAPI{
+        
         if (syncFinalize) {
           currentPacket = new Packet(0, 0, bytesCurBlock);
           currentPacket.lastPacketInBlock = blockFinalize;
@@ -2093,6 +2105,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
         //
 //        bytesCurBlock = saveOffset;
         toWaitFor = lastQueuedSeqno;
+        lastFlushSeqno = lastQueuedSeqno;
       } // end synchronized
 
       waitForAckedSeqno(toWaitFor);
@@ -2397,7 +2410,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
   //HDFSRS_WSAPI{
   protected long pos = 0; // file cursor
 
-  public long getPos(){
+  public long getPos() {
     return pos;
   }
 
@@ -2451,7 +2464,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
     this.pos = pos;
   }
 
-  private void updateFileSize(){
+  private void updateFileSize() {
     if (this.pos > this.curFileSize)
       this.curFileSize = this.pos;
   }
@@ -2466,11 +2479,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream{
 
   // update file cursor
   @Override
-  public synchronized void write(byte[] b, int off, int len)
-  throws IOException {
+  public synchronized void write(byte[] b, int off, int len) throws IOException {
     super.write(b, off, len);
-    this.pos+=len;
+    this.pos += len;
     updateFileSize();
   }
-  //}
 }

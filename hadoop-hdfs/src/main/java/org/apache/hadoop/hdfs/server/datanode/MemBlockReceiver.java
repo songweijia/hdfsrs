@@ -254,6 +254,8 @@ class MemBlockReceiver extends BlockReceiver {
   }
   
   void receiveNextPacket(DataInputStream in) throws IOException {
+    LOG.info("Receive next packet.\n");
+
     int payloadLen = in.readInt();
     if (payloadLen < Ints.BYTES) {
       // The "payload length" includes its own length. Therefore it
@@ -307,7 +309,8 @@ class MemBlockReceiver extends BlockReceiver {
     if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
         PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
       tsRecvd = System.nanoTime();
-    
+
+    LOG.info("MemBlockReceiver: Receiving one packet for block " + block + ": " + header); 
     if (LOG.isDebugEnabled()) {
       LOG.debug("MemBlockReceiver: Receiving one packet for block " + block + ": " + header);
     }
@@ -367,6 +370,7 @@ class MemBlockReceiver extends BlockReceiver {
           PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
         ibr = System.nanoTime();
       blockWriter.requestWrite(1 - icb, mhlc, offsetInBlock, len);
+      LOG.info("Block Writer finished.\n");
       if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
           PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
         iar = System.nanoTime();
@@ -394,6 +398,7 @@ class MemBlockReceiver extends BlockReceiver {
       System.out.println((tsRecvd - tsBase) + " " + (tsWritten-tsRecvd) + " " + len);
       System.out.flush();
     }
+    LOG.info("Last Packet in Block: " + lastPacketInBlock + ", Len: " + len);
     return lastPacketInBlock?-1:len;
   }
 
@@ -413,8 +418,8 @@ class MemBlockReceiver extends BlockReceiver {
         responder = new Daemon(datanode.threadGroup, new PacketResponder(replyOut, mirrIn, downstreams));
         responder.start(); // start thread to processes responses
       }
-      
-      //start blockWriter
+
+      // start blockWriter
       blockWriter = new BlockWriter((HLCOutputStream) this.out, this.buffers, this.replicaInfo, this.rp);
 
       this.packetRecvTime = 0;
@@ -456,9 +461,11 @@ class MemBlockReceiver extends BlockReceiver {
         throw ioe;
       }
     } finally {
-      if (blockWriter!=null) {
+      if (blockWriter != null) {
         try {
+          LOG.info("Shutdown Writer\n");
           blockWriter.shutdown();
+          LOG.info("Writer closed\n");
         } catch(Exception e) {
           //do nothing
         }
@@ -972,24 +979,25 @@ class MemBlockReceiver extends BlockReceiver {
     MemDatasetManager.MemBlockMeta replica;
     IRecordParser rp;
     
-    public BlockWriter(HLCOutputStream vcout, ByteBuffer[] bufs, MemDatasetManager.MemBlockMeta replicaInfo, IRecordParser rp){
+    public BlockWriter(HLCOutputStream vcout, ByteBuffer[] bufs, MemDatasetManager.MemBlockMeta replicaInfo, IRecordParser rp) {
       this.hlcout = vcout;
       this.bufs = bufs;
+      this.replica = replicaInfo;
+      this.rp = rp;
       isRunning = true;
       thread = new Thread(this);
       thread.start();
-      this.replica = replicaInfo;
-      this.rp = rp;
     }
     
     void requestWrite(int icb, HybridLogicalClock hlc, long offsetInBlock ,int len) {
       synchronized(bufs) {
-        if (this.curBufIdx != -1)
+        if (this.curBufIdx != -1) {
           try {
             bufs.wait();
           } catch(InterruptedException e) {
             //do nothing
           }
+        }
         this.curBufIdx = icb;
         this.hlc = hlc;
         this.offsetInBlock = offsetInBlock;

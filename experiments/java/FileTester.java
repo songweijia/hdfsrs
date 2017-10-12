@@ -189,13 +189,13 @@ public class FileTester extends Configured implements Tool {
     int nread;
     byte[] buff = new byte[buffsize];
 
-    fsis = fs.open(new Path(path), 4096, 999L, true);
+    fsis = fs.open(new Path(path), 4096, 999999L, true);
     nread = fsis.read(buff);
     fsis.close();
     if (nread != -1)
       throw new Exception("Should have read -1. Instead got " + nread + " bytes.");
 
-    fsis = fs.open(new Path(path), 4096, 2000L, true);
+    fsis = fs.open(new Path(path), 4096, 2000000L, true);
     nread = fsis.read(buff);
     fsis.close();
     if (nread != buffsize)
@@ -203,13 +203,28 @@ public class FileTester extends Configured implements Tool {
     if (buff[0] != 'a')
       throw new Exception("Should have read 'a'. Instead got '" + buff[0] + "'.");
 
-    fsis = fs.open(new Path(path), 4096, 4000L, true);
+    fsis = fs.open(new Path(path), 4096, 4000000L, true);
     nread = fsis.read(buff);
     fsis.close();
     if (nread != buffsize)
       throw new Exception("Should have read 0 bytes. Instead got " + nread + " bytes.");
     if (buff[0] != 'b')
       throw new Exception("Should have read 'b'. Instead got '" + buff[0] + "'.");
+  }
+
+  void readFromTimestamp(FileSystem fs, String path, String... args) throws Exception {
+    long ts = Long.parseLong(args[0]);
+    FSDataInputStream fsis;
+    int nread;
+    byte[] buff = new byte[65536];
+
+    fsis = fs.open(new Path(path), 4096, ts, true);
+    nread = fsis.read(buff);
+    fsis.close();
+    System.out.println("Bytes read: " + nread);
+    for (int i = 0; i < nread; i++)
+      System.out.print(buff[i] + " ");
+    System.out.println();
   }
 
   void appendFile(FileSystem fs, String path, String... args)
@@ -797,6 +812,7 @@ public class FileTester extends Configured implements Tool {
         "\tseekPerformance <file> <nr loops> <block size> <buffer size>\n"+
         "\tPMUWrite <file>\n" +
         "\tPMURead <file>\n" +
+        "\treadFromTimestamp <file> <ts>\n" +
         "\twrite <file> <size(MB)> <bfsz(B)>\n"+ //set buffersize
         "\trandomwrite <file>\n"+ 
         "\tsnapshot <path> <interval_ms> <number>\n"+
@@ -827,6 +843,8 @@ public class FileTester extends Configured implements Tool {
       this.PMUWrite(fs,args[1]);
     else if("PMURead".equals(args[0]))
       this.PMURead(fs,args[1]);
+    else if("readFromTimestamp".equals(args[0]))
+      this.readFromTimestamp(fs,args[1],args[2]);
     else if("write".equals(args[0]))
       this.write(fs,args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]));
     else if("randomwrite".equals(args[0]))

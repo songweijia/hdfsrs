@@ -71,8 +71,8 @@ public class HdfsConstants {
   public static final int MAX_PATH_DEPTH = 1000;
 
   // TODO should be conf injected?
-  // private static final int DEFAULT_DATA_SOCKET_SIZE = 128 * 1024;
-  private static final int DEFAULT_DATA_SOCKET_SIZE = 0; //using cubic
+  private static final int DEFAULT_DATA_SOCKET_SIZE = 128 * 1024;
+  // private static final int DEFAULT_DATA_SOCKET_SIZE = 0; //using cubic
   public static int getDataSocketSize(){
     return DEFAULT_DATA_SOCKET_SIZE;
   }

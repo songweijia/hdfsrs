@@ -32,6 +32,19 @@ public class DataCollector extends Configured implements Tool
     }
   }
 
+  private static int intFromArray(byte[] payload) {
+    ByteBuffer buffer = ByteBuffer.wrap(payload);
+
+    buffer.order(ByteOrder.BIG_ENDIAN);
+    return buffer.getInt();
+  }
+
+  private static byte[] fillZeros(byte[] payload, int offset, int length) {
+    for (int i = 0; i < length; i++)
+      payload[offset+i] = 0;
+    return payload;
+  }
+
   public class Worker extends Thread
   {
     private FileSystem fs;
@@ -75,10 +88,13 @@ public class DataCollector extends Configured implements Tool
       while (true) {
         try {
           input.read(byteArray, 0, 4);
-          datasize = byteArray[2]*256 + byteArray[3];
+          datasize = intFromArray(fillZeros(Arrays.copyOfRange(byteArray,0,4),0,2));
           input.read(byteArray, 4, datasize-4);
-          os.write(byteArray, 0, datasize);
+          for (int i = 0; i < datasize; i++)
+            System.out.print(byteArray[i] + " ");
+          System.out.println();
           os.seek(0);
+          os.write(byteArray, 0, datasize);
         } catch (IOException e) {
           System.out.println(e);
           try {

@@ -595,9 +595,16 @@ class DataXceiver extends Receiver implements Runnable {
 
     // check single target for transfer-RBW/Finalized 
     if (isTransfer && targets.length > 0) {
-      throw new IOException(stage + " does not support multiple targets "
-          + Arrays.asList(targets));
+      throw new IOException(stage + " does not support multiple targets " + Arrays.asList(targets));
     }
+
+    // REMOVE
+    LOG.info("opWriteBlock: stage=" + stage + ", clientname=" + clientname + "\n  block  =" + block + ", newGs=" +
+             latestGenerationStamp + ", bytesRcvd=[" + minBytesRcvd + ", " + maxBytesRcvd + "]" + "\n  targets=" +
+             Arrays.asList(targets) + "; pipelineSize=" + pipelineSize + ", srcDataNode=" + srcDataNode);
+    LOG.info("isDatanode=" + isDatanode + ", isClient=" + isClient + ", isTransfer=" + isTransfer);
+    LOG.info("writeBlock receive buf size " + peer.getReceiveBufferSize() + " tcp no delay " + peer.getTcpNoDelay());
+
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("opWriteBlock: stage=" + stage + ", clientname=" + clientname 
@@ -618,16 +625,13 @@ class DataXceiver extends Receiver implements Runnable {
     // make a copy here.
     final ExtendedBlock originalBlock = new ExtendedBlock(block);
     block.setNumBytes(dataXceiverServer.estimateBlockSize);
-    LOG.info("Receiving " + block + " src: " + remoteAddress + " dest: "
-        + localAddress);
+    LOG.info("Receiving " + block + " src: " + remoteAddress + " dest: " + localAddress);
 
-    // reply to upstream datanode or client 
-    final DataOutputStream replyOut = new DataOutputStream(
-        new BufferedOutputStream(
-            getOutputStream(),
-            HdfsConstants.SMALL_BUFFER_SIZE));
-    checkAccess(replyOut, isClient, block, blockToken,
-        Op.WRITE_BLOCK, BlockTokenSecretManager.AccessMode.WRITE);
+    // reply to upstream datanode or client
+    final DataOutputStream replyOut = new DataOutputStream(new BufferedOutputStream(getOutputStream(),
+                                                           HdfsConstants.SMALL_BUFFER_SIZE));
+
+    checkAccess(replyOut, isClient, block, blockToken, Op.WRITE_BLOCK, BlockTokenSecretManager.AccessMode.WRITE);
 
     DataOutputStream mirrorOut = null;  // stream to next target
     DataInputStream mirrorIn = null;    // reply from next target
@@ -638,38 +642,35 @@ class DataXceiver extends Receiver implements Runnable {
     Status mirrorInStatus = SUCCESS;
     final String storageUuid;
     IRecordParser rp = null;
-    try{
+
+    try {
       rp = RecordParserFactory.getRecordParser(suffix);
-      LOG.debug("writeBlock: suffix="+suffix+",rp = "+rp.getClass().getName());
-    }catch(Exception e){
-      LOG.warn("Cannot instantiate RecordParser by suffix:"+suffix+", falling back to default");
-      try{rp = RecordParserFactory.getRecordParser(null);}catch(Exception ex){
+      LOG.debug("writeBlock: suffix = " + suffix + ", rp = " + rp.getClass().getName());
+    } catch(Exception e) {
+      LOG.warn("Cannot instantiate RecordParser by suffix:" + suffix + ", falling back to default");
+      try {
+        rp = RecordParserFactory.getRecordParser(null);
+      } catch (Exception ex) {
         //do nothing
       }
     }
     try {
-      if (isDatanode || 
-          stage != BlockConstructionStage.PIPELINE_CLOSE_RECOVERY) {
-        // open a block receiver
+      if (isDatanode || stage != BlockConstructionStage.PIPELINE_CLOSE_RECOVERY) {
+        // open a block receive
         if (datanode.isInMemoryStorage()) {
-          blockReceiver = new MemBlockReceiver(block, in, 
-              peer.getRemoteAddressString(),
-              peer.getLocalAddressString(),
-              stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
-              clientname, srcDataNode, datanode, requestedChecksum,
-              offset/*HDFSRS_RWAPI*/, mhlc/*HDFSRS_VC*/, rp);
+          blockReceiver = new MemBlockReceiver(block, in, peer.getRemoteAddressString(), peer.getLocalAddressString(),
+                                               stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd, clientname,
+                                               srcDataNode, datanode, requestedChecksum, offset/*HDFSRS_RWAPI*/,
+                                               mhlc/*HDFSRS_VC*/, rp);
         } else {
-          blockReceiver = new BlockReceiver(block, in, 
-              peer.getRemoteAddressString(),
-              peer.getLocalAddressString(),
-              stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd,
-              clientname, srcDataNode, datanode, requestedChecksum,
-              cachingStrategy,offset/*HDFSRS_RWAPI*/,mhlc/*HDFSRS_VC*/);
+          blockReceiver = new BlockReceiver(block, in, peer.getRemoteAddressString(), peer.getLocalAddressString(),
+                                            stage, latestGenerationStamp, minBytesRcvd, maxBytesRcvd, clientname,
+                                            srcDataNode, datanode, requestedChecksum, cachingStrategy,
+                                            offset/*HDFSRS_RWAPI*/, mhlc/*HDFSRS_VC*/);
         }
         storageUuid = blockReceiver.getStorageUuid();
       } else {
-        storageUuid = datanode.data.recoverClose(
-            block, latestGenerationStamp, minBytesRcvd);
+        storageUuid = datanode.data.recoverClose(block, latestGenerationStamp, minBytesRcvd);
       }
 
       //
@@ -679,46 +680,40 @@ class DataXceiver extends Receiver implements Runnable {
         InetSocketAddress mirrorTarget = null;
         // Connect to backup machine
         mirrorNode = targets[0].getXferAddr(connectToDnViaHostname);
+        // REMOVE
+        LOG.info("Connecting to datanode " + mirrorNode);
         if (LOG.isDebugEnabled()) {
           LOG.debug("Connecting to datanode " + mirrorNode);
         }
         mirrorTarget = NetUtils.createSocketAddr(mirrorNode);
         mirrorSock = datanode.newSocket();
         try {
-          int timeoutValue = dnConf.socketTimeout
-              + (HdfsServerConstants.READ_TIMEOUT_EXTENSION * targets.length);
-          int writeTimeout = dnConf.socketWriteTimeout + 
-                      (HdfsServerConstants.WRITE_TIMEOUT_EXTENSION * targets.length);
+          int timeoutValue = dnConf.socketTimeout + (HdfsServerConstants.READ_TIMEOUT_EXTENSION * targets.length);
+          int writeTimeout = dnConf.socketWriteTimeout + (HdfsServerConstants.WRITE_TIMEOUT_EXTENSION * targets.length);
+
           NetUtils.connect(mirrorSock, mirrorTarget, timeoutValue);
           mirrorSock.setSoTimeout(timeoutValue);
-          if(HdfsConstants.getDataSocketSize() > 0)
+          if (HdfsConstants.getDataSocketSize() > 0)
             mirrorSock.setSendBufferSize(HdfsConstants.getDataSocketSize());
           
-          OutputStream unbufMirrorOut = NetUtils.getOutputStream(mirrorSock,
-              writeTimeout);
+          OutputStream unbufMirrorOut = NetUtils.getOutputStream(mirrorSock,writeTimeout);
           InputStream unbufMirrorIn = NetUtils.getInputStream(mirrorSock);
-          if (dnConf.encryptDataTransfer &&
-              !dnConf.trustedChannelResolver.isTrusted(mirrorSock.getInetAddress())) {
-            IOStreamPair encryptedStreams =
-                DataTransferEncryptor.getEncryptedStreams(
+
+          if (dnConf.encryptDataTransfer && !dnConf.trustedChannelResolver.isTrusted(mirrorSock.getInetAddress())) {
+            IOStreamPair encryptedStreams = DataTransferEncryptor.getEncryptedStreams(
                     unbufMirrorOut, unbufMirrorIn,
-                    datanode.blockPoolTokenSecretManager
-                        .generateDataEncryptionKey(block.getBlockPoolId()));
-            
+                    datanode.blockPoolTokenSecretManager.generateDataEncryptionKey(block.getBlockPoolId()));
+
             unbufMirrorOut = encryptedStreams.out;
             unbufMirrorIn = encryptedStreams.in;
           }
-          mirrorOut = new DataOutputStream(new BufferedOutputStream(unbufMirrorOut,
-              HdfsConstants.SMALL_BUFFER_SIZE));
+          mirrorOut = new DataOutputStream(new BufferedOutputStream(unbufMirrorOut, HdfsConstants.SMALL_BUFFER_SIZE));
           mirrorIn = new DataInputStream(unbufMirrorIn);
 
-          new Sender(mirrorOut).writeBlock(originalBlock, blockToken,
-              clientname, targets, srcDataNode, stage, pipelineSize,
-              minBytesRcvd, maxBytesRcvd, latestGenerationStamp, requestedChecksum,
-              cachingStrategy,offset/*HDFSRS_RWAPI:add offset*/,
-              mhlc/*HDFSRS_VC: we just transfer it to downstream, but we don't have down stream so far. */,
-              suffix); 
-
+          new Sender(mirrorOut).writeBlock(originalBlock, blockToken, clientname, targets, srcDataNode, stage,
+                                           pipelineSize, minBytesRcvd, maxBytesRcvd, latestGenerationStamp,
+                                           requestedChecksum, cachingStrategy, offset/*HDFSRS_RWAPI:add offset*/,
+                                           mhlc /*HDFSRS_VC: we just transfer it to downstream*/, suffix);
           mirrorOut.flush();
 
           // read connect ack (only for clients, not for replication req)
@@ -728,10 +723,8 @@ class DataXceiver extends Receiver implements Runnable {
             mirrorInStatus = connectAck.getStatus();
             firstBadLink = connectAck.getFirstBadLink();
             if (LOG.isDebugEnabled() || mirrorInStatus != SUCCESS) {
-              LOG.info("Datanode " + targets.length +
-                       " got response for connect ack " +
-                       " from downstream datanode with firstbadlink as " +
-                       firstBadLink);
+              LOG.info("Datanode " + targets.length + " got response for connect ack from downstream datanode with " +
+                       "firstbadlink as " + firstBadLink);
             }
           }
 
@@ -752,12 +745,10 @@ class DataXceiver extends Receiver implements Runnable {
           IOUtils.closeSocket(mirrorSock);
           mirrorSock = null;
           if (isClient) {
-            LOG.error(datanode + ":Exception transfering block " +
-                      block + " to mirror " + mirrorNode + ": " + e);
+            LOG.error(datanode + ":Exception transfering block " + block + " to mirror " + mirrorNode + ": " + e);
             throw e;
           } else {
-            LOG.info(datanode + ":Exception transfering " +
-                     block + " to mirror " + mirrorNode +
+            LOG.info(datanode + ":Exception transfering " + block + " to mirror " + mirrorNode +
                      "- continuing without the mirror", e);
           }
         }
@@ -781,8 +772,7 @@ class DataXceiver extends Receiver implements Runnable {
       // receive the block and mirror to the next target
       if (blockReceiver != null) {
         String mirrorAddr = (mirrorSock == null) ? null : mirrorNode;
-        blockReceiver.receiveBlock(mirrorOut, mirrorIn, replyOut,
-            mirrorAddr, null, targets);
+        blockReceiver.receiveBlock(mirrorOut, mirrorIn, replyOut, mirrorAddr, null, targets);
 
         // send close-ack for transfer-RBW/Finalized 
         if (isTransfer) {
@@ -794,8 +784,7 @@ class DataXceiver extends Receiver implements Runnable {
       }
 
       // update its generation stamp
-      if (isClient && 
-          stage == BlockConstructionStage.PIPELINE_CLOSE_RECOVERY) {
+      if (isClient && stage == BlockConstructionStage.PIPELINE_CLOSE_RECOVERY) {
         block.setGenerationStamp(latestGenerationStamp);
         block.setNumBytes(minBytesRcvd);
       }
@@ -803,14 +792,11 @@ class DataXceiver extends Receiver implements Runnable {
       // if this write is for a replication request or recovering
       // a failed close for client, then confirm block. For other client-writes,
       // the block is finalized in the PacketResponder.
-      if (isDatanode ||
-          stage == BlockConstructionStage.PIPELINE_CLOSE_RECOVERY) {
+      if (isDatanode || stage == BlockConstructionStage.PIPELINE_CLOSE_RECOVERY) {
         datanode.closeBlock(block, DataNode.EMPTY_DEL_HINT, storageUuid);
-        LOG.info("Received " + block + " src: " + remoteAddress + " dest: "
-            + localAddress + " of size " + block.getNumBytes());
+        LOG.info("Received " + block + " src: " + remoteAddress + " dest: " + localAddress + " of size " +
+                 block.getNumBytes());
       }
-
-      
     } catch (IOException ioe) {
       LOG.info("opWriteBlock " + block + " received exception " + ioe);
       throw ioe;

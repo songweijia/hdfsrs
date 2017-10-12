@@ -14,12 +14,11 @@ public class RecordParserFactory {
     rpMap.put("pmu",PMURecordParser.class.getName());
   }
 
-  /*
-   * create an IRecordParser object by suffix key.
-   * 
+  /**
+   * Create an IRecordParser object by suffix key.
    */
-  public static IRecordParser getRecordParser(String suffix)throws Exception{
+  public static IRecordParser getRecordParser(String suffix) throws Exception {
     ClassLoader cl = RecordParserFactory.class.getClassLoader();
-    return (IRecordParser)(cl.loadClass(rpMap.get(suffix)).newInstance());
+    return (IRecordParser) (cl.loadClass(rpMap.get(suffix)).newInstance());
   }
 }
