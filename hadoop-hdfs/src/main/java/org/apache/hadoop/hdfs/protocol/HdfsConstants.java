@@ -71,8 +71,8 @@ public class HdfsConstants {
   public static final int MAX_PATH_DEPTH = 1000;
 
   // TODO should be conf injected?
-  private static final int DEFAULT_DATA_SOCKET_SIZE = 128 * 1024;
-  // private static final int DEFAULT_DATA_SOCKET_SIZE = 0; //using cubic
+  // private static final int DEFAULT_DATA_SOCKET_SIZE = 128 * 1024;
+  private static final int DEFAULT_DATA_SOCKET_SIZE = 0; //using cubic
   public static int getDataSocketSize(){
     return DEFAULT_DATA_SOCKET_SIZE;
   }
@@ -80,9 +80,7 @@ public class HdfsConstants {
       DFSConfigKeys.IO_FILE_BUFFER_SIZE_KEY,
       DFSConfigKeys.IO_FILE_BUFFER_SIZE_DEFAULT);
   // Used for writing header etc.
-  public static final int SMALL_BUFFER_SIZE = Math.min(IO_FILE_BUFFER_SIZE / 2,
-      512);
-
+  public static final int SMALL_BUFFER_SIZE = Math.min(IO_FILE_BUFFER_SIZE / 2, 512);
   public static final int BYTES_IN_INTEGER = Integer.SIZE / Byte.SIZE;
 
   // SafeMode actions

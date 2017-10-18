@@ -16,6 +16,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import org.apache.hadoop.hdfs.client.HdfsDataInputStream;
 
 public class DataCollector extends Configured implements Tool

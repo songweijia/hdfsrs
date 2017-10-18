@@ -34,6 +34,7 @@ import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.datatransfer.BlockConstructionStage;
 import org.apache.hadoop.hdfs.protocol.datatransfer.PacketHeader;
+import org.apache.hadoop.hdfs.protocol.datatransfer.PacketReceiver;
 import org.apache.hadoop.hdfs.protocol.datatransfer.PipelineAck;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.HLCOutputStream;
@@ -63,8 +64,7 @@ import edu.cornell.cs.perf.PerformanceTraceSwitch;
  **/
 class MemBlockReceiver extends BlockReceiver {
   private static final List<ByteBuffer> bufferPool = new LinkedList<ByteBuffer>();
-  private static final int MAX_BUFFER_SIZE = new Configuration().getInt(
-      DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_KEY, DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_DEFAULT) + 4096;
+  // private static final int MAX_BUFFER_SIZE = new Configuration().getInt(DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_KEY, DFSConfigKeys.DFS_CLIENT_WRITE_PACKET_SIZE_DEFAULT) + 4096;
   
   /** Replica to write */
   private MemDatasetManager.MemBlockMeta replicaInfo;
@@ -72,20 +72,14 @@ class MemBlockReceiver extends BlockReceiver {
   
   BlockWriter blockWriter = null;
 
-  MemBlockReceiver(final ExtendedBlock block, final DataInputStream in,
-      final String inAddr, final String myAddr,
-      final BlockConstructionStage stage, 
-      final long newGs, final long minBytesRcvd, final long maxBytesRcvd, 
-      final String clientname, final DatanodeInfo srcDataNode,
-      final DataNode datanode, DataChecksum requestedChecksum,
-      long offset/*HDFSRS_RWAPI*/,HybridLogicalClock mhlc/*HDFSRS_HLC*/,
-      IRecordParser rp) throws IOException {
-    
-    super(block, in, inAddr, myAddr, stage,clientname, srcDataNode, datanode, requestedChecksum);
-    // Record Parser:
+  MemBlockReceiver(final ExtendedBlock block, final DataInputStream in, final String inAddr, final String myAddr,
+                   final BlockConstructionStage stage, final long newGs, final long minBytesRcvd,
+                   final long maxBytesRcvd, final String clientname, final DatanodeInfo srcDataNode,
+                   final DataNode datanode, DataChecksum requestedChecksum, long offset/*HDFSRS_RWAPI*/,
+                   HybridLogicalClock mhlc/*HDFSRS_HLC*/, IRecordParser rp) throws IOException {
+    super(block, in, inAddr, myAddr, stage, clientname, srcDataNode, datanode, requestedChecksum);
     this.rp = (rp == null) ? new DefaultRecordParser() : rp;
-    // Allocate a buffer from pool:
-    this.getBuf();
+    // this.getBuf();
   
     //
     // Open local disk out
@@ -96,12 +90,11 @@ class MemBlockReceiver extends BlockReceiver {
       switch (stage) {
       case PIPELINE_SETUP_CREATE:
         replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.createRbw(block,mhlc);
-        datanode.notifyNamenodeReceivingBlock(
-            block, replicaInfo.getStorageUuid());
+        datanode.notifyNamenodeReceivingBlock(block, replicaInfo.getStorageUuid());
         break;
       case PIPELINE_SETUP_STREAMING_RECOVERY:
         replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.recoverRbw(
-            block, newGs, minBytesRcvd, maxBytesRcvd);
+                block, newGs, minBytesRcvd, maxBytesRcvd);
         block.setGenerationStamp(newGs);
         break;
       case PIPELINE_SETUP_APPEND:
@@ -130,8 +123,8 @@ class MemBlockReceiver extends BlockReceiver {
         // this is a transfer destination
         replicaInfo = (MemDatasetManager.MemBlockMeta)datanode.data.createTemporary(block,mhlc);
         break;
-      default: throw new IOException("Unsupported stage " + stage + 
-            " while receiving block " + block + " from " + inAddr);
+      default: throw new IOException("Unsupported stage " + stage + " while receiving block " + block +
+                                     " from " + inAddr);
       }
     }
     
@@ -154,7 +147,8 @@ class MemBlockReceiver extends BlockReceiver {
    */
   @Override
   public void close() throws IOException {
-    if(bClosed)return;
+    if (bClosed)
+      return;
     if (packetReceiver != null) {
       packetReceiver.close();
     }
@@ -181,15 +175,14 @@ class MemBlockReceiver extends BlockReceiver {
       }
     } catch (IOException e) {
       ioe = e;
-    }
-    finally{
+    } finally {
       IOUtils.closeStream(out);
     }
     if (measuredFlushTime) {
       datanode.metrics.addFlushNanos(flushTotalNanos);
     }
     
-    if(ioe != null) {
+    if (ioe != null) {
       throw ioe;
     }
     
@@ -223,14 +216,14 @@ class MemBlockReceiver extends BlockReceiver {
   private ByteBuffer buffers[] = new ByteBuffer[2];
   private long packetRecvTime;
 
+  /*
   private void getBuf() {
-    // Realloc the buffer if this packet is longer than the previous
-    // one.
-    for(int i=0;i<2;i++){
+    // Realloc the buffer if this packet is longer than the previous one.
+    for (int i = 0; i < 2; i++) {
       if (buffers[i] == null) {
         ByteBuffer newBuf;
-        synchronized(bufferPool){
-          if(bufferPool.size()==0)
+        synchronized(bufferPool) {
+          if (bufferPool.size() == 0)
             newBuf = null;
           else
             newBuf = bufferPool.remove(0);
@@ -240,10 +233,10 @@ class MemBlockReceiver extends BlockReceiver {
         buffers[i] = newBuf;
       }
     }
-  }
+  }*/
   
   private void returnDataBufToPool() {
-    for(int i=0;i<2;i++){
+    for (int i = 0; i < 2; i++) {
       if (buffers[i] != null) {
         synchronized(bufferPool){
           bufferPool.add(buffers[i]);
@@ -253,26 +246,26 @@ class MemBlockReceiver extends BlockReceiver {
     }
   }
   
+  /*
   void receiveNextPacket(DataInputStream in) throws IOException {
     LOG.info("Receive next packet.\n");
-
     int payloadLen = in.readInt();
+    
     if (payloadLen < Ints.BYTES) {
       // The "payload length" includes its own length. Therefore it
       // should never be less than 4 bytes
-      throw new IOException("Invalid payload length " +
-          payloadLen);
+      throw new IOException("Invalid payload length " + payloadLen);
     }
     
     int dataPlusChecksumLen = payloadLen - Ints.BYTES;
     int headerLen = in.readShort();
+
     if (headerLen < 0) {
       throw new IOException("Invalid header length " + headerLen);
     }
     
     if (LOG.isTraceEnabled()) {
-      LOG.trace("readNextPacket: dataPlusChecksumLen = " + dataPlusChecksumLen +
-          " headerLen = " + headerLen);
+      LOG.trace("readNextPacket: dataPlusChecksumLen = " + dataPlusChecksumLen + " headerLen = " + headerLen);
     }
     
     byte[] headerBuf = new byte[headerLen];
@@ -291,6 +284,7 @@ class MemBlockReceiver extends BlockReceiver {
     IOUtils.readFully(in, buffers[icb].array(), 0, header.getDataLen());
     this.packetRecvTime += now() - startTime;
   }
+  */
   
   /** 
    * Receives and processes a packet. It can contain many chunks.
@@ -299,35 +293,34 @@ class MemBlockReceiver extends BlockReceiver {
   @SuppressWarnings("unused")
   int receivePacket() throws IOException {
     long tsBase=0l,tsRecvd=0l,tsWritten=0l,iar=0l,ibr=01,t1=0l,t2=0l,t3=0l;
+    long startTime;
     
-    if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
-        PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
+    if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
       tsBase = System.nanoTime();
-    // read the next packet
-    receiveNextPacket(in);
-
-    if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
-        PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
+    startTime = now();
+    packetReceiver.receiveNextPacket(in);
+    header = packetReceiver.getHeader();
+    buffers[icb] = packetReceiver.getDataSlice();
+    this.packetRecvTime += now() - startTime;
+    if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
       tsRecvd = System.nanoTime();
-
-    LOG.info("MemBlockReceiver: Receiving one packet for block " + block + ": " + header); 
+    LOG.info("MemBlockReceiver: Receiving one packet for block " + block + ": " + header + " time elapsed: " +
+             this.packetRecvTime); 
     if (LOG.isDebugEnabled()) {
       LOG.debug("MemBlockReceiver: Receiving one packet for block " + block + ": " + header);
     }
 
     // Sanity check the header
-/* dont do sanity check
+    /*
     if (header.getOffsetInBlock() > replicaInfo.getNumBytes()) {
-      throw new IOException("Received an out-of-sequence packet for " + block + 
-          "from " + inAddr + " at offset " + header.getOffsetInBlock() +
-          ". Expecting packet starting at " + replicaInfo.getNumBytes());
+      throw new IOException("Received an out-of-sequence packet for " + block + " from " + inAddr + " at offset " +
+                            header.getOffsetInBlock() + ". Expecting packet starting at " + replicaInfo.getNumBytes());
     }
-*/
+    */
+
     if (header.getDataLen() < 0) {
-      throw new IOException("Got wrong length during writeBlock(" + block + 
-                            ") from " + inAddr + " at offset " + 
-                            header.getOffsetInBlock() + ": " +
-                            header.getDataLen()); 
+      throw new IOException("Got wrong length during writeBlock(" + block + ") from " + inAddr + " at offset " +
+                            header.getOffsetInBlock() + ": " + header.getDataLen()); 
     }
 
     long offsetInBlock = header.getOffsetInBlock();
@@ -341,21 +334,36 @@ class MemBlockReceiver extends BlockReceiver {
       this.syncOnClose = false;
     }
 
+    HybridLogicalClock mhlc = new HybridLogicalClock(header.getMhlc());
+
     // update received bytes
-/*    long firstByteInBlock = offsetInBlock;
+    /*
+    long firstByteInBlock = offsetInBlock;
+    
     offsetInBlock += len;
     if (replicaInfo.getNumBytes() < offsetInBlock) {
       replicaInfo.setNumBytes(offsetInBlock);
     }
-  */  
+    */
+
     // put in queue for pending acks, unless sync was requested
-//    if (responder != null && !syncBlock && !shouldVerifyChecksum()) {
-//      ((PacketResponder) responder.getRunnable()).enqueue(seqno,
-//          lastPacketInBlock, offsetInBlock, Status.SUCCESS);
-//    }
-    HybridLogicalClock mhlc = new HybridLogicalClock(header.getMhlc());
-    
+    if (responder != null && !syncBlock) {
+        ((PacketResponder) responder.getRunnable()).enqueue(seqno, lastPacketInBlock, offsetInBlock, Status.SUCCESS,
+                                                            mhlc);
+    }
+
+    // First write the packet to the mirror:
+    if (mirrorOut != null && !mirrorError) {
+      try {
+        packetReceiver.mirrorPacketTo(mirrorOut);
+        mirrorOut.flush();
+      } catch (IOException e) {
+        super.handleMirrorOutError(e);
+      }
+    }
+
     if (lastPacketInBlock || len == 0) {
+      LOG.info("Receiving an empty packet or the end of the block " + block);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Receiving an empty packet or the end of the block " + block);
       }
@@ -364,22 +372,20 @@ class MemBlockReceiver extends BlockReceiver {
         flushOrSync(true);
       }
     } else {
-      // by this point, the data in the buffer uses the disk checksum
-      icb = 1 - icb; // shift
+      icb = 1-icb; // shift
       if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
           PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
         ibr = System.nanoTime();
-      blockWriter.requestWrite(1 - icb, mhlc, offsetInBlock, len);
-      LOG.info("Block Writer finished.\n");
+      blockWriter.requestWrite(1-icb, mhlc, offsetInBlock, len);
       if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
           PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
         iar = System.nanoTime();
       datanode.metrics.incrBytesWritten(len);
     }
 
-    if (responder != null) {
+    if (responder != null && syncBlock) {
       ((PacketResponder) responder.getRunnable()).enqueue(seqno, lastPacketInBlock, offsetInBlock, Status.SUCCESS,
-                                                          mhlc);
+                                                          null);
     }
 
     if (throttler != null) { // throttle I/O
@@ -411,8 +417,11 @@ class MemBlockReceiver extends BlockReceiver {
 
     syncOnClose = datanode.getDnConf().syncOnClose;
     boolean responderClosed = false;
+    mirrorOut = mirrOut;
+    mirrorAddr = mirrAddr;
     throttler = throttlerArg;
 
+    LOG.info("MemBlockReceiver::receiveBlock: Mirror Address := " + mirrAddr);
     try {
       if (isClient && !isTransfer) {
         responder = new Daemon(datanode.threadGroup, new PacketResponder(replyOut, mirrIn, downstreams));
@@ -552,14 +561,13 @@ class MemBlockReceiver extends BlockReceiver {
       return myString;
     }
 
-    PacketResponder(final DataOutputStream upstreamOut,
-        final DataInputStream downstreamIn, final DatanodeInfo[] downstreams) {
+    PacketResponder(final DataOutputStream upstreamOut, final DataInputStream downstreamIn,
+                    final DatanodeInfo[] downstreams) {
       this.downstreamIn = downstreamIn;
       this.upstreamOut = upstreamOut;
-
       this.type = downstreams == null? PacketResponderType.NON_PIPELINE
-          : downstreams.length == 0? PacketResponderType.LAST_IN_PIPELINE
-              : PacketResponderType.HAS_DOWNSTREAM_IN_PIPELINE;
+                : downstreams.length == 0? PacketResponderType.LAST_IN_PIPELINE
+                : PacketResponderType.HAS_DOWNSTREAM_IN_PIPELINE;
 
       final StringBuilder b = new StringBuilder(getClass().getSimpleName())
           .append(": ").append(block).append(", type=").append(type);
@@ -568,6 +576,7 @@ class MemBlockReceiver extends BlockReceiver {
             .append(":").append(Arrays.asList(downstreams));
       }
       this.myString = b.toString();
+      LOG.info("MemBlockReceiver: new PacketResponder " + this.myString);
     }
 
     private boolean isRunning() {
@@ -608,8 +617,7 @@ class MemBlockReceiver extends BlockReceiver {
     void sendOOBResponse(final Status ackStatus) throws IOException,
         InterruptedException {
       if (!running) {
-        LOG.info("Cannot send OOB response " + ackStatus + 
-            ". Responder not running.");
+        LOG.info("Cannot send OOB response " + ackStatus + ". Responder not running.");
         return;
       }
 
@@ -618,8 +626,7 @@ class MemBlockReceiver extends BlockReceiver {
           wait(PipelineAck.getOOBTimeout(ackStatus));
           // Didn't get my turn in time. Give up.
           if (sending) {
-            throw new IOException("Could not send OOB reponse in time: "
-                + ackStatus);
+            throw new IOException("Could not send OOB reponse in time: " + ackStatus);
           }
         }
         sending = true;
@@ -644,6 +651,8 @@ class MemBlockReceiver extends BlockReceiver {
     Packet waitForAckHead(long seqno) throws InterruptedException {
       synchronized(ackQueue) {
         while (isRunning() && ackQueue.size() == 0) {
+          // TODO: Remove.
+          LOG.info(myString + ": seqno=" + seqno + " waiting for local datanode to finish write.");
           if (LOG.isDebugEnabled()) {
             LOG.debug(myString + ": seqno=" + seqno +
                       " waiting for local datanode to finish write.");
@@ -716,32 +725,24 @@ class MemBlockReceiver extends BlockReceiver {
               }
               seqno = ack.getSeqno();
             }
-            if (seqno != PipelineAck.UNKOWN_SEQNO
-                || type == PacketResponderType.LAST_IN_PIPELINE) {
+            if (seqno != PipelineAck.UNKOWN_SEQNO || type == PacketResponderType.LAST_IN_PIPELINE) {
               pkt = waitForAckHead(seqno);
               if (!isRunning()) {
                 break;
               }
               expected = pkt.seqno;
-              if (type == PacketResponderType.HAS_DOWNSTREAM_IN_PIPELINE
-                  && seqno != expected) {
-                throw new IOException(myString + "seqno: expected=" + expected
-                    + ", received=" + seqno);
+              if (type == PacketResponderType.HAS_DOWNSTREAM_IN_PIPELINE && seqno != expected) {
+                throw new IOException(myString + "seqno: expected=" + expected + ", received=" + seqno);
               }
               if (type == PacketResponderType.HAS_DOWNSTREAM_IN_PIPELINE) {
-                // The total ack time includes the ack times of downstream
-                // nodes.
-                // The value is 0 if this responder doesn't have a downstream
-                // DN in the pipeline.
+                // The total ack time includes the ack times of downstream nodes. The value is 0 if this responder
+                // doesn't have a downstream DN in the pipeline.
                 totalAckTimeNanos = ackRecvNanoTime - pkt.ackEnqueueNanoTime;
-                // Report the elapsed time from ack send to ack receive minus
-                // the downstream ack time.
-                long ackTimeNanos = totalAckTimeNanos
-                    - ack.getDownstreamAckTimeNanos();
+                // Report the elapsed time from ack send to ack receive minus the downstream ack time.
+                long ackTimeNanos = totalAckTimeNanos - ack.getDownstreamAckTimeNanos();
                 if (ackTimeNanos < 0) {
                   if (LOG.isDebugEnabled()) {
-                    LOG.debug("Calculated invalid ack time: " + ackTimeNanos
-                        + "ns.");
+                    LOG.debug("Calculated invalid ack time: " + ackTimeNanos + "ns.");
                   }
                 } else {
                   datanode.metrics.addPacketAckRoundTripTimeNanos(ackTimeNanos);
@@ -755,9 +756,8 @@ class MemBlockReceiver extends BlockReceiver {
             if (Thread.interrupted()) {
               isInterrupted = true;
             } else {
-              // continue to run even if can not read from mirror
-              // notify client of the error
-              // and wait for the client to shut down the pipeline
+              // Continue to run even if can not read from mirror notify client of the error and wait for the client to
+              // shut down the pipeline.
               mirrorError = true;
               LOG.info(myString, ioe);
             }
@@ -765,15 +765,12 @@ class MemBlockReceiver extends BlockReceiver {
 
           if (Thread.interrupted() || isInterrupted) {
             /*
-             * The receiver thread cancelled this thread. We could also check
-             * any other status updates from the receiver thread (e.g. if it is
-             * ok to write to replyOut). It is prudent to not send any more
-             * status back to the client because this datanode has a problem.
-             * The upstream datanode will detect that this datanode is bad, and
-             * rightly so.
+             * The receiver thread cancelled this thread. We could also check any other status updates from the receiver
+             * thread (e.g. if it is ok to write to replyOut). It is prudent to not send any more status back to the
+             * client because this datanode has a problem. The upstream datanode will detect that this datanode is bad,
+             * and rightly so.
              *
-             * The receiver thread can also interrupt this thread for sending
-             * an out-of-band response upstream.
+             * The receiver thread can also interrupt this thread for sending an out-of-band response upstream.
              */
             LOG.info(myString + ": Thread is interrupted.");
             running = false;
@@ -781,14 +778,13 @@ class MemBlockReceiver extends BlockReceiver {
           }
 
           if (lastPacketInBlock) {
-            // Finalize the block and close the block file
+            // Finalize the block and close the block file.
             finalizeBlock(startTime);
           }
-
-          sendAckUpstream(ack, expected, totalAckTimeNanos,
-              (pkt != null ? pkt.offsetInBlock : 0), 
-              (pkt != null ? pkt.ackStatus : Status.SUCCESS),
-              (pkt != null ? pkt.mhlc: null));
+          // TODO: Remove
+          LOG.info("PacketResponder.run(): sendAckUpstream called with pkt " + pkt);
+          sendAckUpstream(ack, expected, totalAckTimeNanos, (pkt != null ? pkt.offsetInBlock : 0),
+                          (pkt != null ? pkt.ackStatus : Status.SUCCESS), (pkt != null ? pkt.mhlc: null));
           if (pkt != null) {
             // remove the packet from the ack queue
             removeAckHead();
@@ -808,6 +804,7 @@ class MemBlockReceiver extends BlockReceiver {
             }
           }
         } catch (Throwable e) {
+          LOG.warn("Exception in BlockReceiver.run(): ", e);
           if (running) {
             LOG.info(myString, e);
             running = false;
@@ -815,6 +812,7 @@ class MemBlockReceiver extends BlockReceiver {
           }
         }
       }
+
       LOG.info(myString + " terminating");
     }
     
@@ -823,15 +821,15 @@ class MemBlockReceiver extends BlockReceiver {
      * @param startTime time when BlockReceiver started receiving the block
      */
     private void finalizeBlock(long startTime) throws IOException {
-      if(blockWriter!=null){
-        try{
+      if (blockWriter!=null) {
+        try {
           blockWriter.shutdown();
           blockWriter = null;
-        }catch(InterruptedException ie){
+        } catch(InterruptedException ie) {
           //do nothing
         }
       }
-//      MemBlockReceiver.this.close();
+      // MemBlockReceiver.this.close();
       final long endTime = ClientTraceLog.isInfoEnabled() ? System.nanoTime()
           : 0;
       block.setNumBytes(replicaInfo.getNumBytes());
@@ -846,8 +844,7 @@ class MemBlockReceiver extends BlockReceiver {
             myAddr, block.getNumBytes(), "HDFS_WRITE", clientname, offset,
             dnR.getDatanodeUuid(), block, endTime - startTime));
       } else {
-        LOG.info("Received " + block + " size " + block.getNumBytes()
-            + " from " + inAddr);
+        LOG.info("Received " + block + " size " + block.getNumBytes() + " from " + inAddr);
       }
     }
     
@@ -865,9 +862,17 @@ class MemBlockReceiver extends BlockReceiver {
      */
     private void sendAckUpstream(PipelineAck ack, long seqno, long totalAckTimeNanos, long offsetInBlock,
                                  Status myStatus, HybridLogicalClock mvc) throws IOException {
+      // TODO: Remove msg.
+      LOG.info("MemBlockReceiver: sendAckUpstream was called with the folowing arguments:");
+      // LOG.info("ack: " + ack);
+      LOG.info("seqno: " + seqno);
+      LOG.info("totalAckTimeNanos: " + totalAckTimeNanos);
+      LOG.info("offsetInBlock: " + offsetInBlock);
+      LOG.info("myStatus: " + myStatus);
+      LOG.info("ts: " + mvc);
+
       try {
-        // Wait for other sender to finish. Unless there is an OOB being sent,
-        // the responder won't have to wait.
+        // Wait for other sender to finish. Unless there is an OOB being sent, the responder won't have to wait.
         synchronized(this) {
           while(sending) {
             wait();
@@ -900,11 +905,10 @@ class MemBlockReceiver extends BlockReceiver {
      * @param myStatus the local ack status
      * @param mvc message vector clock
      */
-    private void sendAckUpstreamUnprotected(PipelineAck ack, long seqno,
-        long totalAckTimeNanos, long offsetInBlock, Status myStatus,
-        HybridLogicalClock mhlc)
-        throws IOException {
+    private void sendAckUpstreamUnprotected(PipelineAck ack, long seqno, long totalAckTimeNanos, long offsetInBlock,
+                                            Status myStatus, HybridLogicalClock mhlc) throws IOException {
       Status[] replies = null;
+
       if (ack == null) {
         // A new OOB response is being sent from this node. Regardless of
         // downstream nodes, reply should contain one reply.
@@ -1037,9 +1041,10 @@ class MemBlockReceiver extends BlockReceiver {
               // 2) records are not splitted across buffer boundary.
               int sRec = 0;
               int eRec;     // start and end of Record
+              ByteBuffer buf = bufs[curBufIdx];
 
               while (sRec != len) {
-                eRec = rp.ParseRecord(bufs[curBufIdx].array(), sRec, len);
+                eRec = rp.ParseRecord(buf.array(), buf.arrayOffset() + sRec, len);
                 hlcout.write(hlc, rp.getUserTimestamp(), offsetInBlock, bufs[curBufIdx].array(), sRec, eRec);
                 sRec = eRec;
               }

@@ -267,7 +267,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
       final int checksumLen = checksumPos - checksumStart;
       final int pktLen = HdfsConstants.BYTES_IN_INTEGER + dataLen + checksumLen;
 
-      // send packet using vector clock
+      // send packet using hybrid logical clock
       PacketHeader header = new PacketHeader(pktLen, offsetInBlock, seqno, lastPacketInBlock, dataLen, syncBlock,
                                              DFSClient.tickAndCopy());
 
@@ -292,6 +292,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
         buf[headerStart + header.getSerializedSize() + checksumLen + dataLen-1] ^= 0xff;
 
       // Write the now contiguous full packet to the output stream.
+      DFSClient.LOG.info("Write packet to output stream.");
       stm.write(buf, headerStart, header.getSerializedSize() + checksumLen + dataLen);
 
       // undo corruption.
@@ -315,10 +316,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
     
     @Override
     public String toString() {
-      return "packet seqno:" + this.seqno +
-      " offsetInBlock:" + this.offsetInBlock + 
-      " lastPacketInBlock:" + this.lastPacketInBlock +
-      " lastByteOffsetInBlock: " + this.getLastByteOffsetBlock();
+      return "packet seqno:" + this.seqno + " offsetInBlock:" + this.offsetInBlock +
+             " lastPacketInBlock:" + this.lastPacketInBlock +
+             " lastByteOffsetInBlock: " + this.getLastByteOffsetBlock();
     }
   }
 
@@ -592,6 +592,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
               one = new Packet();  // heartbeat packet
             } else {
               one = dataQueue.getFirst(); // regular data packet
+              DFSClient.LOG.info("Packet: " + one);
+              DFSClient.LOG.info("Stage: " + stage);
             }
           }
           assert one != null;
@@ -694,6 +696,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
             }
             stage = BlockConstructionStage.PIPELINE_CLOSE;
           }
+          DFSClient.LOG.info("Stage after waiting: " + stage);
           
           // send the packet
           synchronized (dataQueue) {
@@ -705,6 +708,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
             }
           }
 
+          DFSClient.LOG.info("DataStreamer block " + block + " sending packet " + one);
           if (DFSClient.LOG.isDebugEnabled()) {
             DFSClient.LOG.debug("DataStreamer block " + block + " sending packet " + one);
           }
@@ -935,6 +939,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
           try {
             // read an ack from the pipeline
             ack.readFields(blockReplyStream);
+            DFSClient.LOG.info("DFSClient " + ack);
             if (DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("DFSClient " + ack);
             }
@@ -1007,7 +1012,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
               dataQueue.notifyAll();
             }
             //HDFSRS_VC: Acknowledge vector clock
-            DFSClient.tickOnRecv(ack.getMhlc());
+            if (ack.getMhlc() != null)
+              DFSClient.tickOnRecv(ack.getMhlc());
           } catch (Exception e) {
             if (!responderClosed) {
               if (e instanceof IOException) {
@@ -2294,6 +2300,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
         waitAndQueueCurrentPacket();
       }
 
+      DFSClient.LOG.info("bytesCurBlock: " + bytesCurBlock);
       if (bytesCurBlock != 0) {
         // send an empty packet to mark the end of the block
         currentPacket = new Packet(0, 0, bytesCurBlock);

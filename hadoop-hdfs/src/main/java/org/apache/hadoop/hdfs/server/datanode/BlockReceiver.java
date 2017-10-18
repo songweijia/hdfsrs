@@ -89,8 +89,7 @@ class BlockReceiver implements Closeable {
   protected int bytesPerChecksum;
   protected int checksumSize;
   
-  protected final PacketReceiver packetReceiver =
-      new PacketReceiver(false);
+  protected final PacketReceiver packetReceiver = new PacketReceiver(false);
   
   protected final String inAddr;
   protected final String myAddr;
@@ -163,16 +162,12 @@ class BlockReceiver implements Closeable {
     this.needsChecksumTranslation = true;
   }
   
-  BlockReceiver(final ExtendedBlock block, final DataInputStream in,
-      final String inAddr, final String myAddr,
-      final BlockConstructionStage stage, 
-      final long newGs, final long minBytesRcvd, final long maxBytesRcvd, 
-      final String clientname, final DatanodeInfo srcDataNode,
-      final DataNode datanode, DataChecksum requestedChecksum,
-      CachingStrategy cachingStrategy, long offset/*HDFSRS_RWAPI*/,
-      HybridLogicalClock mhlc) throws IOException {
-  	
-    try{
+  BlockReceiver(final ExtendedBlock block, final DataInputStream in, final String inAddr, final String myAddr,
+                final BlockConstructionStage stage, final long newGs, final long minBytesRcvd, final long maxBytesRcvd,
+                final String clientname, final DatanodeInfo srcDataNode, final DataNode datanode,
+                DataChecksum requestedChecksum, CachingStrategy cachingStrategy, long offset/*HDFSRS_RWAPI*/,
+                HybridLogicalClock mhlc) throws IOException {
+    try {
       this.block = block;
       this.in = in;
       this.inAddr = inAddr;
@@ -416,7 +411,7 @@ class BlockReceiver implements Closeable {
    * While writing to mirrorOut, failure to write to mirror should not
    * affect this datanode unless it is caused by interruption.
    */
-  private void handleMirrorOutError(IOException ioe) throws IOException {
+  protected void handleMirrorOutError(IOException ioe) throws IOException {
     String bpid = block.getBlockPoolId();
     LOG.info(datanode.getDNRegistrationForBP(bpid)
         + ":Exception writing " + block + " to mirror " + mirrorAddr, ioe);

@@ -598,7 +598,7 @@ class DataXceiver extends Receiver implements Runnable {
       throw new IOException(stage + " does not support multiple targets " + Arrays.asList(targets));
     }
 
-    // REMOVE
+    // TODO: Remove
     LOG.info("opWriteBlock: stage=" + stage + ", clientname=" + clientname + "\n  block  =" + block + ", newGs=" +
              latestGenerationStamp + ", bytesRcvd=[" + minBytesRcvd + ", " + maxBytesRcvd + "]" + "\n  targets=" +
              Arrays.asList(targets) + "; pipelineSize=" + pipelineSize + ", srcDataNode=" + srcDataNode);
@@ -607,17 +607,12 @@ class DataXceiver extends Receiver implements Runnable {
 
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("opWriteBlock: stage=" + stage + ", clientname=" + clientname 
-      		+ "\n  block  =" + block + ", newGs=" + latestGenerationStamp
-      		+ ", bytesRcvd=[" + minBytesRcvd + ", " + maxBytesRcvd + "]"
-          + "\n  targets=" + Arrays.asList(targets)
-          + "; pipelineSize=" + pipelineSize + ", srcDataNode=" + srcDataNode
-          );
-      LOG.debug("isDatanode=" + isDatanode
-          + ", isClient=" + isClient
-          + ", isTransfer=" + isTransfer);
-      LOG.debug("writeBlock receive buf size " + peer.getReceiveBufferSize() +
-                " tcp no delay " + peer.getTcpNoDelay());
+      LOG.debug("opWriteBlock: stage=" + stage + ", clientname=" + clientname + "\n  block  =" + block +
+                ", newGs=" + latestGenerationStamp + ", bytesRcvd=[" + minBytesRcvd + ", " + maxBytesRcvd + "]" +
+                "\n  targets=" + Arrays.asList(targets) + "; pipelineSize=" + pipelineSize +
+                ", srcDataNode=" + srcDataNode);
+      LOG.debug("isDatanode=" + isDatanode + ", isClient=" + isClient + ", isTransfer=" + isTransfer);
+      LOG.debug("writeBlock receive buf size " + peer.getReceiveBufferSize() + " tcp no delay " + peer.getTcpNoDelay());
     }
 
     // We later mutate block's generation stamp and length, but we need to
@@ -680,7 +675,7 @@ class DataXceiver extends Receiver implements Runnable {
         InetSocketAddress mirrorTarget = null;
         // Connect to backup machine
         mirrorNode = targets[0].getXferAddr(connectToDnViaHostname);
-        // REMOVE
+        // TODO: Remove
         LOG.info("Connecting to datanode " + mirrorNode);
         if (LOG.isDebugEnabled()) {
           LOG.debug("Connecting to datanode " + mirrorNode);
@@ -722,6 +717,9 @@ class DataXceiver extends Receiver implements Runnable {
               BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(mirrorIn));
             mirrorInStatus = connectAck.getStatus();
             firstBadLink = connectAck.getFirstBadLink();
+            // TODO: Remove.
+            LOG.info("Datanode " + targets.length + " got response for connect ack from downstream datanode with " +
+                     "firstbadlink as " + firstBadLink);
             if (LOG.isDebugEnabled() || mirrorInStatus != SUCCESS) {
               LOG.info("Datanode " + targets.length + " got response for connect ack from downstream datanode with " +
                        "firstbadlink as " + firstBadLink);
@@ -758,20 +756,30 @@ class DataXceiver extends Receiver implements Runnable {
       if (isClient && !isTransfer) {
         if (LOG.isDebugEnabled() || mirrorInStatus != SUCCESS) {
           LOG.info("Datanode " + targets.length +
-                   " forwarding connect ack to upstream firstbadlink is " +
-                   firstBadLink);
+                   " forwarding connect ack to upstream firstbadlink is " + firstBadLink);
         }
+        // TODO: Remove.
+        if (mirrorInStatus == SUCCESS)
+          LOG.info("DataXCeiver: writeBlock has detected no bad links with mirroInStatus: " + mirrorInStatus);
+        else
+          LOG.info("DataXCeiver: writeBlock has detected bad link " + firstBadLink +
+                   " with mirroInStatus: " + mirrorInStatus);
         BlockOpResponseProto.newBuilder()
           .setStatus(mirrorInStatus)
           .setFirstBadLink(firstBadLink)
           .build()
           .writeDelimitedTo(replyOut);
         replyOut.flush();
+        // TODO: Remove.
+        LOG.info("DataXCeiver: writeBlock connection to upstream node has been established.");
       }
 
       // receive the block and mirror to the next target
       if (blockReceiver != null) {
         String mirrorAddr = (mirrorSock == null) ? null : mirrorNode;
+
+        // TODO: Remove
+        LOG.info("DataXCeiver: writeBlock ready to receive next block");
         blockReceiver.receiveBlock(mirrorOut, mirrorIn, replyOut, mirrorAddr, null, targets);
 
         // send close-ack for transfer-RBW/Finalized 
