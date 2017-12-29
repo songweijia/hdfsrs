@@ -18,8 +18,6 @@
 package org.apache.hadoop.hdfs.server.datanode;
 
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.ERROR;
-
-
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.ERROR_ACCESS_TOKEN;
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.ERROR_INVALID;
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.ERROR_UNSUPPORTED;
@@ -467,46 +465,35 @@ class DataXceiver extends Receiver implements Runnable {
   }
 
   @Override
-  public void readBlock(final ExtendedBlock block,
-      final Token<BlockTokenIdentifier> blockToken,
-      final String clientName,
-      final long blockOffset,
-      final long length,
-      final boolean sendChecksum,
-      final CachingStrategy cachingStrategy,
-      final long timestamp,
-      final boolean bUserTimestamp) throws IOException {
-    
+  public void readBlock(final ExtendedBlock block, final Token<BlockTokenIdentifier> blockToken,
+                        final String clientName, final long blockOffset, final long length, final boolean sendChecksum,
+                        final CachingStrategy cachingStrategy, final long timestamp, final boolean bUserTimestamp)
+      throws IOException {
     previousOpClientName = clientName;
 
     OutputStream baseStream = getOutputStream();
-    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
-        baseStream, HdfsConstants.SMALL_BUFFER_SIZE));
-    checkAccess(out, true, block, blockToken,
-        Op.READ_BLOCK, BlockTokenSecretManager.AccessMode.READ);
+    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(baseStream, HdfsConstants.SMALL_BUFFER_SIZE));
+    checkAccess(out, true, block, blockToken, Op.READ_BLOCK, BlockTokenSecretManager.AccessMode.READ);
   
     // send the block
     BlockSender blockSender = null;
-    DatanodeRegistration dnR = 
-      datanode.getDNRegistrationForBP(block.getBlockPoolId());
-    final String clientTraceFmt =
-      clientName.length() > 0 && ClientTraceLog.isInfoEnabled()
-        ? String.format(DN_CLIENTTRACE_FORMAT, localAddress, remoteAddress,
-            "%d", "HDFS_READ", clientName, "%d",
-            dnR.getDatanodeUuid(), block, "%d")
-        : dnR + " Served block " + block + " to " +
-            remoteAddress;
+    DatanodeRegistration dnR = datanode.getDNRegistrationForBP(block.getBlockPoolId());
+    final String clientTraceFmt = clientName.length() > 0 && ClientTraceLog.isInfoEnabled()
+      ? String.format(DN_CLIENTTRACE_FORMAT, localAddress, remoteAddress, "%d", "HDFS_READ", clientName, "%d",
+                      dnR.getDatanodeUuid(), block, "%d")
+      : dnR + " Served block " + block + " to " + remoteAddress;
 
     updateCurrentThreadName("Sending block " + block);
     try {
       try {
         if (datanode.isInMemoryStorage()) {
-          blockSender = new MemBlockSender(block, blockOffset, length, datanode, clientTraceFmt,null, /*HDFSRS_VC*/
+          LOG.info("Call MemBlockSender with block " + block + " blockOffset " + blockOffset + " length " + length +
+                   " datanode " + datanode+ ".");
+          blockSender = new MemBlockSender(block, blockOffset, length, datanode, clientTraceFmt, null, /*HDFSRS_VC*/
               timestamp, bUserTimestamp);
         } else {
-          blockSender = new BlockSender(block, blockOffset, length,
-              true, false, sendChecksum, datanode, clientTraceFmt,
-              cachingStrategy,null/*HDFSRS_VC*/);
+          blockSender = new BlockSender(block, blockOffset, length, true, false, sendChecksum, datanode,
+                                        clientTraceFmt, cachingStrategy, null/*HDFSRS_VC*/);
         }
       } catch(IOException e) {
         String msg = "opReadBlock " + block + " received exception " + e; 
@@ -598,14 +585,6 @@ class DataXceiver extends Receiver implements Runnable {
       throw new IOException(stage + " does not support multiple targets " + Arrays.asList(targets));
     }
 
-    // TODO: Remove
-    LOG.info("opWriteBlock: stage=" + stage + ", clientname=" + clientname + "\n  block  =" + block + ", newGs=" +
-             latestGenerationStamp + ", bytesRcvd=[" + minBytesRcvd + ", " + maxBytesRcvd + "]" + "\n  targets=" +
-             Arrays.asList(targets) + "; pipelineSize=" + pipelineSize + ", srcDataNode=" + srcDataNode);
-    LOG.info("isDatanode=" + isDatanode + ", isClient=" + isClient + ", isTransfer=" + isTransfer);
-    LOG.info("writeBlock receive buf size " + peer.getReceiveBufferSize() + " tcp no delay " + peer.getTcpNoDelay());
-
-
     if (LOG.isDebugEnabled()) {
       LOG.debug("opWriteBlock: stage=" + stage + ", clientname=" + clientname + "\n  block  =" + block +
                 ", newGs=" + latestGenerationStamp + ", bytesRcvd=[" + minBytesRcvd + ", " + maxBytesRcvd + "]" +
@@ -675,8 +654,6 @@ class DataXceiver extends Receiver implements Runnable {
         InetSocketAddress mirrorTarget = null;
         // Connect to backup machine
         mirrorNode = targets[0].getXferAddr(connectToDnViaHostname);
-        // TODO: Remove
-        LOG.info("Connecting to datanode " + mirrorNode);
         if (LOG.isDebugEnabled()) {
           LOG.debug("Connecting to datanode " + mirrorNode);
         }
@@ -717,9 +694,6 @@ class DataXceiver extends Receiver implements Runnable {
               BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(mirrorIn));
             mirrorInStatus = connectAck.getStatus();
             firstBadLink = connectAck.getFirstBadLink();
-            // TODO: Remove.
-            LOG.info("Datanode " + targets.length + " got response for connect ack from downstream datanode with " +
-                     "firstbadlink as " + firstBadLink);
             if (LOG.isDebugEnabled() || mirrorInStatus != SUCCESS) {
               LOG.info("Datanode " + targets.length + " got response for connect ack from downstream datanode with " +
                        "firstbadlink as " + firstBadLink);
@@ -758,28 +732,18 @@ class DataXceiver extends Receiver implements Runnable {
           LOG.info("Datanode " + targets.length +
                    " forwarding connect ack to upstream firstbadlink is " + firstBadLink);
         }
-        // TODO: Remove.
-        if (mirrorInStatus == SUCCESS)
-          LOG.info("DataXCeiver: writeBlock has detected no bad links with mirroInStatus: " + mirrorInStatus);
-        else
-          LOG.info("DataXCeiver: writeBlock has detected bad link " + firstBadLink +
-                   " with mirroInStatus: " + mirrorInStatus);
         BlockOpResponseProto.newBuilder()
           .setStatus(mirrorInStatus)
           .setFirstBadLink(firstBadLink)
           .build()
           .writeDelimitedTo(replyOut);
         replyOut.flush();
-        // TODO: Remove.
-        LOG.info("DataXCeiver: writeBlock connection to upstream node has been established.");
       }
 
       // receive the block and mirror to the next target
       if (blockReceiver != null) {
         String mirrorAddr = (mirrorSock == null) ? null : mirrorNode;
 
-        // TODO: Remove
-        LOG.info("DataXCeiver: writeBlock ready to receive next block");
         blockReceiver.receiveBlock(mirrorOut, mirrorIn, replyOut, mirrorAddr, null, targets);
 
         // send close-ack for transfer-RBW/Finalized 

@@ -244,22 +244,23 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       new DFSHedgedReadMetrics();
   private static ThreadPoolExecutor HEDGED_READ_THREAD_POOL;
   
-  //HDFSRS_HLC
+  // HDFSRS_HLC
   private static HybridLogicalClock hlc = new HybridLogicalClock();
-  public static HybridLogicalClock tickAndCopy(){
-    return DFSClient.hlc.tickCopy();
+  
+  public static void mergeOnRecv(HybridLogicalClock mhlc) {
+    DFSClient.hlc.mergeOnRecv(mhlc);
   }
-  public static void tickOnRecv(HybridLogicalClock mhlc){
-    DFSClient.hlc.tickOnRecv(mhlc);
+  
+  public static HybridLogicalClock hlcCopy() {
+    return new HybridLogicalClock(DFSClient.hlc);
   }
-  //HDFSRS_HLC
+  // HDFSRS_HLC
   
   /**
    * DFSClient configuration 
    */
   public static class Conf {
     final int hdfsTimeout;    // timeout value for a DFS operation.
-
     final int maxFailoverAttempts;
     final int maxRetryAttempts;
     final int failoverSleepBaseMillis;
@@ -468,8 +469,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       } catch(IllegalArgumentException iae) {
         LOG.warn("Bad checksum type: " + checksum + ". Using default "
             + DFSConfigKeys.DFS_CHECKSUM_TYPE_DEFAULT);
-        return DataChecksum.Type.valueOf(
-            DFSConfigKeys.DFS_CHECKSUM_TYPE_DEFAULT); 
+        return DataChecksum.Type.valueOf(DFSConfigKeys.DFS_CHECKSUM_TYPE_DEFAULT);
       }
     }
 
@@ -1499,9 +1499,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     if(this.getConf().useRDMABlockWriter)
       result = DFSRDMAOutputStream.newStreamForCreate(this, src, masked, flag, createParent, blockSize, progress);
     else
-      result = DFSOutputStream.newStreamForCreate(this,
-          src, masked, flag, createParent, replication, blockSize, progress,
-          buffersize, dfsClientConf.createChecksum(checksumOpt), favoredNodeStrs);
+      result = DFSOutputStream.newStreamForCreate(this, src, masked, flag, createParent, replication, blockSize,
+                                                  progress, buffersize, dfsClientConf.createChecksum(checksumOpt),
+                                                  favoredNodeStrs);
     beginFileLease(src, result);
     return result;
   }
@@ -1592,14 +1592,19 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     }
   }
 
-  /** Method to get stream returned by append call */
-  private SeekableDFSOutputStream callAppend(HdfsFileStatus stat, String src,
-      int buffersize, Progressable progress) throws IOException {
+  /**
+   * Method to get stream returned by append call
+   */
+  private SeekableDFSOutputStream callAppend(HdfsFileStatus stat, String src, int buffersize, Progressable progress)
+      throws IOException {
     LocatedBlock lastBlock = null;
     try {
-      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy(); // HDFSRS_HLC
+      // REMOVE ticks on client.
+      // HybridLogicalClock mhlc = DFSClient.hlc.tickCopy(); // HDFSRS_HLC
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       lastBlock = namenode.append(src, clientName, mhlc);
-      DFSClient.tickOnRecv(mhlc);
+      // DFSClient.tickOnRecv(mhlc);
+      DFSClient.mergeOnRecv(mhlc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      FileNotFoundException.class,
@@ -1609,13 +1614,12 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
                                      UnresolvedPathException.class,
                                      SnapshotAccessControlException.class);
     }
-    
     SeekableDFSOutputStream ret = null;
-    if(getConf().useRDMABlockWriter)
+    if (getConf().useRDMABlockWriter)
       ret = DFSRDMAOutputStream.newStreamForAppend(this, src, progress, lastBlock, stat);
     else
-    ret = DFSOutputStream.newStreamForAppend(this, src, buffersize, progress,
-        lastBlock, stat, dfsClientConf.createChecksum());
+      ret = DFSOutputStream.newStreamForAppend(this, src, buffersize, progress, lastBlock, stat,
+                                               dfsClientConf.createChecksum());
     return ret;
   }
   
@@ -1680,9 +1684,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public boolean rename(String src, String dst) throws IOException {
     checkOpen();
     try {
-      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       boolean bRet = namenode.rename(src, dst, mhlc);
-      DFSClient.hlc.tickOnRecv(mhlc);
+      DFSClient.mergeOnRecv(mhlc);
       return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
@@ -1700,9 +1704,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public void concat(String trg, String [] srcs) throws IOException {
     checkOpen();
     try {
-      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       namenode.concat(trg, srcs, mhlc);
-      DFSClient.hlc.tickOnRecv(mhlc);
+      DFSClient.mergeOnRecv(mhlc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      UnresolvedPathException.class,
@@ -1717,9 +1721,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       throws IOException {
     checkOpen();
     try {
-      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       namenode.rename2(src, dst, mhlc, options);
-      DFSClient.hlc.tickOnRecv(mhlc);
+      DFSClient.mergeOnRecv(mhlc);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      DSQuotaExceededException.class,
@@ -1739,9 +1743,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   @Deprecated
   public boolean delete(String src) throws IOException {
     checkOpen();
-    HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+    HybridLogicalClock mhlc = DFSClient.hlcCopy();
     boolean bRet = namenode.delete(src, true, mhlc);
-    DFSClient.hlc.tickOnRecv(mhlc);
+    DFSClient.mergeOnRecv(mhlc);
     return bRet;
   }
 
@@ -1755,9 +1759,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public boolean delete(String src, boolean recursive) throws IOException {
     checkOpen();
     try {
-      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       boolean bRet = namenode.delete(src, recursive, mhlc);
-      DFSClient.hlc.tickOnRecv(mhlc);
+      DFSClient.mergeOnRecv(mhlc);
       return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
@@ -2608,9 +2612,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       LOG.debug(src + ": masked=" + absPermission);
     }
     try {
-      HybridLogicalClock mhlc = DFSClient.hlc.tickCopy();
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       boolean bRet = namenode.mkdirs(src, absPermission, createParent, mhlc);
-      DFSClient.hlc.tickOnRecv(mhlc);
+      DFSClient.mergeOnRecv(mhlc);
       return bRet;
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,

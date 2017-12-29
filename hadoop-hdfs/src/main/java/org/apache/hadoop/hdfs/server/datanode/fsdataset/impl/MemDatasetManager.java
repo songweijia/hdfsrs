@@ -264,23 +264,24 @@ public class MemDatasetManager {
    		read(b,0,1);
    		return b[0];
     }
-    
+
     /* (non-Javadoc)
      * @see java.io.InputStream#read(byte[], int, int)
      */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
-      int endOfBlock = ((this.timestamp==JNIBlog.CURRENT_SNAPSHOT_ID)?
-      blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp));
-      if(offset < endOfBlock){
-        int ret = ((this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)? 
-          blog.readBlock(blockId, offset, off, len, bytes):
-          blog.readBlock(blockId, timestamp, offset, off, len, bytes, bUserTimestamp));
-    	if(ret > 0){
-          this.offset+=ret;
+      int endOfBlock = this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID ?
+                       blog.getNumberOfBytes(blockId) :
+                       blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp);
+      if (offset < endOfBlock) {
+        int ret = this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID ?
+                  blog.readBlock(blockId, offset, off, len, bytes) :
+                  blog.readBlock(blockId, timestamp, offset, off, len, bytes, bUserTimestamp);
+        if (ret > 0) {
+          this.offset += ret;
           return ret;
-    	} else { 
-          throw new IOException("error in JNIBlog.read("+
-            blockId+","+timestamp+","+bUserTimestamp+","+offset+","+off+","+len+",b):"+ret);
+        } else {
+          throw new IOException("error in JNIBlog.read(" + blockId + "," + timestamp + "," + bUserTimestamp + "," +
+                                offset + "," + off + "," + len + ",b):" + ret);
         }
       } else {
         throw new IOException("no more data available");
@@ -294,43 +295,48 @@ public class MemDatasetManager {
     int offset;
     MemBlockMeta meta;
 
-    BlogOutputStream(String bpid,long blockId, int offset, MemBlockMeta meta){
+    BlogOutputStream(String bpid,long blockId, int offset, MemBlockMeta meta) {
     	this.blog = blogMap.get(bpid);
     	this.blockId = blockId;
     	this.offset = offset;
         this.meta = meta;
     }
-    
-    BlogOutputStream(JNIBlog blog,long blockId, int offset, MemBlockMeta meta){
+
+    BlogOutputStream(JNIBlog blog,long blockId, int offset, MemBlockMeta meta) {
     	this.blog = blog;
     	this.blockId = blockId;
     	this.offset = offset;
         this.meta = meta;
     }
-    
+
     public synchronized void write(int b) throws IOException {
       throw new IOException("Blog allows write with HLC clock only.");
     }
 
     public synchronized void write(byte[] bytes, int off, int len) throws IOException {
-        throw new IOException("Blog allows write with HLC clock only.");
+      throw new IOException("Blog allows write with HLC clock only.");
     }
 
     @Override
     public synchronized void write(HybridLogicalClock mhlc, long userTimestamp, long blockOffset, byte[] buff,
                                    int buffOffset, int len) throws IOException {
+      if (len > 0)
+        LOG.info("MemDatasetManager: blockOffset " + blockOffset + " len " + len + " buf " + buff[buffOffset]);
+      LOG.info("HLC before blog.writeBlock: " + mhlc);
       int ret = blog.writeBlock(mhlc, userTimestamp, blockId, (int) blockOffset, buffOffset, len, buff);
-      
-      if (ret < 0)
+      LOG.info("HLC after blog.writeBlock: " + mhlc);
+
+      if (ret < 0) {
         throw new IOException("error in JNIBlog.write(" + mhlc + "," + userTimestamp + "," + blockId + "," +
                               blockOffset + "," + buffOffset + "," + len + ",b):" + ret);
-      else
+      } else {
         offset = (int) blockOffset + len;
+      }
       this.meta.accBytes += len;
     }
   }
-  
-  public MemDatasetManager(Configuration conf){
+
+  public MemDatasetManager(Configuration conf) {
     this.blocksize = conf.getLongBytes(DFS_BLOCK_SIZE_KEY, DFS_BLOCK_SIZE_DEFAULT);
     this.pagesize = conf.getInt(DFS_MEMBLOCK_PAGESIZE, DEFAULT_DFS_MEMBLOCK_PAGESIZE);
     this.rdmaport = conf.getInt(DFS_RDMA_CON_PORT_KEY, DFS_RDMA_CON_PORT_DEFAULT);
@@ -347,7 +353,7 @@ public class MemDatasetManager {
   }
   
   void shutdown() {
-    for (Map.Entry<String, JNIBlog> entry : this.blogMap.entrySet()){
+    for (Map.Entry<String, JNIBlog> entry : this.blogMap.entrySet()) {
     	entry.getValue().destroy();
     }
   }
@@ -364,29 +370,31 @@ public class MemDatasetManager {
    */
   MemBlockMeta get(String bpid, long blockId) {
     JNIBlog blog = blogMap.get(bpid);
-    return (blog==null)?null:blog.blockMaps.get(blockId);
+    return (blog==null) ? null : blog.blockMaps.get(blockId);
   }
   
-  private JNIBlog newJNIBlog(String bpid){
+  private JNIBlog newJNIBlog(String bpid) {
     JNIBlog rBlog = new JNIBlog();
     // If path does not exists, create it firs.
-    File fPers = new File(this.perspath+System.getProperty("file.separator")+"pers-"+bpid);
-    LOG.info("pers-"+bpid);
-    if(fPers.exists()&&fPers.isFile())fPers.delete();
-    if(!fPers.exists()){
-      if(fPers.mkdir()==false)
+    File fPers = new File(this.perspath + System.getProperty("file.separator") + "pers-" + bpid);
+    LOG.info("pers-" + bpid);
+    if (fPers.exists() && fPers.isFile())
+      fPers.delete();
+    if (!fPers.exists()) {
+      if (fPers.mkdir() == false)
         LOG.error("Initialize Blog: cannot create path:" + fPers.getAbsolutePath());
     }
 
-    rBlog.initialize(this, bpid, capacity, (int)blocksize, pagesize, fPers.getAbsolutePath(), useRDMA, rdmadev, rdmaport);
+    rBlog.initialize(this, bpid, capacity, (int)blocksize, pagesize, fPers.getAbsolutePath(), useRDMA, rdmadev,
+                     rdmaport);
     return rBlog;
   }
   
-  JNIBlog getJNIBlog(String bpid){
+  JNIBlog getJNIBlog(String bpid) {
     JNIBlog blog = null;
-    synchronized(blogMap){
+    synchronized(blogMap) {
       blog = blogMap.get(bpid);
-      if(blog == null){
+      if (blog == null) {
         blog = newJNIBlog(bpid);
         blogMap.put(bpid, blog);
       }

@@ -1072,12 +1072,13 @@ public class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
     return StorageType.MEM;
   }
   
-  public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) 
-      throws IOException {
-  	if(b.getLocalBlock().getLongSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
-  		throw new IOException("in getBlockOutputStream(): Cannot write to snapshot.");
+  public OutputStream getBlockOutputStream(ExtendedBlock b, long seekOffset) throws IOException {
+    if (b.getLocalBlock().getLongSid() != JNIBlog.CURRENT_SNAPSHOT_ID)
+      throw new IOException("in getBlockOutputStream(): Cannot write to snapshot.");
+
     MemDatasetManager.MemBlockMeta meta = memManager.get(b.getBlockPoolId(), b.getBlockId());
-    if (meta != null) return meta.getOutputStream((int)seekOffset);
+    if (meta != null)
+      return meta.getOutputStream((int)seekOffset);
     return null;
   }
 

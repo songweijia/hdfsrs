@@ -2104,8 +2104,7 @@ public class DataNode extends Configured
 
   // InterDataNodeProtocol implementation
   @Override // InterDatanodeProtocol
-  public ReplicaRecoveryInfo initReplicaRecovery(RecoveringBlock rBlock)
-  throws IOException {
+  public ReplicaRecoveryInfo initReplicaRecovery(RecoveringBlock rBlock) throws IOException {
     return data.initReplicaRecovery(rBlock);
   }
 

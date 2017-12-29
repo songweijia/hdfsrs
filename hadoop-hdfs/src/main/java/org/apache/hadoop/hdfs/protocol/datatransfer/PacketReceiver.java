@@ -178,11 +178,8 @@ public class PacketReceiver implements Closeable {
    * Rewrite the last-read packet on the wire to the given output stream.
    */
   public void mirrorPacketTo(DataOutputStream mirrorOut) throws IOException {
-    Preconditions.checkState(!useDirectBuffers,
-        "Currently only supported for non-direct buffers");
-    mirrorOut.write(curPacketBuf.array(),
-        curPacketBuf.arrayOffset(),
-        curPacketBuf.remaining());
+    Preconditions.checkState(!useDirectBuffers, "Currently only supported for non-direct buffers");
+    mirrorOut.write(curPacketBuf.array(), curPacketBuf.arrayOffset(), curPacketBuf.remaining());
   }
 
   private static void doReadFully(ReadableByteChannel ch, InputStream in, ByteBuffer buf) throws IOException {

@@ -521,11 +521,9 @@ public class BlockReaderFactory implements ShortCircuitReplicaCreator {
    * @throws  IOException If we encountered an I/O exception while communicating
    *          with the datanode.
    */
-  private ShortCircuitReplicaInfo requestFileDescriptors(DomainPeer peer,
-          Slot slot) throws IOException {
+  private ShortCircuitReplicaInfo requestFileDescriptors(DomainPeer peer, Slot slot) throws IOException {
     ShortCircuitCache cache = clientContext.getShortCircuitCache();
-    final DataOutputStream out =
-        new DataOutputStream(new BufferedOutputStream(peer.getOutputStream()));
+    final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(peer.getOutputStream()));
     SlotId slotId = slot == null ? null : slot.getSlotId();
     new Sender(out).requestShortCircuitFds(block, token, slotId, 1);
     DataInputStream in = new DataInputStream(peer.getInputStream());
@@ -596,27 +594,25 @@ public class BlockReaderFactory implements ShortCircuitReplicaCreator {
    */
   private BlockReader getRemoteBlockReaderFromDomain() throws IOException {
     if (pathInfo == null) {
-      pathInfo = clientContext.getDomainSocketFactory().
-                      getPathInfo(inetSocketAddress, conf);
+      pathInfo = clientContext.getDomainSocketFactory().getPathInfo(inetSocketAddress, conf);
     }
     if (!pathInfo.getPathState().getUsableForDataTransfer()) {
       if (LOG.isTraceEnabled()) {
-        LOG.trace(this + ": not trying to create a remote block reader " +
-            "because the UNIX domain socket at " + pathInfo +
-            " is not usable.");
+        LOG.trace(this + ": not trying to create a remote block reader because the UNIX domain socket at " + pathInfo +
+                  " is not usable.");
       }
       return null;
     }
     if (LOG.isTraceEnabled()) {
-      LOG.trace(this + ": trying to create a remote block reader from the " +
-          "UNIX domain socket at " + pathInfo.getPath());
+      LOG.trace(this + ": trying to create a remote block reader from the UNIX domain socket at " +
+                pathInfo.getPath());
     }
 
     while (true) {
       BlockReaderPeer curPeer = nextDomainPeer();
       if (curPeer == null) break;
       if (curPeer.fromCache) remainingCacheTries--;
-      DomainPeer peer = (DomainPeer)curPeer.peer;
+      DomainPeer peer = (DomainPeer) curPeer.peer;
       BlockReader blockReader = null;
       try {
         blockReader = getRemoteBlockReader(peer);

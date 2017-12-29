@@ -19,7 +19,6 @@ package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.Status.SUCCESS;
 
-
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -33,6 +32,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.BufferOverflowException;
 import java.nio.channels.ClosedChannelException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -269,7 +269,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
 
       // send packet using hybrid logical clock
       PacketHeader header = new PacketHeader(pktLen, offsetInBlock, seqno, lastPacketInBlock, dataLen, syncBlock,
-                                             DFSClient.tickAndCopy());
+                                             DFSClient.hlcCopy());
 
       if (checksumPos != dataStart) {
         // Move the checksum to cover the gap. This can happen for the last packet or during an hflush/hsync call.
@@ -292,7 +292,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
         buf[headerStart + header.getSerializedSize() + checksumLen + dataLen-1] ^= 0xff;
 
       // Write the now contiguous full packet to the output stream.
-      DFSClient.LOG.info("Write packet to output stream.");
       stm.write(buf, headerStart, header.getSerializedSize() + checksumLen + dataLen);
 
       // undo corruption.
@@ -355,10 +354,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
             TimeUnit.MILLISECONDS)
         .removalListener(new RemovalListener<DatanodeInfo, DatanodeInfo>() {
           @Override
-          public void onRemoval(
-              RemovalNotification<DatanodeInfo, DatanodeInfo> notification) {
-            DFSClient.LOG.info("Removing node " +
-                notification.getKey() + " from the excluded nodes list");
+          public void onRemoval(RemovalNotification<DatanodeInfo, DatanodeInfo> notification) {
+            DFSClient.LOG.info("Removing node " + notification.getKey() + " from the excluded nodes list");
           }
         })
         .build(new CacheLoader<DatanodeInfo, DatanodeInfo>() {
@@ -592,8 +589,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
               one = new Packet();  // heartbeat packet
             } else {
               one = dataQueue.getFirst(); // regular data packet
-              DFSClient.LOG.info("Packet: " + one);
-              DFSClient.LOG.info("Stage: " + stage);
             }
           }
           assert one != null;
@@ -654,9 +649,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
             //and open convert the new block specified by blockNumber in to "Under construction"
             //state.
             if (oldBlockNumber != blockNumber) {
-              HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+              HybridLogicalClock mhlc = DFSClient.hlcCopy();
               LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, block, (int) blockNumber, fileId, dfsClient.clientName, mhlc);
-              DFSClient.tickOnRecv(mhlc); //HDFSRS_VC
+              DFSClient.mergeOnRecv(mhlc); //HDFSRS_VC
               if (lb==null)
                 throw new IOException("[HDFSRS_RWAPI]overwriteBlock() returns null:blockNumber="+blockNumber);
               accessToken = lb.getBlockToken();
@@ -696,7 +691,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
             }
             stage = BlockConstructionStage.PIPELINE_CLOSE;
           }
-          DFSClient.LOG.info("Stage after waiting: " + stage);
           
           // send the packet
           synchronized (dataQueue) {
@@ -708,7 +702,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
             }
           }
 
-          DFSClient.LOG.info("DataStreamer block " + block + " sending packet " + one);
           if (DFSClient.LOG.isDebugEnabled()) {
             DFSClient.LOG.debug("DataStreamer block " + block + " sending packet " + one);
           }
@@ -939,7 +932,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
           try {
             // read an ack from the pipeline
             ack.readFields(blockReplyStream);
-            DFSClient.LOG.info("DFSClient " + ack);
             if (DFSClient.LOG.isDebugEnabled()) {
               DFSClient.LOG.debug("DFSClient " + ack);
             }
@@ -1013,7 +1005,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
             }
             //HDFSRS_VC: Acknowledge vector clock
             if (ack.getMhlc() != null)
-              DFSClient.tickOnRecv(ack.getMhlc());
+              DFSClient.mergeOnRecv(ack.getMhlc());
           } catch (Exception e) {
             if (!responderClosed) {
               if (e instanceof IOException) {
@@ -1047,8 +1039,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
     //
     private boolean processDatanodeError() throws IOException {
       if (response != null) {
-        DFSClient.LOG.info("Error Recovery for " + block +
-        " waiting for responder to exit. ");
+        DFSClient.LOG.info("Error Recovery for " + block + " waiting for responder to exit. ");
         return true;
       }
       // System.out.println("Close stream from DatanodeError");
@@ -1427,9 +1418,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
 
         if (!success) {
           DFSClient.LOG.info("Abandoning " + block);
-          HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+          HybridLogicalClock mhlc = DFSClient.hlcCopy();
           dfsClient.namenode.abandonBlock(block, src, dfsClient.clientName, mhlc);
-          DFSClient.tickOnRecv(mhlc);
+          DFSClient.mergeOnRecv(mhlc);
           block = null;
           DFSClient.LOG.info("Excluding datanode " + nodes[errorIndex]);
           excludedNodes.put(nodes[errorIndex], nodes[errorIndex]);
@@ -1448,8 +1439,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
     private boolean createBlockOutputStream(DatanodeInfo[] nodes, long newGS,
         boolean recoveryFlag) {
       if (nodes.length == 0) {
-        DFSClient.LOG.info("nodes are empty for write pipeline of block "
-            + block);
+        DFSClient.LOG.info("nodes are empty for write pipeline of block " + block);
         return false;
       }
       Status pipelineStatus = SUCCESS;
@@ -1496,7 +1486,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
               nodes, null, recoveryFlag? stage.getRecoveryStage() : stage, 
               nodes.length, block.getNumBytes(), bytesSent, newGS, checksum,
               cachingStrategy.get(),this.blockWriteOffset/*HDFSRS_RWAPI:block write offset*/,
-              DFSClient.tickAndCopy(), suffix);
+              DFSClient.hlcCopy(), suffix);
   
           // receive ack for connect
           BlockOpResponseProto resp = BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(blockReplyStream));
@@ -1583,18 +1573,17 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
       }
     }
 
-    private LocatedBlock locateFollowingBlock(long start,
-        DatanodeInfo[] excludedNodes)  throws IOException {
+    private LocatedBlock locateFollowingBlock(long start, DatanodeInfo[] excludedNodes)  throws IOException {
       int retries = dfsClient.getConf().nBlockWriteLocateFollowingRetry;
       long sleeptime = 400;
       while (true) {
         long localstart = Time.now();
         while (true) {
           try {
-        	HybridLogicalClock mhlc = DFSClient.tickAndCopy();
-            LocatedBlock lb = dfsClient.namenode.addBlock(src, dfsClient.clientName,
-                block, excludedNodes, fileId, favoredNodes,mhlc);
-            DFSClient.tickOnRecv(mhlc);//tick on received Message
+            HybridLogicalClock mhlc = DFSClient.hlcCopy();
+            LocatedBlock lb = dfsClient.namenode.addBlock(src, dfsClient.clientName, block, excludedNodes, fileId,
+                                                          favoredNodes, mhlc);
+            DFSClient.mergeOnRecv(mhlc); // merge  on received Message
             return lb;
           } catch (RemoteException e) {
             IOException ue = 
@@ -1760,11 +1749,10 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
       DataChecksum checksum, String[] favoredNodes) throws IOException {
     final HdfsFileStatus stat;
     try {
-      HybridLogicalClock mhlc = DFSClient.tickAndCopy();
-      stat = dfsClient.namenode.create(src, masked, dfsClient.clientName,
-          new EnumSetWritable<CreateFlag>(flag), createParent, replication,
-          blockSize,mhlc);
-      DFSClient.tickOnRecv(mhlc);//HDFSRS_VC
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
+      stat = dfsClient.namenode.create(src, masked, dfsClient.clientName, new EnumSetWritable<CreateFlag>(flag),
+                                       createParent, replication, blockSize, mhlc);
+      DFSClient.mergeOnRecv(mhlc); // HDFSRS_VC
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      DSQuotaExceededException.class,
@@ -2021,9 +2009,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
     flushOrSync(isSync, syncFlags, syncFinalize, false);
   }
   
-  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, boolean syncFinalize,
-                           boolean blockFinalize/*HDFSRS_RWAPI: for seek flush*/)
+  private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, boolean syncFinalize, boolean blockFinalize)
       throws IOException {
+    DFSClient.LOG.info("Flush or Sync called." );
     dfsClient.checkOpen();
     checkClosed();
     try {
@@ -2113,8 +2101,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
         toWaitFor = lastQueuedSeqno;
         lastFlushSeqno = lastQueuedSeqno;
       } // end synchronized
-
+      DFSClient.LOG.info("Time before waiting for flush: " + Time.now());
       waitForAckedSeqno(toWaitFor);
+      DFSClient.LOG.info("Time after waiting for flush: " + Time.now());
 
       // update the block length first time irrespective of flag
       if (updateLength || persistBlocks.get()) {
@@ -2134,9 +2123,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
       // namenode.
       if (persistBlocks.getAndSet(false) || updateLength) {
         try {
-          HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+          HybridLogicalClock mhlc = DFSClient.hlcCopy();
           dfsClient.namenode.fsync(src, dfsClient.clientName, lastBlockLength, mhlc);
-          DFSClient.tickOnRecv(mhlc); // HDFSRS_VC
+          DFSClient.mergeOnRecv(mhlc); // HDFSRS_VC
         } catch (IOException ioe) {
           DFSClient.LOG.warn("Unable to persist blocks in hflush for " + src, ioe);
           // If we got an error here, it might be because some other thread called
@@ -2300,7 +2289,6 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
         waitAndQueueCurrentPacket();
       }
 
-      DFSClient.LOG.info("bytesCurBlock: " + bytesCurBlock);
       if (bytesCurBlock != 0) {
         // send an empty packet to mark the end of the block
         currentPacket = new Packet(0, 0, bytesCurBlock);
@@ -2328,10 +2316,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
     boolean fileComplete = false;
     int retries = dfsClient.getConf().nBlockWriteLocateFollowingRetry;
     while (!fileComplete) {
-      HybridLogicalClock mhlc = DFSClient.tickAndCopy();
-      fileComplete =
-          dfsClient.namenode.complete(src, dfsClient.clientName, last, fileId, mhlc);
-      DFSClient.tickOnRecv(mhlc);//HDFSRS_VC
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
+      fileComplete = dfsClient.namenode.complete(src, dfsClient.clientName, last, fileId, mhlc);
+      DFSClient.mergeOnRecv(mhlc); // HDFSRS_VC
       if (!fileComplete) {
         final int hdfsTimeout = dfsClient.getHdfsTimeout();
         if (!dfsClient.clientRunning ||

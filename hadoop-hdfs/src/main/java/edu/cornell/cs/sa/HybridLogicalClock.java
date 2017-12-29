@@ -29,9 +29,9 @@ public class HybridLogicalClock implements Comparable<HybridLogicalClock>
   
   @Override
   public int compareTo(HybridLogicalClock hlc) {
-    if (r == hlc.r)
-      return Long.compare(c, hlc.c);
-    return Long.compare(r, hlc.r);
+    if (this.r == hlc.r)
+      return Long.compare(this.c, hlc.c);
+    return Long.compare(this.r, hlc.r);
   }
   
   synchronized public void tick() {
@@ -44,10 +44,20 @@ public class HybridLogicalClock implements Comparable<HybridLogicalClock>
     else
       c = 0;
   }
-  
-  synchronized public HybridLogicalClock tickCopy(){
+
+  synchronized public HybridLogicalClock tickAndCopy(){
     tick();
     return new HybridLogicalClock(this);
+  }
+
+  synchronized public void mergeOnRecv(HybridLogicalClock mhlc) {
+    if (compareTo(mhlc) < 0) {
+      this.r = mhlc.r;
+      this.c = mhlc.c;
+    } else {
+      mhlc.r = this.r;
+      mhlc.c = this.c;
+    }
   }
   
   synchronized public void tickOnRecv(HybridLogicalClock mhlc) {

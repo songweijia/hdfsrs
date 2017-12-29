@@ -138,7 +138,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     }
     
     public void writeTo(DataOutputStream stm)throws IOException{
-      HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       RDMAWritePacketProto proto = RDMAWritePacketProto.newBuilder()
           .setSeqno(seqno)
           .setOffset(offset)
@@ -284,7 +284,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
                 "but receiving seqno="+ack.getSeqno());
             DFSClient.LOG.error(lastException);
           }
-          DFSClient.tickOnRecv(ack.getHLC());
+          DFSClient.mergeOnRecv(ack.getHLC());
           if(!ack.isSuccess()){
             lastException = new Exception("[R] gets unsuccessful ack: ack.status="+ack.getReply());
             DFSClient.LOG.error(lastException);
@@ -354,7 +354,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
 
       while(true){
         long localstart = Time.now();
-        HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+        HybridLogicalClock mhlc = DFSClient.hlcCopy();
         ExtendedBlock oldBlock = block;
 
         try {
@@ -486,11 +486,11 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
      */
     public void doOverwrite(){
       //STEP 1: get locatedBlock
-      HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       try {
         LocatedBlock lb = dfsClient.namenode.overwriteBlock(src, 
           block, (int)(blockNumber), fFileId, dfsClient.clientName, mhlc);
-        DFSClient.tickOnRecv(mhlc);
+        DFSClient.mergeOnRecv(mhlc);
         accessToken = lb.getBlockToken();
         block = lb.getBlock();
         bytesCurBlock = block.getNumBytes();
@@ -815,7 +815,7 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       DFSClient.LOG.debug("[S] created 'out' and 'blockReplyStream'");
       //STEP 2: send write block request
       // send the request
-      HybridLogicalClock hlc = DFSClient.tickAndCopy();
+      HybridLogicalClock hlc = DFSClient.hlcCopy();
       DFSClient.LOG.debug("[S] RPC calls 'writeBlockRDMA' to datanode.fBlockBuffer.address="+fBlockBuffer.address);
       new Sender(out).writeBlockRDMA(this.block, 
           this.accessToken, dfsClient.clientName, 
@@ -945,11 +945,11 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
       long blockSize, Progressable progress) throws IOException{
     final HdfsFileStatus stat;
     try{
-      HybridLogicalClock mhlc = DFSClient.tickAndCopy();
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
       stat = dfsClient.namenode.create(src, masked, dfsClient.clientName,
           new EnumSetWritable<CreateFlag>(flag), createParent, (short)1,
           blockSize,mhlc);
-      DFSClient.tickOnRecv(mhlc);
+      DFSClient.mergeOnRecv(mhlc);
     }catch(RemoteException re){
       throw re.unwrapRemoteException(AccessControlException.class,
           DSQuotaExceededException.class,
@@ -1097,10 +1097,9 @@ public class DFSRDMAOutputStream extends SeekableDFSOutputStream{
     boolean fileComplete = false;
     int retries = dfsClient.getConf().nBlockWriteLocateFollowingRetry;
     while (!fileComplete) {
-      HybridLogicalClock mhlc = DFSClient.tickAndCopy();
-      fileComplete =
-          dfsClient.namenode.complete(src, dfsClient.clientName, last, fFileId, mhlc);
-      DFSClient.tickOnRecv(mhlc);//HDFSRS_VC
+      HybridLogicalClock mhlc = DFSClient.hlcCopy();
+      fileComplete = dfsClient.namenode.complete(src, dfsClient.clientName, last, fFileId, mhlc);
+      DFSClient.mergeOnRecv(mhlc);//HDFSRS_VC
       if (!fileComplete) {
         final int hdfsTimeout = dfsClient.getHdfsTimeout();
         if (!dfsClient.clientRunning ||

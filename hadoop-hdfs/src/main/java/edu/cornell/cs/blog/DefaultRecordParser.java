@@ -20,11 +20,11 @@ public class DefaultRecordParser implements IRecordParser {
   }
 
   @Override
-  public int ParseRecord(ByteBuffer bb) throws RecordParserException{
-    if(bb==null || bb.remaining() == 0){
+  public int ParseRecord(ByteBuffer bb) throws RecordParserException {
+    if (bb == null || bb.remaining() == 0) {
       throw new RecordParserException("Cannot ParseRecord");
-    }else{
-      return bb.limit();
+    } else {
+      return bb.remaining();
     }
   }
 
@@ -33,7 +33,7 @@ public class DefaultRecordParser implements IRecordParser {
    */
   @Override
   public int ParseRecord(byte[] buf, int offset, int len) throws RecordParserException {
-    if(offset >= 0 && offset+len<buf.length)
+    if (offset >= 0 && offset + len < buf.length)
       return ParseRecord(ByteBuffer.wrap(buf,offset,len));
     else
       throw new RecordParserException("Cannot ParseRecord");

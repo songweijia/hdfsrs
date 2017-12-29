@@ -56,7 +56,6 @@ import edu.cornell.cs.sa.HybridLogicalClock;
 @InterfaceStability.Evolving
 public class PacketHeader {
   static{
-//    VectorClock vc = new VectorClock(-1);
     HybridLogicalClock hlc = new HybridLogicalClock();
     MAX_PROTO_SIZE = PacketHeaderProto.newBuilder()
         .setOffsetInBlock(0)
@@ -64,16 +63,13 @@ public class PacketHeader {
         .setLastPacketInBlock(false)
         .setDataLen(0)
         .setSyncBlock(false)
-//        .setMvc(PBHelper.convert(vc))
         .setMhlc(PBHelper.convert(hlc))
-        .build().getSerializedSize() + 16; //
+        .build().getSerializedSize() + 16;
   }
 
   private static final int MAX_PROTO_SIZE;
-  public static final int PKT_LENGTHS_LEN =
-      Ints.BYTES + Shorts.BYTES;
-  public static final int PKT_MAX_HEADER_LEN =
-      PKT_LENGTHS_LEN + MAX_PROTO_SIZE;
+  public static final int PKT_LENGTHS_LEN = Ints.BYTES + Shorts.BYTES;
+  public static final int PKT_MAX_HEADER_LEN = PKT_LENGTHS_LEN + MAX_PROTO_SIZE;
 
   private int packetLen;
   private PacketHeaderProto proto;
@@ -81,22 +77,18 @@ public class PacketHeader {
   public PacketHeader() {
   }
 
-  public PacketHeader(int packetLen, long offsetInBlock, long seqno,
-                      boolean lastPacketInBlock, int dataLen, boolean syncBlock,
-                      HybridLogicalClock mhlc) {
+  public PacketHeader(int packetLen, long offsetInBlock, long seqno, boolean lastPacketInBlock, int dataLen,
+                      boolean syncBlock, HybridLogicalClock mhlc) {
     this.packetLen = packetLen;
-    Preconditions.checkArgument(packetLen >= Ints.BYTES,
-        "packet len %s should always be at least 4 bytes",
-        packetLen);
-    
+    Preconditions.checkArgument(packetLen >= Ints.BYTES, "packet len %s should always be at least 4 bytes", packetLen);
     PacketHeaderProto.Builder builder = PacketHeaderProto.newBuilder()
       .setOffsetInBlock(offsetInBlock)
       .setSeqno(seqno)
       .setLastPacketInBlock(lastPacketInBlock)
       .setDataLen(dataLen);
     
-    if(mhlc!=null){
-    	builder.setMhlc(PBHelper.convert(mhlc));
+    if (mhlc != null) {
+      builder.setMhlc(PBHelper.convert(mhlc));
     }
       
     if (syncBlock) {

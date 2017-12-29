@@ -268,7 +268,7 @@ public class FileTester extends Configured implements Tool {
     fsos.close();
   }
 
-  void write(FileSystem fs, String path,int filesizeMB, int bfsz)
+  void write(FileSystem fs, String path, int filesizeMB, int bfsz)
   throws IOException{
     FSDataOutputStream fsos = fs.create(new Path(path));
     byte [] buf = new byte[bfsz];

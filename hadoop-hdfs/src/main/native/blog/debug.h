@@ -8,7 +8,7 @@
 #ifndef DEBUG_PRINT
 
   #ifdef DEBUG
-  #define DEBUG_PRINT(arg,fmt...) {fprintf(stderr,"<%ld>",pthread_self());fprintf(stderr,arg, ##fmt );fflush(stderr);}
+  #define DEBUG_PRINT(arg,fmt...) {fprintf(stderr,"<%ld>",pthread_self()); fprintf(stderr,arg,##fmt ); fflush(stderr);}
   #else
   #define DEBUG_PRINT(arg,fmt...)
   #endif

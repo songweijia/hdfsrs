@@ -384,43 +384,35 @@ public class RemoteBlockReader2  implements BlockReader {
                                      long timestamp,
                                      boolean bUserTimestamp) throws IOException {
     // in and out will be closed when sock is closed (by the caller)
-    final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
-          peer.getOutputStream()));
-    new Sender(out).readBlock(block, blockToken, clientName, startOffset, len,
-        verifyChecksum, cachingStrategy,timestamp,bUserTimestamp);
+    final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(peer.getOutputStream()));
 
+    new Sender(out).readBlock(block, blockToken, clientName, startOffset, len, verifyChecksum, cachingStrategy,
+                              timestamp, bUserTimestamp);
     //
     // Get bytes in block
     //
     DataInputStream in = new DataInputStream(peer.getInputStream());
 
-    BlockOpResponseProto status = BlockOpResponseProto.parseFrom(
-        PBHelper.vintPrefixed(in));
+    BlockOpResponseProto status = BlockOpResponseProto.parseFrom(PBHelper.vintPrefixed(in));
     checkSuccess(status, peer, block, file);
-    ReadOpChecksumInfoProto checksumInfo =
-      status.getReadOpChecksumInfo();
-    DataChecksum checksum = DataTransferProtoUtil.fromProto(
-        checksumInfo.getChecksum());
+    ReadOpChecksumInfoProto checksumInfo = status.getReadOpChecksumInfo();
+    DataChecksum checksum = DataTransferProtoUtil.fromProto(checksumInfo.getChecksum());
     //Warning when we get CHECKSUM_NULL?
 
     // Read the first chunk offset.
     long firstChunkOffset = checksumInfo.getChunkOffset();
 
     if ( firstChunkOffset < 0 || firstChunkOffset > startOffset ||
-        firstChunkOffset <= (startOffset - checksum.getBytesPerChecksum())) {
-      throw new IOException("BlockReader: error in first chunk offset (" +
-                            firstChunkOffset + ") startOffset is " +
+         firstChunkOffset <= (startOffset - checksum.getBytesPerChecksum())) {
+      throw new IOException("BlockReader: error in first chunk offset (" + firstChunkOffset + ") startOffset is " +
                             startOffset + " for file " + file);
     }
 
-    return new RemoteBlockReader2(file, block.getBlockPoolId(), block.getBlockId(),
-        checksum, verifyChecksum, startOffset, firstChunkOffset, len, peer,
-        datanodeID, peerCache);
+    return new RemoteBlockReader2(file, block.getBlockPoolId(), block.getBlockId(), checksum, verifyChecksum,
+                                  startOffset, firstChunkOffset, len, peer, datanodeID, peerCache);
   }
 
-  static void checkSuccess(
-      BlockOpResponseProto status, Peer peer,
-      ExtendedBlock block, String file)
+  static void checkSuccess(BlockOpResponseProto status, Peer peer, ExtendedBlock block, String file)
       throws IOException {
     if (status.getStatus() != Status.SUCCESS) {
       if (status.getStatus() == Status.ERROR_ACCESS_TOKEN) {

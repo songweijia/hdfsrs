@@ -1688,7 +1688,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_createBlock(JNIEnv *env,
   MAP_LOCK(block, filesystem->block_map, block_id, 'w');
   if (MAP_CREATE_AND_WRITE(block, filesystem->block_map, block_id, block) != 0) {
     fprintf(stderr, "ERROR: Block with ID %" PRIu64 " was not found in the block map while it should be there.\n",
-        block_id);
+            block_id);
     exit(0);
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
@@ -2234,7 +2234,7 @@ static inline uint64_t blog_allocate_pages(filesystem_t *fs, int npage) {
 
 // writeBlockInternal: write block
 int writeBlockInternal(JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId, jint blkOfst, jint length,
-    const transport_parameters_t * tp) {
+                       const transport_parameters_t * tp) {
   DEBUG_PRINT("begin writeBlock:blockId=%ld,blkOfst=%d,length=%d\n", blockId, blkOfst, length);
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   uint64_t block_id = (uint64_t) blockId;
