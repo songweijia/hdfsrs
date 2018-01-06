@@ -2,7 +2,12 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+
+#ifdef VERBS_RDMA
 #include "InfiniBandRDMA.h"
+#else
+#include "LibFabricRDMA.h"
+#endif
 
 #define TEST_NZ(x,y) do { if ((x)) die(y); } while (0)
 #define TEST_Z(x,y) do { if (!(x)) die(y); } while (0)
@@ -101,20 +106,27 @@ static void runClient(
   const char *dev,
   const uint32_t pool_size_order,
   const uint32_t page_size_order){
-
+#ifdef VERBS_RDMA
   RDMACtxt rdma_ctxt;
+#else
+  struct lf_ctxt rdma_ctxt;
+#endif
   uint64_t i;
   // step 1: initialize client
+#ifdef VERBS_RDMA
   TEST_NZ(initializeContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,dev,port,1),"initializeContext");
+#else
+  TEST_NZ(initializeLFContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,"verbs",dev,port,1),"initializeContext");
+#endif
   for(i=0;i<(1lu<<(pool_size_order-page_size_order));i++)
     memset((void*)((char*)rdma_ctxt.pool+(i<<page_size_order)),'A'+i,1l<<page_size_order);
 
   // step 2: connect
-  printf("before calling rdmaConnect\n");
-  fflush(stdout);
+#ifdef VERBS_RDMA
   TEST_NZ(rdmaConnect(&rdma_ctxt,inet_addr(host)),"rdmaConnect");
-  printf("after calling rdmaConnect\n");
-  fflush(stdout);
+#else
+  TEST_NZ(LFConnect(&rdma_ctxt,inet_addr(host)),"LFConnect");
+#endif
   // step 3: wait for RDMA test
   while(1){
     getchar();
@@ -129,12 +141,18 @@ static void runServer(
   const char *dev,
   const uint32_t pool_size_order,
   const uint32_t page_size_order){
-
+#ifdef VERBS_RDMA
   RDMACtxt rdma_ctxt;
+#else
+  struct lf_ctxt rdma_ctxt;
+#endif
 
   // step 1: initialize server
+#ifdef VERBS_RDMA
   TEST_NZ(initializeContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,dev,port,0),"initializeContext");
-
+#else
+  TEST_NZ(initializeLFContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,"verbs",dev,port,0),"initializeContext");
+#endif
     // step 2: test
   while(1){
     // int pns[4];
@@ -144,7 +162,11 @@ static void runServer(
     // int i;
     int ret,nloop;
     uint64_t j;
+#ifdef VERBS_RDMA
     RDMAConnection *conn;
+#else
+    LFConn *conn;
+#endif
     printf("please give the client info(like:<ipkey>1c09a8c0000078e8 <vaddr>70fffffffff <loop>1024):\n");
     ret = scanf("%lx %lx %d",&cipkey,&rvaddr,&nloop);
     printf("cipkey=0x%lx\n",cipkey);
@@ -158,11 +180,15 @@ static void runServer(
     }
 
     uint64_t npages = 1l<<(pool_size_order - page_size_order);
-    const void **pagelist = (const void **)malloc(sizeof(void*)*npages);
+    void **pagelist = (void **)malloc(sizeof(void*)*npages);
 
     for(j=0;j<npages;j++)
     {
-      pagelist[j] = (const void *)((char*)conn->l_vaddr+(j<<page_size_order));
+#ifdef VERBS_RDMA
+      pagelist[j] = (void *)((char*)conn->l_vaddr+(j<<page_size_order));
+#else
+      pagelist[j] = (void *)((char*)rdma_ctxt.pool+(j<<page_size_order));
+#endif
     }
     
     while(nloop-- > 0){
