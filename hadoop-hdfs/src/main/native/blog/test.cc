@@ -54,7 +54,7 @@ int main(int argc, char **argv){
   uint16_t port=DEFAULT_PORT;
   uint32_t psz=20;// the default pool size is 1MB.
   uint32_t align=12;// the default page or buffer size is 4KB.
-  while((c=getopt(argc,argv,"cs:h:p:a:z:d:"))!=-1){
+  while((c=getopt(argc,argv,"csh:p:a:z:d:"))!=-1){
     switch(c){
     case 'c':
       if(mode!=-1){
@@ -202,6 +202,8 @@ static void runServer(
       wus = (tv2.tv_sec-tv1.tv_sec)*1000000l + tv2.tv_usec-tv1.tv_usec;
       if(ret != 0)
         fprintf(stdout, "RDMA write failed with error:%s!\n",strerror(errno));
+      else
+        fprintf(stdout, "rdmaWrite done.\n");
 
       // step 5: test rdmaRead:
       gettimeofday(&tv1,NULL);
@@ -210,11 +212,13 @@ static void runServer(
       rus = (tv2.tv_sec-tv1.tv_sec)*1000000l + tv2.tv_usec-tv1.tv_usec;
       if(ret != 0)
         fprintf(stdout, "RDMA read failed with error:%s!\n",strerror(errno));
+      else
+        fprintf(stdout, "rdmaRead done.\n");
 
       // step 5: wait for data being transfered.
-      fprintf(stdout, "Write: %.3fGbps, Read: %.3fGbps.\n",
-        (double)(1l<<pool_size_order)*8/wus/1000.0,
-        (double)(1l<<pool_size_order)*8/rus/1000.0
+      fprintf(stdout, "Write: %.3fGbps(%ldus), Read: %.3fGbps(%ldus),.\n",
+        (double)(1l<<pool_size_order)*8/wus/1000.0,wus,
+        (double)(1l<<pool_size_order)*8/rus/1000.0,rus
       );
     }
   }

@@ -35,6 +35,8 @@ extern "C" {
 //  Definitiona of structures.                //
 ////////////////////////////////////////////////
 #define MAX_LF_ADDR_SIZE        (256)
+#define DEFAULT_SGE_BAT_SIZE    (16)
+#define DEFAULT_TRANS_DEPTH     (16)
 typedef struct lf_conn LFConn;
 MAP_DECLARE(con,LFConn); 
 struct lf_ctxt {

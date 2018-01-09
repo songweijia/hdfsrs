@@ -10,12 +10,17 @@ MAP_DEFINE(con,LFConn,10);
 
 ////////////////////////////////////////////////
 // Internal tools.                            //
+// DIE_NZ means "make sure return non-zero"  //
+// DIE_Z means "make sure return zero"       //
+// DIE_N means "make sure return NonNegtive" //
 ////////////////////////////////////////////////
-#define TEST_NZ(x,y) do { if ((x)) die(y); } while (0)
-#define TEST_Z(x,y) do { if (!(x)) die(y); } while (0)
-#define TEST_N(x,y) do { if ((x)<0) die(y); } while (0)
+#define DIE_NZ(x,y) do { if ((x)) die(y); } while (0)
+#define DIE_Z(x,y) do { if ((x)==0) die(y); } while (0)
+#define DIE_N(x,y) do { if ((x)<0) die(y); } while (0)
 #define MAKE_CON_KEY(host,port_or_pid) ((((long)(host))<<32)|(port_or_pid))
 #define GET_IP_FROM_KEY(key)    ((const uint32_t)(((key)>>32)&0x00000000FFFFFFFF))
+#define GET_SVR_PORT_FROM_KEY(key)    ((const uint32_t)(key)&0x00000000FFFFFFFF)
+#define GET_PID_FROM_KEY(key)    GET_SVR_PORT_FROM_KEY(key)
 #define MIN(x,y) ((x)>(y)?(y):(x))
 #define LF_VERSION FI_VERSION(1,5)
 
@@ -29,7 +34,7 @@ static int die(const char *reason){
   do { \
     ret = (x); \
     if (ret != 0) {\
-      fprintf(stderr,"%s:call LibFabric API failed with error(%d) %s.\n",__func__,ret,fi_strerror(-ret)); \
+      fprintf(stderr,"%s:call LibFabric API (%s) failed with error(%d), %s.\n",__func__,desc,ret,fi_strerror(-ret)); \
       return ret; \
     } \
   } while (0)
@@ -48,13 +53,22 @@ static int default_context(struct lf_ctxt *ct) {
   ct->hints->ep_attr->type = FI_EP_MSG; // use connection based endpoint by default.
 
   ct->hints->domain_attr->mode = ~0;
-  ct->hints->domain_attr->mr_mode = ~0;
+  ct->hints->domain_attr->mr_mode = FI_MR_LOCAL | FI_MR_VIRT_ADDR | FI_MR_ALLOCATED | FI_MR_PROV_KEY;
 
   if (ct->cq_attr.format == FI_CQ_FORMAT_UNSPEC)
     ct->cq_attr.format = FI_CQ_FORMAT_CONTEXT;
   ct->cq_attr.wait_obj = FI_WAIT_NONE;
 
+  ct->hints->tx_attr->iov_limit = DEFAULT_SGE_BAT_SIZE;
+  ct->hints->tx_attr->rma_iov_limit = DEFAULT_SGE_BAT_SIZE;
+  ct->hints->rx_attr->iov_limit = DEFAULT_SGE_BAT_SIZE;
+  // TODO: more configurations could be found at
+  // ct->hints->tx/rx_attr,ep_attr,domain_attr,fabric_addr;
+
   ct->port = LFPF_SERVER_PORT;
+  ct->local_ep_addr_len = MAX_LF_ADDR_SIZE;
+  ct->sge_bat_size = DEFAULT_SGE_BAT_SIZE;
+  ct->tx_depth = DEFAULT_TRANS_DEPTH;
 
   return 0;
 }
@@ -171,6 +185,7 @@ void lf_server_connect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct) {
   uint32_t event;
   int fi_ret,is_dup;
 
+  DEBUG_PRINT("Received connect from client cipkey = 0x%lx  \n",cipkey);
   MAP_LOCK(con, ct->con_map, cipkey, 'r');
   is_dup = (MAP_READ(con, ct->con_map, cipkey, &lfconn)==0);
   MAP_UNLOCK(con, ct->con_map, cipkey);
@@ -239,11 +254,14 @@ void lf_server_connect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct) {
   nWrite = write(connfd,(void *)&hsiii,sizeof(hsiii));
   //10. CLIENT ==[ MKey, PID, and VADDR]=> SERVER
   nRead = recv(connfd, (void *)&rhsiii,sizeof(rhsiii), MSG_WAITALL);
-  if (nRead != sizeof(hsiii)) {
+  if (nRead != sizeof(rhsiii)) {
     fprintf(stderr, "%s,Failed to read LF_HS_III from client.\n",__func__);
     free(lfconn);
     return;
   }
+  lfconn->r_rkey = rhsiii.mr_key;
+  lfconn->remote_fi_addr = rhsiii.vaddr;
+  lfconn->pid = GET_PID_FROM_KEY(cipkey);
   //11. Both sides insert this to LFConn
   //// we just skip the pid in LF_HS_III
   // insert it into map
@@ -256,6 +274,9 @@ void lf_server_connect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct) {
     return;
   }
   MAP_UNLOCK(con, ct->con_map, cipkey);
+  //DEBUG_PRINT("Connection established for client cipkey = 0x%lx, pid=0x%x, remote_fi_addr=0x%lx, vaddr=0x%lx, \n",
+  fprintf(stdout,"Connection established for client cipkey = 0x%lx, pid=0x%x, remote_fi_addr=0x%lx, vaddr=0x%lx, \n",
+    cipkey,lfconn->pid,lfconn->remote_fi_addr,lfconn->r_rkey);
 }
 
 // server responds gto client disconnection request
@@ -287,7 +308,7 @@ int lf_client_connect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct) {
   LFConn *lfconn = NULL;
   int ret = 0;
   ssize_t nRead,nWrite;
-  uint32_t remote_ep_addr_len;
+  ssize_t remote_ep_addr_len;
   char remote_ep_addr[MAX_LF_ADDR_SIZE];
   struct fi_eq_cm_entry entry;
   uint32_t event;
@@ -323,19 +344,51 @@ int lf_client_connect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct) {
     free(lfconn);
     return -5;
   }
-  
+  DEBUG_PRINT("remote_ep_addr_len=%ld\n",remote_ep_addr_len);
+  DEBUG_PRINT("remote_ep_addr= [%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x]\n",
+    remote_ep_addr[0]&0xff,remote_ep_addr[1]&0xff,remote_ep_addr[2]&0xff,remote_ep_addr[3]&0xff,
+    remote_ep_addr[4]&0xff,remote_ep_addr[5]&0xff,remote_ep_addr[6]&0xff,remote_ep_addr[7]&0xff,
+    remote_ep_addr[8]&0xff,remote_ep_addr[9]&0xff,remote_ep_addr[10]&0xff,remote_ep_addr[11]&0xff,
+    remote_ep_addr[12]&0xff,remote_ep_addr[13]&0xff,remote_ep_addr[14]&0xff,remote_ep_addr[15]&0xff); 
   // * PHASE II: establish LibFabric connection
+  struct fi_info * client_hints = fi_dupinfo(ct->hints);
+  struct fi_info * client_info = NULL;
+  if(client_hints == NULL) {
+    fprintf(stderr,"%s:Cannot duplicate client_hints.",__func__);
+    free(lfconn);
+    return -8;
+  }
+  client_hints->dest_addr = malloc(remote_ep_addr_len);
+  if(client_hints->dest_addr == NULL) {
+    fprintf(stderr,"%s:Cannot malloc dest_addr.",__func__);
+    fi_freeinfo(client_hints);
+    free(lfconn);
+    return -9;
+  }
+  memcpy(client_hints->dest_addr,remote_ep_addr,remote_ep_addr_len);
+  client_hints->dest_addrlen = remote_ep_addr_len;
+  ret = fi_getinfo(LF_VERSION,NULL,NULL,0,client_hints,&client_info);
+  if (ret != 0) {
+    fprintf(stderr,"%s:fi_getinfo() failed with err:%d,%s",__func__,-ret,fi_strerror(-ret));
+    fi_freeinfo(client_hints);
+    free(lfconn);
+    return -10;
+  }
   // * 5. CLIENT initializes the endpoint
-  if (init_endpoint(ct,lfconn,ct->fi) != 0) {
+  if (init_endpoint(ct,lfconn,client_info) != 0) {
     fprintf(stderr, "%s:failed to initialize endpoint.",__func__);
+    fi_freeinfo(client_hints);
+    fi_freeinfo(client_info);
     free(lfconn);
     return -6;
   }
   // * 6. CLIENT  --[ fi_connect  ]->  SERVER
   CALL_FI_API(fi_connect(lfconn->ep, remote_ep_addr, NULL, 0),"fi_connect()",ret);
-  nRead = fi_eq_sread(ct->eq, &event, &entry, sizeof(entry), -1, 0);
+  nRead = fi_eq_sread(lfconn->eq, &event, &entry, sizeof(entry), -1, 0);
   if (nRead != sizeof(entry)) {
     fprintf(stderr, "%s: Unknown CM event: fi_eq_sread() return ret(%ld)!=sizeof(entry)\n",__func__,nRead);
+    fi_freeinfo(client_hints);
+    fi_freeinfo(client_info);
     free(lfconn);
     return -7;
   }
@@ -343,6 +396,8 @@ int lf_client_connect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct) {
   if (event != FI_CONNECTED || entry.fid != &(lfconn->ep->fid)) {
     fprintf(stderr,"%s,Unexpected CM event %d fid %p (ep %p)\n",
       __func__, event, entry.fid, lfconn->ep);
+    fi_freeinfo(client_hints);
+    fi_freeinfo(client_info);
     free(lfconn);
     return -8;
   }
@@ -356,6 +411,8 @@ int lf_client_connect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct) {
   nRead = recv(connfd, (void *)&rhsiii,sizeof(rhsiii), MSG_WAITALL);
   if (nRead != sizeof(hsiii)) {
     fprintf(stderr, "%s,Failed to read LF_HS_III from server.\n",__func__);
+    fi_freeinfo(client_hints);
+    fi_freeinfo(client_info);
     free(lfconn);
     return -9;
   }
@@ -365,11 +422,16 @@ int lf_client_connect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct) {
   if(MAP_CREATE_AND_WRITE(con, ct->con_map, cipkey, lfconn)!=0){
     MAP_UNLOCK(con, ct->con_map, cipkey);
     destroyLFConn(lfconn);
+    fi_freeinfo(client_hints);
+    fi_freeinfo(client_info);
     free(lfconn);
     fprintf(stderr, "%s:Cannot insert lfconn to map.\n",__func__);
     return -10;
   }
 
+  // release client info
+  fi_freeinfo(client_hints);
+  fi_freeinfo(client_info);
   return ret;
 }
 
@@ -394,14 +456,14 @@ void* lf_daemon_routine(void *param) {
   int n,connfd;
 
   // STEP 1: initialize the passive endpoints
-  TEST_NZ(init_server_pep(ct),"ERROR init_server_pep()");
+  DIE_NZ(init_server_pep(ct),"ERROR init_server_pep()");
 
   // STEP 2: initialize the socket server port
-  TEST_N(asprintf(&service,"%d", ct->port), "ERROR writing port number to port string.");
-  TEST_NZ(n=getaddrinfo(NULL,service,&hints,&res), "getaddrinfo threw error");
-  TEST_N(sockfd=socket(res->ai_family, res->ai_socktype, res->ai_protocol), "Could not create server socket");
+  DIE_N(asprintf(&service,"%d", ct->port), "ERROR writing port number to port string.");
+  DIE_NZ(n=getaddrinfo(NULL,service,&hints,&res), "getaddrinfo threw error");
+  DIE_N(sockfd=socket(res->ai_family, res->ai_socktype, res->ai_protocol), "Could not create server socket");
   setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &n, sizeof n);
-  TEST_NZ(bind(sockfd,res->ai_addr,res->ai_addrlen), "Could not bind addr to socket");
+  DIE_NZ(bind(sockfd,res->ai_addr,res->ai_addrlen), "Could not bind addr to socket");
   listen(sockfd, 10);
   while(1) {
     struct sockaddr_in clientAddr;
@@ -410,7 +472,7 @@ void* lf_daemon_routine(void *param) {
     uint32_t clientip;
     uint64_t cipkey;
     ssize_t nRead;
-    TEST_N(connfd = accept(sockfd, (struct sockaddr*)&clientAddr, &addrLen), "server accept failed.");
+    DIE_N(connfd = accept(sockfd, (struct sockaddr*)&clientAddr, &addrLen), "server accept failed.");
 
     // 1. CLIENT  ==[ DIS/CONNECT REQ ]=>  SERVER
     nRead = recv(connfd,(void *)&hsi1,sizeof hsi1,MSG_WAITALL);
@@ -460,6 +522,11 @@ int initializeLFContext(
   DEBUG_PRINT("Enter %s\n",__func__);
   int ret = 0;
 
+  if (domain == NULL) {
+    fprintf(stderr,"%s:failed to tinitialize LibFabric context because domain is NULL.\n",__func__);
+    return -1;
+  };
+
   // STEP 1 initialize context from user provided info.
   DEBUG_PRINT("%s:initialize context from user provided info,\n",__func__);
   memset((void*)ct,0,sizeof(struct lf_ctxt));
@@ -468,17 +535,17 @@ int initializeLFContext(
   ct->cnt = 0;
   ct->port = port;
 
-  TEST_Z(default_context(ct),"initialize libfabric hints.");
-  TEST_NZ(ct->hints->fabric_attr->prov_name = strdup(provider),"ct->provider_str = strdup(provider)");
-  TEST_NZ(ct->hints->domain_attr->name = strdup(domain),"ct->domain_str = strdup(domain)");
+  DIE_NZ(default_context(ct),"initialize libfabric hints.");
+  DIE_Z(ct->hints->fabric_attr->prov_name = strdup(provider),"ct->provider_str = strdup(provider)");
+  DIE_Z(ct->hints->domain_attr->name = strdup(domain),"ct->domain_str = strdup(domain)");
   ct->port = port; 
-  TEST_NZ(pthread_mutex_init(&ct->lock,NULL), "Could not initialize context mutex");
-  TEST_Z(ct->con_map = MAP_INITIALIZE(con), "Could not initialize LF connection map");
+  DIE_NZ(pthread_mutex_init(&ct->lock,NULL), "Could not initialize context mutex");
+  DIE_Z(ct->con_map = MAP_INITIALIZE(con), "Could not initialize LF connection map");
 
   // STEP 2 allocate memory
   DEBUG_PRINT("%s:allocate %ldKiB memory,\n",__func__,(1l<<(psz-10)));
   if(pool == NULL){
-    TEST_NZ(posix_memalign(&ct->pool,
+    DIE_NZ(posix_memalign(&ct->pool,
         isClient?LF_CTXT_BUF_SIZE(ct):LF_CTXT_PAGE_SIZE(ct),
         LF_CTXT_POOL_SIZE(ct)),
       "Cannot Allocate Pool Memory");
@@ -489,7 +556,7 @@ int initializeLFContext(
   memset(ct->pool, 0, LF_CTXT_POOL_SIZE(ct));
 
   // STEP 3: initialize fabric and domain
-  TEST_NZ(init_fabric_and_domain(ct),"ERROR init_fabric_and_domain()");
+  DIE_NZ(init_fabric_and_domain(ct),"ERROR init_fabric_and_domain()");
 
   // STEP 4: register memory
   CALL_FI_API( fi_mr_reg(ct->domain, ct->pool, 1l<<ct->psz,
@@ -506,12 +573,12 @@ int initializeLFContext(
   if (isClient) {
   // STEP 5.A For Client: initialize the bitmap
     DEBUG_PRINT("%s:initialize a client.",__func__);
-    TEST_Z(ct->extra_opts.client.bitmap = (uint8_t*)malloc(LF_CTXT_BYTES_BITMAP(ct)), "Could not allocate ct bitmap");
+    DIE_Z(ct->extra_opts.client.bitmap = (uint8_t*)malloc(LF_CTXT_BYTES_BITMAP(ct)), "Could not allocate ct bitmap");
     memset(ct->extra_opts.client.bitmap, 0, LF_CTXT_BYTES_BITMAP(ct));
   } else {
   // STEP 5.B For Server:
     DEBUG_PRINT("%s:initialize a server.",__func__);
-    TEST_NZ(pthread_create(&ct->extra_opts.server.daemon, NULL,
+    DIE_NZ(pthread_create(&ct->extra_opts.server.daemon, NULL,
       lf_daemon_routine, (void*)ct),
       "Could not initialize the daemon routine");
   }
@@ -695,6 +762,7 @@ int LFConnect(
   int ret = 0;
   LFConn * lf_conn = NULL;
 
+  DEBUG_PRINT("%s:connect to server:0x%x.\n",__func__,hostip);
   // test duplication
   MAP_LOCK(con, ct->con_map, cipkey, 'w' );
   is_dup = (MAP_READ(con,ct->con_map,cipkey,&lf_conn)==0);
@@ -726,6 +794,7 @@ int LFConnect(
   close(connfd);
 
   MAP_UNLOCK(con, ct->con_map, cipkey);
+  DEBUG_PRINT("%s:connected to server:0x%x.\n",__func__,hostip);
   return ret;
 }
 
@@ -780,6 +849,9 @@ int LFTransfer(
   int isWrite,
   int pageSize) {
 
+  DEBUG_PRINT("%s:begin transfer: hostip=%x,pid=%x,r_addr=%lx,npage=%d,isWrite=%d,pageSize=%d\n",
+    __func__,hostip,pid,r_addr,npage,isWrite,pageSize);
+
   LFConn *lfconn = NULL;
   uint32_t nr_pages_to_transfer = (uint32_t)npage;
   uint32_t i,ops_in_pipe = 0;
@@ -793,7 +865,9 @@ int LFTransfer(
   }
 
   // STEP 1: get the connection
+  DEBUG_PRINT("%s:Try LOCK...\n",__func__);
   MAP_LOCK(con, ct->con_map, cipkey, 'w');
+  DEBUG_PRINT("%s:Locked...\n",__func__);
   if(MAP_READ(con, ct->con_map, cipkey, &lfconn)!=0){
     fprintf(stderr, "%s:Cannot find the context for ip:%lx",__func__,cipkey);
     MAP_UNLOCK(con, ct->con_map, cipkey);
@@ -821,20 +895,27 @@ int LFTransfer(
     MAP_UNLOCK(con, ct->con_map, cipkey);
     return -3;
   }
+  DEBUG_PRINT("%s:buffers allocated, now trying to send.\n",__func__);
   while (nr_pages_to_transfer) {
+    DEBUG_PRINT("%s:nr_pages_to_transfer:%d\n",__func__,nr_pages_to_transfer);
     //// fill the sge list.
     for (i=0;i<MIN(nr_pages_to_transfer,ct->sge_bat_size);i++) {
       iov[i].iov_base = pagelist[npage-nr_pages_to_transfer+i];
       iov[i].iov_len = pagesize;
       desc[i] = (void*)ct->local_mr_key;
+      DEBUG_PRINT("%s:iov_base=%p,iov_len=%ld,desc=%lx\n",__func__,iov[i].iov_base,iov[i].iov_len,ct->local_mr_key);
     }
+
+    DEBUG_PRINT("%s:count=%d,addr=%lx,rkey=%lx\n",__func__,i,r_addr + (npage - nr_pages_to_transfer)*pagesize,lfconn->r_rkey);
     if(isWrite){
-      ret = fi_writev(lfconn->ep,iov,desc,i,0,r_addr,lfconn->r_rkey,NULL);
+      ret = fi_writev(lfconn->ep,iov,desc,i,0,r_addr + (npage - nr_pages_to_transfer)*pagesize,lfconn->r_rkey,NULL);
+      // ret = fi_write(lfconn->ep,iov[0].iov_base,iov[0].iov_len,(void*)ct->local_mr_key,0,r_addr + (npage - nr_pages_to_transfer)*pagesize, lfconn->r_rkey,NULL);
     } else {
-      ret = fi_readv(lfconn->ep,iov,desc,i,0,r_addr,lfconn->r_rkey,NULL);
+      ret = fi_readv(lfconn->ep,iov,desc,i,0,r_addr + (npage - nr_pages_to_transfer)*pagesize,lfconn->r_rkey,NULL);
+      // ret = fi_read(lfconn->ep,iov[0].iov_base,iov[0].iov_len,(void*)ct->local_mr_key,0,r_addr + (npage - nr_pages_to_transfer)*pagesize, lfconn->r_rkey,NULL);
     }
-    if (ret != 0) {
-      fprintf(stderr,"%s:Failed to transfer data with error:%d(%s)",__func__,-ret,fi_strerror(-ret));
+    if (ret < 0) {
+      fprintf(stderr,"%s:Failed to transfer data with error:%d(%s)\n",__func__,-ret,fi_strerror(-ret));
       free(iov);
       free(desc);
       free(cq_buffer);
@@ -843,6 +924,7 @@ int LFTransfer(
     }
     nr_pages_to_transfer -= i;
     ops_in_pipe ++;
+    DEBUG_PRINT("%s:ops_in_pipe:%d\n",__func__,ops_in_pipe);
 
     //// conitnue to send as long as pipeline is not full and we have data.
     if ( (ops_in_pipe<ct->tx_depth) && (nr_pages_to_transfer>0)) {
@@ -855,7 +937,7 @@ int LFTransfer(
       num_comp = fi_cq_read(lfconn->txcq, cq_buffer, ops_in_pipe);
     } while(num_comp == -FI_EAGAIN);
     if (num_comp < 0) {
-      fprintf(stderr,"%s:Failed to read ack data with error:%d(%s)",__func__,-ret,fi_strerror(-ret));
+      fprintf(stderr,"%s:Failed to read ack data with error:%d(%s)\n",__func__,-ret,fi_strerror(-ret));
       free(iov);
       free(desc);
       free(cq_buffer);
@@ -863,6 +945,7 @@ int LFTransfer(
       return ret;
     }
     ops_in_pipe -= num_comp;
+    DEBUG_PRINT("%s:ops_in_pipe:%d,num_comp=%ld\n",__func__,ops_in_pipe,num_comp);
   }
   //// wait for all the ACKs.
   while (ops_in_pipe) {
@@ -870,7 +953,7 @@ int LFTransfer(
       num_comp = fi_cq_read(lfconn->txcq, cq_buffer, ops_in_pipe);
     } while(num_comp == -FI_EAGAIN);
     if (num_comp < 0) {
-      fprintf(stderr,"%s:Failed to read ack data with error:%d(%s)",__func__,-ret,fi_strerror(-ret));
+      fprintf(stderr,"%s:Failed to read ack data with error:%d(%s)\n",__func__,-ret,fi_strerror(-ret));
       free(iov);
       free(desc);
       free(cq_buffer);
@@ -878,6 +961,7 @@ int LFTransfer(
       return ret;
     }
     ops_in_pipe -= num_comp;
+    DEBUG_PRINT("%s:ops_in_pipe:%d\n",__func__,ops_in_pipe);
   }
   //// release sge list and return
   free(iov);
