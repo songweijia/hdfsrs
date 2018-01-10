@@ -20,23 +20,42 @@ static int die(const char *reason){
   return -1;
 }
 
+#ifdef VERBS_RDMA
 const char * HELP_INFO = " \
 Client: test -c -h <server> -p <port> -d <dev> \
 [-z <poolsize order>] [-a <pagesize order>] \n \
 Server: test -s -p <port> -d <dev> \
 [-z <poolsize order>] [-a <pagesize order>] [-l <loop count>]  \n \
 ";
+#else
+const char * HELP_INFO = " \
+Client: test -c -h <server> -p <port> -P <provider> -d <domain> \
+[-z <poolsize order>] [-a <pagesize order>] \n \
+Server: test -s -p <port> -P <provider> -d <domain> \
+[-z <poolsize order>] [-a <pagesize order>] [-l <loop count>] \n \
+";
+#endif
 
 static void runClient(
   const char * host,
   const uint16_t port, 
+#ifdef VERBS_RDMA
   const char *dev,
+#else
+  const char *prov,
+  const char *doma,
+#endif
   const uint32_t pool_size_order,
   const uint32_t page_size_order);
 
 static void runServer(
   const uint16_t port, 
+#ifdef VERBS_RDMA
   const char *dev,
+#else
+  const char *prov,
+  const char *doma,
+#endif
   const uint32_t pool_size_order,
   const uint32_t page_size_order);
 
@@ -50,11 +69,11 @@ static void runServer(
 int main(int argc, char **argv){
   int c;
   int mode = -1; // 0 - client; 1 - server
-  char *host=NULL, *dev=NULL;
+  char *host=NULL, *dev=NULL, *prov=NULL;
   uint16_t port=DEFAULT_PORT;
   uint32_t psz=20;// the default pool size is 1MB.
   uint32_t align=12;// the default page or buffer size is 4KB.
-  while((c=getopt(argc,argv,"csh:p:a:z:d:"))!=-1){
+  while((c=getopt(argc,argv,"csh:p:a:z:d:P:"))!=-1){
     switch(c){
     case 'c':
       if(mode!=-1){
@@ -76,6 +95,9 @@ int main(int argc, char **argv){
     case 'd':
       dev = optarg;
       break;
+    case 'P':
+      prov = optarg;
+      break;
     case 'p':
       port = (unsigned short)atoi(optarg);
       break;
@@ -87,11 +109,23 @@ int main(int argc, char **argv){
       break;
     }
   }
+#ifdef RDMA_VERBS
   printf("mode=%d,host=%s,dev=%s,port=%d,psz=%d,align=%d\n",mode,host,dev,port,psz,align);
+#else
+  printf("mode=%d,host=%s,provider=%s,domain=%s,port=%d,psz=%d,align=%d\n",mode,host,prov,dev,port,psz,align);
+#endif
   if(mode == 0){
+#ifdef RDMA_VERBS
     runClient(host,port,dev,psz,align);
+#else
+    runClient(host,port,prov,dev,psz,align);
+#endif
   }else if(mode == 1){
+#ifdef RDMA_VERBS
     runServer(port,dev,psz,align);
+#else
+    runServer(port,prov,dev,psz,align);
+#endif
   }else{
     fprintf(stderr,"%s",HELP_INFO);
     return -1;
@@ -103,7 +137,12 @@ int main(int argc, char **argv){
 static void runClient(
   const char * host,
   const uint16_t port, 
+#ifdef VERBS_RDMA
   const char *dev,
+#else
+  const char *prov,
+  const char *doma,
+#endif
   const uint32_t pool_size_order,
   const uint32_t page_size_order){
 #ifdef VERBS_RDMA
@@ -116,7 +155,7 @@ static void runClient(
 #ifdef VERBS_RDMA
   TEST_NZ(initializeContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,dev,port,1),"initializeContext");
 #else
-  TEST_NZ(initializeLFContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,"verbs",dev,port,1),"initializeContext");
+  TEST_NZ(initializeLFContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,prov,doma,port,1),"initializeContext");
 #endif
   for(i=0;i<(1lu<<(pool_size_order-page_size_order));i++)
     memset((void*)((char*)rdma_ctxt.pool+(i<<page_size_order)),'A'+i,1l<<page_size_order);
@@ -137,8 +176,13 @@ static void runClient(
 }
 
 static void runServer(
-  const uint16_t port, 
+  const uint16_t port,
+#ifdef VERBS_RDMA
   const char *dev,
+#else
+  const char *prov,
+  const char *doma,
+#endif
   const uint32_t pool_size_order,
   const uint32_t page_size_order){
 #ifdef VERBS_RDMA
@@ -151,7 +195,7 @@ static void runServer(
 #ifdef VERBS_RDMA
   TEST_NZ(initializeContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,dev,port,0),"initializeContext");
 #else
-  TEST_NZ(initializeLFContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,"verbs",dev,port,0),"initializeContext");
+  TEST_NZ(initializeLFContext(&rdma_ctxt,NULL,pool_size_order,page_size_order,prov,doma,port,0),"initializeContext");
 #endif
     // step 2: test
   while(1){

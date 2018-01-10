@@ -35,7 +35,11 @@ extern "C" {
 //  Definitiona of structures.                //
 ////////////////////////////////////////////////
 #define MAX_LF_ADDR_SIZE        (256)
-#define DEFAULT_SGE_BAT_SIZE    (16)
+// #define DEFAULT_SGE_BAT_SIZE    (16)
+// in LibFabric, the maximum entries allowed in an IOV operation
+// is limited to SOCK_EP_MAX_IOV_LIMIT, which is hardwired to (8)
+// in libfabric source code(prov/sockets/include/sock.h)
+#define DEFAULT_SGE_BAT_SIZE    (8)
 #define DEFAULT_TRANS_DEPTH     (16)
 typedef struct lf_conn LFConn;
 MAP_DECLARE(con,LFConn); 
@@ -48,7 +52,7 @@ struct lf_ctxt {
   struct fid_mr      * mr;
   uint64_t           local_mr_key; // local memory key
 
-  int                timeout_sec;
+  // int                timeout_sec;
   struct fi_eq_attr  eq_attr;
   struct fi_cq_attr  cq_attr;
 
@@ -58,9 +62,6 @@ struct lf_ctxt {
   // parameters for rdma transfers
   uint32_t           tx_depth;     // transfer depth
   uint32_t           sge_bat_size; // scatter/gather batch size
-  uint32_t           use_vaddr;    // use the virtual address
-//  char               * provider_str;   // name of libfabric provider
-//  char               * domain_str;     // name of the domain
   void               * pool;       // the memory pool
   uint32_t           psz;          // pool size = 1l<<psz
   uint32_t           align;        // page/buf size = 1l<<align
@@ -89,6 +90,16 @@ struct lf_ctxt {
   ((((c)->psz - (c)->align)>3)?(1l<<((c)->psz-(c)->align-3)):1l)
 #define LF_CTXT_BITS_BITMAP(c) \
   (1l<<((c)->psz - (c)->align))
+#define LF_CTXT_USE_VADDR(c)    (((c)->fi->domain_attr->mr_mode) & FI_MR_VIRT_ADDR)
+
+//libfabric extra configuration knobs for the client
+struct lf_extra_config {
+  uint64_t      mask;
+#define EXTRA_CONFIG_TX_DEPTH           (1UL)
+  uint32_t      tx_depth;
+#define EXTRA_CONFIG_SGE_BAT_SIZE       (1UL<<1)
+  uint32_t      sge_bat_size;
+};
 
 //libfabric connection
 struct lf_conn {
@@ -157,6 +168,7 @@ typedef struct lf_handshake_phase_III {
  * port:   port number for blog ctxt.
  * isClient: 
  *         client ctxt, and ctxt->bitmap should be initialized.
+ * conf:   extra configuration, default to NULL.
  * RETURN VALUE
  * 0 for success
  * others for failure
@@ -169,7 +181,8 @@ extern int initializeLFContext(
   const char * provider,
   const char * domain,
   const uint16_t port,
-  const uint16_t isClient);
+  const uint16_t isClient,
+  const struct lf_extra_config * conf = NULL);
 
 /* destroyLFContext():Initialize an RDMA context.
  * PARAMETERS

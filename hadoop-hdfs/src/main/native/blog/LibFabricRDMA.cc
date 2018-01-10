@@ -62,8 +62,9 @@ static int default_context(struct lf_ctxt *ct) {
   ct->hints->tx_attr->iov_limit = DEFAULT_SGE_BAT_SIZE;
   ct->hints->tx_attr->rma_iov_limit = DEFAULT_SGE_BAT_SIZE;
   ct->hints->rx_attr->iov_limit = DEFAULT_SGE_BAT_SIZE;
+
   // TODO: more configurations could be found at
-  // ct->hints->tx/rx_attr,ep_attr,domain_attr,fabric_addr;
+  // ct->hintS->tx/rx_attr,ep_attr,domain_attr,fabric_addr;
 
   ct->port = LFPF_SERVER_PORT;
   ct->local_ep_addr_len = MAX_LF_ADDR_SIZE;
@@ -71,6 +72,19 @@ static int default_context(struct lf_ctxt *ct) {
   ct->tx_depth = DEFAULT_TRANS_DEPTH;
 
   return 0;
+}
+
+// apply extra config
+static void apply_extra_config(struct lf_ctxt *ct, const struct lf_extra_config * conf) {
+  if (conf == NULL){
+    return;
+  }
+  if (conf->mask&EXTRA_CONFIG_TX_DEPTH){
+    ct->tx_depth = conf->tx_depth;
+  }
+  if (conf->mask&EXTRA_CONFIG_SGE_BAT_SIZE){
+    ct->sge_bat_size = conf->sge_bat_size;
+  }
 }
 
 //get the peer ip address represented by uint32_t, 0 for error.
@@ -98,6 +112,7 @@ static int init_fabric_and_domain(struct lf_ctxt *ct) {
   int ret = 0;
   DEBUG_PRINT("Context hints:%s\n",fi_tostr(ct->hints,FI_TYPE_INFO));
   CALL_FI_API(fi_getinfo(LF_VERSION,NULL,NULL,0,ct->hints,&(ct->fi)),"fi_getinfo()",ret);
+  DEBUG_PRINT("Context getinfo:%s\n",fi_tostr(ct->fi,FI_TYPE_INFO));
   CALL_FI_API(fi_fabric(ct->fi->fabric_attr, &(ct->fabric), NULL),"fi_fabric()",ret);
   CALL_FI_API(fi_domain(ct->fabric, ct->fi, &(ct->domain), NULL), "fi_domain()",ret);
   return ret;
@@ -518,7 +533,8 @@ int initializeLFContext(
   const char * provider,
   const char * domain,
   const uint16_t port,
-  const uint16_t isClient) {
+  const uint16_t isClient,
+  const struct lf_extra_config * conf) {
   DEBUG_PRINT("Enter %s\n",__func__);
   int ret = 0;
 
@@ -536,8 +552,15 @@ int initializeLFContext(
   ct->port = port;
 
   DIE_NZ(default_context(ct),"initialize libfabric hints.");
-  DIE_Z(ct->hints->fabric_attr->prov_name = strdup(provider),"ct->provider_str = strdup(provider)");
-  DIE_Z(ct->hints->domain_attr->name = strdup(domain),"ct->domain_str = strdup(domain)");
+  if (provider != NULL) {
+    DIE_Z(ct->hints->fabric_attr->prov_name = strdup(provider),"ct->provider_str = strdup(provider)");
+  }
+
+  apply_extra_config(ct,conf);
+
+  if (domain != NULL) {
+    DIE_Z(ct->hints->domain_attr->name = strdup(domain),"ct->domain_str = strdup(domain)");
+  }
   ct->port = port; 
   DIE_NZ(pthread_mutex_init(&ct->lock,NULL), "Could not initialize context mutex");
   DIE_Z(ct->con_map = MAP_INITIALIZE(con), "Could not initialize LF connection map");
@@ -780,6 +803,7 @@ int LFConnect(
   int retry = 2;
   while(retry){
     retry --;
+    DEBUG_PRINT("%s:Try %d.\n",__func__,retry);
     if(connect(connfd,(const struct sockaddr *)&svraddr,sizeof(svraddr))<0){
       if(!retry){
         MAP_UNLOCK(con, ct->con_map, cipkey);
@@ -843,14 +867,14 @@ int LFTransfer(
   struct lf_ctxt *ct,
   const uint32_t hostip,
   const uint32_t pid,
-  const uint64_t r_addr,
+  const uint64_t r_vaddr,
   void **pagelist,
   int npage,
   int isWrite,
   int pageSize) {
 
-  DEBUG_PRINT("%s:begin transfer: hostip=%x,pid=%x,r_addr=%lx,npage=%d,isWrite=%d,pageSize=%d\n",
-    __func__,hostip,pid,r_addr,npage,isWrite,pageSize);
+  DEBUG_PRINT("%s:begin transfer: hostip=%x,pid=%x,r_vaddr=%lx,npage=%d,isWrite=%d,pageSize=%d\n",
+    __func__,hostip,pid,r_vaddr,npage,isWrite,pageSize);
 
   LFConn *lfconn = NULL;
   uint32_t nr_pages_to_transfer = (uint32_t)npage;
@@ -906,12 +930,16 @@ int LFTransfer(
       DEBUG_PRINT("%s:iov_base=%p,iov_len=%ld,desc=%lx\n",__func__,iov[i].iov_base,iov[i].iov_len,ct->local_mr_key);
     }
 
-    DEBUG_PRINT("%s:count=%d,addr=%lx,rkey=%lx\n",__func__,i,r_addr + (npage - nr_pages_to_transfer)*pagesize,lfconn->r_rkey);
+    DEBUG_PRINT("%s:count=%d,addr=%lx,rkey=%lx\n",__func__,i,r_vaddr + (npage - nr_pages_to_transfer)*pagesize,lfconn->r_rkey);
     if(isWrite){
-      ret = fi_writev(lfconn->ep,iov,desc,i,0,r_addr + (npage - nr_pages_to_transfer)*pagesize,lfconn->r_rkey,NULL);
+      ret = fi_writev(lfconn->ep,iov,desc,i,0,
+        (LF_CTXT_USE_VADDR(ct)?r_vaddr:(r_vaddr-lfconn->remote_fi_addr)) + (npage - nr_pages_to_transfer)*pagesize,
+        lfconn->r_rkey,NULL);
       // ret = fi_write(lfconn->ep,iov[0].iov_base,iov[0].iov_len,(void*)ct->local_mr_key,0,r_addr + (npage - nr_pages_to_transfer)*pagesize, lfconn->r_rkey,NULL);
     } else {
-      ret = fi_readv(lfconn->ep,iov,desc,i,0,r_addr + (npage - nr_pages_to_transfer)*pagesize,lfconn->r_rkey,NULL);
+      ret = fi_readv(lfconn->ep,iov,desc,i,0,
+        (LF_CTXT_USE_VADDR(ct)?r_vaddr:(r_vaddr-lfconn->remote_fi_addr)) + (npage - nr_pages_to_transfer)*pagesize,
+        lfconn->r_rkey,NULL);
       // ret = fi_read(lfconn->ep,iov[0].iov_base,iov[0].iov_len,(void*)ct->local_mr_key,0,r_addr + (npage - nr_pages_to_transfer)*pagesize, lfconn->r_rkey,NULL);
     }
     if (ret < 0) {
@@ -937,7 +965,7 @@ int LFTransfer(
       num_comp = fi_cq_read(lfconn->txcq, cq_buffer, ops_in_pipe);
     } while(num_comp == -FI_EAGAIN);
     if (num_comp < 0) {
-      fprintf(stderr,"%s:Failed to read ack data with error:%d(%s)\n",__func__,-ret,fi_strerror(-ret));
+      fprintf(stderr,"%s:Failed to read ack data with error:%ld(%s)\n",__func__,-num_comp,fi_strerror(-num_comp));
       free(iov);
       free(desc);
       free(cq_buffer);
