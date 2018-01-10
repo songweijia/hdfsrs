@@ -55,13 +55,13 @@ static int default_context(struct lf_ctxt *ct) {
   ct->hints->domain_attr->mode = ~0;
   ct->hints->domain_attr->mr_mode = FI_MR_LOCAL | FI_MR_VIRT_ADDR | FI_MR_ALLOCATED | FI_MR_PROV_KEY;
 
+  ct->hints->tx_attr->rma_iov_limit = DEFAULT_SGE_BAT_SIZE;
+  ct->hints->tx_attr->iov_limit = DEFAULT_SGE_BAT_SIZE;
+  ct->hints->rx_attr->iov_limit = DEFAULT_SGE_BAT_SIZE;
+
   if (ct->cq_attr.format == FI_CQ_FORMAT_UNSPEC)
     ct->cq_attr.format = FI_CQ_FORMAT_CONTEXT;
   ct->cq_attr.wait_obj = FI_WAIT_NONE;
-
-  ct->hints->tx_attr->iov_limit = DEFAULT_SGE_BAT_SIZE;
-  ct->hints->tx_attr->rma_iov_limit = DEFAULT_SGE_BAT_SIZE;
-  ct->hints->rx_attr->iov_limit = DEFAULT_SGE_BAT_SIZE;
 
   // TODO: more configurations could be found at
   // ct->hintS->tx/rx_attr,ep_attr,domain_attr,fabric_addr;
@@ -898,13 +898,13 @@ int LFTransfer(
     return -1;
   }
   // STEP 2: finish the transfer and return.
-  struct iovec *iov = (struct iovec *) malloc(sizeof(struct iovec)*ct->sge_bat_size);
+  struct iovec *iov = (struct iovec *) malloc(sizeof(struct iovec)*LF_CTXT_ACTIVE_SGE_BAT_SIZE(ct));
   if (iov == NULL) {
     fprintf(stderr, "%s:Allocate iov vector failed with error:%d\n.",__func__,errno);
     MAP_UNLOCK(con, ct->con_map, cipkey);
     return -2;
   }
-  void** desc = (void**) malloc(sizeof(void*)*ct->sge_bat_size);
+  void** desc = (void**) malloc(sizeof(void*)*LF_CTXT_ACTIVE_SGE_BAT_SIZE(ct));
   if (desc == NULL) {
     fprintf(stderr, "%s:Allocate iov vector failed with error:%d\n.",__func__,errno);
     free(iov);
@@ -923,7 +923,7 @@ int LFTransfer(
   while (nr_pages_to_transfer) {
     DEBUG_PRINT("%s:nr_pages_to_transfer:%d\n",__func__,nr_pages_to_transfer);
     //// fill the sge list.
-    for (i=0;i<MIN(nr_pages_to_transfer,ct->sge_bat_size);i++) {
+    for (i=0;i<MIN(nr_pages_to_transfer,LF_CTXT_ACTIVE_SGE_BAT_SIZE(ct));i++) {
       iov[i].iov_base = pagelist[npage-nr_pages_to_transfer+i];
       iov[i].iov_len = pagesize;
       desc[i] = (void*)ct->local_mr_key;

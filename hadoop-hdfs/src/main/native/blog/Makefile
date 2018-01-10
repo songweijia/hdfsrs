@@ -6,8 +6,8 @@ CC=g++ -std=c++14
 CPPFLAGS=$(DFLAGS) -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -DDEBUG -I/home/weijia/workspace/libfabric/build4/include/
 LDFLAGS=-shared -fpic -pthread -libverbs -lrdmacm  -L/home/weijia/workspace/libfabric/build4/lib -lfabric
 TESTLDFLAGS=-libverbs -pthread -lrdmacm -L/home/weijia/workspace/libfabric/build4/lib -lfabric
-# TESTCPPFLAGS=-I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -I/home/weijia/workspace/libfabric/build4/include/ -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -DDEBUG -ggdb
-TESTCPPFLAGS=-I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -I/home/weijia/workspace/libfabric/build4/include/ -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -O3
+TESTCPPFLAGS=-I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -I/home/weijia/workspace/libfabric/build4/include/ -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -DDEBUG -ggdb
+# TESTCPPFLAGS=-I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux -I/home/weijia/workspace/libfabric/build4/include/ -Wall -D_GNU_SOURCE -D__STDC_FORMAT_MACROS -DFLUSH_BATCHING -O3
 TESTSRC=LibFabricRDMA.cc InfiniBandRDMA.cc test.cc
 #TESTSRC=InfiniBandRDMA.c test.c
 TESTPROG=test

@@ -91,6 +91,7 @@ struct lf_ctxt {
 #define LF_CTXT_BITS_BITMAP(c) \
   (1l<<((c)->psz - (c)->align))
 #define LF_CTXT_USE_VADDR(c)    (((c)->fi->domain_attr->mr_mode) & FI_MR_VIRT_ADDR)
+#define LF_CTXT_ACTIVE_SGE_BAT_SIZE(c)  MIN((c)->sge_bat_size,(c)->fi->tx_attr->rma_iov_limit)
 
 //libfabric extra configuration knobs for the client
 struct lf_extra_config {
