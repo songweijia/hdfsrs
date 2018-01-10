@@ -15,8 +15,15 @@
 
 #include <dirent.h>
 #include <sys/statvfs.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
+#ifdef VERBS_RDMA
 #include "InfiniBandRDMA.h"
+#else
+#include "LibFabricRDMA.h"
+#endif
+
 #include "JNIBlog.h"
 #include "types.h"
 
@@ -1486,9 +1493,15 @@ int initializeInternal(JNIEnv *env, jobject thisObj, uint64_t poolSize, uint32_t
 
   // STEP 2.5: for RDMA
   if (useRDMA) {
+#ifdef VERBS_RDMA
     fs->rdmaCtxt = (RDMACtxt*) malloc(sizeof(RDMACtxt));
     if (initializeContext(fs->rdmaCtxt, fs->page_base_ring_buffer, LOG2(poolSize), LOG2(pageSize), devname, rdmaPort,
         0/*this is for the server side*/)) {
+#else // LibFabric
+    fs->rdmaCtxt = (LFCtxt*) malloc(sizeof(LFCtxt));
+    if (initializeLFContext(fs->rdmaCtxt, fs->page_base_ring_buffer, LOG2(poolSize), LOG2(pageSize), NULL, devname, rdmaPort,
+        0/*this is for the server side*/)) {
+#endif
       fprintf(stderr, "Initialize: fail to initialize RDMA context.\n");
       exit(1);
     }
@@ -2331,7 +2344,7 @@ int writeBlockInternal(JNIEnv *env, jobject thisObj, jobject mhlc, jlong blockId
     // int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void**)&paddr, 1, new_pages_length*page_size);
     // or by pages.
     int rc = rdmaRead(filesystem->rdmaCtxt, (const uint32_t )ipkey, tp->param.rdma.remote_pid, (const uint64_t )address,
-        (const void** )paddrlist, new_pages_length, page_size);
+        paddrlist, new_pages_length, page_size);
     free(paddrlist);
     if (rc != 0) {
       fprintf(stderr, "writeBlockInternal: rdmaRead failed with error code = %d.\n", rc);
@@ -2559,7 +2572,11 @@ JNIEXPORT void Java_edu_cornell_cs_blog_JNIBlog_destroy(JNIEnv *env, jobject thi
 
   // destroy RDMAContext
   if (fs->rdmaCtxt != NULL)
+#ifdef VERBS_RDMA
     destroyContext(fs->rdmaCtxt);
+#else
+    destroyLFContext(fs->rdmaCtxt);
+#endif
   DEBUG_PRINT("Destroy RDMA Context\n");
 
   // close files
@@ -2647,9 +2664,17 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_setGenStamp(JNIEnv *env,
  */
 JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize(JNIEnv *env, jclass thisCls, jint psz,
     jint align, jstring dev, jint port) {
+#ifdef VERBS_RDMA
   RDMACtxt *ctxt = (RDMACtxt*) malloc(sizeof(RDMACtxt));
+#else
+  LFCtxt *ctxt = (LFCtxt*) malloc(sizeof(LFCtxt));
+#endif
   const char * devname = env->GetStringUTFChars(dev, NULL); // get the RDMA device name.
+#ifdef VERBS_RDMA
   if (initializeContext(ctxt, NULL, (const uint32_t) psz, (const uint32_t) align, devname, (const uint16_t) port, 1)) { // this is for client
+#else
+  if (initializeLFContext(ctxt, NULL, (const uint32_t) psz, (const uint32_t) align, NULL, devname, (const uint16_t) port, 1)) { // this is for client
+#endif
     free(ctxt);
     fprintf(stderr, "Cannot initialize rdma context.\n");
     if (devname)
@@ -2668,7 +2693,11 @@ JNIEXPORT jlong JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpInitialize(JNIEnv *e
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpDestroy
 (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool) {
+#ifdef VERBS_RDMA
   destroyContext((RDMACtxt*)hRDMABufferPool);
+#else
+  destroyLFContext((LFCtxt*)hRDMABufferPool);
+#endif
 }
 
 /*
@@ -2701,9 +2730,17 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffe
     return NULL;
   }
   // STEP 2: allocate buffer
+#ifdef VERBS_RDMA
   RDMACtxt *ctxt = (RDMACtxt*) hRDMABufferPool;
+#else
+  LFCtxt *ctxt = (LFCtxt*) hRDMABufferPool;
+#endif
   void *buf;
+#ifdef VERBS_RDMA
   if (allocateBuffer(ctxt, &buf)) {
+#else
+  if (allocateLFBuffer(ctxt, &buf)) {
+#endif
     fprintf(stderr, "Cannot allocate buffer.\n");
     return NULL;
   }
@@ -2722,7 +2759,11 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffe
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
 (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jobject rbpBuffer) {
+#ifdef VERBS_RDMA
   RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
+#else
+  LFCtxt *ctxt = (LFCtxt*)hRDMABufferPool;
+#endif
   void* bufAddr;
   // STEP 1: get rbpbuffer class
   jclass bufCls = env->FindClass("edu/cornell/cs/blog/JNIBlog$RBPBuffer");
@@ -2734,8 +2775,13 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
   // STEP 2: get fields
   bufAddr = (void*)env->GetLongField(rbpBuffer, addressId);
   // STEP 3: release buffer
-  if(releaseBuffer(ctxt,bufAddr))
-  fprintf(stderr,"Cannot release buffer@%p\n",bufAddr);
+#ifdef VERBS_RDMA
+  if(releaseBuffer(ctxt,bufAddr)) {
+#else
+  if(releaseLFBuffer(ctxt,bufAddr)) {
+#endif
+    fprintf(stderr,"Cannot release buffer@%p\n",bufAddr);
+  }
 }
 
 /*
@@ -2745,13 +2791,22 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpReleaseBuffer
  */
 JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpConnect
 (JNIEnv *env, jclass thisCls, jlong hRDMABufferPool, jbyteArray hostIp) {
+#ifdef VERBS_RDMA
   RDMACtxt *ctxt = (RDMACtxt*)hRDMABufferPool;
+#else
+  LFCtxt *ctxt = (LFCtxt*)hRDMABufferPool;
+#endif
   int ipSize = (int)env->GetArrayLength(hostIp);
   jbyte ipStr[16];
   env->GetByteArrayRegion(hostIp, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
   uint32_t ipkey = inet_addr((const char*)ipStr);
-  int rc = rdmaConnect(ctxt, (const uint32_t)ipkey);
+  int rc = 
+#ifdef VERBS_RDMA
+    rdmaConnect(ctxt, (const uint32_t)ipkey);
+#else
+    LFConnect(ctxt, (const uint32_t)ipkey);
+#endif
   if (rc == 0 || rc == -1) {
     // do nothing, -1 means duplicated connection.
   } else {
@@ -2783,7 +2838,7 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
   for(i=0; i<npage; i++)
   paddrlist[i] = (void*)plist[i];
   // rdma write...
-  int rc = rdmaWrite(fs->rdmaCtxt, (const uint32_t)ipkey, fs->rdmaCtxt->port, (const uint64_t)address, (const void **)paddrlist,npage,0);
+  int rc = rdmaWrite(fs->rdmaCtxt, (const uint32_t)ipkey, fs->rdmaCtxt->port, (const uint64_t)address, paddrlist,npage,0);
   if(rc !=0 )
   fprintf(stderr, "rdmaWrite failed with error code=%d.\n", rc);
 }

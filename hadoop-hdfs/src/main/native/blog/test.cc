@@ -109,19 +109,19 @@ int main(int argc, char **argv){
       break;
     }
   }
-#ifdef RDMA_VERBS
+#ifdef VERBS_RDMA
   printf("mode=%d,host=%s,dev=%s,port=%d,psz=%d,align=%d\n",mode,host,dev,port,psz,align);
 #else
   printf("mode=%d,host=%s,provider=%s,domain=%s,port=%d,psz=%d,align=%d\n",mode,host,prov,dev,port,psz,align);
 #endif
   if(mode == 0){
-#ifdef RDMA_VERBS
+#ifdef VERBS_RDMA
     runClient(host,port,dev,psz,align);
 #else
     runClient(host,port,prov,dev,psz,align);
 #endif
   }else if(mode == 1){
-#ifdef RDMA_VERBS
+#ifdef VERBS_RDMA
     runServer(port,dev,psz,align);
 #else
     runServer(port,prov,dev,psz,align);

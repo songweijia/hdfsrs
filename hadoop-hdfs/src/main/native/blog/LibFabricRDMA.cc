@@ -738,7 +738,7 @@ int allocateLFBuffer(
 
 int releaseLFBuffer(
   struct lf_ctxt *ct,
-  void **buf) {
+  void *buf) {
   // STEP 1 check mode
   if(!ct->is_client){ /// blog context
     fprintf(stderr,"%s:Could not release buffer in blog mode.",__func__);

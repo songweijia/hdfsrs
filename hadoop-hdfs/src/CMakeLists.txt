@@ -180,6 +180,7 @@ output_directory(sst target/usr/local/lib)
 target_link_libraries(sst rdmacm ibverbs pthread rt)
 ### end derecho
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/target/usr/local/include)
 add_definitions(-D_GNU_SOURCE -D__STDC_FORMAT_MARCOS -DFLUSH_BATCHING)
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/target/usr/local/lib)
 add_library(edu_cornell_cs_blog_JNIBlog SHARED

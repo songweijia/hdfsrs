@@ -43,6 +43,7 @@ extern "C" {
 #define DEFAULT_TRANS_DEPTH     (16)
 typedef struct lf_conn LFConn;
 MAP_DECLARE(con,LFConn); 
+typedef struct lf_ctxt LFCtxt;
 struct lf_ctxt {
   struct fi_info     * hints, * fi; // info and hints
   struct fid_fabric  * fabric;
@@ -213,7 +214,7 @@ extern int allocateLFBuffer(
 /* releaseLFBuffer(): release a buffer to client context.
  * PARAMETERS
  * ct:      the pointer pointing to an initialized client context
- * buf:     the output parameter receiving the allocated buffer
+ * buf:     the allocated buffer to be released
  * RETURN VALUE
  * 0   success with *pages pointing to the page array
  * -1  could not allocate page array in client mode
@@ -222,7 +223,7 @@ extern int allocateLFBuffer(
  */
 extern int releaseLFBuffer(
   struct lf_ctxt *ct,
-  void **buf);
+  void *buf);
 
 /* LFConnect(): connect the client context to a blog context.
  * PARAMETERS

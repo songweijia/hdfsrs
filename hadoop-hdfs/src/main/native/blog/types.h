@@ -4,7 +4,12 @@
 #include "map.h"
 #include "bitmap.h"
 #include "debug.h"
+
+#ifdef VERBS_RDMA
 #include "InfiniBandRDMA.h"
+#else
+#include "LibFabricRDMA.h"
+#endif
 
 #define BLOCK_MAP_SIZE 1024
 #define LOG_MAP_SIZE 64
@@ -215,6 +220,10 @@ struct filesystem {
   pthread_spinlock_t queue_spinlock;
   sem_t pers_queue_sem;
 
+#ifdef VERBS_RDMA
   RDMACtxt *rdmaCtxt; // RDMA Context
+#else
+  LFCtxt *rdmaCtxt; // LibFabric Context
+#endif
 };
 
