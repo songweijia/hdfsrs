@@ -22,6 +22,7 @@ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 set(CMAKE_BUILD_TYPE, Release)
 
 include(../../../hadoop-common-project/hadoop-common/src/JNIFlags.cmake NO_POLICY_SCOPE)
+include(ExternalProject)
 
 # Compile a library with both shared and static variants
 function(add_dual_library LIBNAME)
@@ -118,6 +119,18 @@ add_library(posix_util
     main/native/util/posix_util.c
 )
 
+ExternalProject_Add(
+  libfabric
+  PREFIX           libfabric
+  GIT_REPOSITORY   "https://github.com/ofiwg/libfabric.git"
+  GIT_TAG          "3f24e4a37c2a941ab37fe822403ff7f2bf41eb59"
+  BUILD_IN_SOURCE  1
+  CONFIGURE_COMMAND  ./autogen.sh && ./configure
+  BUILD_COMMAND    make
+  UPDATE_COMMAND   ""
+  INSTALL_COMMAND  make DESTDIR=${CMAKE_CURRENT_BINARY_DIR}/target install
+)
+
 #add_library(org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer SHARED
 #    main/native/mem-dfs/org_apache_hadoop_hdfs_server_datanode_fsdataset_impl_JNIBuffer.cc
 #)
@@ -168,16 +181,18 @@ target_link_libraries(sst rdmacm ibverbs pthread rt)
 ### end derecho
 
 add_definitions(-D_GNU_SOURCE -D__STDC_FORMAT_MARCOS -DFLUSH_BATCHING)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/target/usr/local/lib)
 add_library(edu_cornell_cs_blog_JNIBlog SHARED
     main/native/blog/JNIBlog.cc
     main/native/blog/InfiniBandRDMA.cc
 )
-
+add_dependencies(edu_cornell_cs_blog_JNIBlog libfabric)
 target_link_libraries(edu_cornell_cs_blog_JNIBlog
     pthread
     ibverbs
     rdmacm
     derecho
+    fabric
     rdmc
     sst
 )
