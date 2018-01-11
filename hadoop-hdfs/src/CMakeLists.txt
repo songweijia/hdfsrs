@@ -186,6 +186,7 @@ link_directories(${CMAKE_CURRENT_BINARY_DIR}/target/usr/local/lib)
 add_library(edu_cornell_cs_blog_JNIBlog SHARED
     main/native/blog/JNIBlog.cc
     main/native/blog/InfiniBandRDMA.cc
+    main/native/blog/LibFabricRDMA.cc
 )
 add_dependencies(edu_cornell_cs_blog_JNIBlog libfabric)
 target_link_libraries(edu_cornell_cs_blog_JNIBlog
