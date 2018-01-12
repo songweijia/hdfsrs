@@ -664,7 +664,7 @@ int flushBlogInBatch(filesystem_t *fs, struct _pers_queue * pbatch) {
 
   // 1 - get all log_entries
   DEBUG_PRINT("flushBlogInBatch(1): get all log entries.\n");
-  while(!TAILQ_EMPTY(pbatch)) {
+  while(!TAILQ_EMPTY(pbatch) && !IS_EOQ(TAILQ_FIRST(pbatch))) {
     pers_event_t *evt = TAILQ_FIRST(pbatch);
     TAILQ_REMOVE(pbatch,evt,lnk);
 
