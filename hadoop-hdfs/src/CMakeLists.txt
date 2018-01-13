@@ -125,6 +125,7 @@ ExternalProject_Add(
   GIT_REPOSITORY   "https://github.com/ofiwg/libfabric.git"
   GIT_TAG          "3f24e4a37c2a941ab37fe822403ff7f2bf41eb59"
   BUILD_IN_SOURCE  1
+  # CONFIGURE_COMMAND  ./autogen.sh && ./configure --enable-mlx=/home/weijia/workspace/lab/ucx/build --enable-debug
   CONFIGURE_COMMAND  ./autogen.sh && ./configure
   BUILD_COMMAND    make
   UPDATE_COMMAND   ""
@@ -181,7 +182,8 @@ target_link_libraries(sst rdmacm ibverbs pthread rt)
 ### end derecho
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/target/usr/local/include)
-add_definitions(-D_GNU_SOURCE -D__STDC_FORMAT_MARCOS -DFLUSH_BATCHING)
+add_definitions(-D_GNU_SOURCE -DODP_WORKAROUND -DDEBUG -D__STDC_FORMAT_MARCOS -DFLUSH_BATCHING)
+# add_definitions(-D_GNU_SOURCE -D__STDC_FORMAT_MARCOS -DFLUSH_BATCHING)
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/target/usr/local/lib)
 add_library(edu_cornell_cs_blog_JNIBlog SHARED
     main/native/blog/JNIBlog.cc

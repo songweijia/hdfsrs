@@ -1893,7 +1893,7 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
 
     pthread_rwlock_unlock(&filesystem->head_rwlock); // release read lock on page pool...
   } else { // read to remote memory(RDMA)
-#ifdef ODP_ENABLED
+#ifdef ODP_WORKAROUND
   uint32_t start_page_id = blkOfst / filesystem->page_size;
   uint32_t end_page_id = (blkOfst+length-1) / filesystem->page_size;
   uint32_t npage = 0;
@@ -1902,13 +1902,14 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
 
   while(start_page_id<=end_page_id) {
     // TODO: check if data is in the memory or not.
-    paddrlist[npage] = PAGE_NR_TO_PTR(filesystem,snapshot->pages[start_page_id]);
+    paddrlist[npage] = PAGE_NR_TO_PTR_RB(filesystem,snapshot->pages[start_page_id]);
     start_page_id ++;
     npage ++;
   }
 
   // get ip str
-  int ipSize = (int)env->GetArrayLength(env,tp->param.rdma.client_ip);
+  // int ipSize = (int)env->GetArrayLength(env,tp->param.rdma.client_ip);
+  int ipSize = (int)env->GetArrayLength(tp->param.rdma.client_ip);
   jbyte ipStr[16];
   env->GetByteArrayRegion(tp->param.rdma.client_ip, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
@@ -1919,7 +1920,7 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
   const uint64_t address = vaddr + block_offset - (block_offset % filesystem->page_size);
 
   // rdma write...
-  int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void **)paddrlist,npage,0);
+  int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, paddrlist,npage,0);
 
   pthread_rwlock_unlock(&filesystem->head_rwlock);// release read lock on page pool...
 
@@ -1929,7 +1930,7 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
     return -2;
   }
 #else
-    fprintf(stderr, "readBlockRDMA: cannot do RDMA Read without ODP_ENABLED, please re-build FFFS with ODP_ENABLED.\n");
+    fprintf(stderr, "readBlockRDMA: cannot do real RDMA Read without ODP, please re-build FFFS with ODP_WORKAROUND.\n");
     return -2;
 #endif
   }
@@ -2062,20 +2063,21 @@ int readBlockInternalByTime(JNIEnv *env, jobject thisObj, jlong blockId, jlong t
 
     pthread_rwlock_unlock(&filesystem->head_rwlock); // release lock
   } else { // read to remote buffer(RDMA)
-#ifdef ODP_ENABLED
+#ifdef ODP_WORKAROUND
   // TODO: revise design part with Implicit/explicit ODP
   uint32_t start_page_id = blkOfst / filesystem->page_size;
   uint32_t end_page_id = (blkOfst+length-1) / filesystem->page_size;
   uint32_t npage = 0;
   void **paddrlist = (void**)malloc(sizeof(void*)*(end_page_id - start_page_id + 1));
   while(start_page_id<=end_page_id) {
-    paddrlist[npage] = PAGE_NR_TO_PTR(filesystem,snapshot->pages[start_page_id]);
+    paddrlist[npage] = PAGE_NR_TO_PTR_RB(filesystem,snapshot->pages[start_page_id]);
     start_page_id ++;
     npage ++;
   }
 
   // get ip str
-  int ipSize = (int)env->GetArrayLength(env,tp->param.rdma.client_ip);
+  // int ipSize = (int)env->GetArrayLength(env,tp->param.rdma.client_ip);
+  int ipSize = (int)env->GetArrayLength(tp->param.rdma.client_ip);
   jbyte ipStr[16];
   env->GetByteArrayRegion(tp->param.rdma.client_ip, 0, ipSize, ipStr);
   ipStr[ipSize] = 0;
@@ -2086,14 +2088,14 @@ int readBlockInternalByTime(JNIEnv *env, jobject thisObj, jlong blockId, jlong t
   const uint64_t address = vaddr + block_offset - (block_offset % filesystem->page_size);
 
   // rdma write...
-  int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void **)paddrlist,npage,0);
+  int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, paddrlist,npage,0);
   free(paddrlist);
   if(rc !=0 ) {
     fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
     return -2;
   }
 #else
-    fprintf(stderr, "readBlockRDMA: cannot do RDMA Read without ODP_ENABLED, please re-build FFFS with ODP_ENABLED.\n");
+    fprintf(stderr, "readBlockRDMA: cannot do real RDMA Read without ODP, please re-build FFFS with ODP_WORKAROUND.\n");
     return -2;
 #endif
   }
@@ -2737,11 +2739,13 @@ JNIEXPORT jobject JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpAllocateBlockBuffe
 #endif
   void *buf;
 #ifdef VERBS_RDMA
-  if (allocateBuffer(ctxt, &buf)) {
+  int ret = allocateBuffer(ctxt, &buf);
 #else
-  if (allocateLFBuffer(ctxt, &buf)) {
+  int ret = allocateLFBuffer(ctxt, &buf);
 #endif
-    fprintf(stderr, "Cannot allocate buffer.\n");
+  if (ret) {
+    fprintf(stderr, "Cannot allocate buffer.return = %d\n",ret);
+    fflush(stderr);
     return NULL;
   }
   jobject bbObj = env->NewDirectByteBuffer(buf, (jlong) 1l << ctxt->align);

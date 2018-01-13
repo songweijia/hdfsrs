@@ -100,9 +100,10 @@ static inline uint32_t get_peer_ip(int sockfd) {
 
 static int destroyLFConn(LFConn *lfconn) {
   int ret;
+  DEBUG_PRINT("%s:destroyLFConn:lfconn=%p,lfconn->txcq=%p\n",__func__,lfconn,lfconn->txcq);
+  CALL_FI_API(fi_close(&lfconn->ep->fid),"close endpoint",ret);
   CALL_FI_API(fi_close(&lfconn->txcq->fid),"close txcq",ret);
   CALL_FI_API(fi_close(&lfconn->rxcq->fid),"close rxcq",ret);
-  CALL_FI_API(fi_close(&lfconn->ep->fid),"close endpoint",ret);
   CALL_FI_API(fi_close(&lfconn->eq->fid),"close eventqueue",ret);
   return ret;
 }
@@ -149,6 +150,7 @@ static int init_endpoint(struct lf_ctxt *ct, struct lf_conn *conn, struct fi_inf
     fprintf(stderr, "fi_cq_open txcq failed with error:%d, %s\n", -ret, fi_strerror(-ret));
     return ret;
   }
+  DEBUG_PRINT("%s:conn->txcq = %p.\n",__func__,conn->txcq);
   ret = fi_cq_open(ct->domain, &cq_attr, &(conn->rxcq), &(conn->rxcq));
   if (ret) {
     fprintf(stderr, "fi_cq_open txcq failed with error:%d, %s\n", -ret, fi_strerror(-ret));
@@ -313,9 +315,11 @@ void lf_server_disconnect(const uint64_t cipkey, int connfd, struct lf_ctxt *ct,
     fprintf(stderr,"%s:Failed to write echo to the other side with error %d.\n",__func__,errno);
     return;
   }
+/*
   if (fsync(connfd) < 0) {
     fprintf(stderr, "%s:Failed to flush echo to the other side with error %d.\n",__func__,errno);
   }
+*/
 }
 
 // client connect procedure
@@ -596,11 +600,13 @@ int initializeLFContext(
   if (isClient) {
   // STEP 5.A For Client: initialize the bitmap
     DEBUG_PRINT("%s:initialize a client.",__func__);
+    ct->is_client = true;
     DIE_Z(ct->extra_opts.client.bitmap = (uint8_t*)malloc(LF_CTXT_BYTES_BITMAP(ct)), "Could not allocate ct bitmap");
     memset(ct->extra_opts.client.bitmap, 0, LF_CTXT_BYTES_BITMAP(ct));
   } else {
   // STEP 5.B For Server:
     DEBUG_PRINT("%s:initialize a server.",__func__);
+    ct->is_client = false;
     DIE_NZ(pthread_create(&ct->extra_opts.server.daemon, NULL,
       lf_daemon_routine, (void*)ct),
       "Could not initialize the daemon routine");
@@ -693,7 +699,7 @@ int allocateLFBuffer(
   if(!LF_CTXT_NFBUF(ct)){//we don't have enough space
     pthread_mutex_unlock(&ct->lock);
     fprintf(stderr,"%s:Could not allocate buffer because we have %ld pages left.\n",__func__,LF_CTXT_NFPAGE(ct));
-    return -2;
+    return -4;
   }
 
   // STEP 3 find the buffer
@@ -710,7 +716,7 @@ int allocateLFBuffer(
   if(nbyte==LF_CTXT_BYTES_BITMAP(ct)){
     pthread_mutex_unlock(&ct->lock);
     fprintf(stderr,"%s:Could not allocate buffer: we should have %ld pages left buf found none [type I].\n",__func__,LF_CTXT_NFPAGE(ct));
-    return -4;
+    return -5;
   }
   /// 3.2 find the bit
   nbit=0;
@@ -720,7 +726,7 @@ int allocateLFBuffer(
   if(nbit==8 || nbit == LF_CTXT_BITS_BITMAP(ct)){
     pthread_mutex_unlock(&ct->lock);
     fprintf(stderr,"%s:Could not allocate buffer: we should have %ld pages left buf found none [type II].\n",__func__,LF_CTXT_NFPAGE(ct));
-    return -4;
+    return -6;
   }
   // STEP 4 allocate the buffer
   ct->extra_opts.client.bitmap[nbyte] = ct->extra_opts.client.bitmap[nbyte]|(1<<nbit); /// fill bitmap
@@ -730,7 +736,7 @@ int allocateLFBuffer(
 
   if(pthread_mutex_unlock(&ct->lock)!=0){
     fprintf(stderr,"%s:Could not release lock.",__func__);
-    return -3;
+    return -7;
   }
   DEBUG_PRINT("%s ends:%ld buffers allocated.\n",__func__,ct->cnt);
   return 0;
@@ -853,7 +859,7 @@ int LFDisconnect(
     perror("Could not send ibcfg to peer");
     return -3;
   }
-  fsync(connfd);
+  // fsync(connfd);
   if(recv(connfd, &hsi1, sizeof(hsi1), MSG_WAITALL) != sizeof(hsi1)){
     fprintf(stderr, "%s:I didn't get the echo to disconnect request.\n",__func__);
   }
