@@ -62,8 +62,7 @@ class MemBlockReceiver extends BlockReceiver {
   /** Replica to write */
   private MemDatasetManager.MemBlockMeta replicaInfo;
   private IRecordParser rp;
-  
-  BlockWriter blockWriter = null;
+  private BlockWriter blockWriter;
 
   MemBlockReceiver(final ExtendedBlock block, final DataInputStream in, final String inAddr, final String myAddr,
                    final BlockConstructionStage stage, final long newGs, final long minBytesRcvd,
@@ -365,7 +364,7 @@ class MemBlockReceiver extends BlockReceiver {
           PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
         ibr = System.nanoTime();
       blockWriter.requestWrite(1-icb, mhlc, offsetInBlock, len);
-      // blockWriter.waitWrite();
+      blockWriter.waitWrite();
       if (PerformanceTraceSwitch.getDataNodeTimeBreakDown() || 
           PerformanceTraceSwitch.getDataNodetimeBreakDownNoWrite())
         iar = System.nanoTime();
@@ -531,7 +530,7 @@ class MemBlockReceiver extends BlockReceiver {
   
   class PacketResponder implements Runnable, Closeable {   
     /** queue for packets waiting for ack - synchronization using monitor lock */
-    private final LinkedList<Packet> ackQueue = new LinkedList<Packet>(); 
+    private final LinkedList<Packet> ackQueue = new LinkedList<Packet>();
     /** the thread that spawns this responder */
     private final Thread receiverThread = Thread.currentThread();
     /** is this responder running? - synchronization using monitor lock */
@@ -545,11 +544,6 @@ class MemBlockReceiver extends BlockReceiver {
     /** for log and error messages */
     private final String myString; 
     private boolean sending = false;
-
-    @Override
-    public String toString() {
-      return myString;
-    }
 
     PacketResponder(final DataOutputStream upstreamOut, final DataInputStream downstreamIn,
                     final DatanodeInfo[] downstreams) {
@@ -569,12 +563,17 @@ class MemBlockReceiver extends BlockReceiver {
       LOG.info("MemBlockReceiver: new PacketResponder " + this.myString);
     }
 
+    @Override
+    public String toString() {
+      return myString;
+    }
+
     private boolean isRunning() {
       // When preparing for a restart, it should continue to run until
       // interrupted by the receiver thread.
       return running && (datanode.shouldRun || datanode.isRestarting());
     }
-    
+
     /**
      * enqueue the seqno that is still be to acked by the downstream datanode.
      * @param seqno
@@ -584,6 +583,7 @@ class MemBlockReceiver extends BlockReceiver {
     void enqueue(final long seqno, final boolean lastPacketInBlock, final long offsetInBlock, final Status ackStatus,
                  HybridLogicalClock mhlc) {
       final Packet p = new Packet(seqno, lastPacketInBlock, offsetInBlock, System.nanoTime(), ackStatus, mhlc);
+
       if (LOG.isDebugEnabled()) {
         LOG.debug(myString + ": enqueue " + p);
       }
@@ -644,8 +644,7 @@ class MemBlockReceiver extends BlockReceiver {
           // TODO: Remove.
           LOG.info(myString + ": seqno=" + seqno + " waiting for local datanode to finish write.");
           if (LOG.isDebugEnabled()) {
-            LOG.debug(myString + ": seqno=" + seqno +
-                      " waiting for local datanode to finish write.");
+            LOG.debug(myString + ": seqno=" + seqno + " waiting for local datanode to finish write.");
           }
           ackQueue.wait();
         }
@@ -688,18 +687,21 @@ class MemBlockReceiver extends BlockReceiver {
     public void run() {
       boolean lastPacketInBlock = false;
       final long startTime = ClientTraceLog.isInfoEnabled() ? System.nanoTime() : 0;
+
       while (isRunning() && !lastPacketInBlock) {
         long totalAckTimeNanos = 0;
         boolean isInterrupted = false;
+
         try {
           Packet pkt = null;
           long expected = -2;
           PipelineAck ack = new PipelineAck();
           long seqno = PipelineAck.UNKOWN_SEQNO;
           long ackRecvNanoTime = 0;
+
           try {
             if (type != PacketResponderType.LAST_IN_PIPELINE && !mirrorError) {
-              // read an ack from downstream datanode
+              // Read an ack from downstream datanode.
               ack.readFields(downstreamIn);
               ackRecvNanoTime = System.nanoTime();
               if (LOG.isDebugEnabled()) {
@@ -930,6 +932,8 @@ class MemBlockReceiver extends BlockReceiver {
       }*/
 
       // send my ack back to upstream datanode
+      // TODO: Remove later.
+      LOG.info("sendAckUpstreamUnprotected: seqno = " + seqno + ", time = " + System.currentTimeMillis());
       replyAck.write(upstreamOut);
       upstreamOut.flush();
       if (LOG.isDebugEnabled()) {
@@ -982,11 +986,11 @@ class MemBlockReceiver extends BlockReceiver {
     
     public void requestWrite(int icb, HybridLogicalClock hlc, long offsetInBlock ,int len) {
       synchronized(bufs) {
-        if (this.curBufIdx != -1) {
+        while (this.curBufIdx != -1) {
           try {
             bufs.wait();
           } catch(InterruptedException e) {
-            //do nothing
+            LOG.error("BlockWriter Error:" + e);
           }
         }
         this.curBufIdx = icb;

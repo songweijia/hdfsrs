@@ -30,17 +30,14 @@ import org.apache.hadoop.classification.InterfaceStability;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public class FSDataOutputStream extends DataOutputStream
-    implements Syncable, CanSetDropBehind {
+public class FSDataOutputStream extends DataOutputStream implements Syncable, CanSetDropBehind {
   private final OutputStream wrappedStream;
 
   private static class PositionCache extends FilterOutputStream {
     private FileSystem.Statistics statistics;
     long position;
 
-    public PositionCache(OutputStream out, 
-                         FileSystem.Statistics stats,
-                         long pos) throws IOException {
+    public PositionCache(OutputStream out, FileSystem.Statistics stats, long pos) throws IOException {
       super(out);
       statistics = stats;
       position = pos;
@@ -53,7 +50,7 @@ public class FSDataOutputStream extends DataOutputStream
         statistics.incrementBytesWritten(1);
       }
     }
-    
+
     public void write(byte b[], int off, int len) throws IOException {
       out.write(b, off, len);
       position += len;                            // update position
@@ -61,11 +58,11 @@ public class FSDataOutputStream extends DataOutputStream
         statistics.incrementBytesWritten(len);
       }
     }
-      
+
     public long getPos() throws IOException {
       return position;                            // return cached position
     }
-    
+
     public void close() throws IOException {
       out.close();
     }
@@ -86,7 +83,7 @@ public class FSDataOutputStream extends DataOutputStream
     super(new PositionCache(out, stats, startPosition));
     wrappedStream = out;
   }
-  
+
   /**
    * Get the current position in the output stream.
    *
@@ -120,7 +117,7 @@ public class FSDataOutputStream extends DataOutputStream
       ((Syncable)wrappedStream).sync();
     }
   }
-  
+
   @Override  // Syncable
   public void hflush() throws IOException {
     if (wrappedStream instanceof Syncable) {
@@ -129,7 +126,7 @@ public class FSDataOutputStream extends DataOutputStream
       wrappedStream.flush();
     }
   }
-  
+
   @Override  // Syncable
   public void hsync() throws IOException {
     if (wrappedStream instanceof Syncable) {
@@ -148,12 +145,12 @@ public class FSDataOutputStream extends DataOutputStream
           "not support setting the drop-behind caching setting.");
     }
   }
-  
+
   //HDFSRS_RWAPI{
   public void seek(long pos) throws IOException{
 	  throw new UnsupportedOperationException("seek is not supported!");
   }
-  
+
   protected void movePositionCache(long pos){
 	  ((PositionCache)this.out).position = pos;
   }

@@ -246,11 +246,11 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   
   // HDFSRS_HLC
   private static HybridLogicalClock hlc = new HybridLogicalClock();
-  
+
   public static void mergeOnRecv(HybridLogicalClock mhlc) {
     DFSClient.hlc.mergeOnRecv(mhlc);
   }
-  
+
   public static HybridLogicalClock hlcCopy() {
     return new HybridLogicalClock(DFSClient.hlc);
   }

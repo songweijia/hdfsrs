@@ -488,7 +488,7 @@ class DataXceiver extends Receiver implements Runnable {
       try {
         if (datanode.isInMemoryStorage()) {
           LOG.info("Call MemBlockSender with block " + block + " blockOffset " + blockOffset + " length " + length +
-                   " datanode " + datanode+ ".");
+                   " datanode " + datanode + ".");
           blockSender = new MemBlockSender(block, blockOffset, length, datanode, clientTraceFmt, null, /*HDFSRS_VC*/
               timestamp, bUserTimestamp);
         } else {

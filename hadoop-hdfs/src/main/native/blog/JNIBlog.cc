@@ -1,10 +1,9 @@
 /*
  * JNIBlog.cc
  *
- *  Created on: Dec 15, 2016
- *      Author: weijia, theo
+ * Created on: Dec 15, 2016
+ * Author: weijia, theo
  */
-
 #include <cinttypes>
 #include <climits>
 #include <cstdio>
@@ -12,7 +11,6 @@
 #include <ctime>
 #include <iostream>
 #include <string>
-
 #include <dirent.h>
 #include <sys/statvfs.h>
 
@@ -25,22 +23,16 @@
 
 // Define files for storing persistent data.
 #define BLOGFILE_SUFFIX "blog"
-/**
- Note that by default, a file in ext4 file system use 32 bit
- for block numbers and the block size is 4K. This limit the
- file size to 16TB. So we limit the file size to 8TB here.
- This can be extended by using 64bit feature with ext4 at
- formatting the file system. To check if 64bit is supported,
- use "tun2efs -l /dev/xxx" to see if "64bit" is in the feature
- list.
- **/
+/*
+ * Note that by default, a file in ext4 file system use 32 bit for block numbers and the block size is 4K. This limit
+ * the file size to 16TB. So we limit the file size to 8TB here. This can be extended by using 64bit feature with ext4
+ * at formatting the file system. To check if 64bit is supported, use "tun2efs -l /dev/xxx" to see if "64bit" is in the
+ * feature list.
+ */
 #define MAX_PERS_PAGE_SIZE (1UL<<43)
 #define SHM_PAGE_FN "fffs.pg"
 #define PERS_PAGE_FN "fffs.pg"
-
 // Definitions to be substituted by configuration:
-
-// misc
 #define MAX(x,y) (((x)>(y))?(x):(y))
 #define MIN(x,y) (((x)<(y))?(x):(y))
 
@@ -2787,4 +2779,3 @@ JNIEXPORT void JNICALL Java_edu_cornell_cs_blog_JNIBlog_rbpRDMAWrite
   if(rc !=0 )
   fprintf(stderr, "rdmaWrite failed with error code=%d.\n", rc);
 }
-
