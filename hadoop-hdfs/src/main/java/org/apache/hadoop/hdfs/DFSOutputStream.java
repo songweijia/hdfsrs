@@ -2011,7 +2011,7 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
   
   private void flushOrSync(boolean isSync, EnumSet<SyncFlag> syncFlags, boolean syncFinalize, boolean blockFinalize)
       throws IOException {
-    DFSClient.LOG.info("Flush or Sync called." );
+    // DFSClient.LOG.info("Flush or Sync called." );
     dfsClient.checkOpen();
     checkClosed();
     try {
@@ -2101,9 +2101,9 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
         toWaitFor = lastQueuedSeqno;
         lastFlushSeqno = lastQueuedSeqno;
       } // end synchronized
-      DFSClient.LOG.info("Time before waiting for flush: " + Time.now());
+      // DFSClient.LOG.info("Time before waiting for flush: " + Time.now());
       waitForAckedSeqno(toWaitFor);
-      DFSClient.LOG.info("Time after waiting for flush: " + Time.now());
+      // DFSClient.LOG.info("Time after waiting for flush: " + Time.now());
 
       // update the block length first time irrespective of flag
       if (updateLength || persistBlocks.get()) {
@@ -2323,10 +2323,8 @@ public class DFSOutputStream extends SeekableDFSOutputStream {
         final int hdfsTimeout = dfsClient.getHdfsTimeout();
         if (!dfsClient.clientRunning ||
               (hdfsTimeout > 0 && localstart + hdfsTimeout < Time.now())) {
-            String msg = "Unable to close file because dfsclient " +
-                          " was unable to contact the HDFS servers." +
-                          " clientRunning " + dfsClient.clientRunning +
-                          " hdfsTimeout " + hdfsTimeout;
+            String msg = "Unable to close file because dfsclient was unable to contact the HDFS servers. " +
+                         "clientRunning " + dfsClient.clientRunning + " hdfsTimeout " + hdfsTimeout;
             DFSClient.LOG.info(msg);
             throw new IOException(msg);
         }

@@ -288,8 +288,44 @@ public class DistributedFileSystem extends FileSystem {
     }.resolve(this, absF);
   }
 
+
   @Override
-  public FSDataInputStream open(Path f, final int bufferSize)
+  public FSDataInputStream open(Path f, final int bufferSize) throws IOException {
+    String filename = f.toString();
+    String[] tokens = filename.split("@");
+    boolean isUserTimestamp;
+    long ts;
+
+    if (tokens.length >= 2) {
+      String tsStr = tokens[tokens.length-1];
+
+      // DFSClient.LOG.info("DistributedFilesystem.java: Found timestamp " + tsStr  + " in the filename string.");
+      if (tsStr.charAt(0) == 'u') {
+        // DFSClient.LOG.info("DistributedFilesystem.java: User Timestamp");
+        isUserTimestamp = true;
+      } else if (tsStr.charAt(0) == 's') {
+        // DFSClient.LOG.info("DistributedFilesystem.java: System Timestamp");
+        isUserTimestamp = true;
+      } else {
+        // DFSClient.LOG.info("DistributedFilesystem.java: No Timestamp");
+        return openFile(f, bufferSize);
+      }
+      try {
+        ts = Long.parseLong(tsStr.substring(1, tsStr.length()), 10);
+        // DFSClient.LOG.info("DistributedFilesystem.java: Lookup at time " + Long.toString(ts));
+      } catch (NumberFormatException e) {
+        // DFSClient.LOG.info("DistributedFilesystem.java: No Timestamp");
+        return openFile(f, bufferSize);
+      }
+      filename = filename.substring(0, filename.length() - tsStr.length() - 1);
+      // DFSClient.LOG.info("DistributedFilesystem.java: Remaining filename " + filename + ".");
+      return open(new Path(filename), bufferSize, ts, isUserTimestamp);
+    }
+    // DFSClient.LOG.info("DistributedFilesystem.java: No Timestamp");
+    return openFile(f, bufferSize);
+  }
+
+  private FSDataInputStream openFile(Path f, final int bufferSize)
       throws IOException {
     statistics.incrementReadOps(1);
     Path absF = fixRelativePart(f);
@@ -297,8 +333,7 @@ public class DistributedFileSystem extends FileSystem {
       @Override
       public FSDataInputStream doCall(final Path p)
           throws IOException, UnresolvedLinkException {
-        return new HdfsDataInputStream(
-            dfs.open(getPathName(p), bufferSize, verifyChecksum));
+        return new HdfsDataInputStream(dfs.open(getPathName(p), bufferSize, verifyChecksum));
       }
       @Override
       public FSDataInputStream next(final FileSystem fs, final Path p)
@@ -310,15 +345,14 @@ public class DistributedFileSystem extends FileSystem {
   
   @Override
   public FSDataInputStream open(Path f, final int bufferSize, final long timestamp, final boolean bUserTimestamp)
-  throws IOException{
+      throws IOException {
     statistics.incrementReadOps(1);
     Path absF = fixRelativePart(f);
     return new FileSystemLinkResolver<FSDataInputStream>() {
       @Override
       public FSDataInputStream doCall(final Path p)
           throws IOException, UnresolvedLinkException {
-        return new HdfsDataInputStream(
-            dfs.open(getPathName(p), bufferSize, verifyChecksum, timestamp, bUserTimestamp));
+        return new HdfsDataInputStream(dfs.open(getPathName(p), bufferSize, verifyChecksum, timestamp, bUserTimestamp));
       }
       @Override
       public FSDataInputStream next(final FileSystem fs, final Path p)

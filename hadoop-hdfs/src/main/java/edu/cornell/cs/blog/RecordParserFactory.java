@@ -12,6 +12,7 @@ public class RecordParserFactory {
     rpMap.put(null,DefaultRecordParser.class.getName());
     rpMap.put("ts64",ts64RecordParser.class.getName());
     rpMap.put("pmu",PMURecordParser.class.getName());
+    rpMap.put("se",PMURecordParser.class.getName());
   }
 
   /**

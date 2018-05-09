@@ -174,34 +174,35 @@ public class MemDatasetManager {
   		  return new BlogOutputStream(blog,blockId,offset,this);
   	}
 
-  	public BlogInputStream getInputStream(int offset){
-  		return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID, false);
+    public BlogInputStream getInputStream(int offset) {
+      return getInputStream(offset, JNIBlog.CURRENT_SNAPSHOT_ID, false);
   	}
 
-  	public BlogInputStream getInputStream(int offset, long timestamp, boolean bUserTimestamp){
-  		return new BlogInputStream(blog,blockId,offset,timestamp,bUserTimestamp);
+    public BlogInputStream getInputStream(int offset, long timestamp, boolean bUserTimestamp) {
+      return new BlogInputStream(blog,blockId,offset,timestamp,bUserTimestamp);
   	}
 
-        // if timestamp == -1, we read from the current state.
-  	public void readByRDMA(int startOffset, int length,
-  	    String clientIp, int rpid, long vaddr, long timestamp, boolean bUserTimestamp)throws IOException{
-  	  long blen = (timestamp == -1)?getNumBytes():getNumBytes(timestamp,bUserTimestamp);
-  	  if(startOffset + length > blen)
-  	    throw new IOException("readByRDMA failed: timestamp="+timestamp+",start="+
-  	      startOffset+",len="+length+",blen="+blen);
-  	  int rc = 0;
+    // if timestamp == -1, we read from the current state.
+    public void readByRDMA(int startOffset, int length, String clientIp, int rpid, long vaddr, long timestamp,
+                           boolean bUserTimestamp) throws IOException {
+      long blen = (timestamp == -1) ? getNumBytes() : getNumBytes(timestamp,bUserTimestamp);
+      int rc = 0;
 
-          // rdma read
-          if(timestamp == -1){ // read from latest version
-            rc=blog.readBlockRDMA(blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr);
-          } else { // read from the specified point of time
-            rc=blog.readBlockRDMA(blockId, timestamp, startOffset, length, clientIp.getBytes(), rpid, vaddr, bUserTimestamp);
-          }
+      if (startOffset + length > blen)
+        throw new IOException("readByRDMA failed: timestamp=" + timestamp + ",start=" + startOffset + ",len=" + length +
+                              ",blen=" + blen);
 
-  	  if(rc!=length){
-  	    throw new IOException("readByRDMA failed: JNIBlog.readBlockRDMA returns: " + rc);
-          }
-  	}
+      // rdma read
+      if (timestamp == -1) { // read from latest version
+        rc = blog.readBlockRDMA(blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr);
+      } else { // read from the specified point of time
+        rc = blog.readBlockRDMA(blockId, timestamp, startOffset, length, clientIp.getBytes(), rpid, vaddr,
+                                bUserTimestamp);
+      }
+      if (rc!=length) {
+        throw new IOException("readByRDMA failed: JNIBlog.readBlockRDMA returns: " + rc);
+      }
+    }
 
   	public void writeByRDMA(int startOffset, int length, String clientIp, 
   	    int rpid, long vaddr, HybridLogicalClock mhlc, IRecordParser rp)throws IOException{
@@ -233,20 +234,18 @@ public class MemDatasetManager {
      * @param offset
      * @param snapshotId
      */
-    BlogInputStream(String bpid,long blockId, int offset, 
-        long timestamp, boolean bUserTimestamp){
-    	this.blog = blogMap.get(bpid);
-    	this.blockId = blockId;
-    	this.offset = offset;
-    	this.timestamp = timestamp;
-    	this.bUserTimestamp = bUserTimestamp;
+    BlogInputStream(String bpid, long blockId, int offset, long timestamp, boolean bUserTimestamp) {
+      this.blog = blogMap.get(bpid);
+      this.blockId = blockId;
+      this.offset = offset;
+      this.timestamp = timestamp;
+      this.bUserTimestamp = bUserTimestamp;
     }
     
-    BlogInputStream(JNIBlog blog,long blockId, int offset, 
-        long timestamp, boolean bUserTimestamp){
-    	this.blog = blog;
-    	this.blockId = blockId;
-    	this.offset = offset;
+    BlogInputStream(JNIBlog blog, long blockId, int offset, long timestamp, boolean bUserTimestamp) {
+      this.blog = blog;
+      this.blockId = blockId;
+      this.offset = offset;
       this.timestamp = timestamp;
       this.bUserTimestamp = bUserTimestamp;
     }
@@ -255,8 +254,8 @@ public class MemDatasetManager {
      * @param blockId
      * @param offset
      */
-    BlogInputStream(String bpid, int blockId, int offset){
-    	this(bpid, blockId,offset,JNIBlog.CURRENT_SNAPSHOT_ID,false);
+    BlogInputStream(String bpid, int blockId, int offset) {
+      this(bpid, blockId, offset, JNIBlog.CURRENT_SNAPSHOT_ID, false);
     }
     
     public synchronized int read() throws IOException {
