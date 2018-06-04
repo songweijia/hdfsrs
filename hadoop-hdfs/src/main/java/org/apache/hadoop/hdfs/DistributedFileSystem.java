@@ -291,42 +291,15 @@ public class DistributedFileSystem extends FileSystem {
 
   @Override
   public FSDataInputStream open(Path f, final int bufferSize) throws IOException {
-    String filename = f.toString();
-    String[] tokens = filename.split("@");
-    boolean isUserTimestamp;
-    long ts;
+    String fragment = f.toUri().getFragment();
 
-    if (tokens.length >= 2) {
-      String tsStr = tokens[tokens.length-1];
+    if (fragment != null) {
+      boolean bUserTimestamp = fragment.charAt(0) == 'u' ? true : false;
+      long timestamp = Long.parseLong(fragment.substring(1));
 
-      // DFSClient.LOG.info("DistributedFilesystem.java: Found timestamp " + tsStr  + " in the filename string.");
-      if (tsStr.charAt(0) == 'u') {
-        // DFSClient.LOG.info("DistributedFilesystem.java: User Timestamp");
-        isUserTimestamp = true;
-      } else if (tsStr.charAt(0) == 's') {
-        // DFSClient.LOG.info("DistributedFilesystem.java: System Timestamp");
-        isUserTimestamp = true;
-      } else {
-        // DFSClient.LOG.info("DistributedFilesystem.java: No Timestamp");
-        return openFile(f, bufferSize);
-      }
-      try {
-        ts = Long.parseLong(tsStr.substring(1, tsStr.length()), 10);
-        // DFSClient.LOG.info("DistributedFilesystem.java: Lookup at time " + Long.toString(ts));
-      } catch (NumberFormatException e) {
-        // DFSClient.LOG.info("DistributedFilesystem.java: No Timestamp");
-        return openFile(f, bufferSize);
-      }
-      filename = filename.substring(0, filename.length() - tsStr.length() - 1);
-      // DFSClient.LOG.info("DistributedFilesystem.java: Remaining filename " + filename + ".");
-      return open(new Path(filename), bufferSize, ts, isUserTimestamp);
+      // DFSClient.LOG.info("Timestamp " + Long.toString(timestamp));
+      return open(f, bufferSize, timestamp, bUserTimestamp);
     }
-    // DFSClient.LOG.info("DistributedFilesystem.java: No Timestamp");
-    return openFile(f, bufferSize);
-  }
-
-  private FSDataInputStream openFile(Path f, final int bufferSize)
-      throws IOException {
     statistics.incrementReadOps(1);
     Path absF = fixRelativePart(f);
     return new FileSystemLinkResolver<FSDataInputStream>() {

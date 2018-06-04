@@ -330,7 +330,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     
     for(DatanodeInfo datanode : locatedblock.getLocations()) {
       ClientDatanodeProtocol cdp = null;
-      
+
       try {
         cdp = DFSUtil.createClientDatanodeProtocolProxy(datanode,
             dfsClient.getConfiguration(), dfsClient.getConf().socketTimeout,
@@ -342,15 +342,13 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
         if (n >= 0) {
           return n;
         }
-      }
-      catch(IOException ioe) {
+      } catch(IOException ioe) {
         if (ioe instanceof RemoteException &&
           (((RemoteException) ioe).unwrapRemoteException() instanceof
             ReplicaNotFoundException)) {
           // special case : replica might not be on the DN, treat as 0 length
           replicaNotFoundCount--;
         }
-        
         if (DFSClient.LOG.isDebugEnabled()) {
           DFSClient.LOG.debug("Failed to getReplicaVisibleLength from datanode "
               + datanode + " for block " + locatedblock.getBlock(), ioe);

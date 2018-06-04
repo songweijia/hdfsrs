@@ -1632,7 +1632,10 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @throws IOException
    */
   public FileStatus[] globStatus(Path pathPattern) throws IOException {
-    return new Globber(this, pathPattern, DEFAULT_FILTER).glob();
+    // hdfsrs begin
+    return globStatus(pathPattern, DEFAULT_FILTER);
+    // hdfsrs end
+    // return new Globber(this, pathPattern, DEFAULT_FILTER).glob();
   }
   
   /**
@@ -1651,7 +1654,21 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FileStatus[] globStatus(Path pathPattern, PathFilter filter)
       throws IOException {
-    return new Globber(this, pathPattern, filter).glob();
+    // hdfsrs begin
+    String fragment = pathPattern.toUri().getFragment();
+    FileStatus[] res = new Globber(this, pathPattern, filter).glob();
+
+    if (fragment != null) {
+      for (FileStatus f : res) {
+        URI tempPathUri = f.getPath().toUri();
+        Path tempPath = new Path(tempPathUri.getScheme(), tempPathUri.getAuthority(), tempPathUri.getPath() + "@" + fragment);
+
+        f.setPath(tempPath);
+      }
+    }
+    return res;
+    // hdfsrs end
+    // return new Globber(this, pathPattern, filter).glob();
   }
   
   /**
@@ -3024,8 +3041,7 @@ public abstract class FileSystem extends Configured implements Closeable {
   void printStatistics() throws IOException {
     for (Map.Entry<Class<? extends FileSystem>, Statistics> pair: 
             statisticsTable.entrySet()) {
-      System.out.println("  FileSystem " + pair.getKey().getName() + 
-                         ": " + pair.getValue());
+      System.out.println("  FileSystem " + pair.getKey().getName() + ": " + pair.getValue());
     }
   }
 

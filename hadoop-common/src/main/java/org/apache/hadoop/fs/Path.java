@@ -42,20 +42,18 @@ public class Path implements Comparable {
   /** The directory separator, a slash. */
   public static final String SEPARATOR = "/";
   public static final char SEPARATOR_CHAR = '/';
-  
   public static final String CUR_DIR = ".";
   
-  public static final boolean WINDOWS
-    = System.getProperty("os.name").startsWith("Windows");
+  /** The timestamp separator, an at. */
+  public static final String TSEPARATOR = "@";
+  public static final char TSEPARATOR_CHAR = '@';
+  public static final boolean WINDOWS = System.getProperty("os.name").startsWith("Windows");
 
   /**
    *  Pre-compiled regular expressions to detect path formats.
    */
-  private static final Pattern hasUriScheme =
-      Pattern.compile("^[a-zA-Z][a-zA-Z0-9+-.]+:");
-  private static final Pattern hasDriveLetterSpecifier =
-      Pattern.compile("^/?[a-zA-Z]:");
-
+  private static final Pattern hasUriScheme = Pattern.compile("^[a-zA-Z][a-zA-Z0-9+-.]+:");
+  private static final Pattern hasDriveLetterSpecifier = Pattern.compile("^/?[a-zA-Z]:");
   private URI uri;                                // a hierarchical uri
 
   /**
@@ -64,8 +62,7 @@ public class Path implements Comparable {
    */
   void checkNotSchemeWithRelative() {
     if (toUri().isAbsolute() && !isUriPathAbsolute()) {
-      throw new HadoopIllegalArgumentException(
-          "Unsupported name: has scheme but relative path-part");
+      throw new HadoopIllegalArgumentException("Unsupported name: has scheme but relative path-part");
     }
   }
 
@@ -76,27 +73,38 @@ public class Path implements Comparable {
   }
 
   public static Path getPathWithoutSchemeAndAuthority(Path path) {
-    // This code depends on Path.toString() to remove the leading slash before
-    // the drive specification on Windows.
-    Path newPath = path.isUriPathAbsolute() ?
-      new Path(null, null, path.toUri().getPath()) :
-      path;
+    Path newPath = path;
+
+    if (path.isUriPathAbsolute()) {
+      String fragment = path.toUri().getFragment();
+
+      newPath = fragment != null ? new Path(null, null, path.toUri().getPath() + TSEPARATOR + fragment)
+                                 : new Path(null, null, path.toUri().getPath());
+    }
+    // System.out.println("public static Path getPathWithoutSchemeAndAuthority(Path path): " + newPath.toString());
+    // System.out.println("URI: " + newPath.toUri().toString());
     return newPath;
   }
 
   /** Resolve a child path against a parent path. */
   public Path(String parent, String child) {
     this(new Path(parent), new Path(child));
+    // System.out.println("public Path(String parent, String child): " + toString());
+    // System.out.println("URI: " + toUri().toString());
   }
 
   /** Resolve a child path against a parent path. */
   public Path(Path parent, String child) {
     this(parent, new Path(child));
+    // System.out.println("public Path(Path parent, String child): " + toString());
+    // System.out.println("URI: " + toUri().toString());
   }
 
   /** Resolve a child path against a parent path. */
   public Path(String parent, Path child) {
     this(new Path(parent), child);
+    // System.out.println("public Path(String parent, Path child): " + toString());
+    // System.out.println("URI: " + toUri().toString());
   }
 
   /** Resolve a child path against a parent path. */
@@ -104,6 +112,7 @@ public class Path implements Comparable {
     // Add a slash to parent's path so resolution is compatible with URI's
     URI parentUri = parent.uri;
     String parentPath = parentUri.getPath();
+
     if (!(parentPath.equals("/") || parentPath.isEmpty())) {
       try {
         parentUri = new URI(parentUri.getScheme(), parentUri.getAuthority(),
@@ -112,27 +121,28 @@ public class Path implements Comparable {
         throw new IllegalArgumentException(e);
       }
     }
+
     URI resolved = parentUri.resolve(child.uri);
-    initialize(resolved.getScheme(), resolved.getAuthority(),
-               resolved.getPath(), resolved.getFragment());
+
+    initialize(resolved.getScheme(), resolved.getAuthority(), resolved.getPath(), resolved.getFragment());
+    // System.out.println("public Path(Path parent, Path child): " + toString());
+    // System.out.println("URI: " + toUri().toString());
   }
 
-  private void checkPathArg( String path ) throws IllegalArgumentException {
+  private void checkPathArg(String path) throws IllegalArgumentException {
     // disallow construction of a Path from an empty string
     if ( path == null ) {
-      throw new IllegalArgumentException(
-          "Can not create a Path from a null string");
+      throw new IllegalArgumentException("Can not create a Path from a null string");
     }
     if( path.length() == 0 ) {
-       throw new IllegalArgumentException(
-           "Can not create a Path from an empty string");
-    }   
+       throw new IllegalArgumentException("Can not create a Path from an empty string");
+    }
   }
-  
-  /** Construct a path from a String.  Path strings are URIs, but with
-   * unescaped elements and some additional normalization. */
+
+  /** Construct a path from a String. Path strings are URIs, but with
+   *  unescaped elements and some additional normalization. */
   public Path(String pathString) throws IllegalArgumentException {
-    checkPathArg( pathString );
+    checkPathArg(pathString);
     
     // We can't use 'new URI(String)' directly, since it assumes things are
     // escaped, which we don't require of Paths. 
@@ -145,12 +155,12 @@ public class Path implements Comparable {
     // parse uri components
     String scheme = null;
     String authority = null;
-
     int start = 0;
 
     // parse uri scheme, if any
     int colon = pathString.indexOf(':');
     int slash = pathString.indexOf('/');
+
     if ((colon != -1) &&
         ((slash == -1) || (colon < slash))) {     // has a scheme
       scheme = pathString.substring(0, colon);
@@ -167,9 +177,27 @@ public class Path implements Comparable {
     }
 
     // uri path is the rest of the string -- query & fragment not supported
+    // use fragment for FFFS timestamp
     String path = pathString.substring(start, pathString.length());
+    String[] tokens = path.split(TSEPARATOR);
+    String fragment = null;
 
-    initialize(scheme, authority, path, null);
+    if (tokens.length >= 2) {
+      fragment = tokens[tokens.length-1];
+      if ((fragment.charAt(0) == 'u') || (fragment.charAt(0) == 's')) {
+        try {
+          Long.parseLong(fragment.substring(1, fragment.length()), 10);
+          path = path.substring(0, path.length() - fragment.length() - 1);
+        } catch (NumberFormatException e) {
+          fragment = null;
+        }
+      } else {
+        fragment = null;
+      }
+    }
+    initialize(scheme, authority, path, fragment);
+    // System.out.println("public Path(String pathString): " + toString());
+    // System.out.println("URI: " + toUri().toString());
   }
 
   /**
@@ -177,11 +205,13 @@ public class Path implements Comparable {
    */
   public Path(URI aUri) {
     uri = aUri.normalize();
+    // System.out.println("public Path(URI aUri): " + toString());
+    // System.out.println("URI: " + toUri().toString());
   }
-  
+
   /** Construct a Path from components. */
   public Path(String scheme, String authority, String path) {
-    checkPathArg( path );
+    checkPathArg(path);
 
     // add a slash in front of paths with Windows drive letters
     if (hasWindowsDrive(path) && path.charAt(0) != '/') {
@@ -194,14 +224,30 @@ public class Path implements Comparable {
       path = "./" + path;
     }
 
-    initialize(scheme, authority, path, null);
+    String[] tokens = path.split(TSEPARATOR);
+    String fragment = null;
+
+    if (tokens.length >= 2) {
+      fragment = tokens[tokens.length-1];
+      if ((fragment.charAt(0) == 'u') || (fragment.charAt(0) == 's')) {
+        try {
+          Long.parseLong(fragment.substring(1, fragment.length()), 10);
+          path = path.substring(0, path.length() - fragment.length() - 1);
+        } catch (NumberFormatException e) {
+          fragment = null;
+        }
+      } else {
+        fragment = null;
+      }
+    }
+    initialize(scheme, authority, path, fragment);
+    // System.out.println("public Path(String scheme, String authority, String path): " + toString());
+    // System.out.println("URI: " + toUri().toString());
   }
 
-  private void initialize(String scheme, String authority, String path,
-      String fragment) {
+  private void initialize(String scheme, String authority, String path, String fragment) {
     try {
-      this.uri = new URI(scheme, authority, normalizePath(scheme, path), null, fragment)
-        .normalize();
+      this.uri = new URI(scheme, authority, normalizePath(scheme, path), null, fragment).normalize();
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException(e);
     }
@@ -219,10 +265,14 @@ public class Path implements Comparable {
   public static Path mergePaths(Path path1, Path path2) {
     String path2Str = path2.toUri().getPath();
     path2Str = path2Str.substring(startPositionWithoutWindowsDrive(path2Str));
+
+    String fragment = path2.toUri().getFragment();
+    path2Str += fragment != null ? TSEPARATOR + fragment : null;
     // Add path components explicitly, because simply concatenating two path
     // string is not safe, for example:
     // "/" + "/foo" yields "//foo", which will be parsed as authority in Path
-    return new Path(path1.toUri().getScheme(), 
+    // System.out.println("mergePaths: " + path2Str);
+    return new Path(path1.toUri().getScheme(),
         path1.toUri().getAuthority(), 
         path1.toUri().getPath() + path2Str);
   }
@@ -255,6 +305,7 @@ public class Path implements Comparable {
       path = path.substring(0, path.length()-1);
     }
     
+    // System.out.println("normalizePath: " + path.toString());
     return path;
   }
 
@@ -293,6 +344,7 @@ public class Path implements Comparable {
 
   /** Return the FileSystem that owns this Path. */
   public FileSystem getFileSystem(Configuration conf) throws IOException {
+    // System.out.println("getFileSystem:" + this.toString());
     return FileSystem.get(this.toUri(), conf);
   }
 
@@ -336,6 +388,7 @@ public class Path implements Comparable {
   public String getName() {
     String path = uri.getPath();
     int slash = path.lastIndexOf(SEPARATOR);
+    // System.out.println("Last name: " + path.substring(slash+1));
     return path.substring(slash+1);
   }
 
@@ -385,7 +438,8 @@ public class Path implements Comparable {
       buffer.append(path);
     }
     if (uri.getFragment() != null) {
-      buffer.append("#");
+      // buffer.append("#");
+      buffer.append(TSEPARATOR); // FFFS timestamp
       buffer.append(uri.getFragment());
     }
     return buffer.toString();
@@ -469,6 +523,8 @@ public class Path implements Comparable {
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException(e);
     }
+    // System.out.println("public Path makeQualified(URI defaultUri, Path workingDir ): " + toString());
+    // System.out.println("URI: " + toUri().toString());
     return new Path(newUri);
   }
 }
