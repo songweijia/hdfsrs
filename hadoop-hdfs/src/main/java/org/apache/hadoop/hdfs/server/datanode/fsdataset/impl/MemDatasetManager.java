@@ -43,23 +43,23 @@ import edu.cornell.cs.sa.*;
 public class MemDatasetManager {
   static final Log LOG = LogFactory.getLog(MemDatasetManager.class);
 
-  /*  
-  class PoolData{
+  /*
+  class PoolData {
     HashMap<Long,MemBlockMeta> blockMaps; // blockId->MemBlockMeta data
     JNIBlog blog; // blog for the memory
   }
-*/  
+  */
 
-//  private HashMap<ExtendedBlockId, String> diskMaps;
-//  private MemDatasetImpl dataset;
-  private Map<String, JNIBlog> blogMap; // where data is stored.
+  //  private HashMap<ExtendedBlockId, String> diskMaps;
+  //  private MemDatasetImpl dataset;
+  private Map<String, JNIBlog> blogMap;  // where data is stored.
   private final long capacity;
-  private final long blocksize; 
+  private final long blocksize;
   private final int pagesize;
-  private final String perspath; // the path for persistent files
-  private final int rdmaport; // port...
-  private final String rdmadev; // the rdmadev name
-  private final boolean useRDMA; // are we using RDMA ?
+  private final String perspath;         // the path for persistent files
+  private final int rdmaport;            // port...
+  private final String rdmadev;          // the rdmadev name
+  private final boolean useRDMA;         // are we using RDMA ?
 
   
 //  public class MemBlockMeta extends Block implements Replica {
@@ -95,48 +95,44 @@ public class MemDatasetManager {
       this.accBytes = 0l;
     }
     
-    public boolean isDeleted(){
-    	return isDeleted;
+    public boolean isDeleted() {
+      return isDeleted;
     }
     
-    public void delete(){
-    	this.isDeleted = true;
+    public void delete() {
+      this.isDeleted = true;
     }
 
     public ReplicaState getState() {
       return state;
     }
     
-    public void setState(ReplicaState state){
-    	this.state = state;
+    public void setState(ReplicaState state) {
+      this.state = state;
     }
     
-    public void setGenerationStamp(HybridLogicalClock mhlc,long genStamp)
-    throws IOException{
-      if(this.blog.setGenStamp(mhlc, this.blockId, genStamp) != 0)
-        throw new IOException("Cannot setGenerationStamp on block:"+this.blockId);
+    public void setGenerationStamp(HybridLogicalClock mhlc, long genStamp) throws IOException {
+      if (this.blog.setGenStamp(mhlc, this.blockId, genStamp) != 0)
+        throw new IOException("Cannot setGenerationStamp on block:" + this.blockId);
       super.setGenerationStamp(genStamp);
     }
 
     @Override
     public long getBytesOnDisk() {
-    	return getNumBytes();
+      return getNumBytes();
     }
-    public long getBytesOnDisk(long timestamp, boolean bUserTimestamp){
-    	return getNumBytes(timestamp, bUserTimestamp);
+
+    public long getBytesOnDisk(long timestamp, boolean bUserTimestamp) {
+      return getNumBytes(timestamp, bUserTimestamp);
     }
 
     @Override
     public long getVisibleLength() {
-    	return getNumBytes();
+      return getNumBytes();
     }
-    
-//    public long getVisibleLength(long sid){
-//    	return getNumBytes(sid);
-//    }
-    
-    public long getVisibleLength(long timestamp, boolean bUserTimestamp){
-      return getNumBytes(timestamp,bUserTimestamp);
+
+    public long getVisibleLength(long timestamp, boolean bUserTimestamp) {
+      return getNumBytes(timestamp, bUserTimestamp);
     }
 
     public String getStorageUuid() {
@@ -144,34 +140,35 @@ public class MemDatasetManager {
     }
     
     public long getBytesAcked() {
-    	return getNumBytes();
+      return getNumBytes();
     }
 
     @Override
     public long getBlockId() {
-        return this.blockId;
+      return this.blockId;
     }
 
   	@Override
   	public long getNumBytes() {
-  		return getNumBytes(JNIBlog.CURRENT_SNAPSHOT_ID,false);
-  	}
-  	
-  	public long getNumBytes(long timestamp, boolean bUserTimestamp){
-          long nb = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID)?blog.getNumberOfBytes(blockId):blog.getNumberOfBytes(blockId,timestamp,bUserTimestamp);
-          if(nb == -1L)nb = 0L; // -1 means block does not exists.
-          return nb;
-  	}
-  	
-  	public BlogOutputStream getOutputStream(){
-  		return getOutputStream((int)getNumBytes());
+      return getNumBytes(JNIBlog.CURRENT_SNAPSHOT_ID, false);
   	}
 
-  	public BlogOutputStream getOutputStream(int offset){
-  		if(offset < 0)
-  			return getOutputStream();
-  		else
-  		  return new BlogOutputStream(blog,blockId,offset,this);
+    public long getNumBytes(long timestamp, boolean bUserTimestamp) {
+      long nb = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID) ?
+                blog.getNumberOfBytes(blockId) :
+                blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp);
+
+      return nb;
+  	}
+  	
+    public BlogOutputStream getOutputStream() {
+      return getOutputStream((int) getNumBytes());
+  	}
+
+  	public BlogOutputStream getOutputStream(int offset) {
+      if (offset < 0)
+        return getOutputStream();
+      return new BlogOutputStream(blog, blockId, offset, this);
   	}
 
     public BlogInputStream getInputStream(int offset) {
@@ -179,18 +176,18 @@ public class MemDatasetManager {
   	}
 
     public BlogInputStream getInputStream(int offset, long timestamp, boolean bUserTimestamp) {
-      return new BlogInputStream(blog,blockId,offset,timestamp,bUserTimestamp);
+      return new BlogInputStream(blog, blockId, offset, timestamp, bUserTimestamp);
   	}
 
     // if timestamp == -1, we read from the current state.
     public void readByRDMA(int startOffset, int length, String clientIp, int rpid, long vaddr, long timestamp,
                            boolean bUserTimestamp) throws IOException {
-      long blen = (timestamp == -1) ? getNumBytes() : getNumBytes(timestamp,bUserTimestamp);
+      long blen = (timestamp == -1) ? getNumBytes() : getNumBytes(timestamp, bUserTimestamp);
       int rc = 0;
 
       if (startOffset + length > blen)
-        throw new IOException("readByRDMA failed: timestamp=" + timestamp + ",start=" + startOffset + ",len=" + length +
-                              ",blen=" + blen);
+        throw new IOException("readByRDMA failed: timestamp=" + timestamp + ",start=" + startOffset + ",len=" +
+                              length + ",blen=" + blen);
 
       // rdma read
       if (timestamp == -1) { // read from latest version
@@ -199,25 +196,28 @@ public class MemDatasetManager {
         rc = blog.readBlockRDMA(blockId, timestamp, startOffset, length, clientIp.getBytes(), rpid, vaddr,
                                 bUserTimestamp);
       }
-      if (rc!=length) {
+      if (rc != length) {
         throw new IOException("readByRDMA failed: JNIBlog.readBlockRDMA returns: " + rc);
       }
     }
 
-  	public void writeByRDMA(int startOffset, int length, String clientIp, 
-  	    int rpid, long vaddr, HybridLogicalClock mhlc, IRecordParser rp)throws IOException{
+    public void writeByRDMA(int startOffset, int length, String clientIp, int rpid, long vaddr, HybridLogicalClock mhlc,
+                            IRecordParser rp) throws IOException {
   	  long blen = getNumBytes();
-  	  if(startOffset > blen)
-  	    throw new IOException("writeByRDMA failed:blen="+blen+",start="+startOffset+
-  	        ",len="+length+",client="+clientIp+",vaddr="+vaddr+",mhlc="+mhlc);
-  	  int rc = 0;
-  	  if ((rc=blog.writeBlockRDMA(mhlc, rp, blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr))!=0) {
-            throw new IOException("writeByRDMA failed: JNIBlog.writeBlockRDMA returns: " + rc);
+
+      if (startOffset > blen)
+          throw new IOException("writeByRDMA failed:blen=" + blen + ",start=" + startOffset + ",len=" + length +
+                                ",client=" + clientIp + ",vaddr=" + vaddr + ",mhlc=" + mhlc);
+
+      int rc = 0;
+
+      if ((rc = blog.writeBlockRDMA(mhlc, rp, blockId, startOffset, length, clientIp.getBytes(), rpid, vaddr)) != 0) {
+        throw new IOException("writeByRDMA failed: JNIBlog.writeBlockRDMA returns: " + rc);
   	  }
-  	  //update length
-  	  if(this.getNumBytes() < this.getBytesOnDisk())
-  	    this.setNumBytes(this.getBytesOnDisk());
-  	  this.accBytes += length;
+      // Update length.
+      if (getNumBytes() < getBytesOnDisk())
+        setNumBytes(getBytesOnDisk());
+      accBytes += length;
   	}
   }
   
@@ -227,7 +227,7 @@ public class MemDatasetManager {
     int offset;
     long timestamp;
     boolean bUserTimestamp;
-    
+
     /**
      * @param bpid
      * @param blockId
@@ -241,7 +241,7 @@ public class MemDatasetManager {
       this.timestamp = timestamp;
       this.bUserTimestamp = bUserTimestamp;
     }
-    
+
     BlogInputStream(JNIBlog blog, long blockId, int offset, long timestamp, boolean bUserTimestamp) {
       this.blog = blog;
       this.blockId = blockId;
@@ -249,7 +249,7 @@ public class MemDatasetManager {
       this.timestamp = timestamp;
       this.bUserTimestamp = bUserTimestamp;
     }
-    
+
     /**
      * @param blockId
      * @param offset
@@ -257,22 +257,25 @@ public class MemDatasetManager {
     BlogInputStream(String bpid, int blockId, int offset) {
       this(bpid, blockId, offset, JNIBlog.CURRENT_SNAPSHOT_ID, false);
     }
-    
+
     public synchronized int read() throws IOException {
-   		byte [] b = new byte[1];
-   		read(b,0,1);
-   		return b[0];
+      byte [] b = new byte[1];
+
+      read(b, 0, 1);
+      return b[0];
     }
 
     /* (non-Javadoc)
      * @see java.io.InputStream#read(byte[], int, int)
      */
     public synchronized int read(byte[] bytes, int off, int len) throws IOException {
-      int endOfBlock = this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID ?
+      int endOfBlock = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID) ?
                        blog.getNumberOfBytes(blockId) :
                        blog.getNumberOfBytes(blockId, timestamp, bUserTimestamp);
+
+      LOG.info("read: " + Long.toString(endOfBlock));
       if (offset < endOfBlock) {
-        int ret = this.timestamp == JNIBlog.CURRENT_SNAPSHOT_ID ?
+        int ret = (timestamp == JNIBlog.CURRENT_SNAPSHOT_ID) ?
                   blog.readBlock(blockId, offset, off, len, bytes) :
                   blog.readBlock(blockId, timestamp, offset, off, len, bytes, bUserTimestamp);
         if (ret > 0) {
@@ -287,7 +290,7 @@ public class MemDatasetManager {
       }
     }
   }
-  
+
   class BlogOutputStream extends HLCOutputStream {
     JNIBlog blog;
     long blockId;
@@ -411,7 +414,7 @@ public class MemDatasetManager {
    */
   MemBlockMeta createBlock(String bpid, long blockId, long genStamp, HybridLogicalClock mhlc) {
     JNIBlog blog = getJNIBlog(bpid);
-    synchronized(blog){
+    synchronized(blog) {
       blog.createBlock(mhlc, blockId, genStamp);
       MemBlockMeta meta = new MemBlockMeta(bpid, genStamp, blockId, ReplicaState.TEMPORARY); 
       blog.blockMaps.put(blockId, meta);
@@ -464,19 +467,19 @@ List<Block> getBlockMetas(String bpid, ReplicaState state) {
     return results;
   }
 
-  /**
-   * create a blog snapshot Id. 
+/**
+ * create a blog snapshot Id. 
  * @param bpid
  * @param snapshotId - rtc
  * @param eid
  * @throws IOException
  */
-  void snapshot(String bpid, long rtc)throws IOException{
-/* TODO: remove create Snapshot for datanode.
-    JNIBlog blog = getJNIBlog(bpid);
-    synchronized(blog){
-      blog.createSnapshot(rtc);
-    }
-*/
+void snapshot(String bpid, long rtc)throws IOException {
+  /* TODO: remove create Snapshot for datanode.
+   *   JNIBlog blog = getJNIBlog(bpid);
+   *   synchronized(blog) {
+   *     blog.createSnapshot(rtc);
+   *   }
+   */
   }
 }

@@ -78,8 +78,7 @@ import com.google.common.annotations.VisibleForTesting;
  ****************************************************************/
 @InterfaceAudience.Private
 public class DFSInputStream extends FSInputStream
-implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
-    HasEnhancedByteBufferAccess {
+implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead, HasEnhancedByteBufferAccess {
   @VisibleForTesting
   static boolean tcpReadsDisabledForTesting = false;
   private final DFSClient dfsClient;
@@ -94,7 +93,6 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   private long blockEnd = -1;
   private CachingStrategy cachingStrategy;
   private final ReadStatistics readStatistics = new ReadStatistics();
-  
   private long timestamp = -1; // from which snapshot should we read from.
   private boolean bUserTimestamp = false; // are we using user timestamp or not.
   private long fileLength = 0; // fileLength at the given timestamp.
@@ -106,7 +104,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * whether we this is a memory-mapped buffer or not.
    */
   private final IdentityHashStore<ByteBuffer, Object>
-      extendedReadBuffers = new IdentityHashStore<ByteBuffer, Object>(0);
+        extendedReadBuffers = new IdentityHashStore<ByteBuffer, Object>(0);
 
   public static class ReadStatistics {
     public ReadStatistics() {
@@ -217,15 +215,13 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     deadNodes.put(dnInfo, dnInfo);
   }
   
-  DFSInputStream(DFSClient dfsClient, String src, int buffersize, boolean verifyChecksum,
-                 long timestamp, boolean bUserTimestamp) 
-    throws IOException, UnresolvedLinkException {
+  DFSInputStream(DFSClient dfsClient, String src, int buffersize, boolean verifyChecksum, long timestamp,
+                 boolean bUserTimestamp) throws IOException, UnresolvedLinkException {
     this.dfsClient = dfsClient;
     this.verifyChecksum = verifyChecksum;
     this.buffersize = buffersize;
     this.src = src;
-    this.cachingStrategy =
-        dfsClient.getDefaultReadCachingStrategy();
+    this.cachingStrategy = dfsClient.getDefaultReadCachingStrategy();
     this.timestamp = timestamp;
     this.bUserTimestamp = bUserTimestamp;
     openInfo();
@@ -237,11 +233,11 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   synchronized void openInfo() throws IOException, UnresolvedLinkException {
     long lastBlockBeingWrittenLength = fetchLocatedBlocksAndGetLastBlockLength();
     int retriesForLastBlockLength = dfsClient.getConf().retryTimesForGetLastBlockLength;
+
     while (retriesForLastBlockLength > 0) {
-      // Getting last block length as -1 is a special case. When cluster
-      // restarts, DNs may not report immediately. At this time partial block
-      // locations will not be available with NN for getting the length. Lets
-      // retry for 3 times to get the length.
+      // Getting last block length as -1 is a special case. When cluster restarts, DNs may not report immediately. At
+      // this time partial block locations will not be available with NN for getting the length. Retry 3 times to get
+      // the length.
       if (lastBlockBeingWrittenLength == -1) {
         DFSClient.LOG.warn("Last block locations not available. "
             + "Datanodes might not have reported blocks completely."
@@ -262,10 +258,10 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     if (this.timestamp != -1L) {
       this.fileLength = 0L;
       long blockSize = dfsClient.getBlockSize(this.src);
-      for(LocatedBlock lb:locatedBlocks.getLocatedBlocks()){
-        long bl = readBlockLength(lb,this.timestamp,this.bUserTimestamp);
-        this.fileLength +=bl;
-        if(bl < blockSize )break;
+      for (LocatedBlock lb : locatedBlocks.getLocatedBlocks()) {
+        long bl = readBlockLength(lb, this.timestamp, this.bUserTimestamp);
+        this.fileLength += bl;
+        if (bl < blockSize) break;
       }
     } else {
       this.fileLength =  locatedBlocks.getFileLength() + lastBlockBeingWrittenLength;
@@ -327,31 +323,28 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     //TODO...
     assert locatedblock != null : "LocatedBlock cannot be null";
     int replicaNotFoundCount = locatedblock.getLocations().length;
-    
+
     for(DatanodeInfo datanode : locatedblock.getLocations()) {
       ClientDatanodeProtocol cdp = null;
 
       try {
-        cdp = DFSUtil.createClientDatanodeProtocolProxy(datanode,
-            dfsClient.getConfiguration(), dfsClient.getConf().socketTimeout,
-            dfsClient.getConf().connectToDnViaHostname, locatedblock);
-        
-//      final long n = cdp.getReplicaVisibleLength(locatedblock.getBlock());
+        cdp = DFSUtil.createClientDatanodeProtocolProxy(datanode, dfsClient.getConfiguration(),
+                                                        dfsClient.getConf().socketTimeout,
+                                                        dfsClient.getConf().connectToDnViaHostname, locatedblock);
+
         final long n = cdp.getReplicaVisibleLength(locatedblock.getBlock(), timestamp, bUserTimestamp);
-        
-        if (n >= 0) {
+
+        if (n >= 0)
           return n;
-        }
       } catch(IOException ioe) {
         if (ioe instanceof RemoteException &&
-          (((RemoteException) ioe).unwrapRemoteException() instanceof
-            ReplicaNotFoundException)) {
+            (((RemoteException) ioe).unwrapRemoteException() instanceof ReplicaNotFoundException)) {
           // special case : replica might not be on the DN, treat as 0 length
           replicaNotFoundCount--;
         }
         if (DFSClient.LOG.isDebugEnabled()) {
-          DFSClient.LOG.debug("Failed to getReplicaVisibleLength from datanode "
-              + datanode + " for block " + locatedblock.getBlock(), ioe);
+          DFSClient.LOG.debug("Failed to getReplicaVisibleLength from datanode " + datanode + " for block " +
+                              locatedblock.getBlock(), ioe);
         }
       } finally {
         if (cdp != null) {
@@ -364,17 +357,15 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     // means that we hit the race between pipeline creation start and end.
     // we require all 3 because some other exception could have happened
     // on a DN that has it.  we want to report that error
-    if (replicaNotFoundCount == 0) {
+    if (replicaNotFoundCount == 0)
       return 0;
-    }
-
     throw new IOException("Cannot obtain block length for " + locatedblock);
   }
   
   public synchronized long getFileLength() {
 //    return locatedBlocks == null? 0:
 //        locatedBlocks.getFileLength() + lastBlockBeingWrittenLength;
-    return this.fileLength;
+    return fileLength;
   }
 
   // Short circuit local reads are forbidden for files that are
@@ -416,8 +407,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * @return located block
    * @throws IOException
    */
-  private synchronized LocatedBlock getBlockAt(long offset,
-      boolean updatePosition) throws IOException {
+  private synchronized LocatedBlock getBlockAt(long offset, boolean updatePosition) throws IOException {
     assert (locatedBlocks != null) : "locatedBlocks is null";
 
     final LocatedBlock blk;
@@ -1330,8 +1320,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * @return actual number of bytes read
    */
   @Override
-  public int read(long position, byte[] buffer, int offset, int length)
-    throws IOException {
+  public int read(long position, byte[] buffer, int offset, int length) throws IOException {
     // sanity checks
     dfsClient.checkOpen();
     if (closed) {
@@ -1344,18 +1333,19 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     }
     int realLen = length;
     if ((position + length) > filelen) {
-      realLen = (int)(filelen - position);
+      realLen = (int) (filelen - position);
     }
     
     // determine the block and byte range within the block
     // corresponding to position and realLen
     List<LocatedBlock> blockRange = getBlockRange(position, realLen);
     int remaining = realLen;
-    Map<ExtendedBlock,Set<DatanodeInfo>> corruptedBlockMap 
-      = new HashMap<ExtendedBlock, Set<DatanodeInfo>>();
+    Map<ExtendedBlock,Set<DatanodeInfo>> corruptedBlockMap = new HashMap<ExtendedBlock, Set<DatanodeInfo>>();
+
     for (LocatedBlock blk : blockRange) {
       long targetStart = position - blk.getStartOffset();
       long bytesToRead = Math.min(remaining, blk.getBlockSize() - targetStart);
+
       try {
         if (dfsClient.isHedgedReadsEnabled()) {
           hedgedFetchBlockByteRange(blk, targetStart, targetStart + bytesToRead

@@ -781,10 +781,9 @@ public class ClientNamenodeProtocolTranslatorPB implements
   }
 
   @Override
-  public HdfsFileStatus getFileInfo(String src) throws AccessControlException,
-      FileNotFoundException, UnresolvedLinkException, IOException {
-    GetFileInfoRequestProto req = GetFileInfoRequestProto.newBuilder()
-        .setSrc(src).build();
+  public HdfsFileStatus getFileInfo(String src)
+        throws AccessControlException, FileNotFoundException, UnresolvedLinkException, IOException {
+    GetFileInfoRequestProto req = GetFileInfoRequestProto.newBuilder().setSrc(src).build();
     try {
       GetFileInfoResponseProto res = rpcProxy.getFileInfo(null, req);
       return res.hasFs() ? PBHelper.convert(res.getFs()) : null;

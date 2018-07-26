@@ -135,78 +135,62 @@ class Globber {
   }
 
   public FileStatus[] glob() throws IOException {
-    // First we get the scheme and authority of the pattern that was passed
-    // in.
+    // First we get the scheme and authority of the pattern that was passed in.
     String scheme = schemeFromPath(pathPattern);
     String authority = authorityFromPath(pathPattern);
 
-    // Next we strip off everything except the pathname itself, and expand all
-    // globs.  Expansion is a process which turns "grouping" clauses,
-    // expressed as brackets, into separate path patterns.
+    // Next we strip off everything except the pathname itself, and expand all globs. Expansion is a process which
+    // turns "grouping" clauses, expressed as brackets, into separate path patterns.
     String pathPatternString = pathPattern.toUri().getPath();
+    String fragment = pathPattern.toUri().getFragment();
     List<String> flattenedPatterns = GlobExpander.expand(pathPatternString);
 
-    // Now loop over all flattened patterns.  In every case, we'll be trying to
-    // match them to entries in the filesystem.
-    ArrayList<FileStatus> results = 
-        new ArrayList<FileStatus>(flattenedPatterns.size());
+    // Now loop over all flattened patterns.  In every case, we'll be trying to match them to entries in the
+    // filesystem.
+    ArrayList<FileStatus> results = new ArrayList<FileStatus>(flattenedPatterns.size());
     boolean sawWildcard = false;
     for (String flatPattern : flattenedPatterns) {
-      // Get the absolute path for this flattened pattern.  We couldn't do 
-      // this prior to flattening because of patterns like {/,a}, where which
-      // path you go down influences how the path must be made absolute.
-      Path absPattern = fixRelativePart(new Path(
-          flatPattern.isEmpty() ? Path.CUR_DIR : flatPattern));
+      // Get the absolute path for this flattened pattern. We couldn't do this prior to flattening because of patterns
+      // like {/,a}, where which path you go down influences how the path must be made absolute.
+      Path absPattern = fixRelativePart(new Path(flatPattern.isEmpty() ? Path.CUR_DIR : flatPattern));
       // Now we break the flattened, absolute pattern into path components.
       // For example, /a/*/c would be broken into the list [a, *, c]
-      List<String> components =
-          getPathComponents(absPattern.toUri().getPath());
-      // Starting out at the root of the filesystem, we try to match
-      // filesystem entries against pattern components.
+      List<String> components = getPathComponents(absPattern.toUri().getPath());
+      // Starting out at the root of the filesystem, we try to match filesystem entries against pattern components.
       ArrayList<FileStatus> candidates = new ArrayList<FileStatus>(1);
-      // To get the "real" FileStatus of root, we'd have to do an expensive
-      // RPC to the NameNode.  So we create a placeholder FileStatus which has
-      // the correct path, but defaults for the rest of the information.
-      // Later, if it turns out we actually want the FileStatus of root, we'll
-      // replace the placeholder with a real FileStatus obtained from the
-      // NameNode.
+      // To get the "real" FileStatus of root, we'd have to do an expensive RPC to the NameNode. So we create a
+      // placeholder FileStatus which has the correct path, but defaults for the rest of the information. Later, if it
+      // turns out we actually want the FileStatus of root, we'll replace the placeholder with a real FileStatus
+      // obtained from the NameNode.
       FileStatus rootPlaceholder;
-      if (Path.WINDOWS && !components.isEmpty()
-          && Path.isWindowsAbsolutePath(absPattern.toUri().getPath(), true)) {
-        // On Windows the path could begin with a drive letter, e.g. /E:/foo.
-        // We will skip matching the drive letter and start from listing the
-        // root of the filesystem on that drive.
+      if (Path.WINDOWS && !components.isEmpty() && Path.isWindowsAbsolutePath(absPattern.toUri().getPath(), true)) {
+        // On Windows the path could begin with a drive letter, e.g. /E:/foo. We will skip matching the drive letter and
+        // start from listing the root of the filesystem on that drive.
         String driveLetter = components.remove(0);
-        rootPlaceholder = new FileStatus(0, true, 0, 0, 0, new Path(scheme,
-            authority, Path.SEPARATOR + driveLetter + Path.SEPARATOR));
+        rootPlaceholder = new FileStatus(0, true, 0, 0, 0, new Path(scheme, authority,
+                                                                    Path.SEPARATOR + driveLetter + Path.SEPARATOR));
       } else {
-        rootPlaceholder = new FileStatus(0, true, 0, 0, 0,
-            new Path(scheme, authority, Path.SEPARATOR));
+        rootPlaceholder = new FileStatus(0, true, 0, 0, 0, new Path(scheme, authority, Path.SEPARATOR));
       }
       candidates.add(rootPlaceholder);
-      
-      for (int componentIdx = 0; componentIdx < components.size();
-          componentIdx++) {
-        ArrayList<FileStatus> newCandidates =
-            new ArrayList<FileStatus>(candidates.size());
+
+      for (int componentIdx = 0; componentIdx < components.size(); componentIdx++) {
+        ArrayList<FileStatus> newCandidates = new ArrayList<FileStatus>(candidates.size());
         GlobFilter globFilter = new GlobFilter(components.get(componentIdx));
         String component = unescapePathComponent(components.get(componentIdx));
         if (globFilter.hasPattern()) {
           sawWildcard = true;
         }
         if (candidates.isEmpty() && sawWildcard) {
-          // Optimization: if there are no more candidates left, stop examining 
-          // the path components.  We can only do this if we've already seen
-          // a wildcard component-- otherwise, we still need to visit all path 
-          // components in case one of them is a wildcard.
+          // Optimization: if there are no more candidates left, stop examining the path components. We can only do this
+          // if we've already seen a wildcard component-- otherwise, we still need to visit all path  components in case
+          // one of them is a wildcard.
           break;
         }
-        if ((componentIdx < components.size() - 1) &&
-            (!globFilter.hasPattern())) {
-          // Optimization: if this is not the terminal path component, and we 
-          // are not matching against a glob, assume that it exists.  If it 
-          // doesn't exist, we'll find out later when resolving a later glob
-          // or the terminal path component.
+        if ((componentIdx < components.size() - 1) && (!globFilter.hasPattern())) {
+          // Optimization: if this is not the terminal path component, and we are not matching against a glob, assume
+          // that it exists.  If it doesn't exist, we'll find out later when resolving a later glob or the terminal path
+          // component.
           for (FileStatus candidate : candidates) {
             candidate.setPath(new Path(candidate.getPath(), component));
           }
@@ -214,43 +198,42 @@ class Globber {
         }
         for (FileStatus candidate : candidates) {
           if (globFilter.hasPattern()) {
+            if (fragment != null)
+              candidate.setPath(new Path(candidate.getPath(), Path.TSEPARATOR + fragment));
+
             FileStatus[] children = listStatus(candidate.getPath());
+
             if (children.length == 1) {
-              // If we get back only one result, this could be either a listing
-              // of a directory with one entry, or it could reflect the fact
-              // that what we listed resolved to a file.
+              // If we get back only one result, this could be either a listing of a directory with one entry, or it
+              // could reflect the fact that what we listed resolved to a file.
               //
-              // Unfortunately, we can't just compare the returned paths to
-              // figure this out.  Consider the case where you have /a/b, where
-              // b is a symlink to "..".  In that case, listing /a/b will give
-              // back "/a/b" again.  If we just went by returned pathname, we'd
-              // incorrectly conclude that /a/b was a file and should not match
-              // /a/*/*.  So we use getFileStatus of the path we just listed to
-              // disambiguate.
+              // Unfortunately, we can't just compare the returned paths to figure this out. Consider the case where you
+              // have /a/b, where b is a symlink to "..". In that case, listing /a/b will give back "/a/b" again. If we
+              // just went by returned pathname, we'd incorrectly conclude that /a/b was a file and should not match
+              // /a/*/*. So we use getFileStatus of the path we just listed to disambiguate.
               if (!getFileStatus(candidate.getPath()).isDirectory()) {
                 continue;
               }
             }
             for (FileStatus child : children) {
               // Set the child path based on the parent path.
-              child.setPath(new Path(candidate.getPath(),
-                      child.getPath().getName()));
+              child.setPath(new Path(candidate.getPath(), child.getPath().getName()));
               if (globFilter.accept(child.getPath())) {
                 newCandidates.add(child);
               }
             }
           } else {
-            // When dealing with non-glob components, use getFileStatus 
-            // instead of listStatus.  This is an optimization, but it also
-            // is necessary for correctness in HDFS, since there are some
-            // special HDFS directories like .reserved and .snapshot that are
-            // not visible to listStatus, but which do exist.  (See HADOOP-9877)
-            FileStatus childStatus = getFileStatus(
-                new Path(candidate.getPath(), component));
+            // When dealing with non-glob components, use getFileStatus instead of listStatus. This is an optimization,
+            // but it also is necessary for correctness in HDFS, since there are some special HDFS directories like
+            // .reserved and .snapshot that are not visible to listStatus, but which do exist. (See HADOOP-9877)
+            Path tempPath = fragment != null ? new Path(candidate.getPath(), component + Path.TSEPARATOR + fragment)
+                                             : new Path(candidate.getPath(), component);
+            FileStatus childStatus = getFileStatus(tempPath);
+
             if (childStatus != null) {
               newCandidates.add(childStatus);
-             }
-           }
+            }
+          }
         }
         candidates = newCandidates;
       }

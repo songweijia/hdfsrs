@@ -87,11 +87,8 @@ import com.google.common.annotations.VisibleForTesting;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public abstract class FileSystem extends Configured implements Closeable {
-  public static final String FS_DEFAULT_NAME_KEY = 
-                   CommonConfigurationKeys.FS_DEFAULT_NAME_KEY;
-  public static final String DEFAULT_FS = 
-                   CommonConfigurationKeys.FS_DEFAULT_NAME_DEFAULT;
-
+  public static final String FS_DEFAULT_NAME_KEY = CommonConfigurationKeys.FS_DEFAULT_NAME_KEY;
+  public static final String DEFAULT_FS = CommonConfigurationKeys.FS_DEFAULT_NAME_DEFAULT;
   public static final Log LOG = LogFactory.getLog(FileSystem.class);
 
   /**
@@ -106,9 +103,8 @@ public abstract class FileSystem extends Configured implements Closeable {
   private Cache.Key key;
 
   /** Recording statistics per a FileSystem class */
-  private static final Map<Class<? extends FileSystem>, Statistics> 
-    statisticsTable =
-      new IdentityHashMap<Class<? extends FileSystem>, Statistics>();
+  private static final Map<Class<? extends FileSystem>, Statistics>  statisticsTable =
+        new IdentityHashMap<Class<? extends FileSystem>, Statistics>();
   
   /**
    * The statistics for this file system.
@@ -145,12 +141,10 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @throws IOException
    * @throws InterruptedException
    */
-  public static FileSystem get(final URI uri, final Configuration conf,
-        final String user) throws IOException, InterruptedException {
-    String ticketCachePath =
-      conf.get(CommonConfigurationKeys.KERBEROS_TICKET_CACHE_PATH);
-    UserGroupInformation ugi =
-        UserGroupInformation.getBestUGI(ticketCachePath, user);
+  public static FileSystem get(final URI uri, final Configuration conf, final String user)
+        throws IOException, InterruptedException {
+    String ticketCachePath = conf.get(CommonConfigurationKeys.KERBEROS_TICKET_CACHE_PATH);
+    UserGroupInformation ugi = UserGroupInformation.getBestUGI(ticketCachePath, user);
     return ugi.doAs(new PrivilegedExceptionAction<FileSystem>() {
       @Override
       public FileSystem run() throws IOException {
@@ -247,13 +241,11 @@ public abstract class FileSystem extends Configured implements Closeable {
     if (uri.getPort() == -1 && getDefaultPort() > 0) {
       // reconstruct the uri with the default port set
       try {
-        uri = new URI(uri.getScheme(), uri.getUserInfo(),
-            uri.getHost(), getDefaultPort(),
-            uri.getPath(), uri.getQuery(), uri.getFragment());
+        uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), getDefaultPort(), uri.getPath(),
+                      uri.getQuery(), uri.getFragment());
       } catch (URISyntaxException e) {
         // Should never happen!
-        throw new AssertionError("Valid URI became unparseable: " +
-            uri);
+        throw new AssertionError("Valid URI became unparseable: " + uri);
       }
     }
     
@@ -1652,23 +1644,8 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @return an array of FileStatus objects
    * @throws IOException if any I/O error occurs when fetching file status
    */
-  public FileStatus[] globStatus(Path pathPattern, PathFilter filter)
-      throws IOException {
-    // hdfsrs begin
-    String fragment = pathPattern.toUri().getFragment();
-    FileStatus[] res = new Globber(this, pathPattern, filter).glob();
-
-    if (fragment != null) {
-      for (FileStatus f : res) {
-        URI tempPathUri = f.getPath().toUri();
-        Path tempPath = new Path(tempPathUri.getScheme(), tempPathUri.getAuthority(), tempPathUri.getPath() + "@" + fragment);
-
-        f.setPath(tempPath);
-      }
-    }
-    return res;
-    // hdfsrs end
-    // return new Globber(this, pathPattern, filter).glob();
+  public FileStatus[] globStatus(Path pathPattern, PathFilter filter) throws IOException {
+    return new Globber(this, pathPattern, filter).glob();
   }
   
   /**
@@ -2398,8 +2375,7 @@ public abstract class FileSystem extends Configured implements Closeable {
     }
   }
 
-  public static Class<? extends FileSystem> getFileSystemClass(String scheme,
-      Configuration conf) throws IOException {
+  public static Class<? extends FileSystem> getFileSystemClass(String scheme, Configuration conf) throws IOException {
     if (!FILE_SYSTEMS_LOADED) {
       loadFileSystems();
     }
@@ -2576,8 +2552,8 @@ public abstract class FileSystem extends Configured implements Closeable {
       }
 
       Key(URI uri, Configuration conf, long unique) throws IOException {
-        scheme = uri.getScheme()==null?"":uri.getScheme().toLowerCase();
-        authority = uri.getAuthority()==null?"":uri.getAuthority().toLowerCase();
+        scheme = uri.getScheme()==null ? "" : uri.getScheme().toLowerCase();
+        authority = uri.getAuthority()==null ? "" : uri.getAuthority().toLowerCase();
         this.unique = unique;
         
         this.ugi = UserGroupInformation.getCurrentUser();

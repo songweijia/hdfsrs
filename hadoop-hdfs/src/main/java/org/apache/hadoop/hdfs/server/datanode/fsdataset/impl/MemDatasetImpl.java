@@ -882,9 +882,8 @@ public class MemDatasetImpl implements FsDatasetSpi<MemVolumeImpl> {
   throws IOException {
     final MemDatasetManager.MemBlockMeta replica = memManager.get(block.getBlockPoolId(), block.getBlockId());
     if (replica.getGenerationStamp() < block.getGenerationStamp()) {
-      throw new IOException(
-          "replica.getGenerationStamp() < block.getGenerationStamp(), block="
-          + block + ", replica=" + replica);
+      throw new IOException("replica.getGenerationStamp() < block.getGenerationStamp(), block=" + block +
+                            ", replica=" + replica);
     }
     return replica.getVisibleLength(timestamp,bUserTimestamp);
   }

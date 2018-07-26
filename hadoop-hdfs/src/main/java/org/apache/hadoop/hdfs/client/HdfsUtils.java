@@ -52,17 +52,15 @@ public class HdfsUtils {
     //check scheme
     final String scheme = uri.getScheme();
     if (!HdfsConstants.HDFS_URI_SCHEME.equalsIgnoreCase(scheme)) {
-      throw new IllegalArgumentException("The scheme is not "
-          + HdfsConstants.HDFS_URI_SCHEME + ", uri=" + uri);
+      throw new IllegalArgumentException("The scheme is not " + HdfsConstants.HDFS_URI_SCHEME + ", uri=" + uri);
     }
-    
+
     final Configuration conf = new Configuration();
     //disable FileSystem cache
     conf.setBoolean(String.format("fs.%s.impl.disable.cache", scheme), true);
     //disable client retry for rpc connection and rpc calls
     conf.setBoolean(DFSConfigKeys.DFS_CLIENT_RETRY_POLICY_ENABLED_KEY, false);
-    conf.setInt(
-        CommonConfigurationKeysPublic.IPC_CLIENT_CONNECT_MAX_RETRIES_KEY, 0);
+    conf.setInt(CommonConfigurationKeysPublic.IPC_CLIENT_CONNECT_MAX_RETRIES_KEY, 0);
 
     DistributedFileSystem fs = null;
     try {
@@ -71,7 +69,6 @@ public class HdfsUtils {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Is namenode in safemode? " + safemode + "; uri=" + uri);
       }
-
       fs.close();
       fs = null;
       return !safemode;

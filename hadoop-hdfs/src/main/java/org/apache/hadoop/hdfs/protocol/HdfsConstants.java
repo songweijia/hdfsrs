@@ -115,20 +115,19 @@ public class HdfsConstants {
   public static final long INVALID_TXID = -12345;
 
   // Number of generation stamps reserved for legacy blocks.
-  public static final long RESERVED_GENERATION_STAMPS_V1 =
-      1024L * 1024 * 1024 * 1024;
+  public static final long RESERVED_GENERATION_STAMPS_V1 = 1024L * 1024 * 1024 * 1024;
 
   /**
    * URI Scheme for hdfs://namenode/ URIs.
    */
-  public static final String HDFS_URI_SCHEME = "hdfs";
+  public static final String HDFS_URI_SCHEME = "fffs";
 
   /**
    * A prefix put before the namenode URI inside the "service" field
    * of a delgation token, indicating that the URI is a logical (HA)
    * URI.
    */
-  public static final String HA_DT_SERVICE_PREFIX = "ha-hdfs:";
+  public static final String HA_DT_SERVICE_PREFIX = "ha-fffs:";
 
   /**
    * Path components that are reserved in HDFS.

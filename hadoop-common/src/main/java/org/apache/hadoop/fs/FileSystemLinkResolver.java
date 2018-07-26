@@ -68,8 +68,7 @@ public abstract class FileSystemLinkResolver<T> {
    * @return Generic type determined by implementation
    * @throws IOException
    */
-  public T resolve(final FileSystem filesys, final Path path)
-      throws IOException {
+  public T resolve(final FileSystem filesys, final Path path) throws IOException {
     int count = 0;
     T in = null;
     Path p = path;

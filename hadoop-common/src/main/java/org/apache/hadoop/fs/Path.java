@@ -73,17 +73,17 @@ public class Path implements Comparable {
   }
 
   public static Path getPathWithoutSchemeAndAuthority(Path path) {
-    Path newPath = path;
-
     if (path.isUriPathAbsolute()) {
-      String fragment = path.toUri().getFragment();
+      String fragmentString = path.toUri().getFragment();
+      String pathString = path.toUri().getPath();
 
-      newPath = fragment != null ? new Path(null, null, path.toUri().getPath() + TSEPARATOR + fragment)
-                                 : new Path(null, null, path.toUri().getPath());
+      if (fragmentString != null)
+        return new Path(null, null, pathString + TSEPARATOR + fragmentString);
+      return new Path(null, null, pathString);
     }
     // System.out.println("public static Path getPathWithoutSchemeAndAuthority(Path path): " + newPath.toString());
     // System.out.println("URI: " + newPath.toUri().toString());
-    return newPath;
+    return path;
   }
 
   /** Resolve a child path against a parent path. */
@@ -412,7 +412,7 @@ public class Path implements Comparable {
 
   /** Adds a suffix to the final name in the path.*/
   public Path suffix(String suffix) {
-    return new Path(getParent(), getName()+suffix);
+    return new Path(getParent(), getName() + suffix);
   }
 
   @Override
@@ -491,18 +491,17 @@ public class Path implements Comparable {
   @InterfaceAudience.LimitedPrivate({"HDFS", "MapReduce"})
   public Path makeQualified(URI defaultUri, Path workingDir ) {
     Path path = this;
+
     if (!isAbsolute()) {
       path = new Path(workingDir, this);
     }
 
     URI pathUri = path.toUri();
-      
     String scheme = pathUri.getScheme();
     String authority = pathUri.getAuthority();
     String fragment = pathUri.getFragment();
 
-    if (scheme != null &&
-        (authority != null || defaultUri.getAuthority() == null))
+    if (scheme != null && (authority != null || defaultUri.getAuthority() == null))
       return path;
 
     if (scheme == null) {
@@ -515,11 +514,10 @@ public class Path implements Comparable {
         authority = "";
       }
     }
-    
+
     URI newUri = null;
     try {
-      newUri = new URI(scheme, authority , 
-        normalizePath(scheme, pathUri.getPath()), null, fragment);
+      newUri = new URI(scheme, authority, normalizePath(scheme, pathUri.getPath()), null, fragment);
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException(e);
     }

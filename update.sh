@@ -1,6 +1,6 @@
 #!/bin/bash
 for f in \
-src/main/native/blog/JNIBlog.c \
+src/main/native/blog/JNIBlog.cc \
 src/main/native/blog/JNIBlog.h \
 src/main/native/blog/types.h \
 src/main/java/edu/cornell/cs/blog/JNIBlog.java \
@@ -58,7 +58,7 @@ TESTDN=./hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode
 FILES=" \
 $BLOGJAVA/JNIBlog.java \
 $BLOGC/JNIBlog.h \
-$BLOGC/JNIBlog.c \
+$BLOGC/JNIBlog.cc \
 $BLOGC/types.h \
 $BLOGC/map.h \
 $BLOGC/Makefile \

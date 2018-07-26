@@ -112,26 +112,25 @@ public class INodesInPath {
    *        be thrown when the path refers to a symbolic link.
    * @return the specified number of existing INodes in the path
    */
-  static INodesInPath resolve(final INodeDirectory startingDir,
-      final byte[][] components, final int numOfINodes, 
-      final boolean resolveLink) throws UnresolvedLinkException {
+  static INodesInPath resolve(final INodeDirectory startingDir, final byte[][] components, final int numOfINodes,
+                              final boolean resolveLink) throws UnresolvedLinkException {
     Preconditions.checkArgument(startingDir.compareTo(components[0]) == 0);
-
     INode curNode = startingDir;
     final INodesInPath existing = new INodesInPath(components, numOfINodes);
     int count = 0;
     int index = numOfINodes - components.length;
+
     if (index > 0) {
       index = 0;
     }
     while (count < components.length && curNode != null) {
-      final boolean lastComp = (count == components.length - 1);      
+      final boolean lastComp = (count == components.length - 1);
       if (index >= 0) {
         existing.addNode(curNode);
       }
       final boolean isRef = curNode.isReference();
       final boolean isDir = curNode.isDirectory();
-      final INodeDirectory dir = isDir? curNode.asDirectory(): null;  
+      final INodeDirectory dir = isDir? curNode.asDirectory(): null;
       if (!isRef && isDir && dir.isWithSnapshot()) {
         //if the path is a non-snapshot path, update the latest snapshot.
         if (!existing.isSnapshot()) {

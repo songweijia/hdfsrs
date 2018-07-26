@@ -67,8 +67,7 @@ public class Hdfs extends AbstractFileSystem {
    * This constructor has the signature needed by
    * {@link AbstractFileSystem#createFileSystem(URI, Configuration)}
    * 
-   * @param theUri
-   *          which must be that of Hdfs
+   * @param theUri which must be that of Hdfs
    * @param conf
    * @throws IOException
    */
@@ -92,36 +91,31 @@ public class Hdfs extends AbstractFileSystem {
   }
 
   @Override
-  public HdfsDataOutputStream createInternal(Path f,
-      EnumSet<CreateFlag> createFlag, FsPermission absolutePermission,
-      int bufferSize, short replication, long blockSize, Progressable progress,
-      ChecksumOpt checksumOpt, boolean createParent) throws IOException {
-    return new HdfsDataOutputStream(dfs.primitiveCreate(getUriPath(f),
-        absolutePermission, createFlag, createParent, replication, blockSize,
-        progress, bufferSize, checksumOpt), getStatistics());
+  public HdfsDataOutputStream createInternal(Path f, EnumSet<CreateFlag> createFlag, FsPermission absolutePermission,
+                                             int bufferSize, short replication, long blockSize, Progressable progress,
+                                             ChecksumOpt checksumOpt, boolean createParent) throws IOException {
+    return new HdfsDataOutputStream(dfs.primitiveCreate(getUriPath(f), absolutePermission, createFlag, createParent,
+                                    replication, blockSize, progress, bufferSize, checksumOpt), getStatistics());
   }
 
   @Override
-  public boolean delete(Path f, boolean recursive) 
-      throws IOException, UnresolvedLinkException {
+  public boolean delete(Path f, boolean recursive) throws IOException, UnresolvedLinkException {
     return dfs.delete(getUriPath(f), recursive);
   }
 
   @Override
   public BlockLocation[] getFileBlockLocations(Path p, long start, long len)
-      throws IOException, UnresolvedLinkException {
+        throws IOException, UnresolvedLinkException {
     return dfs.getBlockLocations(getUriPath(p), start, len);
   }
 
   @Override
-  public FileChecksum getFileChecksum(Path f) 
-      throws IOException, UnresolvedLinkException {
+  public FileChecksum getFileChecksum(Path f) throws IOException, UnresolvedLinkException {
     return dfs.getFileChecksum(getUriPath(f));
   }
 
   @Override
-  public FileStatus getFileStatus(Path f) 
-      throws IOException, UnresolvedLinkException {
+  public FileStatus getFileStatus(Path f) throws IOException, UnresolvedLinkException {
     HdfsFileStatus fi = dfs.getFileInfo(getUriPath(f));
     if (fi != null) {
       return fi.makeQualified(getUri(), f);
@@ -131,8 +125,7 @@ public class Hdfs extends AbstractFileSystem {
   }
   
   @Override
-  public FileStatus getFileLinkStatus(Path f) 
-      throws IOException, UnresolvedLinkException {
+  public FileStatus getFileLinkStatus(Path f) throws IOException, UnresolvedLinkException {
     HdfsFileStatus fi = dfs.getFileLinkInfo(getUriPath(f));
     if (fi != null) {
       return fi.makeQualified(getUri(), f);
@@ -152,15 +145,11 @@ public class Hdfs extends AbstractFileSystem {
   }
 
   @Override
-  public RemoteIterator<LocatedFileStatus> listLocatedStatus(
-      final Path p)
-      throws FileNotFoundException, IOException {
+  public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path p) throws FileNotFoundException, IOException {
     return new DirListingIterator<LocatedFileStatus>(p, true) {
-
       @Override
       public LocatedFileStatus next() throws IOException {
-        return ((HdfsLocatedFileStatus)getNext()).makeQualifiedLocated(
-            getUri(), p);
+        return ((HdfsLocatedFileStatus)getNext()).makeQualifiedLocated(getUri(), p);
       }
     };
   }

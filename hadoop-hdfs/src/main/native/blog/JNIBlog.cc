@@ -1765,7 +1765,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_deleteBlock(JNIEnv *env,
 
 // readBlockInternal: read the latest state of a block
 int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst, jint length,
-    const transport_parameters_t *tp) {
+                      const transport_parameters_t *tp) {
   DEBUG_PRINT("begin readBlockInternal:blockId=%" PRIu64 ",blkOfst=%d,length=%d\n", blockId, blkOfst, length);
 #ifdef DEBUG
   struct timeval tv1,tv2;
@@ -1783,9 +1783,9 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
   // Find the block.
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) != 0 || block->status != ACTIVE) {
-    fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
+    fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active\n", block_id);
     MAP_UNLOCK(block, filesystem->block_map, block_id);
-    return -1;
+    return 0;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
 
@@ -1813,15 +1813,14 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
 
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
-    fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active at snapshot with log index %" PRIu64 ".\n",
-        block_id, log_index);
-    return -1;
+    fprintf(stderr, "WARNING: Block with id %" PRIu64 " is deleted.\n", block_id);
+    return 0;
   }
 
   // In case the data you ask is not written return an error.
   if (block_offset >= snapshot->length) {
     fprintf(stderr, "WARNING: Block %" PRIu64 " is not written at %" PRIu32 " byte.\n", block_id, block_offset);
-    return -2;
+    return 0;
   }
 
   // See if the data is partially written.
@@ -1873,40 +1872,40 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
     pthread_rwlock_unlock(&filesystem->head_rwlock); // release read lock on page pool...
   } else { // read to remote memory(RDMA)
 #ifdef ODP_ENABLED
-  uint32_t start_page_id = blkOfst / filesystem->page_size;
-  uint32_t end_page_id = (blkOfst+length-1) / filesystem->page_size;
-  uint32_t npage = 0;
-  void **paddrlist = (void**)malloc(sizeof(void*)*(end_page_id - start_page_id + 1));
-  pthread_rwlock_rdlock(&filesystem->head_rwlock); // use read lock on system pages ...
+    uint32_t start_page_id = blkOfst / filesystem->page_size;
+    uint32_t end_page_id = (blkOfst+length-1) / filesystem->page_size;
+    uint32_t npage = 0;
+    void **paddrlist = (void**)malloc(sizeof(void*)*(end_page_id - start_page_id + 1));
+    pthread_rwlock_rdlock(&filesystem->head_rwlock); // use read lock on system pages ...
 
-  while(start_page_id<=end_page_id) {
-    // TODO: check if data is in the memory or not.
-    paddrlist[npage] = PAGE_NR_TO_PTR(filesystem,snapshot->pages[start_page_id]);
-    start_page_id ++;
-    npage ++;
-  }
+    while(start_page_id<=end_page_id) {
+      // TODO: check if data is in the memory or not.
+      paddrlist[npage] = PAGE_NR_TO_PTR(filesystem,snapshot->pages[start_page_id]);
+      start_page_id ++;
+      npage ++;
+    }
 
-  // get ip str
-  int ipSize = (int)env->GetArrayLength(env,tp->param.rdma.client_ip);
-  jbyte ipStr[16];
-  env->GetByteArrayRegion(tp->param.rdma.client_ip, 0, ipSize, ipStr);
-  ipStr[ipSize] = 0;
-  uint32_t ipkey = inet_addr((const char*)ipStr);
+    // get ip str
+    int ipSize = (int)env->GetArrayLength(env,tp->param.rdma.client_ip);
+    jbyte ipStr[16];
+    env->GetByteArrayRegion(tp->param.rdma.client_ip, 0, ipSize, ipStr);
+    ipStr[ipSize] = 0;
+    uint32_t ipkey = inet_addr((const char*)ipStr);
 
-  // get remote address
-  uint64_t vaddr = tp->param.rdma.vaddr;// vaddr is start of a block.
-  const uint64_t address = vaddr + block_offset - (block_offset % filesystem->page_size);
+    // get remote address
+    uint64_t vaddr = tp->param.rdma.vaddr;// vaddr is start of a block.
+    const uint64_t address = vaddr + block_offset - (block_offset % filesystem->page_size);
 
-  // rdma write...
-  int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void **)paddrlist,npage,0);
+    // rdma write...
+    int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t) ipkey, tp->param.rdma.remote_pid, (const uint64_t)address,
+                       (const void **) paddrlist, npage, 0);
 
-  pthread_rwlock_unlock(&filesystem->head_rwlock);// release read lock on page pool...
-
-  free(paddrlist);
-  if(rc !=0 ) {
-    fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
-    return -2;
-  }
+    pthread_rwlock_unlock(&filesystem->head_rwlock);// release read lock on page pool...
+    free(paddrlist);
+    if (rc != 0) {
+      fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
+      return -2;
+    }
 #else
     fprintf(stderr, "readBlockRDMA: cannot do RDMA Read without ODP_ENABLED, please re-build FFFS with ODP_ENABLED.\n");
     return -2;
@@ -1914,8 +1913,7 @@ int readBlockInternal(JNIEnv *env, jobject thisObj, jlong blockId, jint blkOfst,
   }
   DEBUG_TIMESTAMP(tv2);
 
-  DEBUG_PRINT("end readBlockInternal. %dbytes %ldus %.3fMB/s\n", length, TIMESPAN(tv1,tv2),
-      (double)length/TIMESPAN(tv1,tv2));
+  DEBUG_PRINT("end readBlockInternal. %dbytes %ldus %.3fMB/s\n", length, TIMESPAN(tv1,tv2), (double)length/TIMESPAN(tv1,tv2));
   return read_length;
 }
 
@@ -1954,7 +1952,7 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_readBlockRDMA__JII_3BIJ(
 
 // readBlockInternalByTime(): read block state at given timestamp...
 int readBlockInternalByTime(JNIEnv *env, jobject thisObj, jlong blockId, jlong t, jint blkOfst, jint length,
-    transport_parameters_t *tp, jboolean byUserTimestamp) {
+                            transport_parameters_t *tp, jboolean byUserTimestamp) {
   DEBUG_PRINT("begin readBlockInternalByTime.\n");
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
@@ -1969,8 +1967,8 @@ int readBlockInternalByTime(JNIEnv *env, jobject thisObj, jlong blockId, jlong t
   // Find the block.
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) != 0) {
-    fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
-    return -2;
+    fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been created\n", block_id);
+    return 0;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
 
@@ -1983,21 +1981,20 @@ int readBlockInternalByTime(JNIEnv *env, jobject thisObj, jlong blockId, jlong t
       < 0) {
     fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
     BLOG_UNLOCK(block);
-    return -1;
+    return 0;
   }
   BLOG_UNLOCK(block);
 
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
-    fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active at snapshot with rtc %" PRIu64 ".\n", block_id,
-        snapshot_time);
-    return -2;
+    fprintf(stderr, "WARNING: Block with id %" PRIu64 " has been deleted.\n", block_id);
+    return 0;
   }
 
   // In case the data you ask is not written return an error.
   if (block_offset >= snapshot->length) {
     fprintf(stderr, "WARNING: Block %" PRIu64 " is not written at %" PRIu32 " byte.\n", block_id, block_offset);
-    return -3;
+    return 0;
   }
 
   // See if the data is partially written.
@@ -2042,35 +2039,36 @@ int readBlockInternalByTime(JNIEnv *env, jobject thisObj, jlong blockId, jlong t
     pthread_rwlock_unlock(&filesystem->head_rwlock); // release lock
   } else { // read to remote buffer(RDMA)
 #ifdef ODP_ENABLED
-  // TODO: revise design part with Implicit/explicit ODP
-  uint32_t start_page_id = blkOfst / filesystem->page_size;
-  uint32_t end_page_id = (blkOfst+length-1) / filesystem->page_size;
-  uint32_t npage = 0;
-  void **paddrlist = (void**)malloc(sizeof(void*)*(end_page_id - start_page_id + 1));
-  while(start_page_id<=end_page_id) {
-    paddrlist[npage] = PAGE_NR_TO_PTR(filesystem,snapshot->pages[start_page_id]);
-    start_page_id ++;
-    npage ++;
-  }
+    // TODO: revise design part with Implicit/explicit ODP
+    uint32_t start_page_id = blkOfst / filesystem->page_size;
+    uint32_t end_page_id = (blkOfst+length-1) / filesystem->page_size;
+    uint32_t npage = 0;
+    void **paddrlist = (void**)malloc(sizeof(void*)*(end_page_id - start_page_id + 1));
+    while(start_page_id<=end_page_id) {
+      paddrlist[npage] = PAGE_NR_TO_PTR(filesystem,snapshot->pages[start_page_id]);
+      start_page_id ++;
+      npage ++;
+    }
 
-  // get ip str
-  int ipSize = (int)env->GetArrayLength(env,tp->param.rdma.client_ip);
-  jbyte ipStr[16];
-  env->GetByteArrayRegion(tp->param.rdma.client_ip, 0, ipSize, ipStr);
-  ipStr[ipSize] = 0;
-  uint32_t ipkey = inet_addr((const char*)ipStr);
+    // get ip str
+    int ipSize = (int)env->GetArrayLength(env,tp->param.rdma.client_ip);
+    jbyte ipStr[16];
+    env->GetByteArrayRegion(tp->param.rdma.client_ip, 0, ipSize, ipStr);
+    ipStr[ipSize] = 0;
+    uint32_t ipkey = inet_addr((const char*)ipStr);
 
-  // get remote address
-  uint64_t vaddr = tp->param.rdma.vaddr;// vaddr is the start of the block.
-  const uint64_t address = vaddr + block_offset - (block_offset % filesystem->page_size);
+    // get remote address
+    uint64_t vaddr = tp->param.rdma.vaddr;// vaddr is the start of the block.
+    const uint64_t address = vaddr + block_offset - (block_offset % filesystem->page_size);
 
-  // rdma write...
-  int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t)ipkey, tp->param.rdma.remote_pid, (const uint64_t)address, (const void **)paddrlist,npage,0);
-  free(paddrlist);
-  if(rc !=0 ) {
-    fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
-    return -2;
-  }
+    // rdma write...
+    int rc = rdmaWrite(filesystem->rdmaCtxt, (const uint32_t) ipkey, tp->param.rdma.remote_pid,
+                       (const uint64_t) address, (const void **) paddrlist, npage, 0);
+    free(paddrlist);
+    if (rc != 0) {
+      fprintf(stderr, "readBlockRDMA: rdmaWrite failed with error code=%d.\n", rc);
+      return -2;
+    }
 #else
     fprintf(stderr, "readBlockRDMA: cannot do RDMA Read without ODP_ENABLED, please re-build FFFS with ODP_ENABLED.\n");
     return -2;
@@ -2131,9 +2129,9 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__J(JNIE
   // Find the block.
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) != 0 || block->status != ACTIVE) {
-    fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
+    fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never created.\n", block_id);
     MAP_UNLOCK(block, filesystem->block_map, block_id);
-    return -1;
+    return 0;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
 
@@ -2160,17 +2158,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ(JN
   filesystem_t *filesystem = get_filesystem(env, thisObj);
   snapshot_t *snapshot;
   block_t *block;
-  // uint64_t *log_ptr;
-  // uint64_t log_index;
   uint64_t block_id = (uint64_t) blockId;
   uint64_t snapshot_time = (uint64_t) t;
 
   // Find the block.
   MAP_LOCK(block, filesystem->block_map, block_id, 'r');
   if (MAP_READ(block, filesystem->block_map, block_id, &block) != 0) {
-    fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been active\n", block_id);
+    fprintf(stderr, "WARNING: Block with id %" PRIu64 " has never been created\n", block_id);
     MAP_UNLOCK(block, filesystem->block_map, block_id);
-    return -1;
+    return 0;
   }
   MAP_UNLOCK(block, filesystem->block_map, block_id);
 
@@ -2182,15 +2178,15 @@ JNIEXPORT jint JNICALL Java_edu_cornell_cs_blog_JNIBlog_getNumberOfBytes__JJZ(JN
   if (find_or_create_snapshot(block, snapshot_time, filesystem->page_size, &snapshot, by_ut == JNI_TRUE) < 0) {
     fprintf(stderr, "WARNING: Snapshot for time %" PRIu64 " cannot be created.\n", snapshot_time);
     BLOG_UNLOCK(block);
-    return -2;
+    return 0;
   }
   BLOG_UNLOCK(block);
 
   // In case the block does not exist return an error.
   if (snapshot->status == NON_ACTIVE) {
-    fprintf(stderr, "WARNING: Block with id %" PRIu64 " is not active at snapshot with rtc %" PRIu64 ".\n", block_id,
-        snapshot_time);
-    return -1;
+    fprintf(stderr, "WARNING: Block with ID %" PRIu64 " is not active at time %" PRIu64 ".\n", block_id,
+            snapshot_time);
+    return 0;
   }
 
   return (jint) snapshot->length;

@@ -164,33 +164,28 @@ import com.google.common.base.Preconditions;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public class Configuration implements Iterable<Map.Entry<String,String>>,
-                                      Writable {
-  private static final Log LOG =
-    LogFactory.getLog(Configuration.class);
-
-  private static final Log LOG_DEPRECATION =
-    LogFactory.getLog("org.apache.hadoop.conf.Configuration.deprecation");
-
+public class Configuration implements Iterable<Map.Entry<String,String>>, Writable {
+  private static final Log LOG = LogFactory.getLog(Configuration.class);
+  private static final Log LOG_DEPRECATION = LogFactory.getLog("org.apache.hadoop.conf.Configuration.deprecation");
   private boolean quietmode = true;
   
   private static class Resource {
     private final Object resource;
     private final String name;
-    
+
     public Resource(Object resource) {
       this(resource, resource.toString());
     }
-    
+
     public Resource(Object resource, String name) {
       this.resource = resource;
       this.name = name;
     }
-    
-    public String getName(){
+
+    public String getName() {
       return name;
     }
-    
+
     public Object getResource() {
       return resource;
     }
@@ -217,21 +212,18 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
    * List of configuration parameters marked <b>final</b>. 
    */
   private Set<String> finalParameters = new HashSet<String>();
-  
+
   private boolean loadDefaults = true;
-  
+
   /**
    * Configuration objects
    */
-  private static final WeakHashMap<Configuration,Object> REGISTRY = 
-    new WeakHashMap<Configuration,Object>();
-  
+  private static final WeakHashMap<Configuration,Object> REGISTRY = new WeakHashMap<Configuration,Object>();
+
   /**
-   * List of default Resources. Resources are loaded in the order of the list 
-   * entries
+   * List of default Resources. Resources are loaded in the order of the list entries.
    */
-  private static final CopyOnWriteArrayList<String> defaultResources =
-    new CopyOnWriteArrayList<String>();
+  private static final CopyOnWriteArrayList<String> defaultResources = new CopyOnWriteArrayList<String>();
 
   private static final Map<ClassLoader, Map<String, WeakReference<Class<?>>>>
     CACHE_CLASSES = new WeakHashMap<ClassLoader, Map<String, WeakReference<Class<?>>>>();
@@ -239,8 +231,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
   /**
    * Sentinel value to store negative cache results in {@link #CACHE_CLASSES}.
    */
-  private static final Class<?> NEGATIVE_CACHE_SENTINEL =
-    NegativeCacheSentinel.class;
+  private static final Class<?> NEGATIVE_CACHE_SENTINEL = NegativeCacheSentinel.class;
 
   /**
    * Stores the mapping of key to the resource which modifies or loads 
@@ -286,8 +277,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
           }
         }
         warningMessage = message.toString();
-      }
-      else {
+      } else {
         warningMessage = customMessage;
       }
       return warningMessage;
@@ -494,9 +484,8 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
    * @param newKey
    * @param customMessage
    */
-  public static void addDeprecation(String key, String newKey,
-	      String customMessage) {
-	  addDeprecation(key, new String[] {newKey}, customMessage);
+  public static void addDeprecation(String key, String newKey, String customMessage) {
+    addDeprecation(key, new String[] {newKey}, customMessage);
   }
 
   /**
@@ -564,8 +553,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
    * @return the first property in the list of properties mapping
    *         the <code>name</code> or the <code>name</code> itself.
    */
-  private String[] handleDeprecation(DeprecationContext deprecations,
-      String name) {
+  private String[] handleDeprecation(DeprecationContext deprecations, String name) {
     ArrayList<String > names = new ArrayList<String>();
 	if (isDeprecated(name)) {
       DeprecatedKeyInfo keyInfo = deprecations.getDeprecatedKeyMap().get(name);
@@ -576,10 +564,10 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
         }
       }
     }
-    if(names.size() == 0) {
-    	names.add(name);
+    if (names.size() == 0) {
+      names.add(name);
     }
-    for(String n : names) {
+    for (String n : names) {
 	  String deprecatedKey = deprecations.getReverseDeprecatedKeyMap().get(n);
 	  if (deprecatedKey != null && !getOverlay().containsKey(n) &&
 	      getOverlay().containsKey(deprecatedKey)) {
@@ -589,7 +577,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
     }
     return names.toArray(new String[names.size()]);
   }
- 
+
   private void handleDeprecation() {
     LOG.debug("Handling deprecation for all properties in config...");
     DeprecationContext deprecations = deprecationContext.get();
@@ -601,7 +589,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
     }
   }
  
-  static{
+  static {
     //print deprecation warning if hadoop-site.xml is found in classpath
     ClassLoader cL = Thread.currentThread().getContextClassLoader();
     if (cL == null) {
@@ -1043,7 +1031,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
   }
   
   private synchronized Properties getOverlay() {
-    if (overlay==null){
+    if (overlay==null) {
       overlay=new Properties();
     }
     return overlay;
@@ -1477,7 +1465,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
       return null;
     } else {
       String[] source = updatingResource.get(name);
-      if(source == null) {
+      if (source == null) {
         return null;
       } else {
         return Arrays.copyOf(source, source.length);
@@ -1515,7 +1503,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
       public boolean hasNext() {
         if (at <= end) {
           return true;
-        } else if (internal != null){
+        } else if (internal != null) {
           return internal.hasNext();
         }
         return false;
@@ -1526,7 +1514,7 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
         if (at <= end) {
           at++;
           return at - 1;
-        } else if (internal != null){
+        } else if (internal != null) {
           Range found = internal.next();
           if (found != null) {
             at = found.start;
@@ -1817,18 +1805,17 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
     synchronized (CACHE_CLASSES) {
       map = CACHE_CLASSES.get(classLoader);
       if (map == null) {
-        map = Collections.synchronizedMap(
-          new WeakHashMap<String, WeakReference<Class<?>>>());
+        map = Collections.synchronizedMap(new WeakHashMap<String, WeakReference<Class<?>>>());
         CACHE_CLASSES.put(classLoader, map);
       }
     }
 
     Class<?> clazz = null;
-    WeakReference<Class<?>> ref = map.get(name); 
+    WeakReference<Class<?>> ref = map.get(name);
     if (ref != null) {
        clazz = ref.get();
     }
-     
+
     if (clazz == null) {
       try {
         clazz = Class.forName(name, true, classLoader);
@@ -1848,17 +1835,17 @@ public class Configuration implements Iterable<Map.Entry<String,String>>,
     }
   }
 
-  /** 
+  /**
    * Get the value of the <code>name</code> property
    * as an array of <code>Class</code>.
-   * The value of the property specifies a list of comma separated class names.  
-   * If no such property is specified, then <code>defaultValue</code> is 
+   * The value of the property specifies a list of comma separated class names.
+   * If no such property is specified, then <code>defaultValue</code> is
    * returned.
-   * 
+   *
    * @param name the property name.
    * @param defaultValue default value.
-   * @return property value as a <code>Class[]</code>, 
-   *         or <code>defaultValue</code>. 
+   * @return property value as a <code>Class[]</code>,
+   *         or <code>defaultValue</code>.
    */
   public Class<?>[] getClasses(String name, Class<?> ... defaultValue) {
     String[] classnames = getTrimmedStrings(name);

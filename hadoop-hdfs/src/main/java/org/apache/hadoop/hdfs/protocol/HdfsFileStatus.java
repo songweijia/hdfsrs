@@ -70,7 +70,7 @@ public class HdfsFileStatus {
                     byte[] symlink, byte[] path, long fileId, int childrenNum) {
     this.length = length;
     this.isdir = isdir;
-    this.block_replication = (short)block_replication;
+    this.block_replication = (short) block_replication;
     this.blocksize = blocksize;
     this.modification_time = modification_time;
     this.access_time = access_time;
@@ -231,7 +231,7 @@ public class HdfsFileStatus {
   }
   
   final public byte[] getSymlinkInBytes() {
-    return symlink;
+    return symlink ;
   }
   
   final public long getFileId() {
@@ -243,12 +243,8 @@ public class HdfsFileStatus {
   }
 
   final public FileStatus makeQualified(URI defaultUri, Path path) {
-    return new FileStatus(getLen(), isDir(), getReplication(),
-        getBlockSize(), getModificationTime(),
-        getAccessTime(),
-        getPermission(), getOwner(), getGroup(),
-        isSymlink() ? new Path(getSymlink()) : null,
-        (getFullPath(path)).makeQualified(
-            defaultUri, null)); // fully-qualify path
+    return new FileStatus(getLen(), isDir(), getReplication(), getBlockSize(), getModificationTime(), getAccessTime(),
+                          getPermission(), getOwner(), getGroup(), isSymlink() ? new Path(getSymlink()) : null,
+                          (getFullPath(path)).makeQualified(defaultUri, null)); // fully-qualify path
   }
 }

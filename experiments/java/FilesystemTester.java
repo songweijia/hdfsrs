@@ -229,30 +229,26 @@ public class FilesystemTester extends Configured implements Tool {
     }
 
     ts1 = System.currentTimeMillis();
-    // System.out.println("TS1: " + ts1);
     TimeUnit.SECONDS.sleep(1);
     fsos = fs.create(new Path(path));
     TimeUnit.SECONDS.sleep(1);
     ts2 = System.currentTimeMillis();
-    // System.out.println("TS2: " + ts2);
     TimeUnit.SECONDS.sleep(1);
     fsos.write(buf1, 0, PACKET_SIZE);
     fsos.hflush();
     TimeUnit.SECONDS.sleep(1);
     ts3 = System.currentTimeMillis();
-    // System.out.println("TS3: " + ts3);
     TimeUnit.SECONDS.sleep(1);
     fsos.seek(0);
     fsos.write(buf2, 0, PACKET_SIZE);
     fsos.hflush();
     TimeUnit.SECONDS.sleep(1);
     ts4 = System.currentTimeMillis();
-    // System.out.println("TS4: " + ts4);
     fsos.close();
     System.out.println("The two writes are successful.");
 
     // Read before creation of the file.
-    FSDataInputStream fsis = fs.open(new Path(path), 4096, ts1, false);
+    FSDataInputStream fsis = fs.open(new Path(path + "@s" + Long.toString(ts1)));
     byte [] buf = new byte[PACKET_SIZE];
     int nread;
 
@@ -262,14 +258,14 @@ public class FilesystemTester extends Configured implements Tool {
     System.out.println("Read before creation of the file is successful");
 
     // Read after creation of the file.
-    fsis = fs.open(new Path(path), 4096, ts2, false);
+    fsis = fs.open(new Path(path + "@s" + Long.toString(ts2)));
     nread = fsis.read(buf, 0, PACKET_SIZE);
     assertEquals("Should get -1 instead of " + nread, -1, nread);
     fsis.close();
     System.out.println("Read after creation of the file is successful");
 
     // Read after the first write.
-    fsis = fs.open(new Path(path), 4096, ts3, false);
+    fsis = fs.open(new Path(path + "@s" + Long.toString(ts3)));
     nread = fsis.read(buf, 0, PACKET_SIZE);
     assertArrayEquals("Result is different from test buffer.", buf, buf1);
     fsis.close();
@@ -310,9 +306,9 @@ public class FilesystemTester extends Configured implements Tool {
     buff1[7] = 0;
     buff1[8] = 0;
     buff1[9] = 1;
-    buff1[11] = 0;
-    buff1[12] = 0;
-    buff1[13] = 0;
+    buff1[11] = 7;
+    buff1[12] = -95;
+    buff1[13] = 32;
 
     // Create file.
     fsos = fs.create(new Path(path));
@@ -340,7 +336,7 @@ public class FilesystemTester extends Configured implements Tool {
     System.out.println("Write is successful.");
 
     // Read before first packet was written.
-    fsis = fs.open(new Path(path + "@u999999"));
+    fsis = fs.open(new Path(path + "@u1499999"));
     nread = fsis.read(buff);
     fsis.close();
     if (nread != -1)
@@ -348,14 +344,14 @@ public class FilesystemTester extends Configured implements Tool {
     System.out.println("Read before the first write is successful.");
 
     // Read after first packet was written and before the second one.
-    fsis = fs.open(new Path(path + "@u2000000"));
+    fsis = fs.open(new Path(path + "@u1500000"));
     nread = fsis.read(buff);
     fsis.close();
     assertArrayEquals("Result is different from the test buffer", buff, buff1);
     System.out.println("Read after the first write is successful.");
 
     // Read after second packet is written.
-    fsis = fs.open(new Path(path + "@u4000000"));
+    fsis = fs.open(new Path(path + "@u3000000"));
     nread = fsis.read(buff);
     fsis.close();
     assertArrayEquals("Result is different from the test buffer", buff, buff2);

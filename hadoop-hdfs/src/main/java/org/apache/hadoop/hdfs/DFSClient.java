@@ -536,8 +536,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * Same as this(nameNodeUri, conf, null);
    * @see #DFSClient(URI, Configuration, FileSystem.Statistics)
    */
-  public DFSClient(URI nameNodeUri, Configuration conf
-      ) throws IOException {
+  public DFSClient(URI nameNodeUri, Configuration conf) throws IOException {
     this(nameNodeUri, conf, null);
   }
 
@@ -545,9 +544,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * Same as this(nameNodeUri, null, conf, stats);
    * @see #DFSClient(URI, ClientProtocol, Configuration, FileSystem.Statistics) 
    */
-  public DFSClient(URI nameNodeUri, Configuration conf,
-                   FileSystem.Statistics stats)
-    throws IOException {
+  public DFSClient(URI nameNodeUri, Configuration conf, FileSystem.Statistics stats) throws IOException {
     this(nameNodeUri, null, conf, stats);
   }
   
@@ -560,9 +557,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * must be null.
    */
   @VisibleForTesting
-  public DFSClient(URI nameNodeUri, ClientProtocol rpcNamenode,
-      Configuration conf, FileSystem.Statistics stats)
-    throws IOException {
+  public DFSClient(URI nameNodeUri, ClientProtocol rpcNamenode, Configuration conf, FileSystem.Statistics stats)
+        throws IOException {
     // Copy only the required DFSClient configuration
     this.dfsClientConf = new Conf(conf);
     if (this.dfsClientConf.useLegacyBlockReaderLocal) {
@@ -572,26 +568,23 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     this.stats = stats;
     this.socketFactory = NetUtils.getSocketFactory(conf, ClientProtocol.class);
     this.dtpReplaceDatanodeOnFailure = ReplaceDatanodeOnFailure.get(conf);
-
     this.ugi = UserGroupInformation.getCurrentUser();
-    
     this.authority = nameNodeUri == null? "null": nameNodeUri.getAuthority();
-    this.clientName = "DFSClient_" + dfsClientConf.taskId + "_" + 
-        DFSUtil.getRandom().nextInt()  + "_" + Thread.currentThread().getId();
-    
+    this.clientName = "DFSClient_" + dfsClientConf.taskId + "_" + DFSUtil.getRandom().nextInt()  + "_" +
+                      Thread.currentThread().getId();
+
     int numResponseToDrop = conf.getInt(
         DFSConfigKeys.DFS_CLIENT_TEST_DROP_NAMENODE_RESPONSE_NUM_KEY,
         DFSConfigKeys.DFS_CLIENT_TEST_DROP_NAMENODE_RESPONSE_NUM_DEFAULT);
     NameNodeProxies.ProxyAndInfo<ClientProtocol> proxyInfo = null;
     if (numResponseToDrop > 0) {
       // This case is used for testing.
-      LOG.warn(DFSConfigKeys.DFS_CLIENT_TEST_DROP_NAMENODE_RESPONSE_NUM_KEY
-          + " is set to " + numResponseToDrop
-          + ", this hacked client will proactively drop responses");
-      proxyInfo = NameNodeProxies.createProxyWithLossyRetryHandler(conf,
-          nameNodeUri, ClientProtocol.class, numResponseToDrop);
+      LOG.warn(DFSConfigKeys.DFS_CLIENT_TEST_DROP_NAMENODE_RESPONSE_NUM_KEY + " is set to " + numResponseToDrop +
+               ", this hacked client will proactively drop responses");
+      proxyInfo = NameNodeProxies.createProxyWithLossyRetryHandler(conf, nameNodeUri, ClientProtocol.class,
+                                                                   numResponseToDrop);
     }
-    
+
     if (proxyInfo != null) {
       this.dtService = proxyInfo.getDelegationTokenService();
       this.namenode = proxyInfo.getProxy();
@@ -601,16 +594,13 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
       this.namenode = rpcNamenode;
       dtService = null;
     } else {
-      Preconditions.checkArgument(nameNodeUri != null,
-          "null URI");
-      proxyInfo = NameNodeProxies.createProxy(conf, nameNodeUri,
-          ClientProtocol.class);
+      Preconditions.checkArgument(nameNodeUri != null, "null URI");
+      proxyInfo = NameNodeProxies.createProxy(conf, nameNodeUri, ClientProtocol.class);
       this.dtService = proxyInfo.getDelegationTokenService();
       this.namenode = proxyInfo.getProxy();
     }
 
-    String localInterfaces[] =
-      conf.getTrimmedStrings(DFSConfigKeys.DFS_CLIENT_LOCAL_INTERFACES);
+    String localInterfaces[] = conf.getTrimmedStrings(DFSConfigKeys.DFS_CLIENT_LOCAL_INTERFACES);
     localInterfaceAddrs = getLocalInterfaceAddrs(localInterfaces);
     if (LOG.isDebugEnabled() && 0 != localInterfaces.length) {
       LOG.debug("Using local interfaces [" +
@@ -1162,8 +1152,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   /**
    * @see ClientProtocol#getBlockLocations(String, long, long)
    */
-  static LocatedBlocks callGetBlockLocations(ClientProtocol namenode,
-      String src, long start, long length) 
+  static LocatedBlocks callGetBlockLocations(ClientProtocol namenode, String src, long start, long length)
       throws IOException {
     try {
       return namenode.getBlockLocations(src, start, length);
@@ -1204,11 +1193,12 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * MapReduce system tries to schedule tasks on the same machines
    * as the data-block the task processes. 
    */
-  public BlockLocation[] getBlockLocations(String src, long start, 
-    long length) throws IOException, UnresolvedLinkException {
+  public BlockLocation[] getBlockLocations(String src, long start, long length)
+      throws IOException, UnresolvedLinkException {
     LocatedBlocks blocks = getLocatedBlocks(src, start, length);
     BlockLocation[] locations =  DFSUtil.locatedBlocks2Locations(blocks);
     HdfsBlockLocation[] hdfsLocations = new HdfsBlockLocation[locations.length];
+
     for (int i = 0; i < locations.length; i++) {
       hdfsLocations[i] = new HdfsBlockLocation(locations[i], blocks.get(i));
     }
@@ -1302,20 +1292,17 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
    * @deprecated Use {@link #open(String, int, boolean)} instead.
    */
   @Deprecated
-  public DFSInputStream open(String src, int buffersize, boolean verifyChecksum,
-                             FileSystem.Statistics stats)
+  public DFSInputStream open(String src, int buffersize, boolean verifyChecksum, FileSystem.Statistics stats)
       throws IOException, UnresolvedLinkException {
     return open(src, buffersize, verifyChecksum);
   }
-  
-  public DFSInputStream open(String src, int buffersize, boolean verifyChecksum,
-      long timestamp, boolean bUserTimestamp)
+
+  public DFSInputStream open(String src, int buffersize, boolean verifyChecksum, long timestamp, boolean bUserTimestamp)
       throws IOException, UnresolvedLinkException {
     checkOpen();
-    //    Get block info from namenode
+    // Get block info from namenode
     return new DFSInputStream(this, src, buffersize, verifyChecksum, timestamp, bUserTimestamp);
   }
-  
 
   /**
    * Create an input stream that obtains a nodelist from the
@@ -1335,7 +1322,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
   public ClientProtocol getNamenode() {
     return namenode;
   }
-  
+
   /**
    * Call {@link #create(String, boolean, short, long, Progressable)} with
    * default <code>replication</code> and <code>blockSize<code> and null <code>
@@ -1346,7 +1333,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     return create(src, overwrite, dfsClientConf.defaultReplication,
         dfsClientConf.defaultBlockSize, null);
   }
-    
+
   /**
    * Call {@link #create(String, boolean, short, long, Progressable)} with
    * default <code>replication</code> and <code>blockSize<code>.
@@ -1357,7 +1344,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     return create(src, overwrite, dfsClientConf.defaultReplication,
         dfsClientConf.defaultBlockSize, progress);
   }
-    
+
   /**
    * Call {@link #create(String, boolean, short, long, Progressable)} with
    * null <code>progress</code>.
@@ -1646,8 +1633,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
     checkOpen();
     HdfsFileStatus stat = getFileInfo(src);
     if (stat == null) { // No file found
-      throw new FileNotFoundException("failed to append to non-existent file "
-          + src + " on client " + clientName);
+      throw new FileNotFoundException("failed to append to non-existent file " + src + " on client " + clientName);
     }
     final SeekableDFSOutputStream result = callAppend(stat, src, buffersize, progress);
     beginFileLease(src, result);
@@ -1828,6 +1814,31 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory {
                                      UnresolvedPathException.class);
     }
   }
+
+  /**
+   * Get the file info for a specific file or directory at a specific timestamp.
+   * @param src The string representation of the path to the file.
+   * @param timestamp The timestamp.
+   * @param isUserTimestamp Whether or nor is a user timestamp.
+   */
+  // hdfsrs start
+  public HdfsFileStatus getFileInfo(String src, long timestamp, boolean isUserTimestamp) throws IOException {
+    checkOpen();
+    try {
+      HdfsFileStatus stat = namenode.getFileInfo(src);
+      DFSInputStream in = open(src, dfsClientConf.ioBufferSize, true, timestamp, isUserTimestamp);
+
+      return new HdfsFileStatus(in.getFileLength(), stat.isDir(), (int) stat.getReplication(), stat.getBlockSize(),
+                                stat.getModificationTime(), stat.getAccessTime(), stat.getPermission(),
+                                stat.getOwner(), stat.getGroup(), stat.getSymlinkInBytes(), stat.getLocalNameInBytes(),
+                                stat.getFileId(), stat.getChildrenNum());
+    } catch(RemoteException re) {
+      throw re.unwrapRemoteException(AccessControlException.class,
+                                     FileNotFoundException.class,
+                                     UnresolvedPathException.class);
+    }
+  }
+  // hdfsrs end
   
   /**
    * Close status of a file

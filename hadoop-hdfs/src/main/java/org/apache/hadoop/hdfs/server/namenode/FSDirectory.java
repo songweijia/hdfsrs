@@ -201,8 +201,7 @@ public class FSDirectory implements Closeable {
     int threshold = conf.getInt(
         DFSConfigKeys.DFS_NAMENODE_NAME_CACHE_THRESHOLD_KEY,
         DFSConfigKeys.DFS_NAMENODE_NAME_CACHE_THRESHOLD_DEFAULT);
-    NameNode.LOG.info("Caching file names occuring more than " + threshold
-        + " times");
+    NameNode.LOG.info("Caching file names occuring more than " + threshold + " times");
     nameCache = new NameCache<ByteArray>(threshold);
     namesystem = ns;
   }
@@ -1609,9 +1608,9 @@ public class FSDirectory implements Closeable {
    * @return object containing information regarding the file
    *         or null if file not found
    */
-  HdfsFileStatus getFileInfo(String src, boolean resolveLink) 
-      throws UnresolvedLinkException {
+  HdfsFileStatus getFileInfo(String src, boolean resolveLink) throws UnresolvedLinkException {
     String srcs = normalizePath(src);
+
     readLock();
     try {
       if (srcs.endsWith(HdfsConstants.SEPARATOR_DOT_SNAPSHOT_DIR)) {
@@ -1619,8 +1618,7 @@ public class FSDirectory implements Closeable {
       }
       final INodesInPath inodesInPath = rootDir.getLastINodeInPath(srcs, resolveLink);
       final INode i = inodesInPath.getINode(0);
-      return i == null? null: createFileStatus(HdfsFileStatus.EMPTY_NAME, i,
-          inodesInPath.getPathSnapshotId());
+      return i == null ? null : createFileStatus(HdfsFileStatus.EMPTY_NAME, i, inodesInPath.getPathSnapshotId());
     } finally {
       readUnlock();
     }

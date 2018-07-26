@@ -3634,9 +3634,8 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
    *         or null if file not found
    * @throws StandbyException 
    */
-  HdfsFileStatus getFileInfo(String src, boolean resolveLink) 
-    throws AccessControlException, UnresolvedLinkException,
-           StandbyException, IOException {
+  HdfsFileStatus getFileInfo(String src, boolean resolveLink)
+        throws AccessControlException, UnresolvedLinkException, StandbyException, IOException {
     if (!DFSUtil.isValidName(src)) {
       throw new InvalidPathException("Invalid file name: " + src);
     }
@@ -3644,6 +3643,7 @@ public class FSNamesystem implements Namesystem, FSClusterStats,
     FSPermissionChecker pc = getPermissionChecker();
     checkOperation(OperationCategory.READ);
     byte[][] pathComponents = FSDirectory.getPathComponentsForReservedPath(src);
+
     readLock();
     try {
       checkOperation(OperationCategory.READ);

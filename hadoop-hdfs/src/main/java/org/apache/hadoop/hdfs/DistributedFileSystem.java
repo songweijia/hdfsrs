@@ -125,8 +125,7 @@ public class DistributedFileSystem extends FileSystem {
   }
 
   @Deprecated
-  public DistributedFileSystem(InetSocketAddress namenode,
-    Configuration conf) throws IOException {
+  public DistributedFileSystem(InetSocketAddress namenode, Configuration conf) throws IOException {
     initialize(NameNode.getUri(namenode), conf);
   }
 
@@ -173,7 +172,6 @@ public class DistributedFileSystem extends FileSystem {
     workingDir = fixRelativePart(dir);
   }
 
-  
   @Override
   public Path getHomeDirectory() {
     return makeQualified(new Path("/user/" + dfs.ugi.getShortUserName()));
@@ -190,9 +188,9 @@ public class DistributedFileSystem extends FileSystem {
   private String getPathName(Path file) {
     checkPath(file);
     String result = file.toUri().getPath();
+
     if (!DFSUtil.isValidName(result)) {
-      throw new IllegalArgumentException("Pathname " + result + " from " +
-                                         file+" is not a valid DFS filename.");
+      throw new IllegalArgumentException("Pathname " + result + " from " + file + " is not a valid DFS filename.");
     }
     return result;
   }
@@ -207,8 +205,7 @@ public class DistributedFileSystem extends FileSystem {
   }
   
   @Override
-  public BlockLocation[] getFileBlockLocations(Path p, 
-      final long start, final long len) throws IOException {
+  public BlockLocation[] getFileBlockLocations(Path p, final long start, final long len) throws IOException {
     statistics.incrementReadOps(1);
     final Path absF = fixRelativePart(p);
     return new FileSystemLinkResolver<BlockLocation[]>() {
@@ -336,19 +333,16 @@ public class DistributedFileSystem extends FileSystem {
   }
 
   @Override
-  public FSDataOutputStream append(Path f, final int bufferSize,
-      final Progressable progress) throws IOException {
+  public FSDataOutputStream append(Path f, final int bufferSize, final Progressable progress) throws IOException {
     statistics.incrementWriteOps(1);
     Path absF = fixRelativePart(f);
     return new FileSystemLinkResolver<FSDataOutputStream>() {
       @Override
-      public FSDataOutputStream doCall(final Path p)
-          throws IOException, UnresolvedLinkException {
+      public FSDataOutputStream doCall(final Path p) throws IOException, UnresolvedLinkException {
         return dfs.append(getPathName(p), bufferSize, progress, statistics);
       }
       @Override
-      public FSDataOutputStream next(final FileSystem fs, final Path p)
-          throws IOException {
+      public FSDataOutputStream next(final FileSystem fs, final Path p) throws IOException {
         return fs.append(p, bufferSize);
       }
     }.resolve(this, absF);
@@ -356,16 +350,14 @@ public class DistributedFileSystem extends FileSystem {
 
   @Override
   public FSDataOutputStream create(Path f, FsPermission permission,
-      boolean overwrite, int bufferSize, short replication, long blockSize,
-      Progressable progress) throws IOException {
-    return this.create(f, permission,
-        overwrite ? EnumSet.of(CreateFlag.CREATE, CreateFlag.OVERWRITE)
-            : EnumSet.of(CreateFlag.CREATE), bufferSize, replication,
-        blockSize, progress, null);
+      boolean overwrite, int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
+    return this.create(f, permission, overwrite ? EnumSet.of(CreateFlag.CREATE, CreateFlag.OVERWRITE)
+                                                : EnumSet.of(CreateFlag.CREATE), bufferSize, replication, blockSize,
+                                                             progress, null);
   }
 
   /**
-   * Same as  
+   * Same as
    * {@link #create(Path, FsPermission, boolean, int, short, long, 
    * Progressable)} with the addition of favoredNodes that is a hint to 
    * where the namenode should place the file blocks.
@@ -448,10 +440,10 @@ public class DistributedFileSystem extends FileSystem {
    */
   @Override
   @SuppressWarnings("deprecation")
-  public FSDataOutputStream createNonRecursive(final Path f,
-      final FsPermission permission, final EnumSet<CreateFlag> flag,
-      final int bufferSize, final short replication, final long blockSize,
-      final Progressable progress) throws IOException {
+  public FSDataOutputStream createNonRecursive(final Path f, final FsPermission permission,
+                                               final EnumSet<CreateFlag> flag, final int bufferSize,
+                                               final short replication, final long blockSize,
+                                               final Progressable progress) throws IOException {
     statistics.incrementWriteOps(1);
     if (flag.contains(CreateFlag.OVERWRITE)) {
       flag.add(CreateFlag.CREATE);
@@ -461,24 +453,20 @@ public class DistributedFileSystem extends FileSystem {
       @Override
       public FSDataOutputStream doCall(final Path p) throws IOException,
           UnresolvedLinkException {
-        return new HdfsDataOutputStream(dfs.create(getPathName(p), permission,
-            flag, false, replication, blockSize, progress, bufferSize, null),
-            statistics);
+        return new HdfsDataOutputStream(dfs.create(getPathName(p), permission, flag, false, replication, blockSize,
+                                                   progress, bufferSize, null), statistics);
       }
 
       @Override
       public FSDataOutputStream next(final FileSystem fs, final Path p)
           throws IOException {
-        return fs.createNonRecursive(p, permission, flag, bufferSize,
-            replication, blockSize, progress);
+        return fs.createNonRecursive(p, permission, flag, bufferSize, replication, blockSize, progress);
       }
     }.resolve(this, absF);
   }
 
   @Override
-  public boolean setReplication(Path src, 
-                                final short replication
-                               ) throws IOException {
+  public boolean setReplication(Path src, final short replication) throws IOException {
     statistics.incrementWriteOps(1);
     Path absF = fixRelativePart(src);
     return new FileSystemLinkResolver<Boolean>() {
@@ -494,7 +482,7 @@ public class DistributedFileSystem extends FileSystem {
       }
     }.resolve(this, absF);
   }
-  
+
   /**
    * Move blocks from srcs to trg and delete srcs afterwards.
    * The file block sizes must be the same.
@@ -1114,9 +1102,7 @@ public class DistributedFileSystem extends FileSystem {
     }
     DatanodeInfo[] dataNode = {dfsIn.getCurrentDatanode()}; 
     lblocks[0] = new LocatedBlock(dataBlock, dataNode);
-    LOG.info("Found checksum error in data stream at "
-        + dataBlock + " on datanode="
-        + dataNode[0]);
+    LOG.info("Found checksum error in data stream at " + dataBlock + " on datanode=" + dataNode[0]);
 
     // Find block in checksum stream
     HdfsDataInputStream dfsSums = (HdfsDataInputStream) sums;
@@ -1146,18 +1132,30 @@ public class DistributedFileSystem extends FileSystem {
     Path absF = fixRelativePart(f);
     return new FileSystemLinkResolver<FileStatus>() {
       @Override
-      public FileStatus doCall(final Path p) throws IOException,
-          UnresolvedLinkException {
-        HdfsFileStatus fi = dfs.getFileInfo(getPathName(p));
-        if (fi != null) {
-          return fi.makeQualified(getUri(), p);
+      public FileStatus doCall(final Path p) throws IOException, UnresolvedLinkException {
+        // hdfsrs start
+        // Get correct FileStatus when called with timestamp.
+        String fragment = p.toUri().getFragment();
+        long timestamp = 0;
+        boolean isUserTimestamp = false;
+        HdfsFileStatus fs = null;
+
+        if (fragment != null) {
+          timestamp = Long.parseLong(fragment.substring(1));
+          isUserTimestamp = fragment.charAt(0) == 'u' ? true : false;
+          fs = dfs.getFileInfo(getPathName(p), timestamp, isUserTimestamp);
+        } else {
+          fs = dfs.getFileInfo(getPathName(p));
+        }
+        if (fs != null) {
+          return fs.makeQualified(getUri(), p);
         } else {
           throw new FileNotFoundException("File does not exist: " + p);
         }
+        //hdfsrs end
       }
       @Override
-      public FileStatus next(final FileSystem fs, final Path p)
-          throws IOException {
+      public FileStatus next(final FileSystem fs, final Path p) throws IOException {
         return fs.getFileStatus(p);
       }
     }.resolve(this, absF);
